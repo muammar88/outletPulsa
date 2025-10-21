@@ -1,0 +1,34 @@
+{
+  "extends": "@tsconfig/node22/tsconfig.json",
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.vue",
+    "vite.config.*",
+    "vitest.config.*",
+    "cypress.config.*",
+    "nightwatch.conf.*",
+    "playwright.config.*",
+    "eslint.config.*"
+  ],
+  "compilerOptions": {
+    "noEmit": true,
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "types": ["node", "vue", "vite/client"], 
+    "skipLibCheck": true,
+    "noEmitOnError": false, 
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
+}
+  // "compilerOptions": {
+    // "module": "ESNext",
+    // "moduleResolution": "Bundler",
+    // "types": ["node", "vue", "vite/client"],
+    // "skipLibCheck": true,
+    // "noEmit": true
+  

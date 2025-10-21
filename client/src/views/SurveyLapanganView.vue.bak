@@ -1,0 +1,840 @@
+<script setup lang="ts">
+import BaseButton from '@/components/Button/BaseButton.vue';
+import InputFile from '@/components/Form/InputFile.vue';
+import InputRadio from '@/components/Form/InputRadio.vue';
+import InputText from '@/components/Form/InputText.vue';
+import SelectField from '@/components/Form/SelectField.vue';
+import TextArea from '@/components/Form/TextArea.vue';
+import LoadingSpinner from '@/components/Loading/LoadingSpinner.vue';
+import Confirmation from '@/components/Modal/Confirmation.vue';
+import Notification from '@/components/Modal/Notification.vue';
+import { onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+// Composable
+import { useConfirmation } from '@/composables/useConfirmation';
+import { useNotification } from '@/composables/useNotification';
+// Service
+import { getInfo, getInfoMember, submitSurvey } from '@/service/survey_lapangan';
+
+// API
+const BASE_URL = import.meta.env.VITE_APP_API_BASE_URL;
+
+// Composable: notification
+const { showNotification, notificationType, notificationMessage, displayNotification } =
+  useNotification();
+// Composable: confirmation
+const { showConfirmDialog, confirmTitle, confirmMessage, displayConfirmation, confirm, cancel } =
+  useConfirmation();
+
+// State Data
+const route = useRoute();
+const query = route.query.code;
+const router = useRouter();
+
+// State: Loading
+const isLoading = ref(false);
+
+// Navigation
+function nextStep() {
+  if (currentStep.value < totalSteps) {
+    currentStep.value++;
+  }
+}
+
+function prevStep() {
+  if (currentStep.value > 1) {
+    currentStep.value--;
+  }
+}
+
+// Interface
+interface DataInfo {
+  access_code: string;
+  status: string;
+  surveyor_name: string;
+  kegiatan_name: string;
+  program_name: string;
+  asnaf_name: string;
+  sk: string;
+  member: {
+    id: number;
+    name: string;
+  }[];
+}
+
+const dataInfo = ref<DataInfo>({
+  access_code: '',
+  status: '',
+  surveyor_name: '',
+  kegiatan_name: '',
+  program_name: '',
+  asnaf_name: '',
+  sk: '',
+  member: [],
+});
+
+// Form State
+const currentStep = ref(1);
+const totalSteps = 5;
+
+// Form Data
+const formData = ref({
+  // Step 1: SK Surveyor & Pemohon
+  member_id: 0,
+
+  // Step 2: Data Responden
+  tanggal_penilaian: '',
+  nomor_ktp: '',
+  tempat_lahir: '',
+  tanggal_lahir: '',
+  nama_suami_istri: '',
+  pekerjaan_suami_istri: '',
+  jumlah_tanggungan: '',
+  alamat: '',
+
+  // Step 3: Pertanyaan Saringan
+  jenis_kelamin: '',
+  status_pernikahan: '',
+  usia_25_60: '',
+  penduduk_tetap: '',
+  penghasilan_kepala_keluarga: '',
+
+  // Step 4: Kondisi Peserta & Rumah
+  kondisi_fisik: '',
+  atap: '',
+  rangka_rumah: '',
+  dinding_rumah: '',
+  lantai: '',
+  mck: '',
+  luas_rumah: '',
+
+  // Step 5: Kondisi Peserta & Rumah
+  aset: '',
+  kendaraan: '',
+  keterangan_kondisi_calon: '',
+  keterangan_pilih_mustahik: '',
+  kesimpulan: '',
+  status: '',
+});
+
+// Form Upload 1 file
+const formUpload = ref<Record<string, File | null>>({
+  form_survey: null,
+  berita_acara: null,
+});
+
+const handleFileChange = (fieldName: string, file: File | null) => {
+  formUpload.value[fieldName] = file;
+};
+
+// Upload banyak (maks 10 file)
+const dokumentasiFiles = ref<File[]>([]);
+
+const handleFileChangeDokumentasi = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const files = Array.from(target.files || []);
+
+  // Validasi ekstensi & jumlah
+  const pdfFiles = files.filter((f) => f.type === 'application/pdf');
+
+  if (pdfFiles.length > 10) {
+    displayNotification('Maksimal 10 file PDF dokumentasi!', 'error');
+    return;
+  }
+
+  if (pdfFiles.length !== files.length) {
+    displayNotification('Hanya file PDF yang diperbolehkan.', 'error');
+  }
+
+  dokumentasiFiles.value = pdfFiles;
+};
+
+// Function: fetch data
+async function fetchData() {
+  isLoading.value = true;
+  try {
+    const response = await getInfo({
+      access_code: query,
+    });
+    dataInfo.value = response.data;
+    console.log('Response:', response);
+  } catch (error: any) {
+    displayNotification(
+      error.response.data.message + ', Mengarahkan ke halaman utama' ||
+        'Terjadi kesalahan, Mengarahkan ke halaman utama',
+      'error',
+    );
+    setTimeout(() => router.push({ path: '/' }), 2000);
+    console.error('Error fetching data:', error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+interface InfoSurvey {
+  name: string;
+  lokasi: {
+    desa: string;
+    kecamatan: string;
+  };
+}
+
+const dataInfoSurvey = ref<InfoSurvey>({
+  name: '',
+  lokasi: {
+    desa: '',
+    kecamatan: '',
+  },
+});
+
+async function fetchInfoMember() {
+  if (!formData.value.member_id || formData.value.member_id === 0) {
+    displayNotification('Pemohon bantuan harus diisi', 'error');
+    return;
+  }
+
+  isLoading.value = true;
+  try {
+    const response = await getInfoMember({
+      access_code: query,
+      member_id: formData.value.member_id,
+    });
+    dataInfoSurvey.value = response.data;
+    if (response.error === false) {
+      nextStep();
+    } else {
+      prevStep();
+    }
+    console.log('Response:', response);
+  } catch (error: any) {
+    displayNotification(error.response?.data?.message || 'Terjadi kesalahan', 'error');
+    console.error('Error fetching data:', error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+// Function: validate form
+const errors = ref<Record<string, string>>({});
+
+const validateForm = () => {
+  errors.value = {};
+
+  if (!formData.value.member_id) {
+    errors.value.member_id = 'Pemohon bantuan harus diisi';
+    return false;
+  }
+
+  return true;
+};
+
+// Function: submit form
+const isSubmitting = ref(false);
+
+const handleSubmit = async () => {
+  if (!validateForm()) return;
+
+  isSubmitting.value = true;
+
+  try {
+    await displayConfirmation(
+      'Konfirmasi Pengiriman',
+      'Apakah Anda yakin ingin mengirim data survey ini?',
+      async () => {
+        await submitSurvey(formData.value);
+        displayNotification('Data survey berhasil dikirim', 'success');
+        nextStep();
+      },
+    );
+  } catch (error: any) {
+    console.error(error);
+    displayNotification(error.response.data.message || 'Terjadi kesalahan', 'error');
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+
+const handleDownload = async () => {
+  const response = await fetch(`${BASE_URL}/uploads/img/sk_penetapan/${dataInfo.value.sk}`);
+  const dataFile = await response.blob();
+  const urlFile = URL.createObjectURL(dataFile);
+  const linkFile = document.createElement('a');
+  linkFile.href = urlFile;
+  linkFile.download = dataInfo.value.sk;
+  linkFile.click();
+  URL.revokeObjectURL(urlFile);
+};
+
+onMounted(() => {
+  fetchData();
+});
+
+watch(
+  () => formData.value.member_id,
+  () => {
+    fetchInfoMember();
+  },
+);
+</script>
+
+<template>
+  <div class="mx-auto p-6 max-w-full min-h-screen flex flex-col bg-green-800 justify-center">
+    <!-- Header -->
+    <LoadingSpinner v-if="isLoading" label="Memuat halaman..." />
+    <div v-else class="flex-1 flex flex-col bg-white rounded-lg shadow-sm border p-6">
+      <div class="space-y-6">
+        <!-- Logo & Title -->
+        <div class="text-center space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <img :src="'/images/ziwah.png'" alt="Logo" class="h-14" />
+            </div>
+            <div class="text-right">
+              <p class="text-sm text-gray-600 font-bold">
+                AREA SURVEYOR
+                {{ dataInfo.surveyor_name.toUpperCase() }}
+              </p>
+            </div>
+          </div>
+
+          <div class="pt-4">
+            <h1 class="text-xl font-bold">FORM SURVEY KEGIATAN PENYALURAN</h1>
+            <p class="text-sm text-gray-600">
+              {{ dataInfo.kegiatan_name.toUpperCase() }}
+            </p>
+            <p class="text-sm text-gray-600 text-uppercase">
+              {{ dataInfo.asnaf_name }} | {{ dataInfo.program_name }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div class="flex items-center justify-center gap-2 py-4">
+          <div v-for="step in totalSteps" :key="step" class="flex items-center">
+            <div
+              :class="[
+                'w-10 h-10 rounded-full flex items-center justify-center font-semibold',
+                currentStep >= step ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-500',
+              ]"
+            >
+              {{ step }}
+            </div>
+            <div
+              v-if="step < totalSteps"
+              :class="['w-16 h-1', currentStep > step ? 'bg-green-600' : 'bg-gray-200']"
+            ></div>
+          </div>
+        </div>
+
+        <!-- Form Content -->
+        <div class="bg-white rounded-lg shadow-sm border p-6 space-y-6">
+          <h3 class="text-lg font-semibold border-b pb-2">SK Surveyor</h3>
+          <BaseButton variant="warning" size="lg" :full-width="true" @click="handleDownload()">
+            <font-awesome-icon icon="fa-solid fa-download" />
+            Download File SK Surveyor
+          </BaseButton>
+          <!-- Step 1: SK Surveyor & Pemohon Bantuan -->
+          <div v-if="currentStep === 1" class="space-y-6">
+            <h3 class="text-lg font-semibold border-b pb-2">Pilih Pemohon Bantuan</h3>
+
+            <div>
+              <SelectField
+                label="Pilih Nama Pemohon Bantuan"
+                :options="[
+                  { id: 0, name: '--- Silahkan Pilih Satu Pemohon Bantuan ---' },
+                  ...dataInfo.member,
+                ]"
+                v-model="formData.member_id"
+              />
+            </div>
+
+            <div class="text-center p-4 bg-gray-50 rounded">
+              <p class="font-semibold">Silahkan Pilih Salah Satu Pemohon Bantuan</p>
+            </div>
+          </div>
+
+          <!-- Step 2: Info Survey & Data Responden -->
+          <div v-if="currentStep === 2" class="space-y-6">
+            <div>
+              <h3 class="text-lg font-semibold border-b pb-2 mb-4">INFO SURVEY</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <InputText
+                  v-model="dataInfoSurvey.lokasi.desa"
+                  label="Desa"
+                  placeholder="Desa"
+                  readonly
+                />
+                <InputText
+                  v-model="dataInfoSurvey.lokasi.kecamatan"
+                  label="Kecamatan"
+                  placeholder="Kecamatan"
+                  readonly
+                />
+                <InputText
+                  v-model="dataInfo.surveyor_name"
+                  label="Nama Petugas"
+                  placeholder="Nama Petugas"
+                  readonly
+                />
+                <InputText
+                  v-model="formData.tanggal_penilaian"
+                  label="Tanggal Penilaian"
+                  type="date"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <h3 class="text-lg font-semibold border-b pb-2 mb-4">DATA RESPONDEN</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <InputText
+                  v-model="formData.nomor_ktp"
+                  label="Nomor KTP"
+                  placeholder="Nomor KTP"
+                  required
+                />
+                <InputText
+                  v-model="formData.tempat_lahir"
+                  label="Tempat Lahir"
+                  placeholder="Tempat Lahir"
+                  required
+                />
+                <InputText
+                  v-model="formData.tanggal_lahir"
+                  label="Tanggal Lahir"
+                  type="date"
+                  required
+                />
+                <InputText
+                  v-model="formData.nama_suami_istri"
+                  label="Nama Suami / Istri"
+                  placeholder="Nama Suami / Istri"
+                  required
+                />
+                <InputText
+                  v-model="formData.pekerjaan_suami_istri"
+                  label="Pekerjaan Suami / Istri"
+                  placeholder="Pekerjaan Suami / Istri"
+                  required
+                />
+                <InputText
+                  v-model="formData.jumlah_tanggungan"
+                  label="Jumlah Tanggungan Suami / Istri"
+                  placeholder="Jumlah Tanggungan Suami / Istri"
+                  type="number"
+                  required
+                />
+              </div>
+
+              <div class="mt-4">
+                <TextArea
+                  v-model="formData.alamat"
+                  label="Alamat"
+                  placeholder="Alamat"
+                  rows="4"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Pertanyaan Saringan -->
+          <div v-if="currentStep === 3" class="space-y-6">
+            <h3 class="text-lg font-semibold border-b pb-2">PERTANYAAN SARINGAN</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <InputRadio
+                  id="radio-jenis-kelamin"
+                  v-model="formData.jenis_kelamin"
+                  label="Jenis Kelamin"
+                  :required="true"
+                  :options="[
+                    { value: 'laki-laki', label: 'Laki-laki' },
+                    { value: 'perempuan', label: 'Perempuan' },
+                  ]"
+                  :error="errors.jenis_kelamin"
+                />
+              </div>
+
+              <div>
+                <InputRadio
+                  id="radio-status-pernikahan"
+                  v-model="formData.status_pernikahan"
+                  label="Status Pernikahan"
+                  :required="true"
+                  :options="[
+                    { value: 'belum_menikah', label: 'Belum Menikah' },
+                    { value: 'menikah', label: 'Menikah' },
+                    { value: 'cerai_mati', label: 'Cerai / Mati' },
+                    { value: 'cerai_hidup', label: 'Cerai / Hidup' },
+                  ]"
+                  :error="errors.status_pernikahan"
+                />
+              </div>
+
+              <div>
+                <InputRadio
+                  id="radio-usia25-60"
+                  v-model="formData.usia_25_60"
+                  label="Apakah Usia Anda saat ini 25 s.d 60 tahun?"
+                  :required="true"
+                  :options="[
+                    { value: 'ya', label: 'Iya (Lanjut)' },
+                    { value: 'tidak', label: 'Tidak (Selesai)' },
+                  ]"
+                  :error="errors.usia_25_60"
+                />
+              </div>
+
+              <div>
+                <InputRadio
+                  id="radio-penduduk-tetap"
+                  v-model="formData.penduduk_tetap"
+                  label="Apakah Anda Penduduk tetap di Daerah ini?"
+                  :required="true"
+                  :options="[
+                    { value: 'ya', label: 'Iya (Lanjut)' },
+                    { value: 'tidak', label: 'Tidak (Selesai)' },
+                  ]"
+                  :error="errors.penduduk_tetap"
+                />
+              </div>
+
+              <div>
+                <InputRadio
+                  id="radio-penghasilan-kepala-keluarga"
+                  v-model="formData.penghasilan_kepala_keluarga"
+                  label="Apakah penghasilan kepala keluarga Anda dalam sebulan kurang dari Rp. 2.000.000,-?"
+                  :required="true"
+                  :options="[
+                    { value: 'ya', label: 'Iya (Lanjut)' },
+                    { value: 'tidak', label: 'Tidak (Selesai)' },
+                  ]"
+                  :error="errors.penghasilan_kepala_keluarga"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4: Kondisi Peserta & Rumah -->
+          <div v-if="currentStep === 4" class="space-y-6">
+            <div>
+              <h3 class="text-lg font-semibold border-b pb-2 mb-4">KONDISI PESERTA SAAT INI</h3>
+              <div>
+                <InputRadio
+                  id="radio-kondisi-peserta"
+                  v-model="formData.kondisi_fisik"
+                  label="Kondisi Peserta"
+                  :required="true"
+                  :options="[
+                    { value: 'disabilitas', label: 'Disabilitas' },
+                    { value: 'non_disabilitas', label: 'Non Disabilitas' },
+                    { value: 'pasca_odgj', label: 'Pasca ODGJ' },
+                  ]"
+                  :error="errors.kondisi_peserta"
+                />
+              </div>
+            </div>
+
+            <div>
+              <h3 class="text-lg font-semibold border-b pb-2 mb-4">KONDISI RUMAH SAAT INI</h3>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <InputRadio
+                    id="radio-atap"
+                    v-model="formData.atap"
+                    label="Atap"
+                    :required="true"
+                    :options="[
+                      { value: 'genteng_seng', label: 'Genteng Seng' },
+                      { value: 'genteng_beton', label: 'Genteng Beton' },
+                    ]"
+                    :error="errors.atap"
+                  />
+                </div>
+
+                <div>
+                  <InputRadio
+                    id="radio-dinding"
+                    v-model="formData.rangka_rumah"
+                    label="Dinding"
+                    :required="true"
+                    :options="[
+                      { value: 'kayu', label: 'Kayu' },
+                      { value: 'beton', label: 'Beton' },
+                    ]"
+                    :error="errors.dinding"
+                  />
+                </div>
+
+                <div>
+                  <InputRadio
+                    id="radio-dinding-rumah"
+                    v-model="formData.dinding_rumah"
+                    label="Dinding Rumah"
+                    :required="true"
+                    :options="[
+                      { value: 'tembok_semen', label: 'Tembok Semen' },
+                      { value: 'papan', label: 'Papan' },
+                      { value: 'triplek', label: 'Triplek' },
+                    ]"
+                    :error="errors.dinding_rumah"
+                  />
+                </div>
+
+                <div>
+                  <InputRadio
+                    id="radio-lantai"
+                    v-model="formData.lantai"
+                    label="Lantai"
+                    :required="true"
+                    :options="[
+                      { value: 'tanah', label: 'Tanah' },
+                      { value: 'keramik', label: 'Keramik' },
+                      { value: 'ubin_semen', label: 'Ubin Semen' },
+                    ]"
+                    :error="errors.lantai"
+                  />
+                </div>
+
+                <div>
+                  <InputRadio
+                    id="radio-mck"
+                    v-model="formData.mck"
+                    label="MCK"
+                    :required="true"
+                    :options="[
+                      { value: 'sungai_jamban', label: 'Sungai Jamban' },
+                      { value: 'mck_umum', label: 'MCK Umum' },
+                      { value: 'k_mandi_pribadi', label: 'K. Mandi Pribadi' },
+                    ]"
+                    :error="errors.mck"
+                  />
+                </div>
+
+                <div>
+                  <InputRadio
+                    id="radio-luas-rumah"
+                    v-model="formData.luas_rumah"
+                    label="Luas Rumah"
+                    :required="true"
+                    :options="[
+                      { value: 'kecil', label: 'Kecil' },
+                      { value: 'sedang', label: 'Sedang' },
+                      { value: 'luas', label: 'Luas' },
+                    ]"
+                    :error="errors.luas_rumah"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Step 4: Kondisi Peserta & Rumah -->
+          <div v-if="currentStep === 5" class="space-y-6">
+            <h3 class="text-lg font-semibold border-b pb-2 mb-4">HARTA YANG DIMILIKI</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <InputRadio
+                  id="radio-aset"
+                  v-model="formData.aset"
+                  label="Aset"
+                  :required="true"
+                  :options="[
+                    { value: 'kebun', label: 'Kebun' },
+                    { value: 'emas', label: 'Emas' },
+                    { value: 'Sawah', label: 'Sawah' },
+                    { value: 'Tanah', label: 'Tanah' },
+                  ]"
+                  :error="errors.aset"
+                />
+              </div>
+
+              <div>
+                <InputRadio
+                  id="radio-kendaraan"
+                  v-model="formData.kendaraan"
+                  label="Kendaraan"
+                  :required="true"
+                  :options="[
+                    { value: 'sepeda', label: 'Sepeda' },
+                    { value: 'sepeda_motor', label: 'Sepeda Motor' },
+                    { value: 'mobil', label: 'Mobil' },
+                  ]"
+                  :error="errors.kendaraan"
+                />
+              </div>
+
+              <div>
+                <TextArea
+                  v-model="formData.keterangan_kondisi_calon"
+                  label="Keterangan Kondisi Calon"
+                  placeholder="Keterangan Kondisi Calon"
+                  :error="errors.keterangan_kondisi_calon"
+                />
+              </div>
+              <div>
+                <InputRadio
+                  id="radio-pilih-mustahik"
+                  v-model="formData.keterangan_pilih_mustahik"
+                  label="Keterangan Pilihan Mustahik"
+                  :options="[
+                    { value: 'kondisi_orang_miskin', label: 'Kondisi Orang Miskin' },
+                    { value: 'kondisi_orang_sederhana', label: 'Kondisi Orang Sederhana' },
+                    { value: 'kondisi_orang_kaya', label: 'Kondisi Orang Kaya' },
+                  ]"
+                  :required="true"
+                />
+              </div>
+              <div>
+                <TextArea
+                  v-model="formData.kesimpulan"
+                  label="Kesimpulan"
+                  :required="true"
+                  placeholder="Kesimpulan"
+                  :error="errors.kesimpulan"
+                />
+              </div>
+              <div>
+                <InputRadio
+                  id="radio-kesimpulan-survey"
+                  v-model="formData.status"
+                  label="Keterangan Pilihan Mustahik"
+                  :options="[
+                    { value: 'approve', label: 'Disetujui' },
+                    { value: 'reject', label: 'Tolak Disetujui' },
+                  ]"
+                  :required="true"
+                />
+              </div>
+
+              <div>
+                <InputFile
+                  id="upload-form-survey"
+                  label="Upload Form Survey"
+                  buttonText="Pilih File"
+                  accept=".pdf"
+                  :error="errors.form_survey"
+                  :maxSize="1000"
+                  :show-preview="false"
+                  @file-selected="(file) => handleFileChange('form_survey', file)"
+                />
+              </div>
+
+              <!-- Upload dokumentasi multiple -->
+              <div>
+                <label for="dokumentasi" class="block text-sm font-semibold text-gray-700 mb-2">
+                  Upload Dokumentasi (maks 10 file PDF)
+                </label>
+
+                <input
+                  type="file"
+                  id="dokumentasi"
+                  multiple
+                  accept="application/pdf"
+                  @change="handleFileChangeDokumentasi"
+                  class="block w-full text-sm text-gray-700 border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-pointer hover:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                />
+
+                <!-- Preview list file PDF -->
+                <div
+                  v-if="dokumentasiFiles.length"
+                  class="mt-4 bg-gray-50 rounded-lg divide-y divide-gray-200 border border-gray-200"
+                >
+                  <div
+                    v-for="(file, index) in dokumentasiFiles"
+                    :key="index"
+                    class="flex items-center justify-between px-4 py-2 hover:bg-gray-100 transition"
+                  >
+                    <div class="flex items-center space-x-3">
+                      <svg
+                        class="w-6 h-6 text-red-500 flex-shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M7 21h10a2 2 0 002-2V9l-6-6H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                        />
+                      </svg>
+                      <div>
+                        <p class="text-sm font-medium text-gray-700 truncate max-w-[200px]">
+                          {{ file.name }}
+                        </p>
+                        <p class="text-xs text-gray-500">{{ (file.size / 1024).toFixed(1) }} KB</p>
+                      </div>
+                    </div>
+
+                    <!-- Tombol hapus file -->
+                    <button
+                      @click="dokumentasiFiles.splice(index, 1)"
+                      class="text-gray-400 hover:text-red-500 transition"
+                      title="Hapus file"
+                    >
+                      <font-awesome-icon icon="fa-solid fa-xmark" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <InputFile
+                  id="upload-berita-acara"
+                  label="Upload Berita Acara"
+                  buttonText="Pilih File"
+                  accept=".pdf"
+                  :show-preview="false"
+                  :error="errors.berita_acara"
+                  :maxSize="1000"
+                  @file-selected="(file) => handleFileChange('berita_acara', file)"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Navigation Buttons -->
+          <div class="flex justify-between pt-6 border-t">
+            <BaseButton v-if="currentStep > 1" variant="secondary" @click="prevStep">
+              Sebelumnya
+            </BaseButton>
+            <div v-else></div>
+
+            <BaseButton
+              v-if="currentStep < totalSteps"
+              :disabled="!formData.member_id"
+              variant="primary"
+              @click="nextStep"
+            >
+              Selanjutnya
+            </BaseButton>
+            <BaseButton v-else variant="success" @click="handleSubmit"> Kirim Survey </BaseButton>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirmation -->
+    <Confirmation
+      :show-confirm-dialog="showConfirmDialog"
+      :confirm-title="confirmTitle"
+      :confirm-message="confirmMessage"
+    >
+      <BaseButton variant="secondary" @click="cancel">Tidak</BaseButton>
+      <BaseButton variant="warning" @click="confirm">Ya</BaseButton>
+    </Confirmation>
+
+    <!-- Notification -->
+    <Notification
+      :show-notification="showNotification"
+      :notification-type="notificationType"
+      :notification-message="notificationMessage"
+      @close="showNotification = false"
+    />
+  </div>
+</template>

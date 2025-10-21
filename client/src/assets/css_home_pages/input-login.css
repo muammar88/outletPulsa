@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body, html {
+    font-family: "Poppins", sans-serif;
+    color: #212529;
+    background: #fff;
+}
+
+.bg-left {
+    /* background-color: rgba(38, 158, 64, 0.08); */
+    background-image: url('/images/pattern1.png');
+}

@@ -1,0 +1,24 @@
+# Gunakan Node.js versi 20.18 sebagai base image
+FROM node:20.18
+
+# Set working directory
+WORKDIR /app
+
+# Salin package.json dan lock file
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Salin seluruh isi project
+COPY . .
+
+# Set environment variable untuk memastikan file watch berjalan dengan polling
+ENV CHOKIDAR_USEPOLLING=true
+
+# Port default untuk Vite dev server
+EXPOSE 5173
+
+# Jalankan dev server
+# CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "dev", "--", "--host"]
