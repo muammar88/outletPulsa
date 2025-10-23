@@ -9,23 +9,11 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Produk_prabayar.belongsTo(models.Server, {
-        foreignKey: "server_id",
-      });
       Produk_prabayar.belongsTo(models.Operator, {
         foreignKey: "operator_id",
       });
-      Produk_prabayar.hasMany(models.Iak_prabayar_produk, {
-        foreignKey: "produk_id",
-      });
-      Produk_prabayar.hasMany(models.Tripay_prabayar_produk, {
-        foreignKey: "produk_id",
-      });
-      Produk_prabayar.hasMany(models.Digiflazz_product, {
-        foreignKey: "produk_id",
-      });
-      Produk_prabayar.hasMany(models.Transaction_prabayar, {
-        foreignKey: "produk_id",
+      Produk_prabayar.belongsTo(models.Server, {
+        foreignKey: "server_id",
       });
     }
   }

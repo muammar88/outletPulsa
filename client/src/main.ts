@@ -104,6 +104,7 @@ import {
   faHome,
   faHotel,
   faHouseCrack,
+  faHouse,
   faImage,
   faInbox,
   faInfo,
@@ -132,6 +133,7 @@ import {
   faPlane,
   faPlaneArrival,
   faPlaneCircleCheck,
+  faUserGear,
   faPlus,
   faQrcode,
   faQuestionCircle,
@@ -164,15 +166,15 @@ import {
 import { faCircle, faUser as farUser } from '@fortawesome/free-regular-svg-icons';
 
 // FontAwesome Icons - Brands
-import { faCcVisa, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
+import { faCcVisa, faWhatsapp, faDigitalOcean } from '@fortawesome/free-brands-svg-icons';
 
 // Tambahkan semua icon ke library FontAwesome
 library.add(
-  // Solid Icons
   faUser,
   faUserCheck,
   faHome,
   faHouseCrack,
+  faHouse,
   faCaretRight,
   faExchange,
   faBoxOpen,
@@ -299,6 +301,8 @@ library.add(
   faCircleInfo,
   faEye,
   faInbox,
+  faUserGear,
+  faDigitalOcean,
 );
 
 // Buat App Vue
@@ -308,7 +312,7 @@ const head = createHead();
 // Gunakan Plugin dan Komponen
 app.use(router);
 app.use(createPinia());
-app.use(VueApexCharts);
+// app.use(VueApexCharts);
 app.use(head);
 app.use(PrimeVue, {
   theme: {

@@ -15,6 +15,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   Tab.init({
     name: DataTypes.STRING,
+    title: DataTypes.STRING,
     icon: DataTypes.STRING,
     path: DataTypes.STRING,
     description: DataTypes.TEXT

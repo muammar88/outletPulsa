@@ -9,12 +9,6 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Server.hasMany(models.Transaction_prabayar, {
-        foreignKey: "server_id",
-      });
-      Server.hasMany(models.Transaction_pascabayar, {
-        foreignKey: "server_id",
-      });
       Server.hasMany(models.Produk_prabayar, {
         foreignKey: "server_id",
       });

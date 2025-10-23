@@ -8,14 +8,11 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // // define association here
+      // define association here
       Operator.belongsTo(models.Kategori, {
         foreignKey: "kategori_id",
       });
       Operator.hasMany(models.Produk_prabayar, {
-        foreignKey: "operator_id",
-      });
-      Operator.hasMany(models.Prefix, {
         foreignKey: "operator_id",
       });
     }
