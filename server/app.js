@@ -2,7 +2,10 @@ const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 const process = require("process");
 const express = require("express");
+const path = require("path");
 const session = require("express-session");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
 
 dotenv.config();
 
@@ -10,42 +13,51 @@ const app = express();
 
 const port = process.env.PORT;
 
-const arr_router = [
-  // "frontend",
-  // "login",
-  // "user",
-  // {
-  //   folder: "user",
-  //   list: [
-  //     "daftar_member",
-  //     "daftar_agen",
-  //     "riwayat_fee_agen",
-  //     "riwayat_transfer_saldo",
-  //     "daftar_server",
-  //     "iak_prabayar",
-  //     "iak_pascabayar",
-  //     "tripay_prabayar",
-  //     "digiflaz_prabayar",
-  //     "produk_prabayar",
-  //     "kategori",
-  //     "operator",
-  //     "daftar_seller",
-  //     "daftar_bank",
-  //     "bank_transfer",
-  //     "request_deposit",
-  //     "daftar_deposit",
-  //     "produk_pascabayar",
-  //     "daftar_transaksi",
-  //     "daftar_transaksi_hari_ini",
-  //     "tes_produk",
-  //     "riwayat_validasi_seller",
-  //     "beranda_utama",
-  //     "otp_pendaftaran",
-  //     "otp_login",
-  //   ],
-  // },
-];
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // untuk Postman, curl, dll.
+      return callback(null, origin); // izinkan semua origin
+    },
+    credentials: true,
+  })
+);
 
+const arr_router = ["auth"];
+
+// "frontend",
+// "login",
+// "user",
+// {
+//   folder: "user",
+//   list: [
+//     "daftar_member",
+//     "daftar_agen",
+//     "riwayat_fee_agen",
+//     "riwayat_transfer_saldo",
+//     "daftar_server",
+//     "iak_prabayar",
+//     "iak_pascabayar",
+//     "tripay_prabayar",
+//     "digiflaz_prabayar",
+//     "produk_prabayar",
+//     "kategori",
+//     "operator",
+//     "daftar_seller",
+//     "daftar_bank",
+//     "bank_transfer",
+//     "request_deposit",
+//     "daftar_deposit",
+//     "produk_pascabayar",
+//     "daftar_transaksi",
+//     "daftar_transaksi_hari_ini",
+//     "tes_produk",
+//     "riwayat_validasi_seller",
+//     "beranda_utama",
+//     "otp_pendaftaran",
+//     "otp_login",
+//   ],
+// },
 // routers
 var arr = {};
 arr_router.forEach((e) => {
@@ -63,6 +75,7 @@ arr_router.forEach((e) => {
 // models
 const db = require("./models");
 
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

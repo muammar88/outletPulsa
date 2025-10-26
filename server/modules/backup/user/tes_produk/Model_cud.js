@@ -5,8 +5,8 @@ const {
   Digiflazz_seller,
   Validasi_seller_digiflaz,
 } = require("../../../db/models");
-const { write_log } = require("../../../helpers/user/write_log");
-const { info } = require("../../../helpers/user/tes_produk/index");
+const { write_log } = require("../../../../helpers/user/write_log");
+const { info } = require("../../../../helpers/user/tes_produk/index");
 
 class Model_cud {
   constructor(req) {
