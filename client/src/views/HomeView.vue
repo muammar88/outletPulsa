@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import LoginMember from '@/modules/Home/Home.vue'
+import LoginMember from '@/modules/Home/Home.vue';
 </script>
 <template>
   <LoginMember />

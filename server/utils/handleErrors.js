@@ -3,11 +3,6 @@
 const { validationResult } = require("express-validator");
 
 class HandleErrors {
-  constructor(req, res) {
-    this.req = req;
-    this.res = res;
-  }
-
   async message_process(errors) {
     let num = 0;
     let message = "";
@@ -20,8 +15,8 @@ class HandleErrors {
     return message;
   }
 
-  async handleValidationErrors() {
-    const errors = validationResult(this.req);
+  async handleValidationErrors(req, res) {
+    const errors = await validationResult(req);
 
     console.log("-----SSSSValidation Errors-----");
     console.log(errors);
@@ -35,8 +30,8 @@ class HandleErrors {
       console.log(err_msg);
       console.log("-----Validation Errors-----");
 
-      if (!this.res.headersSent) {
-        this.res.status(400).json({
+      if (!res.headersSent) {
+        res.status(400).json({
           error: true,
           message: err_msg.replace(/<br>/g, " "),
         });
@@ -47,12 +42,12 @@ class HandleErrors {
     }
   }
 
-  async handleServerError(error) {
-    if (!this.res.headersSent) {
+  async handleServerError(res, error) {
+    if (!res.headersSent) {
       const statusCode = error?.statusCode || 500;
       const message = error?.message;
 
-      this.res.status(statusCode).json({
+      res.status(statusCode).json({
         error: true,
         message: message,
       });

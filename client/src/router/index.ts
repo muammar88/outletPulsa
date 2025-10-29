@@ -1,5 +1,5 @@
 // import Register from '@/modules/Register/Register.vue';
-// import AdministratorAreaView from '@/views/AdministratorView.vue';
+import AdministratorAreaView from '@/views/AdministratorView.vue';
 import homeView from '@/views/HomeView.vue';
 import LoginAdminView from '@/views/LoginAdminView.vue';
 // import MemberAreaView from '@/views/MemberAreaView.vue';
@@ -16,7 +16,7 @@ const router = createRouter({
       meta: {
         title: 'Aplikasi Outlet Pulsa || Home',
         description:
-          'Aplikasi Mustahik dan Muzaki Kabupaten Aceh Tengah merupakan platform digital yang dirancang untuk mempermudah pengelolaan data penerima manfaat (mustahik) dan pemberi zakat (muzaki). Melalui aplikasi ini, proses pendataan, penyaluran, dan pelaporan zakat, infak, serta sedekah dapat dilakukan dengan lebih transparan, cepat, dan akurat. Aplikasi ini juga mendukung visi Baitul Mal Kabupaten Aceh Tengah dalam mewujudkan tata kelola zakat yang religius, mandiri, dan sejahtera bagi masyarakat.',
+          'Halaman utama menampilkan ringkasan dashboard outlet: saldo, transaksi terakhir, statistik penjualan, dan akses cepat ke fitur produk dan laporan.',
       },
     },
     {
@@ -26,7 +26,17 @@ const router = createRouter({
       meta: {
         title: 'Login Area || Aplikasi Outlet Pulsa',
         description:
-          'Aplikasi Mustahik dan Muzaki Kabupaten Aceh Tengah untuk registrasi, pendataan, dan layanan zakat secara mudah, cepat, dan transparan.',
+          'Halaman masuk untuk administrator dan operator outlet. Gunakan kredensial yang valid untuk mengakses dashboard dan fitur manajemen.',
+      },
+    },
+    {
+      path: '/administrator',
+      name: 'administrator',
+      component: AdministratorAreaView,
+      meta: {
+        title: 'Administrator Area || Aplikasi Outlet Pulsa',
+        description:
+          'Area khusus administrator untuk manajemen sistem: konfigurasi outlet, pengaturan produk, manajemen pengguna, dan akses laporan lengkap.',
       },
     },
   ],

@@ -1,10 +1,15 @@
-import colors from 'tailwindcss/colors'
-import defaultTheme from 'tailwindcss/defaultTheme'
-import flowbite from 'flowbite/plugin'
+import colors from 'tailwindcss/colors';
+import defaultTheme from 'tailwindcss/defaultTheme';
+import flowbite from 'flowbite/plugin';
 
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}', './node_modules/flowbite/**/*.js', "./node_modules/flowbite-vue/**/*.{js,vue,ts}"],
+  content: [
+    './index.html',
+    './src/**/*.{vue,js,ts,jsx,tsx}',
+    './node_modules/flowbite/**/*.js',
+    './node_modules/flowbite-vue/**/*.{js,vue,ts}',
+  ],
   darkMode: 'class',
   theme: {
     fontFamily: {
@@ -22,6 +27,7 @@ export default {
         transparent: 'transparent',
         white: '#FFFFFF',
         amra: '#415192fa',
+        outlet: '#1e364e',
         black: {
           ...colors.black,
           DEFAULT: '#1C2434',
@@ -325,4 +331,4 @@ export default {
     },
   },
   plugins: [flowbite],
-}
+};

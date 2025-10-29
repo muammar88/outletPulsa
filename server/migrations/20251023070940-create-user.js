@@ -12,7 +12,7 @@ module.exports = {
       kode: {
         type: Sequelize.STRING,
       },
-      name: {
+      fullname: {
         type: Sequelize.STRING,
       },
       username: {

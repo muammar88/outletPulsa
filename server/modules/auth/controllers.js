@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const HandleError = require("../../utils/handleErrors");
+const HandleErrors = require("../../utils/handleErrors");
 const Models = require("./models");
 
 class Controllers extends Models {
@@ -7,21 +7,13 @@ class Controllers extends Models {
     super(req);
     this.req = req;
     this.res = res;
-    this.handleError = new HandleError(res, res);
+    this.handleError = new HandleErrors();
     this.refreshTokens = [];
   }
 
   async login_process() {
-    const satset = await this.handleError.handleValidationErrors(
-      this.req,
-      this.res
-    );
-
-    console.log("-------satset");
-    console.log(satset);
-    console.log("-------satset");
-
-    if (!satset) return;
+    if (!(await this.handleError.handleValidationErrors(this.req, this.res)))
+      return;
 
     try {
       const data = await this.get_info();

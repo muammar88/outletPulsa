@@ -11,6 +11,10 @@ class Models {
       var q = await User.findOne({
         where: { username: this.req.body.username },
       });
+
+      // console.log("-----Q-----");
+      // console.log(q);
+      // console.log("-----Q-----");
       return {
         id: q.id,
         username: q.username,

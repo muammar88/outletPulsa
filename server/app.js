@@ -23,7 +23,7 @@ app.use(
   })
 );
 
-const arr_router = ["auth"];
+const arr_router = ["auth", "administrator"];
 
 // "frontend",
 // "login",

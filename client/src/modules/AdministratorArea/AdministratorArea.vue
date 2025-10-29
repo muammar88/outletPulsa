@@ -58,12 +58,12 @@ const fetchData = async () => {
       isError.value = true;
     } else {
       // Menyimpan data ke dalam state
-      menu_info.value = response.data.menu_info;
-      user_info.value = response.data.user_info;
+      menu_info.value = response.data.data.menu_info;
+      user_info.value = response.data.data.user_info;
 
       globalTab.clearObject();
-      for (const x in response.data.menu_info.tab) {
-        globalTab.addItem(x, response.data.menu_info.tab[x]);
+      for (const x in response.data.data.menu_info.tab) {
+        globalTab.addItem(x, response.data.data.menu_info.tab[x]);
       }
 
       SettingGlob.clearObject();
@@ -71,7 +71,7 @@ const fetchData = async () => {
         SettingGlob.addItem(x, response.data.user_info[x]);
       }
 
-      const menu = response.data.menu_info.menu;
+      const menu = response.data.data.menu_info.menu;
       const menuPertama = Object.values(menu)[0];
 
       selectMenu.setString(menuPertama.name);
@@ -97,6 +97,10 @@ const fetchData = async () => {
 
 onMounted(() => {
   const token = localStorage.getItem('administrator_access_token');
+
+  // console.log('-----token');
+  // console.log(token);
+  // console.log('-----token');
   if (!token) {
     window.location.href = '/login-admin'; // direct ke root
   } else {

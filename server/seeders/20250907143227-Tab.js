@@ -11,7 +11,7 @@ module.exports = {
           icon: "fa-solid fa-house",
           path: "beranda",
           description:
-            "Halaman beranda yang menampilkan ringkasan informasi, notifikasi, dan akses cepat ke fitur.",
+            "Ringkasan dashboard outlet: saldo, transaksi terbaru, dan akses cepat ke fitur utama.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -21,7 +21,7 @@ module.exports = {
           icon: "fa-solid fa-users",
           path: "daftar_member",
           description:
-            "Menampilkan daftar member yang terdaftar beserta detail, status, dan opsi manajemen.",
+            "Kelola data member: profil, status, dan riwayat transaksi.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -31,7 +31,7 @@ module.exports = {
           icon: "fa-solid fa-user-gear",
           path: "daftar_operator_outlet",
           description:
-            "Menampilkan daftar operator outlet beserta peran dan status akses mereka.",
+            "Kelola operator outlet termasuk peran dan akses mereka.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -40,8 +40,7 @@ module.exports = {
           title: "Daftar Pengguna",
           icon: "fa-solid fa-user",
           path: "daftar_pengguna",
-          description:
-            "Menampilkan daftar pengguna sistem untuk pengelolaan akun dan hak akses.",
+          description: "Kelola akun pengguna sistem dan hak akses.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -51,7 +50,7 @@ module.exports = {
           icon: "fa-brands fa-digital-ocean",
           path: "daftar_produk_digiflazz",
           description:
-            "Daftar produk dari Digiflazz yang tersedia untuk dipasarkan oleh outlet.",
+            "Daftar produk Digiflazz yang tersedia untuk dijual oleh outlet.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -61,7 +60,7 @@ module.exports = {
           icon: "fa-solid fa-box",
           path: "daftar_produk_iak",
           description:
-            "Daftar produk IAK yang tersedia untuk transaksi, lengkap dengan harga dan kode.",
+            "Daftar produk IAK beserta kode, harga, dan status ketersediaan.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -71,7 +70,7 @@ module.exports = {
           icon: "fa-solid fa-store",
           path: "daftar_produk_outlet",
           description:
-            "Daftar produk yang dimiliki atau dijual oleh outlet, termasuk stok dan harga.",
+            "Produk yang dimiliki atau dijual oleh outlet, termasuk stok dan harga.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -81,17 +80,17 @@ module.exports = {
           icon: "fa-solid fa-wallet",
           path: "daftar_produk_tripay",
           description:
-            "Daftar produk yang disediakan melalui Tripay untuk digunakan outlet.",
+            "Daftar produk yang disediakan melalui Tripay untuk outlet.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
         {
           name: "Daftar Seller",
           title: "Daftar Seller",
-          icon: "fa-solid fa-store-front",
+          icon: "fa-solid fa-store",
           path: "daftar_seller",
           description:
-            "Menampilkan daftar seller/penjual beserta informasi toko dan kontak.",
+            "Informasi seller/penjual termasuk nama toko dan kontak.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -101,7 +100,7 @@ module.exports = {
           icon: "fa-solid fa-receipt",
           path: "daftar_transaksi",
           description:
-            "Menampilkan daftar transaksi lengkap dengan status, nominal, dan riwayat.",
+            "Riwayat transaksi lengkap: status, nominal, dan detail.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -111,7 +110,7 @@ module.exports = {
           icon: "fa-solid fa-chart-column",
           path: "laporan_transaksi",
           description:
-            "Laporan detail transaksi dengan filter tanggal, tipe, dan ringkasan statistik.",
+            "Laporan transaksi dengan filter tanggal dan ringkasan statistik.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -121,7 +120,7 @@ module.exports = {
           icon: "fa-solid fa-file-lines",
           path: "laporan_umum",
           description:
-            "Laporan rekapitulasi umum tentang performa, pendapatan, dan statistik aplikasi.",
+            "Laporan rekap performa, pendapatan, dan metrik penting.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -131,7 +130,7 @@ module.exports = {
           icon: "fa-solid fa-building-columns",
           path: "pengaturan_bank",
           description:
-            "Pengaturan dan daftar rekening bank yang digunakan untuk deposit dan transfer.",
+            "Atur rekening bank untuk deposit dan penerimaan pembayaran.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -140,8 +139,7 @@ module.exports = {
           title: "Pengaturan Umum",
           icon: "fa-solid fa-gear",
           path: "pengaturan_umum",
-          description:
-            "Pengaturan umum aplikasi, termasuk konfigurasi tampilan dan preferensi sistem.",
+          description: "Pengaturan sistem dan preferensi aplikasi.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -151,7 +149,7 @@ module.exports = {
           icon: "fa-solid fa-credit-card",
           path: "produk_iak_pascabayar",
           description:
-            "Daftar produk pascabayar dari IAK beserta informasi harga dan kode produk.",
+            "Produk pascabayar IAK yang tersedia untuk transaksi outlet.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -161,7 +159,7 @@ module.exports = {
           icon: "fa-solid fa-receipt",
           path: "produk_pascabayar_outlet",
           description:
-            "Daftar produk pascabayar yang disediakan outlet untuk pelanggan.",
+            "Produk pascabayar yang disediakan outlet untuk pelanggan.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -170,8 +168,7 @@ module.exports = {
           title: "Produk Tripay Pascabayar",
           icon: "fa-solid fa-money-bill-transfer",
           path: "produk_tripay_pascabayar",
-          description:
-            "Daftar produk pascabayar yang disediakan melalui Tripay untuk outlet.",
+          description: "Produk pascabayar melalui Tripay untuk outlet.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -181,7 +178,7 @@ module.exports = {
           icon: "fa-solid fa-upload",
           path: "request_deposit",
           description:
-            "Formulir dan daftar permintaan deposit saldo yang diajukan oleh pengguna.",
+            "Form dan daftar permintaan deposit saldo oleh pengguna.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -191,7 +188,7 @@ module.exports = {
           icon: "fa-solid fa-wallet",
           path: "riwayat_deposit_saldo",
           description:
-            "Menampilkan riwayat top-up/deposit saldo termasuk bukti dan status.",
+            "Riwayat top-up/deposit saldo lengkap dengan bukti dan status.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -200,8 +197,47 @@ module.exports = {
           title: "Riwayat Transfer Saldo",
           icon: "fa-solid fa-exchange-alt",
           path: "riwayat_transfer_saldo",
+          description: "Riwayat pemindahan saldo antar akun atau agen.",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          name: "Daftar Kategori",
+          title: "Daftar Kategori",
+          icon: "fa-solid fa-exchange-alt",
+          path: "daftar_kategori",
           description:
-            "Riwayat pemindahan saldo antar akun atau agen beserta status dan nominal.",
+            "Kelola kategori produk untuk pengelompokan dan pencarian.",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          name: "Riwayat Penarikan Laba",
+          title: "Riwayat Penarikan Laba",
+          icon: "fa-solid fa-file-invoice-dollar",
+          path: "riwayat_penarikan_laba",
+          description:
+            "Riwayat penarikan laba oleh agen/outlet beserta nominal dan status.",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          name: "Daftar Agen",
+          title: "Daftar Agen",
+          icon: "fa-solid fa-people-group",
+          path: "daftar_agen",
+          description:
+            "Daftar agen terdaftar: profil, kontak, dan status akun agen.",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        {
+          name: "Laporan Member",
+          title: "Laporan Member",
+          icon: "fa-solid fa-file-lines",
+          path: "laporan_member",
+          description:
+            "Laporan aktivitas member: pendaftaran, transaksi, dan statistik keanggotaan.",
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -228,6 +264,7 @@ module.exports = {
             "daftar_seller",
             "daftar_transaksi",
             "laporan_transaksi",
+            "laporan_member",
             "laporan_umum",
             "pengaturan_bank",
             "pengaturan_umum",
@@ -237,6 +274,7 @@ module.exports = {
             "request_deposit",
             "riwayat_deposit_saldo",
             "riwayat_transfer_saldo",
+            "riwayat_penarikan_laba",
           ],
         },
       },

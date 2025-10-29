@@ -93,7 +93,7 @@ onMounted(() => {
   >
     <div class="flex items-center justify-center gap-2 px-6 py-2.5 lg:py-3.5">
       <router-link to="/">
-        <img :src="'/images/ziwah.png'" alt="Logo" class="h-14" />
+        <img :src="'/images/logo.png'" alt="Logo" />
       </router-link>
       <button class="block lg:hidden">
         <svg
@@ -156,7 +156,7 @@ onMounted(() => {
                       :to="''"
                       :class="
                         subMenuActive == item1.path
-                          ? 'text-green-900 font-semibold hover:text-green-700'
+                          ? 'text-outlet font-semibold hover:text-blue-900'
                           : 'text-gray-500 hover:text-gray-400 font-medium '
                       "
                       class="group relative flex items-center gap-2.5 rounded-md px-4 my-2 duration-300 ease-in-out"

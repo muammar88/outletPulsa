@@ -160,6 +160,16 @@ import {
   faUsers,
   faUserShield,
   faUserTie,
+  faCompressArrowsAlt,
+  faExchangeAlt,
+  faStore,
+  faReceipt,
+  faCreditCard,
+  faWallet,
+  faMoneyBillTransfer,
+  faUpload,
+  faFileInvoiceDollar,
+  faChartColumn,
 } from '@fortawesome/free-solid-svg-icons';
 
 // FontAwesome Icons - Regular
@@ -303,8 +313,21 @@ library.add(
   faInbox,
   faUserGear,
   faDigitalOcean,
+  faCompressArrowsAlt,
+  faExchangeAlt,
+  faStore,
+  faReceipt,
+  faCreditCard,
+  faWallet,
+  faMoneyBillTransfer,
+  faUpload,
+  faFileInvoiceDollar,
+  faChartColumn,
 );
 
+// fa-chart-column
+// fa-file-invoice-dollar
+// fa-exchange-alt
 // Buat App Vue
 const app = createApp(App);
 const head = createHead();
