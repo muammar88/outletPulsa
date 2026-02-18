@@ -23,4 +23,4 @@ Write-Host "🌱 Seeding database..."
 npx sequelize-cli db:seed:all
 
 Write-Host "✅ Done!"
-
+cd ../.

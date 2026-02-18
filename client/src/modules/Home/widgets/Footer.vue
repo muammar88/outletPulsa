@@ -1,51 +1,51 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, nextTick } from 'vue'
-import { getActiveRunningText } from '@/service/running_text'
+import { ref, onMounted, computed, watch, nextTick } from 'vue';
+// import { getActiveRunningText } from '@/service/running_text';
 
 // --- State Management ---
 const combinedActiveText = ref(
   'SELAMAT DATANG DI APLIKASI MUSTAHIK DAN MUZAKKI BAITUL MAL KABUPATEN ACEH TENGAH',
-)
-const isLoading = ref(true)
+);
+const isLoading = ref(true);
 
 // Ref untuk elemen teks yang akan dianimasikan
-const marqueeTextRef = ref<HTMLElement | null>(null)
+const marqueeTextRef = ref<HTMLElement | null>(null);
 
 // State untuk kalkulasi animasi
-const textWidth = ref(0)
-const containerWidth = ref(0)
-const animationDuration = ref(0)
+const textWidth = ref(0);
+const containerWidth = ref(0);
+const animationDuration = ref(0);
 
-const fetchData = async () => {
-  try {
-    isLoading.value = true
-    const response = await getActiveRunningText()
-    const activeTexts = response.data
+// const fetchData = async () => {
+//   try {
+//     isLoading.value = true
+//     const response = await getActiveRunningText()
+//     const activeTexts = response.data
 
-    if (activeTexts && activeTexts.length > 0) {
-      combinedActiveText.value = activeTexts.map((text: any) => text.content).join('   |||   ')
-    } else {
-      combinedActiveText.value = 'Tidak ada informasi untuk ditampilkan saat ini.'
-    }
-  } catch (error) {
-    console.error('Gagal mengambil data running text:', error)
-    combinedActiveText.value = 'Gagal memuat informasi.'
-  } finally {
-    isLoading.value = false
-  }
-}
+//     if (activeTexts && activeTexts.length > 0) {
+//       combinedActiveText.value = activeTexts.map((text: any) => text.content).join('   |||   ')
+//     } else {
+//       combinedActiveText.value = 'Tidak ada informasi untuk ditampilkan saat ini.'
+//     }
+//   } catch (error) {
+//     console.error('Gagal mengambil data running text:', error)
+//     combinedActiveText.value = 'Gagal memuat informasi.'
+//   } finally {
+//     isLoading.value = false
+//   }
+// }
 
 const updateMarqueeParameters = () => {
   if (marqueeTextRef.value && marqueeTextRef.value.parentElement) {
-    const container = marqueeTextRef.value.parentElement
-    textWidth.value = marqueeTextRef.value.scrollWidth
-    containerWidth.value = container.offsetWidth
+    const container = marqueeTextRef.value.parentElement;
+    textWidth.value = marqueeTextRef.value.scrollWidth;
+    containerWidth.value = container.offsetWidth;
 
-    const speed = 80
-    const distance = textWidth.value + containerWidth.value
-    animationDuration.value = distance / speed / 0.99
+    const speed = 80;
+    const distance = textWidth.value + containerWidth.value;
+    animationDuration.value = distance / speed / 0.99;
   }
-}
+};
 
 const marqueeStyle = computed(() => {
   return {
@@ -53,30 +53,29 @@ const marqueeStyle = computed(() => {
     '--text-width': `${textWidth.value}px`,
     '--animation-duration': `${animationDuration.value}s`,
     animation: `scroll-and-pause var(--animation-duration) linear infinite`,
-  }
-})
+  };
+});
 
 onMounted(() => {
-  fetchData()
+  // fetchData();
   if (marqueeTextRef.value && marqueeTextRef.value.parentElement) {
     const resizeObserver = new ResizeObserver(() => {
-      updateMarqueeParameters()
-    })
-    resizeObserver.observe(marqueeTextRef.value.parentElement)
+      updateMarqueeParameters();
+    });
+    resizeObserver.observe(marqueeTextRef.value.parentElement);
   }
-})
+});
 
 watch([combinedActiveText, isLoading], async () => {
-  await nextTick()
+  await nextTick();
 
   requestAnimationFrame(() => {
-    updateMarqueeParameters()
-  })
-})
+    updateMarqueeParameters();
+  });
+});
 </script>
 
 <template>
-
   <div
     class="w-full h-24 py-3.5 bg-green-900 border-t-2 border-b-2 border-yellow-400 flex items-center overflow-hidden"
   >

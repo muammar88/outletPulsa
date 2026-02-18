@@ -1,17 +1,17 @@
 var request = require("request");
+require("dotenv").config();
 
 class Tripay {
   constructor(req) {
     this.req = req;
     this.production = true;
-    this.url_sandbox = "https://tripay.id/api-sandbox/v2/";
-    this.url_production = "https://tripay.id/api/v2/";
-    this.api_key = "3SZA2ssdoqIzHJ39RNddeqDh9eO1OBMw";
-    this.tripay_callback_key =
-      "583hb13Z183799O014785R4nB4TW294sassadk5N6U3K45C61u969JA063784097460qwq2559021S05G8714c509Y365E9sas54405762z03DI57f72671q54jx06869p5506458l0o380sswreqweqevxk897213612eb1123k1vh";
+    this.url_sandbox = process.env.TRIPAY_URL_SANDBOX;
+    this.url_production = process.env.TRIPAY_URL_PRODUCTION;
+    this.api_key = process.env.TRIPAY_API_KEY;
+    this.tripay_callback_key = process.env.TRIPAY_CALLBACK_KEY;
     this.main_url = "";
-    this.pin = "9089";
-    this.no_hp_owner = "085262802141";
+    this.pin = process.env.TRIPAY_PIN;
+    this.no_hp_owner = process.env.USERNAME_MOBILE_PHONE;
   }
 
   async url_action(url) {

@@ -1,8 +1,8 @@
 import api from '@/service/api_administrator';
 
-export const get_saldo_iak = async () => {
+export const list = async (param: { search: string; perpage: number; pageNumber: number }) => {
   try {
-    const response = await api.get('/beranda/get_saldo_iak');
+    const response = await api.post('/member/list', param);
     return response.data;
   } catch (error) {
     console.error('Gagal mengambil info saldo:', error);
@@ -10,9 +10,9 @@ export const get_saldo_iak = async () => {
   }
 };
 
-export const get_saldo_tripay = async () => {
+export const deletes = async (param: { id: number }) => {
   try {
-    const response = await api.get('/beranda/get_saldo_tripay');
+    const response = await api.post('/member/delete', param);
     return response.data;
   } catch (error) {
     console.error('Gagal mengambil info saldo:', error);

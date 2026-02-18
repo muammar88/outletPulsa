@@ -1,72 +1,72 @@
 <script setup lang="ts">
-import { ref, defineEmits } from 'vue'
-import { logout_administrator } from '@/service/auth'
+import { ref, defineEmits } from 'vue';
+import { logout_administrator } from '@/service/auth';
 
-const emit = defineEmits(['close-dropdown'])
+const emit = defineEmits(['close-dropdown']);
 
 // Reactive state
-const showConfirmation = ref(false)
-const isLoading = ref(false)
-const showNotification = ref(false)
+const showConfirmation = ref(false);
+const isLoading = ref(false);
+const showNotification = ref(false);
 
 // Methods
 const showLogoutConfirmation = () => {
-  showConfirmation.value = true
-}
+  showConfirmation.value = true;
+};
 
 const hideLogoutConfirmation = () => {
   if (!isLoading.value) {
-    showConfirmation.value = false
-    emit('close-dropdown')
+    showConfirmation.value = false;
+    emit('close-dropdown');
   }
-}
+};
 
 const handleLogout = async () => {
-  isLoading.value = true
+  isLoading.value = true;
 
   try {
     await logout_administrator({
       refresh_token: localStorage.getItem('administrator_refresh_token'),
-    })
+    });
 
     // Clear localStorage di sisi client
-    localStorage.removeItem('administrator_access_token')
-    localStorage.removeItem('administrator_refresh_token')
+    localStorage.removeItem('administrator_access_token');
+    localStorage.removeItem('administrator_refresh_token');
 
-    showConfirmation.value = false
-    showNotification.value = true
+    showConfirmation.value = false;
+    showNotification.value = true;
 
     setTimeout(() => {
-      window.location.href = '/'
-    }, 1500)
+      window.location.href = '/';
+    }, 1500);
   } catch (error) {
-    console.error('Error during logout:', error)
+    console.error('Error during logout:', error);
 
-    localStorage.removeItem('administrator_access_token')
-    localStorage.removeItem('administrator_refresh_token')
+    localStorage.removeItem('administrator_access_token');
+    localStorage.removeItem('administrator_refresh_token');
 
-    showConfirmation.value = false
-    showNotification.value = true
+    showConfirmation.value = false;
+    showNotification.value = true;
 
     setTimeout(() => {
-      window.location.href = '/'
-    }, 1500)
+      window.location.href = '/';
+    }, 1500);
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-}
+};
 
 defineExpose({
   showLogoutConfirmation,
   handleLogout,
-})
+});
 </script>
 
 <template>
   <div>
     <button
       @click="showLogoutConfirmation"
-      class="flex items-center gap-3.5 py-4 px-6 text-sm font-medium duration-300 ease-in-out text-green-900 hover:text-green-700 lg:text-base w-full text-left"
+      class="flex items-center gap-3.5 py-4 px-6 text-sm font-medium duration-300 ease-in-out text-outlet hover:text-outlet lg:text-base w-full text-left"
     >
       <svg
         class="fill-current"
@@ -107,7 +107,6 @@ defineExpose({
               <button
                 @click="hideLogoutConfirmation"
                 class="text-gray-400 hover:text-gray-600 transition-colors"
-
               >
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path

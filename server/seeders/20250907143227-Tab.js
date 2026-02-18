@@ -264,7 +264,6 @@ module.exports = {
             "daftar_seller",
             "daftar_transaksi",
             "laporan_transaksi",
-            "laporan_member",
             "laporan_umum",
             "pengaturan_bank",
             "pengaturan_umum",

@@ -7,115 +7,67 @@ import {
   useTabTerpilih,
 } from '../../../../stores/sidebar';
 import { initTooltips } from 'flowbite';
-// import Surveyor from '@/modules/Surveyor/Surveyor.vue';
-// import syarat from '@/modules/Syarat/syarat.vue';
-// import SystemLogSurveyor from '@/modules/SystemLogSurveyor/SystemLogSurveyor.vue';
-// import Bank from '@/modules/Bank/Bank.vue';
-// import RequestKeanggotaan from '@/modules/RequestKeanggotaan/RequestKeanggotaan.vue';
-// import RunningText from '@/modules/RunningText/RunningText.vue';
-// import BankPengumpulan from '@/modules/BankPengumpulan/BankPengumpulan.vue';
-// import PengaturanUmum from '@/modules/PengaturanUmum/PengaturanUmum.vue';
-// import GrupAkses from '@/modules/GrupAkses/GrupAkses.vue';
-// import DaftarPengguna from '@/modules/DaftarPengguna/DaftarPengguna.vue';
-// import KegiatanKeseketariatan from '@/modules/KegiatanKeseketariatan/KegiatanKeseketariatan.vue';
-// import TemplatePesanWhatsapp from '@/modules/TemplatePesanWhatsapp/TemplatePesanWhatsapp.vue';
-// import DaftarKeanggotaan from '@/modules/DaftarKeanggotaan/DaftarKeanggotaan.vue';
-// import kecamatan from '@/modules/Kecamatan/Kecamatan.vue';
-// import SystemLog from '@/modules/SystemLog/SystemLog.vue';
-// import PengaturanWhatsapp from '@/modules/PengaturanWhatsapp/PengaturanWhatsapp.vue';
-// import LaporanUmum from '@/modules/DaftarLaporanUmum/LaporanUmum.vue';
-// import ProgramKegiatanBantuan from '@/modules/ProgramKegiatanBantuan/ProgramKegiatanBantuan.vue';
-// import DaftarProgram from '@/modules/DaftarProgram/DaftarProgram.vue';
-// import LaporanAsnafFakir from '@/modules/LaporanAsnaf/LaporanAsnafFakir.vue';
-// import ProgramDonasi from '@/modules/ProgramDonasi/ProgramDonasi.vue';
-// import DaftarTab from '@/modules/DaftarTab/DaftarTab.vue';
-// import desa from '../../../Desa/Desa.vue';
-// import RiwayatDonasi from '@/modules/RiwayatDonasi/RiwayatDonasi.vue';
-// import DaftarAsnaf from '@/modules/DaftarAsnaf/DaftarAsnaf.vue';
-// import LaporanAsnafMiskin from '@/modules/LaporanAsnaf/LaporanAsnafMIskin.vue';
-// import LaporanAsnafFisabilillah from '@/modules/LaporanAsnaf/LaporanAsnafFisabilillah.vue';
-// import LaporanAsnafGharim from '@/modules/LaporanAsnaf/LaporanAsnafGharim.vue';
-// import LaporanAsnafMuallaf from '@/modules/LaporanAsnaf/LaporanAsnafMuallaf.vue';
-// import LaporanAsnafIbnuSabil from '@/modules/LaporanAsnaf/LaporanAsnafIbnuSabil.vue';
-// import RiwayatZakat from '@/modules/RiwayatZakat/RiwayatZakat.vue';
-// import UrutanBagianMonev from '@/modules/UrutanBagianMonev/UrutanBagianMonev.vue';
-// import RiwayatInfaq from '@/modules/RiwayatInfaq/RiwayatInfaq.vue';
-// import RiwayatPesanWhatsapp from '@/modules/RiwayatPesanWhatsapp/RiwayatPesanWhatsapp.vue';
-// import PermohonanBantuan from '@/modules/PermohonanBantuan/PermohonanBantuan.vue';
-// import ValidasiPermohonanBantuan from '@/modules/ValidasiPermohonanBantuan/ValidasiPermohonanBantuan.vue';
-// import Penetapan from '@/modules/Penetapan/Penetapan.vue';
-// import LaporanTahunan from '@/modules/LaporanTahunan/LaporanTahunan.vue';
-// import PertanyaanMonev from '@/modules/PertanyaanMonev/PertanyaanMonev.vue';
-// import RekapPengumpulan from '@/modules/RekapPengumpulan/RekapPengumpulan.vue';
-// import LaporanPerencanaan from '@/modules/LaporanPerencanaan/LaporanPerencanaan.vue';
-// import TargetPengumpulan from '@/modules/TargetPengumpulan/TargetPengumpulan.vue';
-// import TargetDistribusi from '@/modules/TargetDistribusi/TargetDistribusi.vue';
-// import RekapDistribusiPerAsnaf from '@/modules/RekapDistribusiPerAsnaf/RekapDistribusiPerAsnaf.vue';
-// import LaporanKesekretariatan from '@/modules/LaporanKesekretariatan/LaporanKesekretariatan.vue';
-// import Beranda from '@/modules/Beranda/Beranda.vue';
-// import Monev from '@/modules/Monev/Monev.vue';
-// import RekapPengumpulanPerKecamatan from '@/modules/RekapPengumpulanPerKecamatan/RekapPengumpulanPerKecamatan.vue';
-// import RekapPerkecamatan from '@/modules/RekapPerkecamatan/RekapPerkecamatan.vue';
-// import RekapDistribusiPerKodeAsnaf from '@/modules/RekapDistribusiPerKodeAsnaf/RekapDistribusiPerKodeAsnaf.vue';
-// import LaporanPengumpulan from '@/modules/LaporanPengumpulan/LaporanPengumpulan.vue';
-// import Kriteria from '@/modules/Kriteria/Kriteria.vue';
+import Beranda from '@/modules/Beranda/Beranda.vue';
+import Member from '@/modules/Member/Member.vue';
 
 const tabComponents = {
-  // pengaturan_whatsapp: PengaturanWhatsapp,
-  // daftar_kecamatan: kecamatan,
-  // syarat: syarat,
-  // daftar_bank: Bank,
-  // running_text: RunningText,
-  // request_keanggotaan: RequestKeanggotaan,
-  // daftar_grup_akses: GrupAkses,
-  // system_log_surveyor: SystemLogSurveyor,
-  // daftar_pengguna: DaftarPengguna,
-  // system_log: SystemLog,
-  // program_kegiatan_kesekretariatan: KegiatanKeseketariatan,
-  // daftar_bank_pengumpulan: BankPengumpulan,
-  // template_pesan_whatsapp: TemplatePesanWhatsapp,
-  // daftar_desa: desa,
-  // daftar_keanggotaan: DaftarKeanggotaan,
-  // daftar_surveyor: Surveyor,
-  // pengaturan_umum: PengaturanUmum,
-  // laporan_umum: LaporanUmum,
-  // program_kegiatan_bantuan: ProgramKegiatanBantuan,
-  // daftar_program: DaftarProgram,
-  // laporan_asnaf_fakir: LaporanAsnafFakir,
-  // program_donasi: ProgramDonasi,
-  // daftar_tab: DaftarTab,
-  // riwayat_donasi: RiwayatDonasi,
-  // laporan_asnaf_miskin: LaporanAsnafMiskin,
-  // laporan_asnaf_fisabilillah: LaporanAsnafFisabilillah,
-  // laporan_asnaf_gharim: LaporanAsnafGharim,
-  // laporan_asnaf_muallaf: LaporanAsnafMuallaf,
-  // laporan_asnaf_ibnu_sabil: LaporanAsnafIbnuSabil,
-  // daftar_asnaf: DaftarAsnaf,
-  // riwayat_zakat: RiwayatZakat,
-  // urutan_bagian_monev: UrutanBagianMonev,
-  // riwayat_infaq: RiwayatInfaq,
-  // riwayat_pesan_whatsapp: RiwayatPesanWhatsapp,
-  // beranda_utama: Beranda,
-  // permohonan_bantuan: PermohonanBantuan,
-  // validasi_permohonan_bantuan: ValidasiPermohonanBantuan,
-  // penetapan: Penetapan,
-  // laporan_tahunan: LaporanTahunan,
-  // pertanyaan_monev: PertanyaanMonev,
-  // rekap_pengumpulan: RekapPengumpulan,
-  // laporan_perencanaan: LaporanPerencanaan,
-  // target_pengumpulan: TargetPengumpulan,
-  // target_distribusi: TargetDistribusi,
-  // laporan_sekretariatan: LaporanKesekretariatan,
-  // beranda_utama: Beranda,
-  // monev: Monev,
-  // rekap_distribusi_asnaf: RekapDistribusiPerAsnaf,
-  // laporan_kesekretariatan: LaporanKesekretariatan,
-  // rekap_pengumpulan_per_kecamatan: RekapPengumpulanPerKecamatan,
-  // rekap_distribusi_kecamatan: RekapPerkecamatan,
-  // rekap_distribusi_kode_asnaf: RekapDistribusiPerKodeAsnaf,
-  // laporan_pengumpulan: LaporanPengumpulan,
-  // kriteria: Kriteria,
+  beranda: Beranda,
+  daftar_member: Member,
 };
+
+// pengaturan_whatsapp: PengaturanWhatsapp,
+// daftar_kecamatan: kecamatan,
+// syarat: syarat,
+// daftar_bank: Bank,
+// running_text: RunningText,
+// request_keanggotaan: RequestKeanggotaan,
+// daftar_grup_akses: GrupAkses,
+// system_log_surveyor: SystemLogSurveyor,
+// daftar_pengguna: DaftarPengguna,
+// system_log: SystemLog,
+// program_kegiatan_kesekretariatan: KegiatanKeseketariatan,
+// daftar_bank_pengumpulan: BankPengumpulan,
+// template_pesan_whatsapp: TemplatePesanWhatsapp,
+// daftar_desa: desa,
+// daftar_keanggotaan: DaftarKeanggotaan,
+// daftar_surveyor: Surveyor,
+// pengaturan_umum: PengaturanUmum,
+// laporan_umum: LaporanUmum,
+// program_kegiatan_bantuan: ProgramKegiatanBantuan,
+// daftar_program: DaftarProgram,
+// laporan_asnaf_fakir: LaporanAsnafFakir,
+// program_donasi: ProgramDonasi,
+// daftar_tab: DaftarTab,
+// riwayat_donasi: RiwayatDonasi,
+// laporan_asnaf_miskin: LaporanAsnafMiskin,
+// laporan_asnaf_fisabilillah: LaporanAsnafFisabilillah,
+// laporan_asnaf_gharim: LaporanAsnafGharim,
+// laporan_asnaf_muallaf: LaporanAsnafMuallaf,
+// laporan_asnaf_ibnu_sabil: LaporanAsnafIbnuSabil,
+// daftar_asnaf: DaftarAsnaf,
+// riwayat_zakat: RiwayatZakat,
+// urutan_bagian_monev: UrutanBagianMonev,
+// riwayat_infaq: RiwayatInfaq,
+// riwayat_pesan_whatsapp: RiwayatPesanWhatsapp,
+// permohonan_bantuan: PermohonanBantuan,
+// validasi_permohonan_bantuan: ValidasiPermohonanBantuan,
+// penetapan: Penetapan,
+// laporan_tahunan: LaporanTahunan,
+// pertanyaan_monev: PertanyaanMonev,
+// rekap_pengumpulan: RekapPengumpulan,
+// laporan_perencanaan: LaporanPerencanaan,
+// target_pengumpulan: TargetPengumpulan,
+// target_distribusi: TargetDistribusi,
+// laporan_sekretariatan: LaporanKesekretariatan,
+// beranda_utama: Beranda,
+// monev: Monev,
+// rekap_distribusi_asnaf: RekapDistribusiPerAsnaf,
+// laporan_kesekretariatan: LaporanKesekretariatan,
+// rekap_pengumpulan_per_kecamatan: RekapPengumpulanPerKecamatan,
+// rekap_distribusi_kecamatan: RekapPerkecamatan,
+// rekap_distribusi_kode_asnaf: RekapDistribusiPerKodeAsnaf,
+// laporan_pengumpulan: LaporanPengumpulan,
+// kriteria: Kriteria,
 
 const selectedTab = useSelectedTab();
 const tab = useGlobalTab();

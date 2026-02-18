@@ -1,7 +1,6 @@
 <template>
   <tr class="border-t border-gray-300 bg-gray-50 font-bold">
-    <td class="px-4 py-4 text-center min-h-[200px]" :colspan="totalColumns-2">
-
+    <td class="px-4 py-4 text-center min-h-[200px]" :colspan="totalColumns - 2">
       <nav class="flex mt-0">
         <ul class="inline-flex items-center -space-x-px">
           <!-- Tombol Previous -->
@@ -20,9 +19,11 @@
             <button
               @click="$emit('page-now', page)"
               class="px-3 py-2 leading-tight border"
-              :class="currentPage === page
-              ? 'text-white bg-[#2b6443] border-[#2b6443]'
-                : 'text-gray-500 bg-white border-gray-300 hover:bg-gray-100 hover:text-gray-700'"
+              :class="
+                currentPage === page
+                  ? 'text-white bg-outlet border-outlet'
+                  : 'text-gray-500 bg-white border-gray-300 hover:bg-gray-100 hover:text-gray-700'
+              "
             >
               {{ page }}
             </button>
@@ -54,7 +55,7 @@ defineProps({
   pages: Array,
   totalColumns: Number,
   totalRow: { type: Number, default: 0 },
-})
+});
 
-defineEmits(['prev-page', 'next-page', 'page-now'])
+defineEmits(['prev-page', 'next-page', 'page-now']);
 </script>

@@ -93,7 +93,7 @@ onMounted(() => {
   >
     <div class="flex items-center justify-center gap-2 px-6 py-2.5 lg:py-3.5">
       <router-link to="/">
-        <img :src="'/images/logo.png'" alt="Logo" />
+        <img :src="'/images/logo.png'" alt="Logo" class="w-40" />
       </router-link>
       <button class="block lg:hidden">
         <svg

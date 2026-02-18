@@ -61,10 +61,10 @@ function showNotif(payload: { type: 'success' | 'error'; message: string }) {
       @click.prevent="dropdownOpen = !dropdownOpen"
     >
       <span class="hidden text-right lg:block">
-        <span class="block text-sm font-medium text-green-900 dark:text-white">{{
+        <span class="block text-sm font-medium text-outlet dark:text-white">{{
           SettingGlob.sharedObject.name
         }}</span>
-        <span class="block text-xs font-bold text-green-900 dark:text-white"
+        <span class="block text-xs font-bold text-outlet dark:text-white"
           >As {{ SettingGlob.sharedObject.grup }}</span
         >
       </span>
@@ -96,7 +96,7 @@ function showNotif(payload: { type: 'success' | 'error'; message: string }) {
         <li>
           <button
             @click="openModalEdit"
-            class="flex items-center gap-3.5 text-sm font-medium duration-300 text-green-900 ease-in-out hover:text-green-700 lg:text-base"
+            class="flex items-center gap-3.5 text-sm font-medium duration-300 text-outlet ease-in-out hover:text-outlet lg:text-base"
           >
             <svg
               class="fill-current"

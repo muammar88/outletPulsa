@@ -1,19 +1,19 @@
 var request = require("request");
+require("dotenv").config();
 var md5 = require("md5");
 
 class Iak {
+  /* Param definition */
   constructor(req) {
     this.production = true;
-    this.username = "085262802141";
-    this.key_production = "472643293c215b8ayS8p";
-    this.key_dev = "8286432937d964cegRmg";
-    this.iak_callback_key =
-      "583hb13Z183799O014785R4nB4TW294k5N6U3K45C61u969JA0637840974602559090PX16m1147012ev131498327w21S05G8714c509Y365E973847t33297302688188276r9554405762z03DI57f72671q54jx06869p5506458l0o3801V62483732Y56936s";
-
-    this.url_production = "https://prepaid.iak.id/";
-    this.url_dev = "https://prepaid.iak.dev/";
-    this.url_production_pasca = "https://mobilepulsa.net/";
-    this.url_dev_pasca = "https://testpostpaid.mobilepulsa.net/";
+    this.username = process.env.USERNAME_MOBILE_PHONE;
+    this.key_production = process.env.PRODUCTION_API_KEY;
+    this.key_dev = process.env.DEVELOPMENT_API_KEY;
+    this.iak_callback_key = process.env.IAK_CALLBACK_KEY;
+    this.url_production = process.env.PRODUCTION_URL_PREPAID;
+    this.url_dev = process.env.DEVELOPMENT_URL_PREPAID;
+    this.url_production_pasca = process.env.PRODUCTION_URL_POSTPAID;
+    this.url_dev_pasca = process.env.DEVELOPMENT_URL_POSTPAID;
     this.url_check_balance = "api/check-balance";
     this.url_price_list = "api/pricelist";
     this.url_price_list_type = "api/pricelist/";
@@ -25,6 +25,7 @@ class Iak {
     this.url_price_list_pascabayar = "api/v1/bill/check/";
   }
 
+  /* Url Preparation */
   async url_act(url, pasca) {
     if (pasca != undefined && pasca == true) {
       return this.production == true
@@ -37,6 +38,7 @@ class Iak {
     }
   }
 
+  /* Start MD5 Operation  */
   async sign_md5_price_list() {
     var apiKey = this.production == true ? this.key_production : this.key_dev;
     return md5(this.username + apiKey + "pl");
@@ -62,10 +64,42 @@ class Iak {
     return md5(this.username + apiKey + "cs");
   }
 
+  /* End MD5 Operation  */
+
+  /* Verify callback key */
   async verify_kode(kode_verifikasi) {
     return kode_verifikasi == this.iak_callback_key ? true : false;
   }
 
+  /* Cek Saldo IAK */
+  async cek_saldo(callback) {
+    var optionsGET = {
+      uri: await this.url_act(this.url_check_balance),
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      json: {
+        username: this.username,
+        sign: await this.sign_md5_check_balance(),
+      },
+    };
+    request(optionsGET, async function (errorGET, responseGET, bodyGET) {
+      if (!errorGET && responseGET.statusCode == 200) {
+        console.log(bodyGET.data);
+        return await callback({
+          saldo: bodyGET.data.balance,
+        });
+      } else {
+        return await callback({
+          saldo: 0,
+        });
+      }
+    });
+  }
+
+  /* Get product prabayar from IAK Server */
   async get_product_prabayar_iak(type, operator, operator_id, callback) {
     var optionsGET = {
       uri: await this.url_act(
@@ -98,6 +132,7 @@ class Iak {
     });
   }
 
+  /* Get product pascabayar from IAK server */
   async get_produk_pascabayar_iak(callback) {
     const options = {
       method: "POST",
@@ -117,33 +152,6 @@ class Iak {
         callback(body);
       } else {
         return callback({});
-      }
-    });
-  }
-
-  async cek_saldo(callback) {
-    var optionsGET = {
-      uri: await this.url_act(this.url_check_balance),
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      json: {
-        username: this.username,
-        sign: await this.sign_md5_check_balance(),
-      },
-    };
-    request(optionsGET, async function (errorGET, responseGET, bodyGET) {
-      if (!errorGET && responseGET.statusCode == 200) {
-        console.log(bodyGET.data);
-        return await callback({
-          saldo: bodyGET.data.balance,
-        });
-      } else {
-        return await callback({
-          saldo: 0,
-        });
       }
     });
   }
