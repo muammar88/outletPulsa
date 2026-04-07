@@ -7,6 +7,7 @@ import PriceView from '@/views/PriceView.vue';
 import MemberView from '@/views/MemberView.vue';
 import RegistrationView from '@/views/RegistrationView.vue';
 import { createRouter, createWebHistory } from 'vue-router';
+import Dashboard from '@/modules/Dashboard/Dashboard.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -74,7 +75,7 @@ const router = createRouter({
     {
       path: '/administrator',
       name: 'administrator',
-      component: AdministratorAreaView,
+      component: Dashboard,
       meta: {
         title: 'Administrator Area || Aplikasi Outlet Pulsa',
         description:
