@@ -1,0 +1,698 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  uuid         String   @unique @default(uuid())
+  name         String
+  kode         String
+  refreshToken String?  @db.Text
+  password     String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Member {
+  id             Int          @id @default(autoincrement())
+  uuid           String       @unique @default(uuid())
+  kode           String
+  fullname       String
+  whatsappnumber String
+  kode_agen      String?
+  password       String
+  saldo          Int?         @default(0)
+  status         MemberStatus @default(unverified)
+  type           MemberType?
+  agenType       AgenType?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  riwayatTransaksi        RiwayatTransaksi[]
+  notifMemberReads        NotifMemberRead[]
+  resetPasswords          ResetPassword[]
+  paymentFeeAgenHistories PaymentFeeAgenHistory[]
+  promos                  Promo[]
+}
+
+enum MemberStatus {
+  unverified
+  verfied
+}
+
+enum MemberType {
+  outletpulsa
+  amra
+}
+
+enum AgenType {
+  silver
+  gold
+  platinum
+}
+
+model Bank {
+  id        Int      @id @default(autoincrement())
+  kode      String?
+  nama      String?
+  image     String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bankTransferOutlets BankTransferOutlet[]
+  riwayatMutasis      RiwayatMutasi[]
+}
+
+model BankTransferOutlet {
+  id            Int      @id @default(autoincrement())
+  bankId        Int?
+  accountName   String?
+  accountNumber String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  bank            Bank?            @relation(fields: [bankId], references: [id])
+  requestDeposits RequestDeposit[]
+}
+
+model Kategori {
+  id        Int         @id @default(autoincrement())
+  kode      String?
+  name      String?
+  type      ProdukType?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  operators         Operator[]
+  produkPascabayars ProdukPascabayar[]
+}
+
+model Operator {
+  id         Int      @id @default(autoincrement())
+  kategoriId Int?
+  kode       String?
+  name       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  kategori Kategori? @relation(fields: [kategoriId], references: [id])
+  produks  Produk[]
+  prefixes Prefix[]
+}
+
+model Prefix {
+  id         Int      @id @default(autoincrement())
+  operatorId Int?
+  prefix     String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  operator Operator? @relation(fields: [operatorId], references: [id])
+}
+
+model Server {
+  id        Int           @id @default(autoincrement())
+  kode      String?
+  name      String?
+  status    ServerStatus? @default(active)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  transactions           Transaction[]
+  transactionsPascabayar TransactionPascabayar[]
+  produks                Produk[]
+  produkPascabayars      ProdukPascabayar[]
+}
+
+enum ServerStatus {
+  active
+  inactive
+}
+
+model Produk {
+  id             Int           @id @default(autoincrement())
+  operatorId     Int?
+  kode           String?
+  name           String?
+  type           ProdukType?
+  purchase_price Int?
+  markup         Int?
+  serverId       Int?
+  status         ProdukStatus? @default(active)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  operator              Operator?              @relation(fields: [operatorId], references: [id])
+  server                Server?                @relation(fields: [serverId], references: [id])
+  iakPrabayarProduks    IakPrabayarProduk[]
+  tripayPrabayarProduks TripayPrabayarProduk[]
+  digiflazzProducts     DigiflazzProduct[]
+  transactions          Transaction[]
+}
+
+enum ProdukType {
+  prabayar
+  pascabayar
+}
+
+enum ProdukStatus {
+  active
+  inactive
+}
+
+model ProdukPascabayar {
+  id         Int           @id @default(autoincrement())
+  kategoriId Int?
+  kode       String?
+  name       String?
+  fee        Int?
+  comission  Int?
+  outletFee  Int?
+  serverId   Int?
+  status     ProdukStatus? @default(active)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  kategori               Kategori?               @relation(fields: [kategoriId], references: [id])
+  server                 Server?                 @relation(fields: [serverId], references: [id])
+  transactionsPascabayar TransactionPascabayar[]
+  iakPascabayarProducts  IakPascabayarProduct[]
+}
+
+model Transaction {
+  id                 Int                @id @default(autoincrement())
+  kode               String?
+  type               ProdukType?
+  produkId           Int?
+  riwayatTransaksiId Int?
+  nomorTujuan        String?
+  ket                String?            @db.Text
+  purchase_price     Int?
+  selling_price      Int?
+  kodeAgen           String?
+  laba               Int?
+  fee_agen           Int?
+  status_fee_agen    FeeAgenStatus?     @default(unpaid)
+  serverId           Int?
+  status             TransactionStatus? @default(proses)
+  trx_id             Int?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  produk                Produk?                @relation(fields: [produkId], references: [id])
+  server                Server?                @relation(fields: [serverId], references: [id])
+  riwayatTransaksi      RiwayatTransaksi?      @relation(fields: [riwayatTransaksiId], references: [id])
+  digiflazzTransactions DigiflazzTransaction[]
+}
+
+model TransactionPascabayar {
+  id                 Int                @id @default(autoincrement())
+  kode               String?
+  trId               String?
+  produkId           Int?
+  riwayatTransaksiId Int?
+  nomorTujuan        String?
+  trName             String?
+  ket                String?            @db.Text
+  nominal            Int?
+  totalNominal       Int?
+  adminFee           Int?
+  comission          Int?
+  outletComission    Int?
+  memberComission    Int?
+  noref              String?
+  tarif              String?
+  daya               Int?
+  total              Int?
+  kodeAgen           String?
+  laba               Int?
+  fee_agen           Int?
+  status_fee_agen    FeeAgenStatus?     @default(unpaid)
+  serverId           Int?
+  status             TransactionStatus? @default(proses)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  produkPascabayar ProdukPascabayar? @relation(fields: [produkId], references: [id])
+  server           Server?           @relation(fields: [serverId], references: [id])
+  riwayatTransaksi RiwayatTransaksi? @relation(fields: [riwayatTransaksiId], references: [id])
+}
+
+enum FeeAgenStatus {
+  paid
+  unpaid
+}
+
+enum TransactionStatus {
+  proses
+  gagal
+  sukses
+}
+
+model RequestDeposit {
+  id                 Int                @id @default(autoincrement())
+  kode               String?
+  riwayatTransaksiId Int?
+  nominal            Int?
+  nominalTambahan    Int?
+  status             TransactionStatus? @default(proses)
+  bankTransferId     Int?
+  waktuRequest       DateTime?
+  statusKirim        StatusKirim?       @default(belum_kirim)
+  alasanPenolakan    String?            @db.Text
+  actionDo           ActionDo?
+  count_penolakan    Int?
+  waktuKirim         DateTime?
+  waktuNotifikasi    DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  riwayatTransaksi   RiwayatTransaksi?   @relation(fields: [riwayatTransaksiId], references: [id])
+  bankTransferOutlet BankTransferOutlet? @relation(fields: [bankTransferId], references: [id])
+  riwayatMutasis     RiwayatMutasi[]
+}
+
+enum StatusKirim {
+  sudah_kirim
+  belum_kirim
+}
+
+enum ActionDo {
+  member
+  admin
+  almutasi
+}
+
+model RiwayatTransaksi {
+  id            Int            @id @default(autoincrement())
+  memberId      Int?
+  tipeTransaksi TipeTransaksi?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  member                 Member?                 @relation(fields: [memberId], references: [id])
+  requestDeposits        RequestDeposit[]
+  transactions           Transaction[]
+  transactionsPascabayar TransactionPascabayar[]
+  amraRentalFees         AmraRentalFee[]
+  transferSaldos         TransferSaldo[]
+  terimaSaldos           TerimaSaldo[]
+}
+
+enum TipeTransaksi {
+  deposit
+  beli_produk_prabayar
+  beli_produk_pascabayar
+  rental_amra
+  tranfer_saldo
+  terima_saldo
+}
+
+model RiwayatMutasi {
+  id          Int                  @id @default(autoincrement())
+  kode        String?
+  bankId      Int?
+  nominal     Int?
+  kodeNominal Int?
+  requestId   Int?
+  status      RiwayatMutasiStatus?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  bank           Bank?           @relation(fields: [bankId], references: [id])
+  requestDeposit RequestDeposit? @relation(fields: [requestId], references: [id])
+}
+
+enum RiwayatMutasiStatus {
+  deposit
+  internal_transaction
+}
+
+model AmraRentalFee {
+  id                 Int      @id @default(autoincrement())
+  riwayatTransaksiId Int?
+  biaya              Int?
+  ket                String?  @db.Text
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  riwayatTransaksi RiwayatTransaksi? @relation(fields: [riwayatTransaksiId], references: [id])
+}
+
+model TransferSaldo {
+  id                 Int      @id @default(autoincrement())
+  kode               String?
+  riwayatTransaksiId Int?
+  biaya              Int?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  riwayatTransaksi RiwayatTransaksi? @relation(fields: [riwayatTransaksiId], references: [id])
+}
+
+model TerimaSaldo {
+  id                 Int      @id @default(autoincrement())
+  kode               String?
+  riwayatTransaksiId Int?
+  biaya              Int?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  riwayatTransaksi RiwayatTransaksi? @relation(fields: [riwayatTransaksiId], references: [id])
+}
+
+model Notif {
+  id          Int      @id @default(autoincrement())
+  title       String?  @db.Text
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  notifMemberReads NotifMemberRead[]
+}
+
+model NotifMemberRead {
+  id        Int      @id @default(autoincrement())
+  notifId   Int?
+  memberId  Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  notif  Notif?  @relation(fields: [notifId], references: [id])
+  member Member? @relation(fields: [memberId], references: [id])
+}
+
+model ResetPassword {
+  id             Int                  @id @default(autoincrement())
+  memberId       Int?
+  password_reset String?
+  resetValue     String?
+  datetime       DateTime?
+  status         ResetPasswordStatus? @default(active)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  member Member? @relation(fields: [memberId], references: [id])
+}
+
+enum ResetPasswordStatus {
+  active
+  inactive
+}
+
+model Promo {
+  id            Int            @id @default(autoincrement())
+  memberId      Int?
+  kode_agen     String?
+  biaya         Int?
+  paymentStatus PaymentStatus? @default(unpaid)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  member Member? @relation(fields: [memberId], references: [id])
+}
+
+enum PaymentStatus {
+  paid
+  unpaid
+}
+
+model DigiflazzBrand {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  digiflazzProducts DigiflazzProduct[]
+}
+
+model DigiflazzCategory {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  digiflazzProducts DigiflazzProduct[]
+}
+
+model DigiflazzType {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  digiflazzProducts DigiflazzProduct[]
+}
+
+model DigiflazzProduct {
+  id                         Int           @id @default(autoincrement())
+  produkId                   Int?
+  categoryId                 Int?
+  brandId                    Int?
+  typeId                     Int?
+  name                       String?
+  selectedSellerBuyerSkuKode String?
+  selectedSellerPrice        Int?
+  selectedSellerStartCutOff  DateTime?     @db.Time
+  selectedSellerEndCutOff    DateTime?     @db.Time
+  status                     ProdukStatus? @default(active)
+  createdAt                  DateTime      @default(now())
+  updatedAt                  DateTime      @updatedAt
+
+  category                DigiflazzCategory?       @relation(fields: [categoryId], references: [id])
+  brand                   DigiflazzBrand?          @relation(fields: [brandId], references: [id])
+  type                    DigiflazzType?           @relation(fields: [typeId], references: [id])
+  produk                  Produk?                  @relation(fields: [produkId], references: [id])
+  digiflazzSellerProducts DigiflazzSellerProduct[]
+  digiflazzTransactions   DigiflazzTransaction[]
+}
+
+model DigiflazzSeller {
+  id        Int                    @id @default(autoincrement())
+  name      String?
+  status    DigiflazzSellerStatus? @default(unbanned)
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+
+  digiflazzSellerProducts DigiflazzSellerProduct[]
+  digiflazzTransactions   DigiflazzTransaction[]
+}
+
+enum DigiflazzSellerStatus {
+  banned
+  unbanned
+}
+
+model DigiflazzSellerProduct {
+  id                  Int       @id @default(autoincrement())
+  productDigiflazzId  Int?
+  sellerId            Int?
+  buyerSkuKode        String?
+  price               Int?
+  sellerProductStatus Boolean?
+  startCutOff         DateTime? @db.Time
+  endCutOff           DateTime? @db.Time
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  digiflazzProduct DigiflazzProduct? @relation(fields: [productDigiflazzId], references: [id])
+  digiflazzSeller  DigiflazzSeller?  @relation(fields: [sellerId], references: [id])
+}
+
+model DigiflazzTransaction {
+  id                 Int                @id @default(autoincrement())
+  transactionId      Int?
+  productDigiflazzId Int?
+  sellerId           Int?
+  buyerSkuCode       String?
+  status             TransactionStatus? @default(proses)
+  requestTime        DateTime?
+  responseTime       DateTime?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  digiflazzProduct DigiflazzProduct? @relation(fields: [productDigiflazzId], references: [id])
+  digiflazzSeller  DigiflazzSeller?  @relation(fields: [sellerId], references: [id])
+  transaction      Transaction?      @relation(fields: [transactionId], references: [id])
+}
+
+model IakPascabayarType {
+  id        Int      @id @default(autoincrement())
+  type      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  iakPascabayarProducts IakPascabayarProduct[]
+}
+
+model IakPascabayarProduct {
+  id                 Int           @id @default(autoincrement())
+  produkPascabayarId Int?
+  code               String?
+  name               String?
+  status             ProdukStatus? @default(active)
+  fee                Int?
+  komisi             Int?
+  typeId             Int?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  type             IakPascabayarType? @relation(fields: [typeId], references: [id])
+  produkPascabayar ProdukPascabayar?  @relation(fields: [produkPascabayarId], references: [id])
+}
+
+model IakPrabayarType {
+  id        Int      @id @default(autoincrement())
+  type      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  iakPrabayarOperators IakPrabayarOperator[]
+}
+
+model IakPrabayarOperator {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  typeId    Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  type               IakPrabayarType?    @relation(fields: [typeId], references: [id])
+  iakPrabayarProduks IakPrabayarProduk[]
+}
+
+model IakPrabayarProduk {
+  id         Int           @id @default(autoincrement())
+  produkId   Int?
+  operatorId Int?
+  kode       String?
+  name       String?
+  price      Int?
+  status     ProdukStatus? @default(active)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  operator IakPrabayarOperator? @relation(fields: [operatorId], references: [id])
+  produk   Produk?              @relation(fields: [produkId], references: [id])
+}
+
+model TripayPrabayarKategori {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  type      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tripayPrabayarOperators TripayPrabayarOperator[]
+}
+
+model TripayPrabayarOperator {
+  id         Int      @id @default(autoincrement())
+  kategoriId Int?
+  kode       String?
+  name       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  kategori              TripayPrabayarKategori? @relation(fields: [kategoriId], references: [id])
+  tripayPrabayarProduks TripayPrabayarProduk[]
+}
+
+model TripayPrabayarProduk {
+  id         Int      @id @default(autoincrement())
+  produkId   Int?
+  operatorId Int?
+  kode       String?
+  name       String?
+  price      Int?
+  deskripsi  String?  @db.Text
+  status     String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  operator TripayPrabayarOperator? @relation(fields: [operatorId], references: [id])
+  produk   Produk?                 @relation(fields: [produkId], references: [id])
+}
+
+model MutationBank {
+  id            Int           @id @default(autoincrement())
+  code          String?
+  bankCode      String?
+  bankName      String?
+  accountNumber String?
+  accountName   String?
+  balance       Float?
+  type          MutationType?
+  amount        Int?
+  description   String?       @db.Text
+  remark        String?
+  bankRef       String?
+  lastBalance   Float?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+enum MutationType {
+  credit
+  debet
+}
+
+model Menu {
+  id        Int                @id @default(autoincrement())
+  name      String?
+  path      String?
+  icon      String?
+  submenu   MenuSubmenuStatus? @default(not_exis)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  submenus Submenu[]
+}
+
+enum MenuSubmenuStatus {
+  exis
+  not_exis
+}
+
+model Submenu {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  path      String?
+  menuId    Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  menu Menu? @relation(fields: [menuId], references: [id])
+}
+
+model OtpRegister {
+  id           Int      @id @default(autoincrement())
+  nomor_tujuan String?
+  otp          String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model PaymentFeeAgenHistory {
+  id                  Int          @id @default(autoincrement())
+  memberId            Int?
+  kode                String?
+  totalPayment        Int?
+  paymentType         PaymentType?
+  transaksiPrabayar   Int?
+  transaksiPascabayar Int?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  member Member? @relation(fields: [memberId], references: [id])
+}
+
+enum PaymentType {
+  deposit
+  deposit_promo
+  withdraw
+}
