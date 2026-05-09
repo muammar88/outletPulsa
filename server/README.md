@@ -1,2 +1,0 @@
-# outletpulsa
-Aplikasi manajemen pulsa
