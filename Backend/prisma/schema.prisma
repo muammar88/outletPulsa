@@ -8,21 +8,23 @@ datasource db {
 
 model User {
   id           Int      @id @default(autoincrement())
-  name         String?
-  kode         String?
+  uuid         String   @unique @default(uuid())
+  name         String
+  kode         String
   refreshToken String?  @db.Text
-  password     String?
+  password     String
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
 
 model Member {
   id             Int          @id @default(autoincrement())
-  kode           String?
-  fullname       String?
-  whatsappnumber String?
+  uuid           String       @unique @default(uuid())
+  kode           String
+  fullname       String
+  whatsappnumber String
   kode_agen      String?
-  password       String?
+  password       String
   saldo          Int?         @default(0)
   status         MemberStatus @default(unverified)
   type           MemberType?
