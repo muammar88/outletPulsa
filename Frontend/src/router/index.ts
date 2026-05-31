@@ -1,85 +1,111 @@
-// import Register from '@/modules/Register/Register.vue';
-import AdministratorAreaView from '@/views/AdministratorView.vue';
-import homeView from '@/views/HomeView.vue';
-import LoginAdminView from '@/views/LoginAdminView.vue';
-import LoginMemberView from '@/views/LoginMemberView.vue';
-import PriceView from '@/views/PriceView.vue';
-import MemberView from '@/views/MemberView.vue';
-import RegistrationView from '@/views/RegistrationView.vue';
+
 import { createRouter, createWebHistory } from 'vue-router';
-import Dashboard from '@/modules/Dashboard/Dashboard.vue';
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: homeView,
+      name: 'landing-page',
+      component: () => import('@/views/Resolver.vue'),
       meta: {
         title: 'Aplikasi Outlet Pulsa || Home',
         description:
-          'Halaman utama menampilkan ringkasan dashboard outlet: saldo, transaksi terakhir, statistik penjualan, dan akses cepat ke fitur produk dan laporan.',
+          'Selamat datang di Aplikasi Outlet Pulsa. Halaman utama yang menyajikan informasi layanan, fitur unggulan, dan navigasi cepat menuju berbagai kebutuhan transaksi Anda.',
+        layout: 'landing-page',
+        authType: 'landing-page',
       },
     },
     {
       path: '/login',
-      name: 'login',
-      component: LoginMemberView,
+      name: 'member-login-page',
+      component: () => import('@/views/Resolver.vue'),
       meta: {
         title: 'Login Member Area || Aplikasi Outlet Pulsa',
         description:
-          'Halaman masuk untuk administrator dan operator outlet. Gunakan kredensial yang valid untuk mengakses dashboard dan fitur manajemen.',
+          'Halaman login member. Masuk untuk mulai bertransaksi, memantau saldo, dan mengelola profil akun Anda dengan aman.',
+        layout: 'member-login-page',
+        authType: 'member-login-page',
       },
     },
     {
-      path: '/register',
-      name: 'register',
-      component: RegistrationView,
+      path: '/registration',
+      name: 'member-registration-page',
+      component: () => import('@/views/Resolver.vue'),
       meta: {
         title: 'Registration Area || Aplikasi Outlet Pulsa',
         description:
-          'Halaman masuk untuk administrator dan operator outlet. Gunakan kredensial yang valid untuk mengakses dashboard dan fitur manajemen.',
+          'Daftar sekarang dan jadilah bagian dari mitra Outlet Pulsa. Proses pendaftaran mudah untuk mulai menikmati layanan transaksi digital terbaik.',
+        layout: 'member-registration-page',
+        authType: 'member-registration-page',
       },
     },
     {
       path: '/member',
-      name: 'member',
-      component: MemberView,
+      name: 'member-page',
+      component: () => import('@/views/Resolver.vue'),
       meta: {
         title: 'Member Area || Aplikasi Outlet Pulsa',
         description:
-          'Halaman masuk untuk administrator dan operator outlet. Gunakan kredensial yang valid untuk mengakses dashboard dan fitur manajemen.',
+          'Dashboard Member. Area pribadi Anda untuk memantau aktivitas transaksi, riwayat deposit, dan ringkasan statistik penjualan harian.',
+        layout: 'member-page',
+        authType: 'member-page',  
       },
     },
     {
       path: '/price',
-      name: 'pricve',
-      component: PriceView,
+      name: 'price-page',
+      component: () => import('@/views/Resolver.vue'),
       meta: {
         title: 'Daftar Harga Area || Aplikasi Outlet Pulsa',
         description:
-          'Halaman masuk untuk administrator dan operator outlet. Gunakan kredensial yang valid untuk mengakses dashboard dan fitur manajemen.',
+          'Cek daftar harga pulsa, paket data, dan layanan PPOB terbaru. Informasi harga real-time yang transparan untuk mendukung bisnis Anda.',
+        layout: 'price-page',
+        authType: 'price-page',    
       },
     },
     {
-      path: '/login-admin',
-      name: 'login-admin',
-      component: LoginAdminView,
+      path: '/contact',
+      name: 'contact-page',
+      component: () => import('@/views/Resolver.vue'),
+      meta: {
+        title: 'Kontak Kami || Aplikasi Outlet Pulsa',
+        description: 'Hubungi kami untuk pertanyaan, kerja sama, atau bantuan layanan Outlet Pulsa.',
+        layout: 'contact-page',
+        authType: 'contact-page',    
+      },
+    },
+    {
+      path: '/login-backbone',
+      name: 'login-backbone',
+      component: () => import('@/views/Resolver.vue'),
       meta: {
         title: 'Login Area || Aplikasi Outlet Pulsa',
         description:
-          'Halaman masuk untuk administrator dan operator outlet. Gunakan kredensial yang valid untuk mengakses dashboard dan fitur manajemen.',
+          'Akses masuk khusus tim manajemen dan administrator sistem (Backbone) untuk pengelolaan infrastruktur platform.',
+        layout: 'login-backbone-page',
+        authType: 'login-backbone-page',    
       },
     },
     {
-      path: '/administrator',
-      name: 'administrator',
-      component: Dashboard,
+      path: '/backbone',
+      name: 'backbone-page',
+      component: () => import('@/views/Resolver.vue'),
       meta: {
-        title: 'Administrator Area || Aplikasi Outlet Pulsa',
+        title: 'Backbone Area || Aplikasi Outlet Pulsa',
         description:
-          'Area khusus administrator untuk manajemen sistem: konfigurasi outlet, pengaturan produk, manajemen pengguna, dan akses laporan lengkap.',
+          'Dashboard Administrasi Pusat. Panel kendali untuk manajemen stok, konfigurasi sistem, monitoring transaksi global, dan laporan keuangan perusahaan.',
+        layout: 'backbone-page',
+        authType: 'backbone-page',  
+      },
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/views/errors/NotFoundView.vue'),
+      meta: {
+        skipDomainCheck: true,
       },
     },
   ],

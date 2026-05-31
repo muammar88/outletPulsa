@@ -1,18 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, watch } from 'vue';
-import {
-  useSelectedTab,
-  useGlobalTab,
-  useGlobalActiveTab,
-  useTabTerpilih,
-} from '../../../../stores/sidebar';
+import { useSelectedTab, useGlobalTab, useGlobalActiveTab, useTabTerpilih } from '@/stores/sidebar';
 import { initTooltips } from 'flowbite';
-import Beranda from '@/modules/Beranda/Beranda.vue';
-import Member from '@/modules/Member/Member.vue';
+// import Beranda from '@/modules/Beranda/Beranda.vue';
+// import Member from '@/modules/Member/Member.vue';
 
 const tabComponents = {
-  beranda: Beranda,
-  daftar_member: Member,
+  // beranda: Beranda,
+  // daftar_member: Member,
 };
 
 // pengaturan_whatsapp: PengaturanWhatsapp,

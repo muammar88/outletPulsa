@@ -3,7 +3,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useSidebarStore = defineStore('sidebar', () => {
-  const isSidebarOpen = ref(false)
+  const isSidebarOpen = ref(true)
   const selected = useStorage('selected', ref('eCommerce'))
   const page = useStorage('page', ref('Dashboard'))
 

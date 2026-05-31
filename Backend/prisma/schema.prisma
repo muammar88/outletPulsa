@@ -642,31 +642,42 @@ enum MutationType {
 }
 
 model Menu {
-  id        Int                @id @default(autoincrement())
-  name      String?
-  path      String?
-  icon      String?
-  submenu   MenuSubmenuStatus? @default(not_exis)
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
+  id         Int      @id @default(autoincrement())
+  name       String?
+  path       String?
+  icon       String?
+  tab        String?
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
 
-  submenus Submenu[]
+  subMenus SubMenu[]
 }
 
-enum MenuSubmenuStatus {
-  exis
-  not_exis
+model SubMenu {
+  id         Int      @id @default(autoincrement())
+  menu_id    Int
+  name       String?
+  path       String?
+  icon       String?
+  tab        String?
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
+
+  menu     Menu      @relation(fields: [menu_id], references: [id])
+  tabMenus TabMenu[]
 }
 
-model Submenu {
-  id        Int      @id @default(autoincrement())
-  name      String?
-  path      String?
-  menuId    Int?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model TabMenu {
+  id         Int      @id @default(autoincrement())
+  submenu_id Int
+  name       String?
+  icon       String?
+  path       String?
+  desc       String?
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now()) @updatedAt
 
-  menu Menu? @relation(fields: [menuId], references: [id])
+  subMenu SubMenu @relation(fields: [submenu_id], references: [id])
 }
 
 model OtpRegister {
