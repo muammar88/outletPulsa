@@ -710,3 +710,15 @@ enum UserType {
   administrator
   staff
 }
+
+model PengaturanUmum {
+  id             Int      @id @default(autoincrement())
+  nama_aplikasi  String?  @default("Outlet Pulsa")
+  deskripsi      String?  @db.Text
+  logo           String?  @db.Text
+  email          String?
+  telepon        String?
+  alamat         String?  @db.Text
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
