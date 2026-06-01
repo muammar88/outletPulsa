@@ -1,6 +1,16 @@
 import api from '@/service/api_administrator'
 import api_member from '@/service/api_member'
 
+export const login_administrator = async (payload: any) => {
+  try {
+    const response = await api.post('/administrator/auth', payload)
+    return response
+  } catch (error) {
+    console.error('Gagal login administrator:', error)
+    throw error
+  }
+}
+
 export const get_info_edit_profile = async () => {
   try {
     const response = await api.get('/auth/administrator/get_info_edit_profile')

@@ -5,74 +5,120 @@ import {
   useGlobalTab,
   useGlobalActiveTab,
   useTabTerpilih,
-  globalSelectMenu,
 } from '@/stores/sidebar';
 import { SettingStore } from '@/stores/settings';
-
-import { ref, defineProps, watch, onMounted } from 'vue';
+import type { Menu } from '@/service/menu';
+import { ref, onMounted, watch } from 'vue';
 import { IconX } from '@tabler/icons-vue';
 import * as TablerIcons from '@tabler/icons-vue';
+import { useTabStore } from '@/stores/useTabStore';
+
+const props = defineProps<{
+  navigation: Menu[];
+}>();
 
 const target = ref(null);
+const tabStore = useTabStore();
 const sidebarStore = useSidebarStore();
 const selectedTab = useSelectedTab();
 const activeTab = useGlobalActiveTab();
 const globaltab = useGlobalTab();
 const SettingGlob = SettingStore();
 const tabTerpilih = useTabTerpilih();
-const sideBarPage = globalSelectMenu();
 const logo = ref('default.png');
 
-const subMenuActive = ref('');
+const expandedMenus = ref<Record<number, boolean>>({});
+const activeMenu = ref('');
+const activeSubMenu = ref('');
 
 const BASE_URL = import.meta.env.VITE_APP_API_BASE_URL;
 
-interface MenuInfo {
-  menu: Record<string, any>;
-  submenu: Record<string, any>;
-  tab: Record<string, any>;
-}
-
-const subMenuClick = (menuname: string, name: string, path: string, tab: any) => {
-  subMenuActive.value = path;
-  selectedTab.clearArray();
-  activeTab.clearString();
-  for (const x in tab) {
-    selectedTab.addItem(tab[x]);
-    if (activeTab.sharedString == '') {
-      activeTab.setString(globaltab.sharedObject[tab[x].id].path);
-    }
+const toggleMenu = (menuId: number) => {
+  const isCurrentlyOpen = expandedMenus.value[menuId];
+  Object.keys(expandedMenus.value).forEach((key) => {
+    expandedMenus.value[Number(key)] = false;
+  });
+  if (!isCurrentlyOpen) {
+    expandedMenus.value[menuId] = true;
   }
 };
 
-const menuClick = (name: string, path: string, tab: any) => {
-  if (sideBarPage.sharedString === name) {
-    sideBarPage.clearString();
+const handleMenuClick = (menu: any) => {
+  if (menu.submenus && menu.submenus.length > 0) {
+    toggleMenu(menu.id);
   } else {
-    sideBarPage.setString(name);
-  }
-  if (path !== '#') {
-    subMenuActive.value = '';
-    tabTerpilih.setNumber(0);
-    selectedTab.clearArray();
-    activeTab.clearString();
-    for (const x in tab) {
-      selectedTab.addItem(tab[x]);
-      if (activeTab.sharedString == '') {
-        activeTab.setString(globaltab.sharedObject[tab[x].id].path);
-      }
+    Object.keys(expandedMenus.value).forEach((key) => {
+      expandedMenus.value[Number(key)] = false;
+    });
+
+    openTab(menu);
+    activeMenu.value = menu.name;
+    activeSubMenu.value = '';
+
+    if (window.innerWidth < 1024 && sidebarStore.isSidebarOpen) {
+      sidebarStore.toggleSidebar();
     }
   }
 };
 
-const props = defineProps<{ menu_info: MenuInfo | null }>();
-const dataRef = ref(props.menu_info);
+const handleSubMenuClick = (sub: any, menu: any) => {
+
+  console.log("_________");
+  console.log(sub);
+  console.log("_________");
+  openTab(sub);
+
+  activeMenu.value = menu.name;
+  activeSubMenu.value = sub.name;
+
+  if (window.innerWidth < 1024 && sidebarStore.isSidebarOpen) {
+    sidebarStore.toggleSidebar();
+  }
+};
+
+// const openTab = (item: any) => {
+//   selectedTab.clearArray();
+//   activeTab.clearString();
+//   tabTerpilih.setNumber(0);
+  
+//   const tabs = item.tabs || [];
+//   for (const tab of tabs) {
+//     selectedTab.addItem(tab);
+//     if (activeTab.sharedString === '') {
+//       activeTab.setString(globaltab.sharedObject[tab.id]?.path ?? tab.path);
+//     }
+//   }
+// };
+
+const openTab = (item: any) => {
+  const tabs = item.tab || item.tabs || [];
+  if (tabs.length > 0) {
+    tabStore.addTab(tabs);
+  } else {
+    tabStore.clearTab();
+  }
+};
+
 
 watch(
-  () => props.menu_info,
-  (newVal) => {
-    if (newVal) {
-      dataRef.value = newVal;
+  () => props.navigation,
+  (navigate) => {
+    if (!navigate || navigate.length === 0) return;
+
+    if (navigate[0].submenus && navigate[0].submenus.length > 0) {
+      console.log("----0")
+      expandedMenus.value[navigate[0].id] = true;
+
+      openTab(navigate[0].submenus[0]);
+      activeMenu.value = navigate[0].name;
+      activeSubMenu.value = navigate[0].submenus[0].name;
+    } else {
+      console.log("----1")
+      console.log(navigate[0])
+      console.log("----1")
+      openTab(navigate[0]);
+      activeMenu.value = navigate[0].name;
+      activeSubMenu.value = '';
     }
   },
   { immediate: true },
@@ -129,13 +175,13 @@ onMounted(() => {
     <div class="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear relative z-10 flex-grow">
       <nav class="mt-6 px-4">
         <ul class="flex flex-col gap-2">
-          <li v-for="(item, key, index) in menu_info?.menu" :key="key" class="animate-menu-item" :style="{ animationDelay: `${index * 0.08}s` }">
+          <li v-for="(item, index) in props.navigation" :key="item.id" class="animate-menu-item" :style="{ animationDelay: `${index * 0.08}s` }">
             <router-link
               :to="''"
               class="group relative flex items-center gap-3 rounded-xl py-3 px-4 text-sm font-medium duration-300 ease-in-out transition-all"
-              @click="menuClick(item.name, item.path, item.tab)"
+              @click="handleMenuClick(item)"
               :class="
-                sideBarPage.sharedString === item.name
+                activeMenu === item.name
                   ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-900/50'
                   : 'text-slate-400 hover:bg-slate-800/50 hover:text-white'
               "
@@ -147,10 +193,10 @@ onMounted(() => {
               
               <!-- Caret Icon -->
               <svg
-                v-if="item.path === '#'"
+                v-if="item.submenus && item.submenus.length > 0"
                 class="fill-current transition-all duration-300 flex-shrink-0"
                 :class="[
-                  { 'rotate-180 text-white': sideBarPage.sharedString === item.name, 'text-slate-500': sideBarPage.sharedString !== item.name },
+                  { 'rotate-180 text-white': expandedMenus[item.id], 'text-slate-500': !expandedMenus[item.id] },
                   sidebarStore.isSidebarOpen ? 'opacity-100' : 'opacity-0'
                 ]"
                 width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"
@@ -161,28 +207,28 @@ onMounted(() => {
 
             <!-- SUBMENU -->
             <div
-              v-if="item.path === '#'"
+              v-if="item.submenus && item.submenus.length > 0"
               class="overflow-hidden transition-all duration-300"
-              :class="sideBarPage.sharedString === item.name ? 'max-h-[500px] opacity-100 mt-2' : 'max-h-0 opacity-0'"
+              :class="expandedMenus[item.id] ? 'max-h-[500px] opacity-100 mt-2' : 'max-h-0 opacity-0'"
             >
               <ul class="flex flex-col gap-1.5 pl-12 pr-4 relative before:absolute before:left-7 before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-800 rounded">
-                <li v-for="(item1, keys) in menu_info?.submenu[item.id]" :key="keys" class="relative">
+                <li v-for="sub in item.submenus" :key="sub.id" class="relative">
                   <!-- Bullet for submenu -->
                   <div class="absolute left-[-21px] top-1/2 -translate-y-1/2 w-[6px] h-[6px] rounded-full transition-colors duration-300"
-                    :class="subMenuActive == item1.path ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]' : 'bg-slate-700'">
+                    :class="activeSubMenu == sub.name ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]' : 'bg-slate-700'">
                   </div>
 
                   <router-link
                     :to="''"
                     :class="
-                      subMenuActive == item1.path
+                      activeSubMenu == sub.name
                         ? 'text-white bg-slate-800/80 shadow-sm font-semibold'
                         : 'text-slate-400 hover:text-white hover:bg-slate-800/40 font-medium'
                     "
                     class="block rounded-lg px-3 py-2 text-[13px] transition-all duration-200"
-                    @click="subMenuClick(item.name, item1.name, item1.path, item1.tab)"
+                    @click="handleSubMenuClick(sub, item)"
                   >
-                    {{ item1.name }}
+                    {{ sub.name }}
                   </router-link>
                 </li>
               </ul>

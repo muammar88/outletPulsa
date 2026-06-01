@@ -1,193 +1,206 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick, watch } from 'vue';
-import { useSelectedTab, useGlobalTab, useGlobalActiveTab, useTabTerpilih } from '@/stores/sidebar';
-import { initTooltips } from 'flowbite';
-// import Beranda from '@/modules/Beranda/Beranda.vue';
-// import Member from '@/modules/Member/Member.vue';
+import * as Icons from '@tabler/icons-vue';
+import type { Navigation } from '@/types/navigation';
+import { computed, ref, watch } from 'vue';
+import { useTabStore } from '@/stores/useTabStore';
+import { tabComponents } from './TabComponents';
 
-const tabComponents = {
-  // beranda: Beranda,
-  // daftar_member: Member,
+const props = defineProps<{
+  navigation: Navigation[];
+}>();
+
+const tabStore = useTabStore();
+
+const getIcon = (iconName: string) => {
+  if (!iconName) return null;
+
+  const pascalName =
+    'Icon' +
+    iconName
+      .split('-')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join('');
+
+  return (Icons as any)[pascalName] || Icons.IconQuestionMark;
 };
 
-// pengaturan_whatsapp: PengaturanWhatsapp,
-// daftar_kecamatan: kecamatan,
-// syarat: syarat,
-// daftar_bank: Bank,
-// running_text: RunningText,
-// request_keanggotaan: RequestKeanggotaan,
-// daftar_grup_akses: GrupAkses,
-// system_log_surveyor: SystemLogSurveyor,
-// daftar_pengguna: DaftarPengguna,
-// system_log: SystemLog,
-// program_kegiatan_kesekretariatan: KegiatanKeseketariatan,
-// daftar_bank_pengumpulan: BankPengumpulan,
-// template_pesan_whatsapp: TemplatePesanWhatsapp,
-// daftar_desa: desa,
-// daftar_keanggotaan: DaftarKeanggotaan,
-// daftar_surveyor: Surveyor,
-// pengaturan_umum: PengaturanUmum,
-// laporan_umum: LaporanUmum,
-// program_kegiatan_bantuan: ProgramKegiatanBantuan,
-// daftar_program: DaftarProgram,
-// laporan_asnaf_fakir: LaporanAsnafFakir,
-// program_donasi: ProgramDonasi,
-// daftar_tab: DaftarTab,
-// riwayat_donasi: RiwayatDonasi,
-// laporan_asnaf_miskin: LaporanAsnafMiskin,
-// laporan_asnaf_fisabilillah: LaporanAsnafFisabilillah,
-// laporan_asnaf_gharim: LaporanAsnafGharim,
-// laporan_asnaf_muallaf: LaporanAsnafMuallaf,
-// laporan_asnaf_ibnu_sabil: LaporanAsnafIbnuSabil,
-// daftar_asnaf: DaftarAsnaf,
-// riwayat_zakat: RiwayatZakat,
-// urutan_bagian_monev: UrutanBagianMonev,
-// riwayat_infaq: RiwayatInfaq,
-// riwayat_pesan_whatsapp: RiwayatPesanWhatsapp,
-// permohonan_bantuan: PermohonanBantuan,
-// validasi_permohonan_bantuan: ValidasiPermohonanBantuan,
-// penetapan: Penetapan,
-// laporan_tahunan: LaporanTahunan,
-// pertanyaan_monev: PertanyaanMonev,
-// rekap_pengumpulan: RekapPengumpulan,
-// laporan_perencanaan: LaporanPerencanaan,
-// target_pengumpulan: TargetPengumpulan,
-// target_distribusi: TargetDistribusi,
-// laporan_sekretariatan: LaporanKesekretariatan,
-// beranda_utama: Beranda,
-// monev: Monev,
-// rekap_distribusi_asnaf: RekapDistribusiPerAsnaf,
-// laporan_kesekretariatan: LaporanKesekretariatan,
-// rekap_pengumpulan_per_kecamatan: RekapPengumpulanPerKecamatan,
-// rekap_distribusi_kecamatan: RekapPerkecamatan,
-// rekap_distribusi_kode_asnaf: RekapDistribusiPerKodeAsnaf,
-// laporan_pengumpulan: LaporanPengumpulan,
-// kriteria: Kriteria,
+const setActiveTab = (tabPath: string) => {
+  tabStore.setActiveTab(tabPath);
+};
 
-const selectedTab = useSelectedTab();
-const tab = useGlobalTab();
-const activeTab = useGlobalActiveTab();
-const tabTerpilih = useTabTerpilih();
-const windowWidth = ref(window.innerWidth);
+const breadcrumb = computed(() => {
+  const path = tabStore.activeTabPath;
+  // console.log("-----Path-----");
+  //   console.log(props.navigation);
+  //   console.log("-----Path-----");
 
-const dynamicLabel = (val: string) => {
-  if (windowWidth.value < 640) {
-    // < sm → mobile
-    return '';
-  } else if (windowWidth.value < 1269) {
-    // sm
-    return val.slice(0, 8) + '...';
-  } else if (windowWidth.value < 1467) {
-    // md
-    return val.slice(0, 8) + '...';
-  } else if (windowWidth.value < 1611) {
-    // lg
-    return val.slice(0, 13) + '...';
-  } else if (windowWidth.value < 1707) {
-    // xl
-    return val.slice(0, 16) + '...';
-  } else {
-    // 2xl atau lebih
-    return val;
+  for (const menu of props.navigation || []) {
+
+    // console.log("-----Menu-----");
+    // console.log(menu.tab);
+    // console.log("-----Menu-----");
+
+
+    const menuTab = menu.tab?.find((t: any) => t.path === path);
+
+    if (menuTab) {
+      return [menu.name];
+    }
+
+    for (const sub of menu.submenus ?? []) {
+      const tab = sub.tab?.find((t: any) => t.path === path);
+
+      if (tab) {
+        return [menu.name, sub.name];
+      }
+    }
   }
-};
 
-const mulaiPilihTab = ref(false);
-const selectTab = (tabPath: string, key: number) => {
-  tabTerpilih.setNumber(key);
-  activeTab.setString(tabPath);
-  mulaiPilihTab.value = true;
-};
-
-onMounted(async () => {
-  window.addEventListener('resize', () => {
-    windowWidth.value = window.innerWidth;
-  });
+  return [];
 });
 
+const prevBreadcrumb = ref<string[]>([]);
+const changedIndex = ref(-1);
+
 watch(
-  () => selectedTab.sharedArray,
-  async () => {
-    await nextTick();
-    initTooltips();
+  breadcrumb,
+  (newVal) => {
+    changedIndex.value = -1;
+
+    const max = Math.max(prevBreadcrumb.value.length, newVal.length);
+
+    for (let i = 0; i < max; i++) {
+      if (prevBreadcrumb.value[i] !== newVal[i]) {
+        changedIndex.value = i;
+        break;
+      }
+    }
+
+    prevBreadcrumb.value = [...newVal];
   },
-  { deep: true },
+  { immediate: true },
 );
 </script>
 
 <template>
-  <div class="mb-0 dark:border-gray-700">
-    <ul
-      class="flex flex-wrap -mb-px text-sm font-medium text-center text-graydark"
-      id="default-tab"
-      data-tabs-toggle="#default-tab-content"
-      role="tablist"
-    >
-      <li
-        class="me-2"
-        role="presentation"
-        v-for="(item, key) in selectedTab.sharedArray"
-        :key="key"
-      >
-        <div
-          :id="`tooltip-default-${tab.sharedObject[item.id].path}`"
-          role="tooltip"
-          class="absolute invisible inline-block px-3 py-2 text-sm font-medium text-white transition-opacity duration-300 bg-graydark rounded-lg shadow-xs opacity-0 tooltip dark:bg-gray-700 z-999999"
-        >
-          {{ tab.sharedObject[item.id].title }}
-          <div class="tooltip-arrow" data-popper-arrow></div>
-        </div>
-        <button
-          :data-tooltip-target="`tooltip-default-${tab.sharedObject[item.id].path}`"
-          class="inline-block p-4 rounded-t-lg rrr"
-          :id="`${tab.sharedObject[item.id].path}-tab`"
-          :data-tabs-target="`#${tab.sharedObject[item.id].path}`"
-          type="button"
-          role="tab"
-          :aria-controls="`${tab.sharedObject[item.id].path}`"
-          :aria-selected="
-            activeTab.sharedString === tab.sharedObject[item.id].path ||
-            (tabTerpilih.sharedNumber === 0 && key === 0)
-              ? 'true'
-              : 'false'
-          "
-          @click="selectTab(tab.sharedObject[item.id].path, key)"
-          :class="
-            activeTab.sharedString === tab.sharedObject[item.id].path ||
-            (tabTerpilih.sharedNumber === 0 && key === 0)
-              ? 'active-tab bg-white !text-outlet font-semibold hover:text-outlet-700 dark:text-outlet dark:hover:text-outlet border-[#3a477d] dark:border-[#3a477d]'
-              : 'inactive-tab text-gray-500 hover:text-gray-600 dark:text-gray-400 border-gray-100 hover:border-gray-300 dark:border-gray-700 dark:hover:text-gray-300'
-          "
-        >
-          <font-awesome-icon :icon="tab.sharedObject[item.id].icon" />
-          <span class="ml-2 flex-1 truncate">
-            {{ dynamicLabel(tab.sharedObject[item.id].name) }}
-          </span>
-        </button>
-      </li>
-    </ul>
-  </div>
-  <div id="default-tab-content ">
+  <div class="flex-1 flex flex-col min-h-0 bg-[#F9FAFB] dark:bg-gray-950">
     <div
-      v-for="(item, key) in selectedTab.sharedArray"
-      :key="key"
-      class="p-4 bg-white dark:bg-gray-800 min-h-[500px] rounded-lg"
-      :class="
-        (activeTab.sharedString === tab.sharedObject[item.id].path ||
-        (tabTerpilih.sharedNumber === 0 && key === 0)
-          ? ''
-          : 'hidden') + (key === 0 ? ' [border-top-left-radius:0px]' : '')
-      "
-      :id="tab.sharedObject[item.id].path"
-      role="tabpanel"
-      :aria-labelledby="`${tab.sharedObject[item.id].path}-tab`"
+      class="flex bg-gray-200 justify-start gap-2 px-6 py-2 text-xs text-gray-500 dark:bg-gray-900 dark:border-gray-800"
     >
-      <p
-        class="px-5 mb-5 text-sm text-gray-900 dark:text-white"
-        v-html="tab.sharedObject[item.id].desc"
-      ></p>
-      <component :is="tabComponents[tab.sharedObject[item.id].path]" class="tab"></component>
+      <template v-for="(item, index) in breadcrumb" :key="item">
+        <span
+          :class="[
+            index === breadcrumb.length - 1 ? 'text-gray-900 dark:text-white font-semibold' : '',
+            index >= changedIndex && changedIndex !== -1 ? 'animate-fade-in' : '',
+          ]"
+        >
+          {{ item }}
+        </span>
+
+        <span
+          v-if="index < breadcrumb.length - 1"
+          class="text-gray-400"
+          :class="index >= changedIndex ? 'animate-fade-in' : ''"
+        >
+          /
+        </span>
+      </template>
+    </div>
+    <!-- Main Tab Bar -->
+    <div
+      class="flex items-center bg-gray-50 gap-1 dark:bg-gray-900 dark:border-gray-800 px-4 pt-2 overflow-x-auto no-scrollbar scroll-smooth shadow-sm z-10"
+    >
+      <!-- Breadcrumb -->
+      <div
+        v-for="tab in tabStore.getTab"
+        :key="tab.id"
+        @click="setActiveTab(tab.path)"
+        class="group relative flex items-center gap-2 px-5 py-2.5 text-[11px] font-medium font-black uppercase tracking-wider rounded-t-xl transition-all duration-300 cursor-pointer border-x border-t -mb-[1px]"
+        :class="
+          tabStore.activeTabPath === tab.path
+            ? 'bg-outlet-navy dark:bg-gray-950 border-gray-100 dark:border-gray-800 text-white shadow-[0_-4px_10px_rgba(37,99,235,0.05)]'
+            : 'bg-white dark:bg-gray-800 border-transparent text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+        "
+      >
+        <component :is="getIcon(tab.icon)" v-if="tab.icon" size="14" />
+        <span class="hidden sm:inline whitespace-nowrap">{{ tab.name }}</span>
+        <!-- Active Indicator -->
+        <div
+          v-if="tabStore.activeTabPath === tab.path"
+          class="absolute bottom-0 left-3 right-3 h-0.5 bg-gray-600 rounded-full shadow-[0_0_10px_rgba(37,99,235,0.5)]"
+        ></div>
+      </div>
+    </div>
+    <!-- Content Area -->
+    <div class="flex-1 overflow-y-auto relative no-scrollbar bg-white">
+      <transition name="fade" mode="out-in">
+        <component :is="tabComponents[tabStore.activeTabPath] ?? tabComponents['notFound']" />
+      </transition>
     </div>
   </div>
 </template>
-<style scoped></style>
+<style scoped>
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: all 0.2s ease;
+}
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(4px);
+}
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in-left {
+  animation: fadeInLeft 0.5s ease-out;
+}
+
+@keyframes fadeUpIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up-in {
+  animation: fadeUpIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease;
+}
+</style>

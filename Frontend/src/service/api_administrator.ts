@@ -10,19 +10,13 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
-// Fungsi untuk mengambil token dari localStorage
-const getAccessToken = () => localStorage.getItem('administrator_access_token');
-const getRefreshToken = () => localStorage.getItem('administrator_refresh_token');
+import { clearAuthCookies } from '@/utils/cookies';
 
-// Tambahkan interceptor untuk menyisipkan token di setiap request
 api.interceptors.request.use(
   (config) => {
-    const token = getAccessToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
     return config;
   },
   (error) => Promise.reject(error),
@@ -30,7 +24,7 @@ api.interceptors.request.use(
 
 // Interceptor untuk response: refresh token jika expired
 let isRefreshing = false;
-let failedRequestsQueue = [];
+let failedRequestsQueue: Array<() => void> = [];
 
 api.interceptors.response.use(
   (response) => response,
@@ -42,14 +36,9 @@ api.interceptors.response.use(
       !originalRequest._retry
     ) {
       if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedRequestsQueue.push((token) => {
-            if (token) {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
-              resolve(api(originalRequest));
-            } else {
-              reject(error);
-            }
+        return new Promise((resolve) => {
+          failedRequestsQueue.push(() => {
+            resolve(api(originalRequest));
           });
         });
       }
@@ -58,27 +47,15 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = getRefreshToken();
-        if (!refreshToken) throw new Error('No refresh token available');
-
-        const response = await axios.post(`${API_BASE_URL}/auth/administrator/refresh`, {
-          refresh_token: refreshToken,
-        });
-
-        const newAccessToken = response.data.access_token;
-        localStorage.setItem('administrator_access_token', newAccessToken);
-
-        // Jalankan semua request yang tertunda
-        failedRequestsQueue.forEach((cb) => cb(newAccessToken));
+        await axios.post(`${API_BASE_URL}/administrator/auth/refresh`, {}, { withCredentials: true });
+        failedRequestsQueue.forEach((cb) => cb());
         failedRequestsQueue = [];
 
-        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return api(originalRequest);
       } catch (refreshError) {
         console.error('Refresh token gagal, harap login ulang');
-        localStorage.removeItem('administrator_access_token');
-        localStorage.removeItem('administrator_refresh_token');
-        window.location.href = '/login-admin';
+        clearAuthCookies();
+        window.location.href = '/login-backbone';
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
@@ -89,6 +66,4 @@ api.interceptors.response.use(
   },
 );
 
-// localStorage.setItem('administrator_access_token', response.data.access_token)
-// localStorage.setItem('administrator_refresh_token', response.data.refresh_token)
 export default api;

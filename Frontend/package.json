@@ -38,6 +38,7 @@
     "flowbite-vue": "^0.2.1",
     "html2canvas": "^1.4.1",
     "html2pdf.js": "^0.10.3",
+    "js-cookie": "^3.0.8",
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",
     "jsvectormap": "^1.6.0",
@@ -57,6 +58,7 @@
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.0",
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^22.13.1",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vitejs/plugin-vue-jsx": "^4.1.1",

@@ -13,6 +13,8 @@ export default defineConfig({
     alias: {
       // '@': path.resolve(__dirname, './src'),
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@modules': fileURLToPath(new URL('./src/modules', import.meta.url)),
+      '@views': fileURLToPath(new URL('./src/views', import.meta.url)),
     },
   },
   server: {

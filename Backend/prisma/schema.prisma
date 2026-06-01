@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -13,6 +14,7 @@ model User {
   kode         String
   refreshToken String?  @db.Text
   password     String
+  type         UserType @default(administrator)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
@@ -663,21 +665,17 @@ model SubMenu {
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
 
-  menu     Menu      @relation(fields: [menu_id], references: [id])
-  tabMenus TabMenu[]
+  menu Menu @relation(fields: [menu_id], references: [id])
 }
 
 model TabMenu {
   id         Int      @id @default(autoincrement())
-  submenu_id Int
   name       String?
   icon       String?
   path       String?
   desc       String?
   created_at DateTime @default(now())
   updated_at DateTime @default(now()) @updatedAt
-
-  subMenu SubMenu @relation(fields: [submenu_id], references: [id])
 }
 
 model OtpRegister {
@@ -706,4 +704,9 @@ enum PaymentType {
   deposit
   deposit_promo
   withdraw
+}
+
+enum UserType {
+  administrator
+  staff
 }

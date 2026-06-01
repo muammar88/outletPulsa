@@ -75,6 +75,18 @@ export default {
         success: '#219653',
         danger: '#D34053',
         warning: '#FFA70B',
+        outlet: {
+          navy: '#0f2155',
+          blue: '#2563eb',
+          'blue-light': '#1d4ed8',
+          'blue-soft': '#bfdbfe',
+          'bg-light': '#f8faff',
+
+          primary: '#0f2155',
+          'primary-foreground': '#bfdbfe',
+          secondary: '#2563eb',
+          'secondary-foreground': '#bfdbfe',
+        },
       },
       fontSize: {
         'title-xxl': ['44px', '55px'],

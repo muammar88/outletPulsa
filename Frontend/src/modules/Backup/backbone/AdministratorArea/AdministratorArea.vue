@@ -102,7 +102,7 @@ onMounted(() => {
   // console.log(token);
   // console.log('-----token');
   if (!token) {
-    window.location.href = '/login-admin'; // direct ke root
+    window.location.href = '/login-backbone'; // direct ke root
   } else {
     fetchData();
   }

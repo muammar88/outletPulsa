@@ -1,26 +1,23 @@
-# # Mematikan docker container
-# Write-Host "Mematikan docker container"
-# docker down -v
+Write-Host "Masuk ke folder Backend..." -ForegroundColor Cyan
 
-# # Menjalankan docker compose dev dan build
-# Write-Host "Menjalankan docker compose mode dev dan melakukan build"
-# docker compose -f docker-compose.dev.yml up -d --build
+try {
+    cd Backend
 
-# Masuk ke serve
-Write-Host " Masuk ke folder server..."
-cd server
+    $ErrorActionPreference = "Stop"
 
-# Menghapus database
-Write-Host " Menghapus Database..."
-& "C:\laragon\bin\mysql\mysql-8.0.30-winx64\bin\mysql.exe" -u root -e "DROP DATABASE IF EXISTS outletpulsa; CREATE DATABASE outletpulsa;"
+    Write-Host "Resetting Prisma database..." -ForegroundColor Yellow
+    npx prisma migrate reset --force
 
-# Jalankan migrasi Sequelize
-Write-Host "🚀 Running Sequelize migrations..."
-npx sequelize-cli db:migrate
+    Write-Host "Generating Prisma Client..." -ForegroundColor Yellow
+    npx prisma generate
 
-# # Jalankan seeder Sequelize
-Write-Host "🌱 Seeding database..."
-npx sequelize-cli db:seed:all
-
-Write-Host "✅ Done!"
-cd ../.
+    Write-Host "Database reset completed!" -ForegroundColor Green
+}
+catch {
+    Write-Host "Terjadi error saat reset database!" -ForegroundColor Red
+    Write-Host $_
+}
+finally {
+    Write-Host "Keluar dari folder Backend..." -ForegroundColor Cyan
+    cd ..
+}

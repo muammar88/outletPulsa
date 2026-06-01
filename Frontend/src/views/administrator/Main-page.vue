@@ -3,151 +3,122 @@ import Header from '@/views/administrator/components/Header/HeaderArea.vue';
 import Sidebar from '@/views/administrator/components/Sidebar/SidebarArea.vue';
 import Content from '@/views/administrator/components/Content/ContentViews.vue';
 import LoadOverlay from '@/components/Loading/LoadOverlay.vue';
-import api from '@/service/api_administrator'; // Impor file API
-import { ref, onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 
-// useGlobalTab
 import { useGlobalTab, useSelectedTab, globalSelectMenu } from '@/stores/sidebar.js';
-import { SettingStore } from '@/stores/settings.js';
+import { fetchMenuData } from '@/service/menu';
+import type { Menu } from '@/service/menu';
 
-// State error dan loading
-const isError = ref(false);
-const isLoading = ref(true);
-
-const globalTab = useGlobalTab(); // menampung seluruh tab secara global
-const SettingGlob = SettingStore();
+const globalTab = useGlobalTab();
 const selectedTab = useSelectedTab();
 const selectMenu = globalSelectMenu();
 
-interface MenuItem {
-  id: number;
-  name: string;
-  path: string;
-  icon: string;
-  tab: null | any;
-}
+const navigation = ref<Menu[]>([]);
+const isLoading = ref(false);
+const error = ref<string | null>(null);
 
-interface MenuInfo {
-  menu: Record<string, MenuItem>;
-  submenu: Record<string, any>;
-  tab: Record<string, any>;
-  default_tab: Record<string, any>;
-}
+const initializeFirstMenu = () => {
+  const first = navigation.value[0];
+  if (!first) return;
 
-interface UserInfo {
-  company_code: string;
-  username: string;
-  type: string;
-}
+  selectMenu.setString(first.name);
+  selectedTab.clearArray();
 
-interface ServerResponse {
-  error: boolean;
-  error_msg: string;
-  menu_info: MenuInfo;
-  user_info: UserInfo;
-}
-
-const menu_info = ref<MenuInfo | null>(null);
-const user_info = ref<UserInfo | null>(null);
-
-// Mengambil data dari API
-const fetchData = async () => {
-  try {
-    const response = await api.get<ServerResponse>('/administrator'); // Panggil API dan gunakan tipe yang benar
-    if (response.status === 404) {
-      isError.value = true;
-    } else {
-      // Menyimpan data ke dalam state
-      menu_info.value = response.data.data.menu_info;
-      user_info.value = response.data.data.user_info;
-
-      globalTab.clearObject();
-      for (const x in response.data.data.menu_info.tab) {
-        globalTab.addItem(x, response.data.data.menu_info.tab[x]);
+  if (first.path !== '#' && first.submenus?.length) {
+    const firstSub = first.submenus[0];
+    if (firstSub?.tabMenus?.length) {
+      for (const tab of firstSub.tabMenus) {
+        selectedTab.addItem(tab);
+        globalTab.addItem(String(tab.id), tab);
       }
-
-      SettingGlob.clearObject();
-      for (const x in response.data.user_info) {
-        SettingGlob.addItem(x, response.data.user_info[x]);
-      }
-
-      const menu = response.data.data.menu_info.menu;
-      const menuPertama = Object.values(menu)[0];
-
-      selectMenu.setString(menuPertama.name);
-
-      selectedTab.clearArray();
-      if (menuPertama.path == '#') {
-      } else {
-        if (menuPertama.tab !== null) {
-          for (const x in menuPertama.tab) {
-            selectedTab.addItem(menuPertama.tab[x]);
-          }
-        }
-      }
-      isError.value = false; // Reset error state jika berhasil
     }
-    isLoading.value = false;
-    isLoading.value = false;
-  } catch (error) {
-    console.error('Gagal mengambil data, menggunakan dummy data untuk preview:', error);
-    
-    // ==========================================
-    // DUMMY DATA UNTUK CONTOH MENU & SUBMENU
-    // ==========================================
-    const dummyMenuInfo: MenuInfo = {
-      menu: {
-        "1": { id: 1, name: "Dashboard Utama", path: "/dashboard", icon: "IconHome", tab: null },
-        "2": { id: 2, name: "Transaksi PPOB", path: "#", icon: "IconReceipt", tab: null },
-        "3": { id: 3, name: "Manajemen Master", path: "#", icon: "IconDatabase", tab: null },
-        "4": { id: 4, name: "Pengaturan Sistem", path: "/settings", icon: "IconSettings", tab: null }
-      },
-      submenu: {
-        "2": [ // Submenu untuk Transaksi PPOB (id: 2)
-          { id: 21, name: "Riwayat Transaksi", path: "/transaksi/riwayat", tab: null },
-          { id: 22, name: "Transaksi Tertunda", path: "/transaksi/pending", tab: null },
-          { id: 23, name: "Laporan Laba Rugi", path: "/transaksi/laporan", tab: null }
-        ],
-        "3": [ // Submenu untuk Manajemen Master (id: 3)
-          { id: 31, name: "Daftar Produk", path: "/master/produk", tab: null },
-          { id: 32, name: "Manajemen User", path: "/master/user", tab: null },
-          { id: 33, name: "Daftar Bank", path: "/master/bank", tab: null }
-        ]
-      },
-      tab: {},
-      default_tab: {}
-    };
+  }
+};
 
-    menu_info.value = dummyMenuInfo;
-    
-    const menu = dummyMenuInfo.menu;
-    const menuPertama = Object.values(menu)[0];
-    selectMenu.setString(menuPertama.name);
-    
-    isError.value = false;
+const fetchData = async () => {
+  isLoading.value = true;
+  error.value = null;
+
+  try {
+    const response = await fetchMenuData();
+
+    console.log("xxx");
+    console.log(response);
+    console.log("xxx");
+    navigation.value = response;
+    initializeFirstMenu();
+  } catch (err: any) {
+    error.value = err?.response?.data?.message ?? err?.message ?? 'Gagal mengambil data menu';
+    // Jika ingin seperti Selanga yang langsung redirect ke login saat error:
+    // window.location.href = '/login';
+  } finally {
     isLoading.value = false;
   }
 };
 
-onMounted(() => {
-  // Langsung fetch data (akan jatuh ke catch dan meload dummy jika API mati)
-  fetchData();
+onMounted(async () => {
+  await fetchData();
 });
 </script>
+
 <template>
   <LoadOverlay />
   <div class="font-poppins bg-slate-50 text-slate-800">
-    <div class="flex h-screen overflow-hidden">
-      <Sidebar :menu_info="menu_info" />
-      <div class="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
-        <Header class="z-40 bg-white border-b border-slate-200/60 shadow-sm" />
-        <main class="flex-grow">
-          <div class="mx-auto max-w-screen-2xl p-4 md:p-6 2xl:p-10">
-            <Content class="z-10"></Content>
-          </div>
-        </main>
+
+    <!-- Loading overlay saat fetch menu -->
+    <div
+      v-if="isLoading"
+      class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-sm"
+    >
+      <div class="flex flex-col items-center gap-5">
+        <div class="relative w-16 h-16">
+          <div class="absolute inset-0 rounded-full border-4 border-blue-500/20"></div>
+          <div class="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-500 animate-spin"></div>
+          <div class="absolute inset-2 rounded-full border-4 border-transparent border-t-indigo-400 animate-spin" style="animation-duration: 0.75s; animation-direction: reverse;"></div>
+        </div>
+        <div class="text-center">
+          <p class="text-white font-semibold text-lg">Memuat Menu...</p>
+          <p class="text-slate-400 text-sm mt-1">Mengambil data navigasi dari server</p>
+        </div>
       </div>
     </div>
+
+    <!-- Error state -->
+    <div
+      v-else-if="error"
+      class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950/95 backdrop-blur-sm"
+    >
+      <div class="flex flex-col items-center gap-4 max-w-sm text-center px-6">
+        <div class="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center">
+          <svg class="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <p class="text-white font-semibold text-lg">Gagal Memuat Menu</p>
+        <p class="text-slate-400 text-sm">{{ error }}</p>
+        <button
+          @click="fetchData()"
+          class="mt-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold rounded-xl transition-colors duration-200"
+        >
+          Coba Lagi
+        </button>
+      </div>
+    </div>
+
+    <!-- Main layout -->
+    <div v-else class="flex h-screen overflow-hidden">
+      <Sidebar :navigation="navigation" />
+      <div class="flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out">
+        <Header class="z-40 bg-white border-b border-slate-200/60 shadow-sm" />
+        <Content :navigation="navigation" />
+        <!-- <main class="flex-grow">
+          <div class="mx-auto max-w-screen-2xl ">
+            
+          </div>
+        </main> -->
+      </div>
+    </div>
+
   </div>
 </template>
 

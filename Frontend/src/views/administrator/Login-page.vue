@@ -195,6 +195,9 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { login_administrator } from '@/service/auth';
+import { setAdminLoggedIn } from '@/utils/cookies';
 import {
   IconBolt,
   IconShieldLock,
@@ -214,6 +217,8 @@ import {
 const showPassword = ref(false);
 const loading = ref(false);
 const loginError = ref('');
+
+const router = useRouter();
 
 const form = reactive({
   username: '',
@@ -249,11 +254,24 @@ const handleLogin = async () => {
   loginError.value = '';
 
   try {
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-    // TODO: actual login logic
-    alert(`Login berhasil: ${form.username}`);
-  } catch {
-    loginError.value = 'Username atau password salah. Silakan coba lagi.';
+    const response = await login_administrator({
+      username: form.username.trim(),
+      password: form.password,
+    });
+    
+    // Cek keberhasilan berdasarkan HTTP Status Code (200 OK / 201 Created)
+    if (response.status === 200 || response.status === 201) {
+      setAdminLoggedIn(true);
+      router.push('/backbone');
+    } else {
+      throw new Error(response.data?.message || 'Gagal login ke server');
+    }
+  } catch (error: any) {
+    if (error.response && error.response.data && error.response.data.message) {
+      loginError.value = error.response.data.message;
+    } else {
+      loginError.value = 'Username atau password salah. Silakan coba lagi.';
+    }
   } finally {
     loading.value = false;
   }

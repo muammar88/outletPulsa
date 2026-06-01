@@ -111,4 +111,20 @@ const router = createRouter({
   ],
 });
 
+import { isAdminLoggedIn } from '@/utils/cookies';
+
+router.beforeEach((to, from, next) => {
+  // If navigating to backbone page and not logged in
+  if (to.meta.authType === 'backbone-page' && !isAdminLoggedIn()) {
+    return next({ name: 'login-backbone' });
+  }
+
+  // If navigating to login page but already logged in
+  // if (to.meta.authType === 'login-backbone-page' && isAdminLoggedIn()) {
+  //   return next({ name: 'backbone-page' });
+  // }
+
+  next();
+});
+
 export default router;
