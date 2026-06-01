@@ -72,7 +72,7 @@ const buttonClasses = computed(() => {
   ];
 
   const variantClasses = {
-    primary: 'bg-[#0f2155] text-white hover:bg-[#0c1a44] focus:ring-blue-500',
+    primary: 'bg-outlet text-white hover:bg-[#2b6443] focus:ring-outlet',
     secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400',
     warning: 'bg-yellow-600 text-white hover:bg-yellow-700 focus:ring-yellow-500',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',

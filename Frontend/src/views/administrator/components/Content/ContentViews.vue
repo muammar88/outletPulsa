@@ -13,14 +13,12 @@ const tabStore = useTabStore();
 
 const getIcon = (iconName: string) => {
   if (!iconName) return null;
-
   const pascalName =
     'Icon' +
     iconName
       .split('-')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join('');
-
   return (Icons as any)[pascalName] || Icons.IconQuestionMark;
 };
 
@@ -30,26 +28,13 @@ const setActiveTab = (tabPath: string) => {
 
 const breadcrumb = computed(() => {
   const path = tabStore.activeTabPath;
-  // console.log("-----Path-----");
-  //   console.log(props.navigation);
-  //   console.log("-----Path-----");
-
   for (const menu of props.navigation || []) {
-
-    // console.log("-----Menu-----");
-    // console.log(menu.tab);
-    // console.log("-----Menu-----");
-
-
     const menuTab = menu.tab?.find((t: any) => t.path === path);
-
     if (menuTab) {
       return [menu.name];
     }
-
     for (const sub of menu.submenus ?? []) {
       const tab = sub.tab?.find((t: any) => t.path === path);
-
       if (tab) {
         return [menu.name, sub.name];
       }
@@ -87,7 +72,7 @@ watch(
     <div
       class="flex bg-gray-200 justify-start gap-2 px-6 py-2 text-xs text-gray-500 dark:bg-gray-900 dark:border-gray-800"
     >
-      <template v-for="(item, index) in breadcrumb" :key="item">
+      <template v-for="(item, index) in breadcrumb" :key="`${index}-${item}`">
         <span
           :class="[
             index === breadcrumb.length - 1 ? 'text-gray-900 dark:text-white font-semibold' : '',
@@ -118,7 +103,7 @@ watch(
         class="group relative flex items-center gap-2 px-5 py-2.5 text-[11px] font-medium font-black uppercase tracking-wider rounded-t-xl transition-all duration-300 cursor-pointer border-x border-t -mb-[1px]"
         :class="
           tabStore.activeTabPath === tab.path
-            ? 'bg-outlet-navy dark:bg-gray-950 border-gray-100 dark:border-gray-800 text-white shadow-[0_-4px_10px_rgba(37,99,235,0.05)]'
+            ? 'bg-outlet dark:bg-gray-950 border-gray-100 dark:border-gray-800 text-white shadow-[0_-4px_10px_rgba(37,99,235,0.05)]'
             : 'bg-white dark:bg-gray-800 border-transparent text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
         "
       >

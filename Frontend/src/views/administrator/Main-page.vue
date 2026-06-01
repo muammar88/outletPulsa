@@ -26,8 +26,8 @@ const initializeFirstMenu = () => {
 
   if (first.path !== '#' && first.submenus?.length) {
     const firstSub = first.submenus[0];
-    if (firstSub?.tabMenus?.length) {
-      for (const tab of firstSub.tabMenus) {
+    if (firstSub?.tab?.length) {
+      for (const tab of firstSub.tab) {
         selectedTab.addItem(tab);
         globalTab.addItem(String(tab.id), tab);
       }
@@ -50,7 +50,7 @@ const fetchData = async () => {
   } catch (err: any) {
     error.value = err?.response?.data?.message ?? err?.message ?? 'Gagal mengambil data menu';
     // Jika ingin seperti Selanga yang langsung redirect ke login saat error:
-    // window.location.href = '/login';
+    window.location.href = '/login-backbone';
   } finally {
     isLoading.value = false;
   }
@@ -104,21 +104,14 @@ onMounted(async () => {
         </button>
       </div>
     </div>
-
     <!-- Main layout -->
     <div v-else class="flex h-screen overflow-hidden">
       <Sidebar :navigation="navigation" />
       <div class="flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out">
         <Header class="z-40 bg-white border-b border-slate-200/60 shadow-sm" />
         <Content :navigation="navigation" />
-        <!-- <main class="flex-grow">
-          <div class="mx-auto max-w-screen-2xl ">
-            
-          </div>
-        </main> -->
       </div>
     </div>
-
   </div>
 </template>
 

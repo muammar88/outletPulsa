@@ -62,33 +62,13 @@ const handleMenuClick = (menu: any) => {
 };
 
 const handleSubMenuClick = (sub: any, menu: any) => {
-
-  console.log("_________");
-  console.log(sub);
-  console.log("_________");
   openTab(sub);
-
   activeMenu.value = menu.name;
   activeSubMenu.value = sub.name;
-
   if (window.innerWidth < 1024 && sidebarStore.isSidebarOpen) {
     sidebarStore.toggleSidebar();
   }
 };
-
-// const openTab = (item: any) => {
-//   selectedTab.clearArray();
-//   activeTab.clearString();
-//   tabTerpilih.setNumber(0);
-  
-//   const tabs = item.tabs || [];
-//   for (const tab of tabs) {
-//     selectedTab.addItem(tab);
-//     if (activeTab.sharedString === '') {
-//       activeTab.setString(globaltab.sharedObject[tab.id]?.path ?? tab.path);
-//     }
-//   }
-// };
 
 const openTab = (item: any) => {
   const tabs = item.tab || item.tabs || [];
@@ -106,16 +86,12 @@ watch(
     if (!navigate || navigate.length === 0) return;
 
     if (navigate[0].submenus && navigate[0].submenus.length > 0) {
-      console.log("----0")
       expandedMenus.value[navigate[0].id] = true;
 
       openTab(navigate[0].submenus[0]);
       activeMenu.value = navigate[0].name;
       activeSubMenu.value = navigate[0].submenus[0].name;
     } else {
-      console.log("----1")
-      console.log(navigate[0])
-      console.log("----1")
       openTab(navigate[0]);
       activeMenu.value = navigate[0].name;
       activeSubMenu.value = '';
@@ -152,7 +128,7 @@ onMounted(() => {
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[16rem] h-[16rem] bg-cyan-500 rounded-full filter blur-[120px] opacity-10 orb-anim-3 pointer-events-none"></div>
 
     <!-- LOGO AREA -->
-    <div class="relative z-10 flex items-center justify-between px-6 py-5 border-b border-white/5 bg-white/5 backdrop-blur-sm">
+    <div class="relative z-10 flex items-center justify-between px-6 pt-5 pb-4 border-b border-white/5 bg-white/5 backdrop-blur-sm">
       <router-link to="/" class="flex items-center gap-3.5 w-full">
         <div class="relative w-10 h-10 rounded-xl flex-shrink-0 bg-white flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.5)] border border-white/10 transition-all duration-300" :class="!sidebarStore.isSidebarOpen ? 'mx-auto' : ''">
           <img src="/logo.png" alt="Logo" class="w-8 h-8 object-contain" />
@@ -167,13 +143,21 @@ onMounted(() => {
 
       <!-- Mobile Close Button -->
       <button class="block lg:hidden text-slate-400 hover:text-white hover:bg-white/10 p-1.5 rounded-lg transition-colors duration-200 flex-shrink-0" @click="sidebarStore.toggleSidebar()">
-        <IconX :size="20" :stroke="2.5" />
+        <IconX :size="20" stroke="2.5" />
       </button>
     </div>
 
     <!-- MENU AREA -->
     <div class="no-scrollbar flex flex-col overflow-y-auto duration-300 ease-linear relative z-10 flex-grow">
       <nav class="mt-6 px-4">
+        <!-- Label Menu Utama -->
+        <h3
+          class="mb-4 ml-4 text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em] transition-all duration-300 whitespace-nowrap"
+          :class="sidebarStore.isSidebarOpen ? 'opacity-100' : 'opacity-0 w-0 h-0 overflow-hidden mb-0'"
+        >
+          Menu Utama
+        </h3>
+
         <ul class="flex flex-col gap-2">
           <li v-for="(item, index) in props.navigation" :key="item.id" class="animate-menu-item" :style="{ animationDelay: `${index * 0.08}s` }">
             <router-link

@@ -3,9 +3,17 @@
 
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div>
+      <!-- <div>
         <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">Dashboard Ringkasan</h1>
         <p class="text-sm text-slate-500 mt-0.5">Selamat datang kembali! Ini adalah ringkasan aktivitas hari ini.</p>
+      </div> -->
+      <div>
+        <h1 class="text-3xl font-black font-semibold text-[#0f2155] dark:text-white mb-2 uppercase tracking-tight">
+          Dashboard Ringkasan
+        </h1>
+        <p class="text-xs text-gray-400 font-medium uppercase tracking-[0.2em]">
+          Selamat datang kembali! Ini adalah ringkasan aktivitas hari ini.
+        </p>
       </div>
       <div class="flex items-center gap-2 text-xs text-slate-500 bg-slate-100 border border-slate-200 rounded-xl px-4 py-2">
         <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
