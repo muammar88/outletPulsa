@@ -13,8 +13,6 @@ export default async function memberSeed(prisma: PrismaClient) {
       password: passwordHash,
       saldo: 150000,
       status: 'verfied',
-      type: 'outletpulsa',
-      agenType: 'silver',
     },
     {
       kode: 'MBR002',
@@ -24,8 +22,6 @@ export default async function memberSeed(prisma: PrismaClient) {
       password: passwordHash,
       saldo: 500000,
       status: 'verfied',
-      type: 'amra',
-      agenType: 'gold',
     },
     {
       kode: 'MBR003',
@@ -35,8 +31,6 @@ export default async function memberSeed(prisma: PrismaClient) {
       password: passwordHash,
       saldo: 25000,
       status: 'unverified',
-      type: 'outletpulsa',
-      agenType: 'silver',
     },
     {
       kode: 'MBR004',
@@ -46,8 +40,6 @@ export default async function memberSeed(prisma: PrismaClient) {
       password: passwordHash,
       saldo: 1000000,
       status: 'verfied',
-      type: 'outletpulsa',
-      agenType: 'platinum',
     },
     {
       kode: 'MBR005',
@@ -57,8 +49,6 @@ export default async function memberSeed(prisma: PrismaClient) {
       password: passwordHash,
       saldo: 0,
       status: 'unverified',
-      type: 'amra',
-      agenType: null,
     },
   ];
 

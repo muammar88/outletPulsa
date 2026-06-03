@@ -56,28 +56,23 @@ export class DaftarMemberService {
   }
 
   async create(createMemberDto: CreateMemberDto) {
-    // Check for existing member with same kode
-    const existing = await this.prisma.member.findFirst({
-      where: { kode: createMemberDto.kode },
+    const lastMember = await this.prisma.member.findFirst({
+      orderBy: { id: 'desc' },
     });
-
-    if (existing) {
-      throw new BadRequestException(`Member dengan kode ${createMemberDto.kode} sudah terdaftar`);
-    }
+    const nextId = lastMember ? lastMember.id + 1 : 1;
+    const generatedKode = `MBR${String(nextId).padStart(4, '0')}`;
 
     const hashedPassword = await bcrypt.hash(createMemberDto.password, 10);
 
     const newMember = await this.prisma.member.create({
       data: {
-        kode: createMemberDto.kode,
+        kode: generatedKode,
         fullname: createMemberDto.fullname,
         whatsappnumber: createMemberDto.whatsappnumber,
         kode_agen: createMemberDto.kode_agen,
         password: hashedPassword,
         saldo: createMemberDto.saldo || 0,
         status: createMemberDto.status || 'unverified',
-        type: createMemberDto.type,
-        agenType: createMemberDto.agenType,
       },
     });
 

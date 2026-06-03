@@ -190,7 +190,6 @@ onMounted(() => {
       <template #cell-fullname="{ row }">
         <div class="flex flex-col">
           <span class="text-sm font-semibold text-gray-800">{{ row.fullname }}</span>
-          <span class="text-[11px] text-gray-500 uppercase tracking-wider">{{ row.type }} - {{ row.agenType || '-' }}</span>
         </div>
       </template>
       

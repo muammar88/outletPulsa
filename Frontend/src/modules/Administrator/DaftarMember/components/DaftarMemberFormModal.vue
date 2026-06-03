@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import InputText from '@/components/Form/InputText.vue';
+import InputCurrency from '@/components/Form/InputCurrency.vue';
 import InputPassword from '@/components/Form/InputPassword.vue';
 import SelectField from '@/components/Form/SelectField.vue';
 import LoadingSpinner from '@/components/Loading/LoadingSpinner.vue';
@@ -16,10 +17,9 @@ type Member = {
   whatsappnumber: string;
   kode_agen?: string;
   password?: string;
+  password_confirmation?: string;
   saldo?: number;
   status?: string;
-  type?: string;
-  agenType?: string;
 };
 
 const props = defineProps<{
@@ -45,33 +45,20 @@ const errors = ref<Record<string, string>>({});
 const isLoading = ref(false);
 
 const defaultForm = (): Member => ({
-  kode: '',
   fullname: '',
   whatsappnumber: '',
   kode_agen: '',
   password: '',
+  password_confirmation: '',
   saldo: 0,
   status: 'unverified',
-  type: 'outletpulsa',
-  agenType: 'silver',
 });
 
 const form = ref<Member>(defaultForm());
 
-const typeOptions = [
-  { id: 'outletpulsa', name: 'Outlet Pulsa' },
-  { id: 'amra', name: 'AMRA' },
-];
-
 const statusOptions = [
   { id: 'verfied', name: 'Verified' },
   { id: 'unverified', name: 'Unverified' },
-];
-
-const agenTypeOptions = [
-  { id: 'silver', name: 'Silver' },
-  { id: 'gold', name: 'Gold' },
-  { id: 'platinum', name: 'Platinum' },
 ];
 
 const resetForm = () => {
@@ -86,14 +73,11 @@ const loadFormData = async () => {
       const response = await memberService.getById(props.initialData.id!);
       const data = response.data.data;
       form.value = {
-        kode: data.kode || '',
         fullname: data.fullname || '',
         whatsappnumber: data.whatsappnumber || '',
         kode_agen: data.kode_agen || '',
         saldo: data.saldo || 0,
         status: data.status || 'unverified',
-        type: data.type || 'outletpulsa',
-        agenType: data.agenType || 'silver',
       };
     } catch (error) {
       console.error('Gagal mengambil detail member:', error);
@@ -121,10 +105,6 @@ const validateForm = () => {
   let isValid = true;
   errors.value = {};
 
-  if (!form.value.kode?.trim() && props.mode === 'add') {
-    errors.value.kode = 'Kode member tidak boleh kosong.';
-    isValid = false;
-  }
   if (!form.value.fullname.trim()) {
     errors.value.fullname = 'Nama lengkap tidak boleh kosong.';
     isValid = false;
@@ -133,9 +113,24 @@ const validateForm = () => {
     errors.value.whatsappnumber = 'Nomor WhatsApp tidak boleh kosong.';
     isValid = false;
   }
-  if (props.mode === 'add' && (!form.value.password || form.value.password.length < 6)) {
-    errors.value.password = 'Password minimal 6 karakter.';
-    isValid = false;
+  if (props.mode === 'add') {
+    if (!form.value.password || form.value.password.length < 6) {
+      errors.value.password = 'Password minimal 6 karakter.';
+      isValid = false;
+    }
+    if (form.value.password !== form.value.password_confirmation) {
+      errors.value.password_confirmation = 'Konfirmasi password tidak cocok.';
+      isValid = false;
+    }
+  } else if (props.mode === 'edit' && form.value.password) {
+    if (form.value.password.length < 6) {
+      errors.value.password = 'Password minimal 6 karakter.';
+      isValid = false;
+    }
+    if (form.value.password !== form.value.password_confirmation) {
+      errors.value.password_confirmation = 'Konfirmasi password tidak cocok.';
+      isValid = false;
+    }
   }
 
   return isValid;
@@ -145,6 +140,7 @@ const handleSubmit = async () => {
   if (!validateForm()) return;
 
   const payload = { ...form.value };
+  delete payload.password_confirmation;
 
   try {
     if (props.mode === 'add') {
@@ -178,23 +174,21 @@ const handleSubmit = async () => {
       <LoadingSpinner label="Mengambil data terbaru..." />
     </div>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <InputText
-        v-model="form.kode"
-        id="kode"
-        label="Kode Member"
-        placeholder="Cth: MBR001"
-        required
-        :errorMessage="errors?.kode"
-      />
-      <InputText
-        v-model="form.fullname"
-        id="fullname"
-        label="Nama Lengkap"
-        placeholder="Masukkan nama lengkap"
-        required
-        :errorMessage="errors?.fullname"
-      />
+    <div v-else>
+      <div class="mb-2 text-xs text-red-500 italic text-right">
+        * Wajib diisi
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="md:col-span-2">
+        <InputText
+          v-model="form.fullname"
+          id="fullname"
+          label="Nama Lengkap"
+          placeholder="Masukkan nama lengkap"
+          required
+          :errorMessage="errors?.fullname"
+        />
+      </div>
       <InputText
         v-model="form.whatsappnumber"
         id="whatsappnumber"
@@ -211,43 +205,36 @@ const handleSubmit = async () => {
         :errorMessage="errors?.kode_agen"
       />
       <SelectField
-        v-model="form.type"
-        id="type"
-        label="Tipe Member"
-        :options="typeOptions"
-        :error="errors?.type"
-      />
-      <SelectField
-        v-model="form.agenType"
-        id="agenType"
-        label="Tipe Agen"
-        :options="agenTypeOptions"
-        :error="errors?.agenType"
-      />
-      <SelectField
         v-model="form.status"
         id="status"
         label="Status Verifikasi"
         :options="statusOptions"
         :error="errors?.status"
       />
-      <InputText
+      <InputCurrency
         v-model="form.saldo"
         id="saldo"
         label="Saldo Awal"
-        type="number"
         placeholder="Cth: 150000"
-        :errorMessage="errors?.saldo"
+        :error="errors?.saldo"
       />
       <InputPassword
-        v-if="mode === 'add'"
         v-model="form.password"
         id="password"
         label="Password"
-        placeholder="Masukkan password member"
-        required
-        :errorMessage="errors?.password"
+        :placeholder="mode === 'add' ? 'Password' : 'Kosongkan jika tidak diubah'"
+        :required="mode === 'add' || !!form.password"
+        :error="errors?.password"
       />
+      <InputPassword
+        v-model="form.password_confirmation"
+        id="password_confirmation"
+        label="Konfirmasi Password"
+        :placeholder="mode === 'add' ? 'Konf Password' : 'Kosongkan jika tidak diubah'"
+        :required="mode === 'add' || !!form.password"
+        :error="errors?.password_confirmation"
+      />
+      </div>
     </div>
   </BaseFormModal>
 

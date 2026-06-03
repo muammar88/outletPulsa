@@ -1,11 +1,7 @@
 import { IsString, IsNotEmpty, IsOptional, IsEnum, IsNumber, MinLength } from 'class-validator';
-import { MemberStatus, MemberType, AgenType } from '@prisma/client';
+import { MemberStatus } from '@prisma/client';
 
 export class CreateMemberDto {
-  @IsString()
-  @IsNotEmpty()
-  kode: string;
-
   @IsString()
   @IsNotEmpty()
   fullname: string;
@@ -30,12 +26,4 @@ export class CreateMemberDto {
   @IsEnum(MemberStatus)
   @IsOptional()
   status?: MemberStatus;
-
-  @IsEnum(MemberType)
-  @IsOptional()
-  type?: MemberType;
-
-  @IsEnum(AgenType)
-  @IsOptional()
-  agenType?: AgenType;
 }

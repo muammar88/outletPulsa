@@ -29,8 +29,6 @@ model Member {
   password       String
   saldo          Int?         @default(0)
   status         MemberStatus @default(unverified)
-  type           MemberType?
-  agenType       AgenType?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -44,17 +42,6 @@ model Member {
 enum MemberStatus {
   unverified
   verfied
-}
-
-enum MemberType {
-  outletpulsa
-  amra
-}
-
-enum AgenType {
-  silver
-  gold
-  platinum
 }
 
 model Bank {

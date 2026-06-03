@@ -9,8 +9,6 @@ export interface Member {
   password?: string;
   saldo?: number;
   status?: string;
-  type?: string;
-  agenType?: string;
   createdAt?: string;
   updatedAt?: string;
 }
