@@ -15,8 +15,45 @@ model User {
   refreshToken String?  @db.Text
   password     String
   type         UserType @default(administrator)
+  groupId      Int?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  group        Group?        @relation(fields: [groupId], references: [id])
+  activityLogs ActivityLog[]
+}
+
+model Group {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  permissions GroupPermission[]
+}
+
+model Permission {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  groups GroupPermission[]
+}
+
+model GroupPermission {
+  id           Int      @id @default(autoincrement())
+  groupId      Int
+  permissionId Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  group      Group      @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, permissionId])
 }
 
 model Member {
@@ -38,6 +75,7 @@ model Member {
   paymentFeeAgenHistories PaymentFeeAgenHistory[]
   promos                  Promo[]
   riwayatSaldos           RiwayatSaldo[]
+  activityLogs            ActivityLog[]
 }
 
 enum MemberStatus {
@@ -241,6 +279,7 @@ enum TransactionStatus {
   proses
   gagal
   sukses
+  expired
 }
 
 model RequestDeposit {
@@ -258,6 +297,11 @@ model RequestDeposit {
   count_penolakan    Int?
   waktuKirim         DateTime?
   waktuNotifikasi    DateTime?
+  tripayReference    String?            @unique
+  tripayMerchantRef  String?
+  tripayMethod       String?
+  tripayFee          Int?
+  checkoutUrl        String?            @db.Text
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
@@ -700,15 +744,15 @@ enum UserType {
 }
 
 model PengaturanUmum {
-  id             Int      @id @default(autoincrement())
-  nama_aplikasi  String?  @default("Outlet Pulsa")
-  deskripsi      String?  @db.Text
-  logo           String?  @db.Text
-  email          String?
-  telepon        String?
-  alamat         String?  @db.Text
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id            Int      @id @default(autoincrement())
+  nama_aplikasi String?  @default("Outlet Pulsa")
+  deskripsi     String?  @db.Text
+  logo          String?  @db.Text
+  email         String?
+  telepon       String?
+  alamat        String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model RiwayatSaldo {
@@ -723,7 +767,7 @@ model RiwayatSaldo {
   created_at       DateTime           @default(now())
   updated_at       DateTime           @updatedAt
 
-  member           Member             @relation(fields: [member_id], references: [id])
+  member Member @relation(fields: [member_id], references: [id])
 
   @@index([member_id])
   @@map("riwayat_saldo")
@@ -734,4 +778,18 @@ enum RiwayatSaldoStatus {
   deposit
   transfer_pulsa
   pencairan_fee_agen
+}
+
+model ActivityLog {
+  id          Int      @id @default(autoincrement())
+  userId      Int?
+  memberId    Int?
+  action      String
+  entity      String?
+  entityId    String?
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  user   User?   @relation(fields: [userId], references: [id])
+  member Member? @relation(fields: [memberId], references: [id])
 }

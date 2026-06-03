@@ -13,9 +13,16 @@ import { DaftarAgenModule } from './daftar_agen/daftar_agen.module';
 import { KategoriModule } from './kategori/kategori.module';
 import { OperatorModule } from './operator/operator.module';
 import { DepositModule } from './deposit/deposit.module';
+import { LogModule } from './log/log.module';
+import { DaftarGrupModule } from './daftar_grup/daftar_grup.module';
+import { DaftarPenggunaModule } from './daftar_pengguna/daftar_pengguna.module';
+import { TripayModule } from './tripay/tripay.module';
+import { DaftarProdukTripayModule } from './daftar_produk_tripay/daftar_produk_tripay.module';
+import { KategoriTripayModule } from './kategori_tripay/kategori_tripay.module';
+import { OperatorTripayModule } from './operator_tripay/operator_tripay.module';
 
 @Module({
-  imports: [AuthModule, MenuModule, DaftarMemberModule, DaftarAgenModule, TransaksiPulsaModule, SemuaProdukModule, SemuaServerModule, PengaturanUmumModule, KategoriModule, OperatorModule, DepositModule],
+  imports: [AuthModule, MenuModule, DaftarMemberModule, DaftarAgenModule, TransaksiPulsaModule, SemuaProdukModule, SemuaServerModule, PengaturanUmumModule, KategoriModule, OperatorModule, DepositModule, LogModule, DaftarGrupModule, DaftarPenggunaModule, TripayModule, DaftarProdukTripayModule, KategoriTripayModule, OperatorTripayModule],
   controllers: [AdministratorController],
   providers: [AdministratorService],
 })

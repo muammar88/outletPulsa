@@ -15,10 +15,17 @@
           </li>
 
           <!-- Nomor Halaman -->
-          <li v-for="page in pages" :key="page">
+          <li v-for="(page, idx) in pages" :key="idx">
+            <span
+              v-if="page === '...'"
+              class="px-3 py-2 leading-tight text-gray-500 bg-white border border-gray-300 pointer-events-none select-none"
+            >
+              ...
+            </span>
             <button
+              v-else
               @click="$emit('page-now', page)"
-              class="px-3 py-2 leading-tight border"
+              class="px-3 py-2 leading-tight border transition-colors"
               :class="
                 currentPage === page
                   ? 'text-white bg-outlet border-outlet'

@@ -13,6 +13,15 @@ export class AuthService {
   async login(kode: string, pass: string) {
     const user = await this.prisma.user.findFirst({
       where: { kode },
+      include: {
+        group: {
+          include: {
+            permissions: {
+              include: { permission: true }
+            }
+          }
+        }
+      }
     });
 
     if (!user) {
@@ -47,6 +56,11 @@ export class AuthService {
         kode: user.kode,
         name: user.name,
         type: user.type,
+        group: user.group ? {
+          id: user.group.id,
+          name: user.group.name,
+          permissions: user.group.permissions.map(p => p.permission.name)
+        } : null
       },
     };
   }

@@ -11,5 +11,11 @@ export const tabComponents: Record<string, any> = {
   operator: defineAsyncComponent(() => import('@/modules/Administrator/Operator/Operator.vue')),
   pengaturan: defineAsyncComponent(() => import('@/modules/Administrator/PengaturanUmum/PengaturanUmum.vue')),
   deposit: defineAsyncComponent(() => import('@/modules/Administrator/Deposit/Deposit.vue')),
+  log: defineAsyncComponent(() => import('@/modules/Administrator/Log/Log.vue')),
+  daftar_grup: defineAsyncComponent(() => import('@/modules/Administrator/DaftarGrup/DaftarGrup.vue')),
+  daftar_pengguna: defineAsyncComponent(() => import('@/modules/Administrator/DaftarPengguna/DaftarPengguna.vue')),
+  daftar_produk_tripay: defineAsyncComponent(() => import('@/modules/Administrator/DaftarProdukTripay/DaftarProdukTripay.vue')),
+  daftar_kategori_tripay: defineAsyncComponent(() => import('@/modules/Administrator/KategoriTripay/KategoriTripay.vue')),
+  daftar_operator_tripay: defineAsyncComponent(() => import('@/modules/Administrator/OperatorTripay/OperatorTripay.vue')),
   notFound: defineAsyncComponent(() => import('@/views/errors/NotFoundView.vue')),
 };

@@ -31,9 +31,24 @@ export function usePagination(fetchData: () => void, options?: {
     setPage(page)
   }
 
-  const pages = computed(() =>
-    Array.from({ length: totalPages.value }, (_, i) => i + 1)
-  )
+  const pages = computed(() => {
+    const total = totalPages.value;
+    const current = currentPage.value;
+    
+    if (total <= 7) {
+      return Array.from({ length: total }, (_, i) => i + 1);
+    }
+
+    if (current <= 4) {
+      return [1, 2, 3, 4, 5, '...', total];
+    }
+
+    if (current >= total - 3) {
+      return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+    }
+
+    return [1, '...', current - 1, current, current + 1, '...', total];
+  });
 
   return {
     currentPage,
