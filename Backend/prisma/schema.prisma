@@ -37,6 +37,7 @@ model Member {
   resetPasswords          ResetPassword[]
   paymentFeeAgenHistories PaymentFeeAgenHistory[]
   promos                  Promo[]
+  riwayatSaldos           RiwayatSaldo[]
 }
 
 enum MemberStatus {
@@ -708,4 +709,29 @@ model PengaturanUmum {
   alamat         String?  @db.Text
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+}
+
+model RiwayatSaldo {
+  id               Int                @id @default(autoincrement())
+  kode             String
+  member_id        Int
+  nominal          Int
+  saldo_sebelumnya Int
+  saldo_setelahnya Int
+  status           RiwayatSaldoStatus
+  ket              String?            @db.Text
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @updatedAt
+
+  member           Member             @relation(fields: [member_id], references: [id])
+
+  @@index([member_id])
+  @@map("riwayat_saldo")
+}
+
+enum RiwayatSaldoStatus {
+  pembelian_pulsa
+  deposit
+  transfer_pulsa
+  pencairan_fee_agen
 }

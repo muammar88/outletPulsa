@@ -4,7 +4,7 @@ import { UpdatePengaturanUmumDto } from './dto/update-pengaturan-umum.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 @UseGuards(JwtAuthGuard)
-@Controller('api/administrator/pengaturan-umum')
+@Controller('administrator/pengaturan-umum')
 export class PengaturanUmumController {
   constructor(private readonly pengaturanUmumService: PengaturanUmumService) {}
 

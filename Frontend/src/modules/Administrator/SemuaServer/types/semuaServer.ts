@@ -5,6 +5,10 @@ export interface Server {
   status: 'active' | 'inactive';
   createdAt: string;
   updatedAt: string;
+  _count?: {
+    produks: number;
+    produkPascabayars: number;
+  };
 }
 
 export interface PaginationData {

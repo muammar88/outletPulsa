@@ -14,6 +14,7 @@ import { DaftarMemberService } from './daftar_member.service';
 import { CreateMemberDto } from './dto/create-member.dto';
 import { UpdateMemberDto } from './dto/update-member.dto';
 import { GetMemberDto } from './dto/get-member.dto';
+import { TambahSaldoDto } from './dto/tambah-saldo.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 // import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
@@ -73,5 +74,11 @@ export class DaftarMemberController {
       error: null,
       data: null,
     };
+  }
+
+  @Post('tambah-saldo')
+  @HttpCode(200)
+  async tambahSaldo(@Body() tambahSaldoDto: TambahSaldoDto) {
+    return await this.daftarMemberService.tambahSaldo(tambahSaldoDto);
   }
 }

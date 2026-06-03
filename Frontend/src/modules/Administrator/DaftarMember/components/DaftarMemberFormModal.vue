@@ -113,6 +113,10 @@ const validateForm = () => {
     errors.value.whatsappnumber = 'Nomor WhatsApp tidak boleh kosong.';
     isValid = false;
   }
+  if (props.mode === 'edit' && form.value.kode_agen && props.initialData?.kode && form.value.kode_agen === props.initialData.kode) {
+    errors.value.kode_agen = 'Kode agen tidak boleh kode member sendiri.';
+    isValid = false;
+  }
   if (props.mode === 'add') {
     if (!form.value.password || form.value.password.length < 6) {
       errors.value.password = 'Password minimal 6 karakter.';

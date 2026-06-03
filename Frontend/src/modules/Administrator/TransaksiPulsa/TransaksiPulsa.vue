@@ -17,7 +17,7 @@ const tableColumns = [
   {
     key: 'kode',
     label: 'No. Transaksi',
-    headerClass: 'text-left w-[15%] pl-4',
+    headerClass: 'text-left w-[10%] pl-4',
     cellClass: 'text-left pl-4',
   },
   {
@@ -41,13 +41,13 @@ const tableColumns = [
   {
     key: 'produk',
     label: 'Produk',
-    headerClass: 'text-left w-[15%]',
+    headerClass: 'text-left w-[10%]',
     cellClass: 'text-left',
   },
   {
     key: 'harga',
     label: 'Harga / Laba',
-    headerClass: 'text-left w-[15%]',
+    headerClass: 'text-left w-[10%]',
     cellClass: 'text-left',
   },
   {
@@ -59,7 +59,7 @@ const tableColumns = [
   {
     key: 'action',
     label: 'Aksi',
-    headerClass: 'text-center w-[5%]',
+    headerClass: 'text-center w-[15%]',
     cellClass: 'text-center',
   },
 ];

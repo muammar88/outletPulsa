@@ -5,7 +5,7 @@ import { UpdateSemuaServerDto } from './dto/update-semua-server.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 
 @UseGuards(JwtAuthGuard)
-@Controller('api/administrator/semua-server')
+@Controller('administrator/semua-server')
 export class SemuaServerController {
   constructor(private readonly semuaServerService: SemuaServerService) {}
 

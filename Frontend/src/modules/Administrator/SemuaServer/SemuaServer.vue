@@ -11,6 +11,9 @@ import Confirmation from '@/components/Modal/Confirmation.vue';
 import DeleteIcon from '@/components/Icons/DeleteIcon.vue';
 import EditIcon from '@/components/Icons/EditIcon.vue';
 import IconDetail from '@/components/Icons/IconDetail.vue';
+import PowerIcon from '@/components/Icons/PowerIcon.vue';
+import DangerButton from '@/components/Button/DangerButton.vue';
+import LightButton from '@/components/Button/LightButton.vue';
 
 import { semuaServerService } from './services/semuaServerService';
 import type { Server } from './types/semuaServer';
@@ -28,10 +31,11 @@ const { showConfirmDialog, confirmTitle, confirmMessage, confirmAction, displayC
   useConfirmation();
 
 const tableColumns = [
-  { key: 'kode', label: 'Kode', headerClass: 'text-left w-[20%] pl-4', cellClass: 'text-left pl-4' },
-  { key: 'name', label: 'Nama Server', headerClass: 'text-left w-[40%]', cellClass: 'text-left font-semibold text-gray-800' },
+  { key: 'kode', label: 'Kode', headerClass: 'text-left w-[15%] pl-4', cellClass: 'text-left pl-4' },
+  { key: 'name', label: 'Nama Server', headerClass: 'text-left w-[35%]', cellClass: 'text-left font-semibold text-gray-800' },
+  { key: 'produk_count', label: 'Jumlah Produk', headerClass: 'text-center w-[15%]', cellClass: 'text-center' },
   { key: 'status', label: 'Status', headerClass: 'text-center w-[20%]', cellClass: 'text-center' },
-  { key: 'action', label: 'Aksi', headerClass: 'text-center w-[20%]', cellClass: 'text-center' },
+  { key: 'action', label: 'Aksi', headerClass: 'text-center w-[15%]', cellClass: 'text-center' },
 ];
 
 const dataServer = ref<Server[]>([]);
@@ -121,7 +125,9 @@ const handleDelete = (server: Server) => {
   // Actually, outletPulsa's Confirmation component expects @confirm="action" if we customize it, or we can just patch it here:
 };
 
-// Listen to confirm button manually if needed. Let's adapt to outletPulsa standard:
+const confirmButtonText = ref('Ya, Lanjutkan');
+const currentActionType = ref<'delete' | 'toggle'>('delete');
+
 const handleConfirmDelete = async () => {
   if (!selectedServer.value) return;
   try {
@@ -132,20 +138,56 @@ const handleConfirmDelete = async () => {
     const errMsg = error?.response?.data?.message || 'Gagal menghapus server';
     displayNotification(errMsg, 'error');
   } finally {
-    confirm.value = false;
+    showConfirmDialog.value = false;
   }
 };
 
-const executeDelete = async () => {
-   handleConfirmDelete();
+const targetStatusToChange = ref('');
+
+const handleConfirmToggle = async () => {
+  if (!selectedServer.value) return;
+  try {
+    await semuaServerService.update(selectedServer.value.id, { status: targetStatusToChange.value });
+    displayNotification('Status server berhasil diubah!', 'success');
+    fetchData();
+  } catch (error: any) {
+    const errMsg = error?.response?.data?.message || 'Gagal mengubah status server';
+    displayNotification(errMsg, 'error');
+  } finally {
+    showConfirmDialog.value = false;
+  }
+};
+
+const executeAction = async () => {
+  if (currentActionType.value === 'delete') {
+    await handleConfirmDelete();
+  } else if (currentActionType.value === 'toggle') {
+    await handleConfirmToggle();
+  }
 }
 
 const triggerDelete = (server: Server) => {
   selectedServer.value = server;
+  currentActionType.value = 'delete';
   confirmTitle.value = 'Hapus Server';
-  confirmMessage.value = `Anda yakin ingin menghapus server ${server.name}?`;
+  confirmMessage.value = `Anda yakin ingin menghapus server <strong>${server.name}</strong>?`;
+  confirmButtonText.value = 'Hapus';
   showConfirmDialog.value = true;
 }
+
+const handleRadioClick = (server: Server, desiredStatus: 'active' | 'inactive') => {
+  if (server.status === desiredStatus) return; // already in this status, do nothing
+  
+  targetStatusToChange.value = desiredStatus;
+  selectedServer.value = server;
+  currentActionType.value = 'toggle';
+  
+  const actionText = desiredStatus === 'active' ? 'mengaktifkan' : 'menonaktifkan';
+  confirmTitle.value = 'Konfirmasi Ubah Status';
+  confirmMessage.value = `Anda yakin ingin ${actionText} server <strong>${server.name}</strong>?`;
+  confirmButtonText.value = 'Ya, Lanjutkan';
+  showConfirmDialog.value = true;
+};
 
 const closeForm = () => {
   showFormModal.value = false;
@@ -222,50 +264,42 @@ onMounted(() => {
           </div>
         </template>
 
-        <template #cell-status="{ row }">
+        <template #cell-produk_count="{ row }">
           <div class="flex justify-center">
-            <div 
-              class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm border"
-              :class="row.status === 'active' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'"
-            >
-              <span class="relative flex h-2 w-2 mr-1.5">
-                <span 
-                  v-if="row.status === 'active'" 
-                  class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
-                ></span>
-                <span 
-                  class="relative inline-flex rounded-full h-2 w-2"
-                  :class="row.status === 'active' ? 'bg-green-500' : 'bg-red-500'"
-                ></span>
+            <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 font-bold text-xs rounded-lg border border-indigo-100 shadow-sm whitespace-nowrap">
+              {{ (row._count?.produks || 0) + (row._count?.produkPascabayars || 0) }} Produk
+            </span>
+          </div>
+        </template>
+
+        <template #cell-status="{ row }">
+          <div class="flex justify-center items-center">
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input 
+                type="checkbox" 
+                class="sr-only peer" 
+                :checked="row.status === 'active'"
+                @click.prevent="handleRadioClick(row, row.status === 'active' ? 'inactive' : 'active')"
+              >
+              <div class="w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+              <span class="ml-2.5 text-[11px] font-bold uppercase tracking-wide" :class="row.status === 'active' ? 'text-emerald-600' : 'text-gray-500'">
+                {{ row.status === 'active' ? 'Aktif' : 'Non-Aktif' }}
               </span>
-              {{ row.status === 'active' ? 'Aktif' : 'Non-Aktif' }}
-            </div>
+            </label>
           </div>
         </template>
 
         <template #cell-action="{ row }">
-          <div class="flex justify-center items-center gap-2">
-            <button 
-              @click="handleDetail(row)"
-              class="p-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg transition-colors border border-blue-100"
-              title="Detail"
-            >
-              <IconDetail class="w-4 h-4" />
-            </button>
-            <button 
-              @click="handleEdit(row)"
-              class="p-1.5 bg-orange-50 text-orange-600 hover:bg-orange-100 rounded-lg transition-colors border border-orange-100"
-              title="Edit"
-            >
-              <EditIcon class="w-4 h-4" />
-            </button>
-            <button 
-              @click="triggerDelete(row)"
-              class="p-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors border border-red-100"
-              title="Hapus"
-            >
-              <DeleteIcon class="w-4 h-4" />
-            </button>
+          <div class="flex justify-center gap-2">
+            <LightButton @click="handleDetail(row)" title="Detail"
+              ><IconDetail></IconDetail
+            ></LightButton>
+            <LightButton @click="handleEdit(row)" title="Edit Server"
+              ><EditIcon></EditIcon
+            ></LightButton>
+            <DangerButton @click="triggerDelete(row)" title="Hapus Server"
+              ><DeleteIcon
+            /></DangerButton>
           </div>
         </template>
       </BaseTable>
@@ -286,21 +320,21 @@ onMounted(() => {
     />
 
     <Confirmation
-      :showConfirmDialog="showConfirmDialog"
-      :confirmTitle="confirmTitle"
-      :confirmMessage="confirmMessage"
+      :show-confirm-dialog="showConfirmDialog"
+      :confirm-title="confirmTitle"
+      :confirm-message="confirmMessage"
     >
       <button
-        @click="executeDelete"
-        class="inline-flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm"
-      >
-        Hapus
-      </button>
-      <button
         @click="showConfirmDialog = false"
-        class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+        class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
       >
         Batal
+      </button>
+      <button
+        @click="executeAction"
+        class="rounded-md bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-700 focus:outline-none shadow-[0_0_15px_rgba(225,29,72,0.5)]"
+      >
+        {{ confirmButtonText }}
       </button>
     </Confirmation>
 

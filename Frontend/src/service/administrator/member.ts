@@ -35,4 +35,8 @@ export const memberService = {
   delete: async (id: number) => {
     return await api.delete(`/administrator/member/${id}`);
   },
+
+  tambahSaldo: async (member_id: number, nominal: number) => {
+    return await api.post(`/administrator/member/tambah-saldo`, { member_id, nominal });
+  },
 };

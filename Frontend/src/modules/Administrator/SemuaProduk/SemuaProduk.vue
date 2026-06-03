@@ -34,10 +34,11 @@ const { showConfirmDialog, confirmTitle, confirmMessage, displayConfirmation, co
   useConfirmation();
 
 const tableColumns = [
-  { key: 'kode', label: 'Kode', headerClass: 'text-left w-[20%] pl-4', cellClass: 'text-left pl-4' },
+  { key: 'kode', label: 'Kode', headerClass: 'text-left w-[15%] pl-4', cellClass: 'text-left pl-4' },
   { key: 'name', label: 'Nama Produk', headerClass: 'text-left w-[20%]', cellClass: 'text-left' },
-  { key: 'harga', label: 'Harga (Beli / Jual)', headerClass: 'text-right w-[20%]', cellClass: 'text-right' },
-  { key: 'type', label: 'Tipe', headerClass: 'text-center w-[15%]', cellClass: 'text-center capitalize' },
+  { key: 'server', label: 'Server', headerClass: 'text-left w-[15%]', cellClass: 'text-left' },
+  { key: 'harga', label: 'Harga (Beli / Jual)', headerClass: 'text-right w-[15%]', cellClass: 'text-right' },
+  { key: 'type', label: 'Tipe', headerClass: 'text-center w-[10%]', cellClass: 'text-center capitalize' },
   { key: 'status', label: 'Status', headerClass: 'text-center w-[10%]', cellClass: 'text-center' },
   { key: 'action', label: 'Aksi', headerClass: 'text-center w-[15%]', cellClass: 'text-center' },
 ];
@@ -217,6 +218,14 @@ onMounted(() => {
       <template #cell-name="{ row }">
         <div class="flex flex-col">
           <span class="text-[14px] font-bold text-gray-800 tracking-tight">{{ row.name }}</span>
+        </div>
+      </template>
+
+      <template #cell-server="{ row }">
+        <div class="flex items-center">
+          <span class="px-2.5 py-1 bg-sky-50 text-sky-700 border border-sky-200 text-[11px] font-bold rounded-md whitespace-nowrap shadow-sm">
+            {{ row.server?.name || 'Tanpa Server' }}
+          </span>
         </div>
       </template>
       

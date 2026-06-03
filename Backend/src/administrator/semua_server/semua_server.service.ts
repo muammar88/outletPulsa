@@ -47,6 +47,14 @@ export class SemuaServerService {
         skip,
         take: Number(limit),
         orderBy: { id: 'desc' },
+        include: {
+          _count: {
+            select: {
+              produks: true,
+              produkPascabayars: true,
+            },
+          },
+        },
       }),
     ]);
 

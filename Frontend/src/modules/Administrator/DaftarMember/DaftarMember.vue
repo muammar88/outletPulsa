@@ -6,6 +6,8 @@ import { onMounted, ref } from 'vue';
 
 // Modal Page
 import DaftarMemberFormModal from '@/modules/Administrator/DaftarMember/components/DaftarMemberFormModal.vue';
+import SetAgenModal from '@/modules/Administrator/DaftarMember/components/SetAgenModal.vue';
+import TambahSaldoModal from '@/modules/Administrator/DaftarMember/components/TambahSaldoModal.vue';
 
 // Table
 import BaseTable from '@/components/Table/BaseTable.vue';
@@ -18,6 +20,8 @@ import LightButton from '@/components/Button/LightButton.vue';
 // Icon
 import DeleteIcon from '@/components/Icons/DeleteIcon.vue';
 import EditIcon from '@/components/Icons/EditIcon.vue';
+import TieIcon from '@/components/Icons/TieIcon.vue';
+import IconMoney from '@/components/Icons/IconMoney.vue';
 import { memberService, type Member } from '@/service/administrator/member';
 
 const {
@@ -81,6 +85,12 @@ const formMode = ref<'add' | 'edit'>('add');
 const selectedMember = ref<Member | null>(null);
 const isSubmitting = ref(false);
 
+// Set Agen Modal State
+const showSetAgenModal = ref(false);
+const setAgenMemberId = ref<number | null>(null);
+const setAgenMemberKode = ref('');
+const currentKodeAgen = ref('');
+
 // Inisialisasi Composable Pagination
 const { currentPage, totalPages, pages, totalRow, pageNow, perPage } = usePagination(
   () => fetchData(),
@@ -124,19 +134,39 @@ const handleAdd = () => {
   showFormModal.value = true;
 };
 
+const handleSetAgen = (row: Member) => {
+  setAgenMemberId.value = row.id!;
+  setAgenMemberKode.value = row.kode;
+  currentKodeAgen.value = row.kode_agen || '';
+  showSetAgenModal.value = true;
+};
+
+const showTambahSaldoModal = ref(false);
+const selectedMemberForSaldo = ref<Member | null>(null);
+
+const handleTambahSaldo = (row: Member) => {
+  selectedMemberForSaldo.value = { ...row };
+  showTambahSaldoModal.value = true;
+};
+
 const handleEdit = (row: any) => {
   formMode.value = 'edit';
   selectedMember.value = { ...row };
   showFormModal.value = true;
 };
 
-const handleDelete = (row: any) => {
+const confirmButtonText = ref('Ya, Lanjutkan');
+const confirmButtonClass = ref('bg-rose-600 hover:bg-rose-700 shadow-[0_0_15px_rgba(225,29,72,0.5)]');
+
+const handleDelete = (row: Member) => {
+  confirmButtonText.value = 'Hapus';
+  confirmButtonClass.value = 'bg-rose-600 hover:bg-rose-700 shadow-[0_0_15px_rgba(225,29,72,0.5)]';
   displayConfirmation(
     'Konfirmasi Hapus',
     `Apakah Anda yakin ingin menghapus member <strong>${row.fullname}</strong>?`,
     async () => {
       try {
-        await memberService.delete(row.id);
+        await memberService.delete(row.id!);
         displayNotification('Member berhasil dihapus', 'success');
         fetchData();
       } catch (error) {
@@ -144,6 +174,26 @@ const handleDelete = (row: any) => {
         console.error('Error saat menghapus member:', error);
       }
     },
+  );
+};
+
+const handleToggleStatus = (row: Member, newStatus: string) => {
+  confirmButtonText.value = 'Ubah Status';
+  confirmButtonClass.value = 'bg-emerald-600 hover:bg-emerald-700 shadow-[0_0_15px_rgba(5,150,105,0.5)]';
+  const statusLabel = newStatus === 'verfied' ? 'Verified' : 'Unverified';
+  displayConfirmation(
+    'Konfirmasi Ubah Status',
+    `Apakah Anda yakin ingin mengubah status member <strong>${row.fullname}</strong> menjadi <strong>${statusLabel}</strong>?`,
+    async () => {
+      try {
+        await memberService.update(row.id!, { status: newStatus });
+        displayNotification('Status member berhasil diubah', 'success');
+        fetchData();
+      } catch (error) {
+        displayNotification('Gagal mengubah status member', 'error');
+        console.error('Error saat mengubah status:', error);
+      }
+    }
   );
 };
 
@@ -202,21 +252,31 @@ onMounted(() => {
       </template>
 
       <template #cell-status="{ row }">
-        <span
-          class="px-2.5 py-1 text-xs font-semibold rounded-full"
-          :class="
-            row.status === 'verfied'
-              ? 'bg-green-100 text-green-700'
-              : 'bg-amber-100 text-amber-700'
-          "
-        >
-          {{ row.status === 'verfied' ? 'Verified' : 'Unverified' }}
-        </span>
+        <div class="flex justify-center items-center">
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input 
+              type="checkbox" 
+              class="sr-only peer" 
+              :checked="row.status === 'verfied'"
+              @click.prevent="handleToggleStatus(row, row.status === 'verfied' ? 'unverified' : 'verfied')"
+            >
+            <div class="w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+            <span class="ml-2.5 text-[11px] font-bold uppercase tracking-wide w-16 text-left" :class="row.status === 'verfied' ? 'text-emerald-600' : 'text-gray-500'">
+              {{ row.status === 'verfied' ? 'Verified' : 'Unverified' }}
+            </span>
+          </label>
+        </div>
       </template>
 
       <!-- Kolom Action -->
       <template #cell-action="{ row }">
         <div class="flex justify-center gap-2">
+          <LightButton @click="handleTambahSaldo(row)" title="Tambah Saldo"
+            ><IconMoney></IconMoney
+          ></LightButton>
+          <LightButton v-if="row.status === 'verfied'" @click="handleSetAgen(row)" title="Set Kode Agen"
+            ><TieIcon></TieIcon
+          ></LightButton>
           <LightButton @click="handleEdit(row)" title="Edit Member"
             ><EditIcon></EditIcon
           ></LightButton>
@@ -251,9 +311,9 @@ onMounted(() => {
       </button>
       <button
         @click="confirm"
-        class="rounded-md bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-700 focus:outline-none shadow-[0_0_15px_rgba(225,29,72,0.5)]"
+        :class="['rounded-md px-4 py-2 text-sm font-medium text-white focus:outline-none', confirmButtonClass]"
       >
-        Hapus
+        {{ confirmButtonText }}
       </button>
     </Confirmation>
 
@@ -267,6 +327,30 @@ onMounted(() => {
         showFormModal = false;
         fetchData();
         selectedMember = null;
+      "
+    />
+
+    <!-- Modal Set Kode Agen -->
+    <SetAgenModal
+      :show="showSetAgenModal"
+      :member-id="setAgenMemberId"
+      :member-kode="setAgenMemberKode"
+      :current-kode-agen="currentKodeAgen"
+      @close="showSetAgenModal = false"
+      @success="
+        showSetAgenModal = false;
+        fetchData();
+      "
+    />
+
+    <!-- Modal Tambah Saldo -->
+    <TambahSaldoModal
+      :show="showTambahSaldoModal"
+      :member="selectedMemberForSaldo"
+      @close="showTambahSaldoModal = false"
+      @success="
+        showTambahSaldoModal = false;
+        fetchData();
       "
     />
   </div>
