@@ -1,0 +1,237 @@
+name: outletpulsa
+description: Aplikasi pulsa.
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
+
+# The following defines the version and build number for your application.
+# A version number is three numbers separated by dots, like 1.2.43
+# followed by an optional build number separated by a +.
+# Both the version and the builder number may be overridden in flutter
+# build by specifying --build-name and --build-number, respectively.
+# In Android, build-name is used as versionName while build-number used as versionCode.
+# Read more about Android versioning at https://developer.android.com/studio/publish/versioning
+# In iOS, build-name is used as CFBundleShortVersionString while build-number is used as CFBundleVersion.
+# Read more about iOS versioning at
+# https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
+# In Windows, build-name is used as the major, minor, and patch parts
+# of the product and file versions while build-number is used as the build suffix.
+version: 1.0.6+6
+
+environment:
+  sdk: ">=3.0.6 <4.0.0"
+
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # The following adds the Cupertino Icons font to your application.
+  # Use with the CupertinoIcons class for iOS style icons.
+  cupertino_icons: ^1.0.2
+  flutter_dotenv: ^5.1.0
+  dropdown_button2: ^2.3.6
+  font_awesome_flutter: ^10.5.0
+  flutter_lints: ^2.0.0
+  google_fonts: ^5.1.0
+  carousel_slider: ^4.1.1
+  swipe_refresh: ^1.0.2
+  sqflite: ^2.0.2+1
+  http: ^1.1.0
+  flutter_html: ^3.0.0-beta.2
+  provider: ^6.0.2
+  text_scroll: ^0.2.0
+  flash: ^3.0.5+1
+  url_launcher: ^6.1.2
+  flutter_vector_icons: ^2.0.0
+  sidebarx: ^0.16.0
+  flutter_filter_dialog: ^1.0.3
+  share_plus: ^6.3.4
+  currency_text_input_formatter: ^2.1.10
+  shared_preferences: ^2.2.0
+  quickalert: ^1.0.1
+  smart_alert_dialog: ^4.0.4
+  alert_notification: ^0.0.5
+  bluetooth_print: ^4.3.0
+  path_provider: ^2.0.15
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  change_app_package_name: ^1.1.0
+
+  # The "flutter_lints" package below contains a set of recommended lints to
+  # encourage good coding practices. The lint set provided by the package is
+  # activated in the `analysis_options.yaml` file located at the root of your
+  # package. See that file for information about deactivating specific lint
+  # rules and activating additional ones.
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+  # The following line ensures that the Material Icons font is
+  # included with your application, so that you can use the icons in
+  # the material Icons class.
+  uses-material-design: true
+
+  # To add assets to your application, add an assets section, like this:
+  # assets:
+  #   - images/a_dot_burr.jpeg
+  #   - images/a_dot_ham.jpeg
+
+  assets:
+    - .env
+    - assets/img/notfound_produk.png
+    - assets/img/notfound_info.png
+    - assets/img/notfound_riwayat_deposit.png
+    - assets/img/notfound_riwayat_transaksi.png
+    - assets/img/vertical-logo.png
+    - assets/img/logo-cycle.png
+    - assets/img/wallet.png
+    - assets/img/cart.png
+    - assets/img/komisi.png
+    - assets/img/bell.png
+    - assets/img/outlet_pulsa.png
+    - assets/img/riwayat.png
+    - assets/img/avatar-profil.png
+    - assets/img/background.jpg
+    - assets/img/PIDIGIMLY.png
+    - assets/img/PICELCOMMLY.png
+    - assets/img/profile.png
+    - assets/img/transaction.png
+    - assets/img/costumer-service.png
+    - assets/img/transaction-outlet.png
+    - assets/img/price.png
+    - assets/img/product.png
+    - assets/img/keagenan.png
+    - assets/img/transaksi_saldo.png
+    - assets/img/laporan-harian.png
+    - assets/img/laporan-outlet.png
+    - assets/img/pengaturan.png
+    - assets/img/logout.png
+    - assets/img/cek_status_voucher.png
+    - assets/img/voucher_fisik.png
+    - assets/img/tokenpln.png
+    - assets/img/e-toll.png
+    - assets/img/pulsa_international.png
+    - assets/img/paket_nelpon.png
+    - assets/img/paket_sms.png
+    - assets/img/paket_data.png
+    - assets/img/pulsa_transfer.png
+    - assets/img/pulsa_reguler.png
+    - assets/img/transfer_saldo.png
+    - assets/img/transfer_uang.png
+    - assets/img/bpjs.png
+    - assets/img/kartu_halo.png
+    - assets/img/pdam.png
+    - assets/img/pgn.png
+    - assets/img/pln_berlangganan.png
+    - assets/img/pulsa_pasca_bayar.png
+    - assets/img/television.png
+    - assets/img/telkom.png
+    - assets/img/uang_digital.png
+    - assets/img/wifi_id.png
+    - assets/img/WIFID.png
+    - assets/img/bsi.png
+    - assets/img/bni.png
+    - assets/img/UDSKU.png
+    - assets/img/UDTCB.png
+    - assets/img/UDEM.png
+    - assets/img/permata.png
+    - assets/img/jago.png
+    - assets/img/bri.png
+    - assets/img/danamon.png
+    - assets/img/panin_bank.png
+    - assets/img/maybank.png
+    - assets/img/bukopin.png
+    - assets/img/bca_syariah.png
+    - assets/img/UDDNA.png
+    - assets/img/UDOVO.png
+    - assets/img/UDOVOA.png
+    - assets/img/UDOVOB.png
+    - assets/img/UDLA.png
+    - assets/img/UDSHP.png
+    - assets/img/UDSHPA.png
+    - assets/img/UDSHPD.png
+    - assets/img/UDMXMD.png
+    - assets/img/UDGR.png
+    - assets/img/UDGRD.png
+    - assets/img/UDGP.png
+    - assets/img/UDGPD.png
+    - assets/img/doku.png
+    - assets/img/UDSKU.png
+    - assets/img/UDISKU.png
+    - assets/img/emoneymandiri.png
+    - assets/img/UDBRI.png
+    - assets/img/bills.png
+    - assets/img/UDBL.png
+    - assets/img/UDKSP.png
+    - assets/img/VDIT.png
+    - assets/img/MANDIRI.png
+    - assets/img/ETMANDIRI.png
+    - assets/img/ETINDOMARET.png
+    - assets/img/ETBRIZZI.png
+    - assets/img/BCA.png
+    - assets/img/BNI.png
+    - assets/img/PERMATA.png
+    - assets/img/BRI.png
+    - assets/img/CIMB_NIAGA.png
+    - assets/img/DANAMON.png
+    - assets/img/PANIN.png
+    - assets/img/BII.jpg
+    - assets/img/BII.png
+    - assets/img/ANGLOMAS.png
+    - assets/img/BANGKOK.png
+    - assets/img/IBK.png
+    - assets/img/SINARMAS.png
+    - assets/img/BRI_AGRO.png
+    - assets/img/ANDARA.png
+    - assets/img/ANTAR_DAERAH.png
+    - assets/img/BRI_AGRO.png
+    - assets/img/ANZ.png
+    - assets/img/ARTHA.png
+    - assets/img/ARTOS.png
+    - assets/img/BANK.png
+    - assets/img/internet.png
+    - assets/img/bottom_struk.png
+    - assets/img/top_failed_struk.png
+    - assets/img/top_progress_struk.png
+    - assets/img/top_success_struk.png
+    - assets/img/tengah.png
+    - assets/img/bottom.png
+    - assets/img/top.png
+    - assets/img/bottom-simple.png
+    - assets/img/no-results.png
+
+  # An image asset can refer to one or more resolution-specific "variants", see
+  # https://flutter.dev/assets-and-images/#resolution-aware
+
+  # For details regarding adding assets from package dependencies, see
+  # https://flutter.dev/assets-and-images/#from-packages
+
+  # To add custom fonts to your application, add a fonts section here,
+  # in this "flutter" section. Each entry in this list should have a
+  # "family" key with the font family name, and a "fonts" key with a
+  # list giving the asset and other descriptors for the font. For
+  # example:
+  # fonts:
+  #   - family: Schyler
+  #     fonts:
+  #       - asset: fonts/Schyler-Regular.ttf
+  #       - asset: fonts/Schyler-Italic.ttf
+  #         style: italic
+  #   - family: Trajan Pro
+  #     fonts:
+  #       - asset: fonts/TrajanPro.ttf
+  #       - asset: fonts/TrajanPro_Bold.ttf
+  #         weight: 700
+  #
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/custom-fonts/#from-packages
