@@ -4,9 +4,6 @@ import '../models/model_void.dart';
 
 class Registrasi_provider with ChangeNotifier {
   Future<Model_void> getOTP(String nomor_whatsapp) async {
-    print('XXXXXXXX');
-    print(nomor_whatsapp);
-    print('XXXXXXXX');
     return await Rest_registrasi()
         .getOTP(nomor_whatsapp)
         .then((Model_void e) async {
@@ -19,9 +16,6 @@ class Registrasi_provider with ChangeNotifier {
   }
 
   Future<Model_void> getOTPResetPassword(String nomor_whatsapp) async {
-    print('XXXXXXXX');
-    print(nomor_whatsapp);
-    print('XXXXXXXX');
     return await Rest_registrasi()
         .getOTPResetPassword(nomor_whatsapp)
         .then((Model_void e) async {

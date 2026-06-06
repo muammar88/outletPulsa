@@ -8,8 +8,13 @@ class Model_list_operator {
   Map<String, dynamic>? get list_operator => _list_operator;
 
   Model_list_operator.map(Map<String, dynamic> obj) {
-    _error = obj['error'];
-    _errorMsg = obj['error_msg'];
-    _list_operator = obj['list_operator'];
+    if (obj['error'] != null && obj['error'] != '') {
+      _error = obj['error'] == true || obj['error'] == 'true';
+    } else {
+      _error = obj['data'] == null || (obj['data'] is Map && obj['data'].isEmpty);
+    }
+    _errorMsg = obj['message'] ?? obj['error_msg'];
+    var data = obj['data'] ?? obj;
+    _list_operator = data['list_operator'];
   }
 }

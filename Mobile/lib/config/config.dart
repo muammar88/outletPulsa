@@ -59,52 +59,54 @@ class ConfigApp {
   // constructor
   ConfigApp() {
     // url
-    _mainurl = "http://api.outletpulsa.com";
-    _login_url = _mainurl! + '/login';
-    _check_login_url = _mainurl! + '/check_login_url';
-    _beranda_url = '/beranda';
-    _info_deposit_url = '/info_tambah_deposit';
-    _getPrefix_url = '/get_prefix';
-    _getDaftarProduk_url = '/getDaftarProduk_url';
-    _getDaftarProdukData_url = '/getDaftarProdukData_url';
-    _getDaftarOperator_url = '/getDaftarOperator_url';
-    _getDaftarKategori_url = '/getDaftarKategori_url';
-    _getDaftarKategoriPascabayar_url = '/getDaftarKategoriPascabayar_url';
-    _getRiwayatPrabayar_url = '/getRiwayatPrabayar_url';
-    _getRiwayatPascabayar_url = '/getRiwayatPascabayar_url';
-    _getRiwayatDeposit_url = '/getRiwayatDeposit_url';
-    _getInfoBelumBaca_url = '/getInfoBelumBaca_url';
-    _getInfoSudahBaca_url = '/getInfoSudahBaca_url';
-    _updateStatusBaca_url = '/updateStatusBaca_url';
-    _updateNamaAkun_url = '/updateNamaAkun_url';
-    _updatePasswordAkun_url = '/updatePasswordAkun_url';
-    _transferSaldo_url = '/transferSaldo_url';
-    _getRiwayatTransferSaldo_url = '/getRiwayatTransferSaldo_url';
-    _deposit_saldo_url = '/deposit_saldo_url';
-    _info_konfirmasi_deposit_url = '/info_konfirmasi_deposit_url';
-    _delete_konfirmasi_deposit_url = '/delete_konfirmasi_deposit_url';
-    _konfirmasi_deposit_url = '/konfirmasi_deposit_url';
-    _detail_deposit_saldo_url = '/detail_deposit_saldo_url';
-    _get_otp_url = '/get_otp_url';
-    _get_otp_reset_password_url = '/get_otp_reset_password_url';
-    _register_url = '/register_url';
-    _reset_password_url = '/reset_password_url';
-    _prabayarTransaction_url = '/prabayarTransaction_url';
-    _detailTransaksi_url = '/detailTransaksi_url';
-    _detailTransaksiPascabayar_url = '/detailTransaksiPascabayar_url';
-    _inquiryPascabayar_url = '/inquiryPascabayar_url';
-    _pembayaranPascabayar_url = '/pembayaranPascabayar_url';
-    _daftarAgen_url = '/daftarAgen_url';
-    _daftarRiwayatPembayaran_url = '/daftarRiwayatPembayaranAgen_url';
+    // _mainurl = "http://api.outletpulsa.com";
+    // _mainurl = "http://localhost:3003";
+    _mainurl = "http://10.95.73.166:3005/api";
+    _login_url = '$_mainurl/auth/login';
+    _check_login_url = '$_mainurl/auth/check-login';
+    _beranda_url = '$_mainurl/beranda';
+    _info_deposit_url = '$_mainurl/deposit-info';
+    _getPrefix_url = '$_mainurl/get-prefix';
+    _getDaftarProduk_url = '$_mainurl/daftar-produk';
+    _getDaftarProdukData_url = '$_mainurl/daftar-produk-data';
+    _getDaftarOperator_url = '$_mainurl/daftar-operator';
+    _getDaftarKategori_url = '$_mainurl/daftar-kategori';
+    _getDaftarKategoriPascabayar_url = '$_mainurl/daftar-kategori-pascabayar';
+    _getRiwayatPrabayar_url = '$_mainurl/riwayat-prabayar';
+    _getRiwayatPascabayar_url = '$_mainurl/riwayat-pascabayar';
+    _getRiwayatDeposit_url = '$_mainurl/riwayat-deposit';
+    _getRiwayatTransferSaldo_url = '$_mainurl/riwayat-transfer-saldo';
+    _getInfoBelumBaca_url = '$_mainurl/info-belum-baca';
+    _getInfoSudahBaca_url = '$_mainurl/info-sudah-baca';
+    _updateStatusBaca_url = '$_mainurl/info-update-baca';
+    _updateNamaAkun_url = '$_mainurl/akun-update-nama';
+    _updatePasswordAkun_url = '$_mainurl/akun-update-password';
+    _transferSaldo_url = '$_mainurl/transfer-saldo';
+    _deposit_saldo_url = '$_mainurl/deposit-saldo';
+    _info_konfirmasi_deposit_url = '$_mainurl/deposit-info-konfirmasi';
+    _delete_konfirmasi_deposit_url = '$_mainurl/deposit-delete-konfirmasi';
+    _konfirmasi_deposit_url = '$_mainurl/deposit-konfirmasi';
+    _detail_deposit_saldo_url = '$_mainurl/deposit-detail';
+    _get_otp_url = '$_mainurl/otp-register';
+    _get_otp_reset_password_url = '$_mainurl/otp-reset-password';
+    _register_url = '$_mainurl/register';
+    _reset_password_url = '$_mainurl/reset-password';
+    _prabayarTransaction_url = '$_mainurl/transaksi-prabayar';
+    _detailTransaksi_url = '$_mainurl/transaksi-detail';
+    _detailTransaksiPascabayar_url = '$_mainurl/transaksi-detail-pascabayar';
+    _inquiryPascabayar_url = '$_mainurl/pascabayar-inquiry';
+    _pembayaranPascabayar_url = '$_mainurl/pascabayar-pembayaran';
+    _daftarAgen_url = '$_mainurl/agen-daftar';
+    _daftarRiwayatPembayaran_url = '$_mainurl/agen-riwayat-pembayaran';
 
     // Background COLOR
-    _background_color = Color(0xFF033047);
+    _background_color = Color(0xFF1F2AAA);
     _background_light_color = Color.fromARGB(255, 255, 255, 255);
     _background_tab = Colors.blueGrey[50];
-    _background_smooth_navy = Color(0xFF033047).withOpacity(0.96);
+    _background_smooth_navy = Color(0xFF1F2AAA).withOpacity(0.96);
     // Text Color
     _text_dark_color = Color.fromARGB(255, 65, 65, 65);
-    _text_navy_color = Color(0xFF033047);
+    _text_navy_color = Color(0xFF1F2AAA);
     _text_light_color = Colors.white;
     _text_grey_color = Color(0xFF84A7A1);
     // input field color
@@ -112,7 +114,7 @@ class ConfigApp {
     _input_grey_color = Color.fromARGB(255, 236, 236, 236);
 
     // button color
-    _btn_primary_color = Color(0xFF1F6E8C);
+    _btn_primary_color = Color(0xFF3365F9);
 
     _color_shadow = Colors.grey.withOpacity(0.5);
   }

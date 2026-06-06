@@ -1,0 +1,213 @@
+import { Controller, Get, Post, Delete, UseGuards, Request, Body } from '@nestjs/common';
+import { JwtApiGuard } from '../guards/jwt-api.guard';
+import { JwtService } from '@nestjs/jwt';
+
+/**
+ * StubController — dummy endpoints sementara.
+ * Semua route mengembalikan response kosong yang valid
+ * agar mobile tidak mendapat error 404.
+ * Ganti satu per satu dengan implementasi nyata.
+ */
+@Controller('api')
+export class StubController {
+  constructor(private readonly jwtService: JwtService) {}
+
+  // ── AKUN ─────────────────────────────────────────
+  /** POST /api/akun-update-nama */
+  @UseGuards(JwtApiGuard)
+  @Post('akun-update-nama')
+  updateNamaAkun(@Body() body: any) {
+    return { error: false, error_msg: '' };
+  }
+
+  /** POST /api/akun-update-password */
+  @UseGuards(JwtApiGuard)
+  @Post('akun-update-password')
+  updatePasswordAkun(@Body() body: any) {
+    return { error: false, error_msg: '' };
+  }
+
+  /** POST /api/transfer-saldo */
+  @UseGuards(JwtApiGuard)
+  @Post('transfer-saldo')
+  transferSaldo(@Body() body: any) {
+    return { error: false, error_msg: '' };
+  }
+
+  // ── DEPOSIT ───────────────────────────────────────
+  /** GET /api/deposit-info */
+  @UseGuards(JwtApiGuard)
+  @Get('deposit-info')
+  infoDeposit() {
+    return {
+      error: false,
+      error_msg: '',
+      list_tiket: {},
+      list_bank: {},
+      list_select_bank: {},
+      pesan: '',
+    };
+  }
+
+  /** POST /api/deposit-saldo */
+  @UseGuards(JwtApiGuard)
+  @Post('deposit-saldo')
+  depositSaldo(@Body() body: any) {
+    return { error: false, error_msg: '' };
+  }
+
+  /** GET /api/deposit-info-konfirmasi */
+  @UseGuards(JwtApiGuard)
+  @Get('deposit-info-konfirmasi')
+  infoKonfirmasiDeposit() {
+    return { error: false, error_msg: '', list: {}, data: {} };
+  }
+
+  /** GET /api/deposit-delete-konfirmasi */
+  @UseGuards(JwtApiGuard)
+  @Get('deposit-delete-konfirmasi')
+  deleteKonfirmasiDeposit() {
+    return { error: false, error_msg: '' };
+  }
+
+  /** GET /api/deposit-konfirmasi */
+  @UseGuards(JwtApiGuard)
+  @Get('deposit-konfirmasi')
+  konfirmasiDeposit() {
+    return { error: false, error_msg: '' };
+  }
+
+  /** POST /api/deposit-detail */
+  @UseGuards(JwtApiGuard)
+  @Post('deposit-detail')
+  detailDeposit(@Body() body: any) {
+    return { error: false, error_msg: '', data: {} };
+  }
+
+  // ── TRANSAKSI PRABAYAR ────────────────────────────
+  /** POST /api/get-prefix */
+  @UseGuards(JwtApiGuard)
+  @Post('get-prefix')
+  getPrefix(@Body() body: any) {
+    return { error: false, error_msg: '' };
+  }
+
+  /** POST /api/daftar-produk */
+  @UseGuards(JwtApiGuard)
+  @Post('daftar-produk')
+  getDaftarProduk(@Body() body: any) {
+    return { error: false, error_msg: '', list: {} };
+  }
+
+  /** POST /api/daftar-produk-data */
+  @UseGuards(JwtApiGuard)
+  @Post('daftar-produk-data')
+  getDaftarProdukData(@Body() body: any) {
+    return { error: false, error_msg: '', list: {} };
+  }
+
+  /** POST /api/daftar-operator */
+  @UseGuards(JwtApiGuard)
+  @Post('daftar-operator')
+  getDaftarOperator(@Body() body: any) {
+    return { error: false, error_msg: '', list: {} };
+  }
+
+  /** POST /api/daftar-kategori */
+  @UseGuards(JwtApiGuard)
+  @Post('daftar-kategori')
+  getDaftarKategori(@Body() body: any) {
+    return { error: false, error_msg: '', list: {} };
+  }
+
+  /** POST /api/daftar-kategori-pascabayar */
+  @UseGuards(JwtApiGuard)
+  @Post('daftar-kategori-pascabayar')
+  getDaftarKategoriPascabayar(@Body() body: any) {
+    return { error: false, error_msg: '', list: {} };
+  }
+
+  /** POST /api/transaksi-prabayar */
+  @UseGuards(JwtApiGuard)
+  @Post('transaksi-prabayar')
+  prabayarTransaction(@Body() body: any) {
+    return { error: false, error_msg: '', kodeTransaksi: '' };
+  }
+
+  /** POST /api/transaksi-detail */
+  @UseGuards(JwtApiGuard)
+  @Post('transaksi-detail')
+  detailTransaksi(@Body() body: any) {
+    return { error: false, error_msg: '', data: {} };
+  }
+
+  // ── TRANSAKSI PASCABAYAR ──────────────────────────
+  /** POST /api/pascabayar-inquiry */
+  @UseGuards(JwtApiGuard)
+  @Post('pascabayar-inquiry')
+  inquiryPascabayar(@Body() body: any) {
+    return {
+      error: false,
+      error_msg: '',
+      data: {
+        ref_id: '', tr_id: '', kode_product: '',
+        nomor_tujuan: '', nama_pelanggan: '',
+        nominal: '', totalTagihan: '', biaya_admin: '', fee: '',
+      },
+    };
+  }
+
+  /** POST /api/pascabayar-pembayaran */
+  @UseGuards(JwtApiGuard)
+  @Post('pascabayar-pembayaran')
+  pembayaranPascabayar(@Body() body: any) {
+    return { error: false, error_msg: '' };
+  }
+
+  /** POST /api/transaksi-detail-pascabayar */
+  @UseGuards(JwtApiGuard)
+  @Post('transaksi-detail-pascabayar')
+  detailTransaksiPascabayar(@Body() body: any) {
+    return { error: false, error_msg: '', data: {} };
+  }
+
+  // ── AGEN ──────────────────────────────────────────
+  /** GET /api/agen-daftar */
+  @UseGuards(JwtApiGuard)
+  @Get('agen-daftar')
+  daftarAgen() {
+    return { error: false, error_msg: '', list: {} };
+  }
+
+  /** GET /api/agen-riwayat-pembayaran */
+  @UseGuards(JwtApiGuard)
+  @Get('agen-riwayat-pembayaran')
+  riwayatPembayaranAgen() {
+    return { error: false, error_msg: '', list: {} };
+  }
+
+  // ── REGISTRASI (publik, tanpa JWT) ───────────────
+  /** POST /api/otp-register */
+  @Post('otp-register')
+  getOTP(@Body() body: any) {
+    return { error: false, error_msg: '' };
+  }
+
+  /** POST /api/otp-reset-password */
+  @Post('otp-reset-password')
+  getOTPResetPassword(@Body() body: any) {
+    return { error: false, error_msg: '' };
+  }
+
+  /** POST /api/register */
+  @Post('register')
+  register(@Body() body: any) {
+    return { error: false, error_msg: '' };
+  }
+
+  /** POST /api/reset-password */
+  @Post('reset-password')
+  resetPassword(@Body() body: any) {
+    return { error: false, error_msg: '' };
+  }
+}

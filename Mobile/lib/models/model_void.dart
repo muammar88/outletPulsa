@@ -8,7 +8,12 @@ class Model_void {
   String? get errorMsg => _errorMsg;
 
   Model_void.map(dynamic obj) {
-    _error = obj['error'];
-    _errorMsg = obj['error_msg'];
+    if (obj['error'] != null && obj['error'] != '') {
+      _error = obj['error'] == true || obj['error'] == 'true';
+      _errorMsg = obj['error_msg'] ?? obj['message'];
+    } else {
+      _error = obj['data'] == null || (obj['data'] is Map && obj['data'].isEmpty);
+      _errorMsg = obj['message'] ?? obj['error_msg'];
+    }
   }
 }

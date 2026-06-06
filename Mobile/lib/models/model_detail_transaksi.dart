@@ -41,8 +41,13 @@ class Model_detail_transaksi {
   String? get message => _message;
 
   Model_detail_transaksi.map(dynamic obj) {
-    _error = obj['error'];
-    _errorMsg = obj['error_msg'];
+    if (obj['error'] != null && obj['error'] != '') {
+      _error = obj['error'] == true || obj['error'] == 'true';
+    } else {
+      _error = obj['data'] == null || (obj['data'] is Map && obj['data'].isEmpty);
+    }
+    _errorMsg = obj['message'] ?? obj['error_msg'];
+    var data = obj['data'] ?? obj;
     _status = obj['data']['status'];
     _type = obj['data']['type'];
     _printStatus = obj['data']['print_status'];

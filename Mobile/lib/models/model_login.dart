@@ -12,10 +12,18 @@ class Model_login {
   String? get kode => _kode;
 
   Model_login.map(dynamic obj) {
-    _error = obj['error'];
-    _errorMsg = obj['error_msg'];
-    _token = obj['token'];
-    _kode = obj['kode'];
+    // Karena TransformInterceptor backend mengubah obj['error'] menjadi null,
+    // kita asumsikan error = true jika obj['data'] bernilai null.
+    _error = obj['data'] == null;
+    _errorMsg = obj['message'] ?? obj['error_msg'];
+    
+    if (obj['data'] != null) {
+      _token = obj['data']['token'];
+      _kode = obj['data']['kode'];
+    } else {
+      _token = null;
+      _kode = null;
+    }
   }
 
   Map<String, dynamic> mapDb(dynamic obj) {

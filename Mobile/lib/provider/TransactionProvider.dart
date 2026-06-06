@@ -109,19 +109,9 @@ class Transaction_provider with ChangeNotifier {
 
   Future<Model_transaction> prabayarTransaction(
       String nomor_tujuan, String kode_produk) async {
-    print("======PROVIDER PRABAYAR TRANSACTION");
-    print(nomor_tujuan);
-    print(kode_produk);
-    print("======PROVIDER PRABAYAR TRANSACTION");
     return await Rest_transaction()
         .prabayarTransaction(nomor_tujuan, kode_produk)
         .then((Model_transaction e) async {
-      print("feedback REST TRANSACTION");
-      print(e);
-      print(e.errorMsg);
-      print(e.kodeTransaksi);
-      print("feedback REST TRANSACTION");
-
       if (e.error == false) {
         return new Model_transaction.map({
           'error': false,

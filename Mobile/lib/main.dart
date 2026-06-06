@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:change_app_package_name/change_app_package_name.dart';
-import 'package:outletpulsa/module/login/login_page.dart';
+import 'package:outletpulsa/module/public/login.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:outletpulsa/provider/BerandaProvider.dart';
 import 'package:outletpulsa/provider/InfoAddDepositProvider.dart';
 import 'package:outletpulsa/provider/RegistrasiProvider.dart';
 import 'package:provider/provider.dart';
 
-import 'module/home/home_page.dart';
+import 'module/member/main.dart';
 import 'provider/AgenProvider.dart';
 import 'provider/AuthenticationProvider.dart';
 import 'provider/DepositProvider.dart';
@@ -131,13 +130,13 @@ class _SupportWidgetState extends State<SupportWidget> {
   int numLoad = 0;
 
   @override
-  void didChangeDependencies() async {
-    if (numLoad == 0) {
-      // check login
-      await Provider.of<Authentication_provider>(context).check_login();
-      numLoad = 1;
-    }
+  void didChangeDependencies() {
     super.didChangeDependencies();
+    if (numLoad == 0) {
+      numLoad = 1;
+      // check login
+      Provider.of<Authentication_provider>(context, listen: false).check_login();
+    }
   }
 
   @override

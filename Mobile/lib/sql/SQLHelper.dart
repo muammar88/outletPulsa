@@ -18,13 +18,31 @@ class SQLHelper {
     final getDirectory = await getApplicationDocumentsDirectory();
     String path = getDirectory.path + '/outletdb.db';
     log(path);
-    return await openDatabase(path, onCreate: _onCreate, version: 1);
+    return await openDatabase(
+      path,
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+      version: 2,
+    );
   }
 
   void _onCreate(Database db, int version) async {
     await db.execute(
-        'CREATE TABLE DataProfil(id TEXT PRIMARY KEY, kode TEXT, username TEXT, password TEXT, token TEXT)');
+        'CREATE TABLE DataProfil(id TEXT PRIMARY KEY, kode TEXT, username TEXT, token TEXT)');
     log('TABLE CREATED');
+  }
+
+  void _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Migrasi: hapus kolom password (password tidak boleh disimpan plaintext)
+      await db.execute('ALTER TABLE DataProfil RENAME TO DataProfil_old');
+      await db.execute(
+          'CREATE TABLE DataProfil(id TEXT PRIMARY KEY, kode TEXT, username TEXT, token TEXT)');
+      await db.execute(
+          'INSERT INTO DataProfil(id, kode, username, token) SELECT id, kode, username, token FROM DataProfil_old');
+      await db.execute('DROP TABLE DataProfil_old');
+      log('MIGRATED to v2: removed password column');
+    }
   }
 
   Future<List<ModelSQL>> getDataProfil() async {
@@ -60,13 +78,12 @@ class SQLHelper {
   Future<void> insertDataProfil(ModelSQL dataProfil) async {
     final db = await _databaseService.database;
     var data = await db.rawInsert(
-        'INSERT INTO DataProfil(id, kode, username, password, token ) VALUES(?,?,?,?,?)',
+        'INSERT INTO DataProfil(id, kode, username, token) VALUES(?,?,?,?)',
         [
           dataProfil.id,
           dataProfil.kode,
           dataProfil.username,
-          dataProfil.password,
-          dataProfil.token
+          dataProfil.token,
         ]);
     log('inserted $data');
   }
@@ -74,13 +91,12 @@ class SQLHelper {
   Future<void> editDataProfil(ModelSQL dataProfil) async {
     final db = await _databaseService.database;
     var data = await db.rawUpdate(
-        'UPDATE DataProfil SET kode=?, username=?,password=?,token=? WHERE ID=?',
+        'UPDATE DataProfil SET kode=?, username=?, token=? WHERE id=?',
         [
           dataProfil.kode,
           dataProfil.username,
-          dataProfil.password,
           dataProfil.token,
-          dataProfil.id
+          dataProfil.id,
         ]);
     log('updated $data');
   }

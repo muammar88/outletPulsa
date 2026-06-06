@@ -26,8 +26,13 @@ class Model_inquiry_pascabayar {
   String? get fee => _fee;
 
   Model_inquiry_pascabayar.map(Map<String, dynamic> obj) {
-    _error = obj['error'];
-    _errorMsg = obj['error_msg'];
+    if (obj['error'] != null && obj['error'] != '') {
+      _error = obj['error'] == true || obj['error'] == 'true';
+    } else {
+      _error = obj['data'] == null || (obj['data'] is Map && obj['data'].isEmpty);
+    }
+    _errorMsg = obj['message'] ?? obj['error_msg'];
+    var data = obj['data'] ?? obj;
     _refId = obj['data']['ref_id'];
     _trId = obj['data']['tr_id'];
     _kodeProduct = obj['data']['kode_product'];

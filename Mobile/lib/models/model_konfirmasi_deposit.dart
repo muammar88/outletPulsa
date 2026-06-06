@@ -26,16 +26,21 @@ class Model_konfirmasi_deposit {
   String? get waktu_kirim => _waktu_kirim;
 
   Model_konfirmasi_deposit.map(dynamic obj) {
-    _error = obj['error'];
-    _errorMsg = obj['error_msg'];
-    _kode = obj['list']['kode'];
-    _nominal = obj['list']['nominal'];
-    _bank_tujuan_transfer = obj['list']['bank_tujuan_transfer'];
-    _nomor_rekening_akun = obj['list']['nomor_rekening_akun'];
-    _nama_akun = obj['list']['nama_akun'];
-    _status_deposit = obj['list']['status_deposit'];
-    _status_kirim = obj['list']['status_kirim'];
-    _alasan_penolakan = obj['list']['alasan_penolakan'];
-    _waktu_kirim = obj['list']['waktu_kirim'];
+    if (obj['error'] != null && obj['error'] != '') {
+      _error = obj['error'] == true || obj['error'] == 'true';
+    } else {
+      _error = obj['data'] == null || (obj['data'] is Map && obj['data'].isEmpty);
+    }
+    _errorMsg = obj['message'] ?? obj['error_msg'];
+    var data = obj['data'] ?? obj;
+    _kode = data['list']['kode'];
+    _nominal = data['list']['nominal'];
+    _bank_tujuan_transfer = data['list']['bank_tujuan_transfer'];
+    _nomor_rekening_akun = data['list']['nomor_rekening_akun'];
+    _nama_akun = data['list']['nama_akun'];
+    _status_deposit = data['list']['status_deposit'];
+    _status_kirim = data['list']['status_kirim'];
+    _alasan_penolakan = data['list']['alasan_penolakan'];
+    _waktu_kirim = data['list']['waktu_kirim'];
   }
 }

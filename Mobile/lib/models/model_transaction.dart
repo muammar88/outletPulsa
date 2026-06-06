@@ -10,8 +10,13 @@ class Model_transaction {
   String? get kodeTransaksi => _kodeTransaksi;
 
   Model_transaction.map(dynamic obj) {
-    _error = obj['error'];
-    _errorMsg = obj['error_msg'];
-    _kodeTransaksi = obj['kodeTransaksi'];
+    if (obj['error'] != null && obj['error'] != '') {
+      _error = obj['error'] == true || obj['error'] == 'true';
+    } else {
+      _error = obj['data'] == null || (obj['data'] is Map && obj['data'].isEmpty);
+    }
+    _errorMsg = obj['message'] ?? obj['error_msg'];
+    var data = obj['data'] ?? obj;
+    _kodeTransaksi = data['kodeTransaksi'];
   }
 }

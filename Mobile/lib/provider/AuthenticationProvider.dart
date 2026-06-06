@@ -42,12 +42,11 @@ class Authentication_provider with ChangeNotifier {
         notifyListeners();
         return new Model_void.map({'error': true, 'error_msg': e.errorMsg});
       } else {
-        // menyimpan data login ke dalam database
+        // menyimpan data login ke dalam database (tanpa password)
         var dataProfil = ModelSQL(
             id: '1',
             kode: e.kode!,
             username: nomor_whatsapp,
-            password: password,
             token: e.token!);
         db.insertDataProfil(dataProfil);
         _isLogin = true;
@@ -60,28 +59,29 @@ class Authentication_provider with ChangeNotifier {
   Future<void> check_login() async {
     final db = SQLHelper();
     // mengambil data profil yang ada di database
-    Map<String, dynamic>? dataProfils = await db.getSingleData('1');
     bool isExist = await db.isDataExist('1');
-    // await db.deleteDataProfil('1');
-    print("-------------");
     if (isExist) {
-      print("-----Ada--------");
-      print(dataProfils);
-      await Rest_login()
-          .RestCekLogin(dataProfils!['token'])
-          .then((Model_void e) async {
-        if (e.error == true) {
-          print("-----e--------");
-          _isLogin = false;
-          notifyListeners();
-        } else {
-          _isLogin = true;
-          notifyListeners();
-        }
-      });
+      Map<String, dynamic>? dataProfils = await db.getSingleData('1');
+      try {
+        await Rest_login()
+            .RestCekLogin(dataProfils!['token'])
+            .then((Model_void e) async {
+          if (e.error == true) {
+            _isLogin = false;
+            notifyListeners();
+          } else {
+            _isLogin = true;
+            notifyListeners();
+          }
+        });
+      } catch (e) {
+        _isLogin = false;
+        notifyListeners();
+      }
     } else {
       _isLogin = false;
       notifyListeners();
     }
   }
 }
+

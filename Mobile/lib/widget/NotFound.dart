@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../config/config.dart';
@@ -16,76 +16,96 @@ class NotfoundWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-            margin: EdgeInsets.only(top: 100),
-            // padding: EdgeInsets.symmetric(vertical: 20),
-            child: Image.asset('assets/img/no-results.png',
-                width: 100, fit: BoxFit.fill)),
-        SizedBox(
-          height: 10,
-        ),
-        Text(label,
+    return Container(
+      margin: const EdgeInsets.only(top: 80),
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Icon container
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF1F2AAA).withOpacity(0.08),
+                  const Color(0xFF3A47C5).withOpacity(0.15),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Icon(
+                TablerIcons.file_search,
+                size: 48,
+                color: const Color(0xFF1F2AAA).withOpacity(0.5),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          // Title
+          Text(
+            label,
             textAlign: TextAlign.center,
-            style: GoogleFonts.ptSans(
-                textStyle: Theme.of(context).textTheme.headline4,
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: Colors.black)),
-        SizedBox(
-          height: 2,
-        ),
-        Text('Tidak Ditemukan',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF1A1A2E),
+            ),
+          ),
+          const SizedBox(height: 6),
+          // Subtitle
+          Text(
+            'Data tidak ditemukan.\nCoba refresh atau kembali ke beranda.',
             textAlign: TextAlign.center,
-            style: GoogleFonts.ptSans(
-                textStyle: Theme.of(context).textTheme.headline4,
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: Colors.black)),
-        SizedBox(
-          height: 10,
-        ),
-        ElevatedButton(
-            onPressed: () async {
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: Colors.grey[500],
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 24),
+          // Back button
+          GestureDetector(
+            onTap: () {
               Navigator.of(context).popUntil((route) => route.isFirst);
             },
             child: Container(
-              width: 80,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1F2AAA),
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF1F2AAA).withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    FontAwesomeIcons.backward,
-                    size: 15,
-                    color: Colors.black,
+                  const Icon(TablerIcons.arrow_left, size: 16, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Kembali',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text('Back',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.ptSans(
-                          textStyle: Theme.of(context).textTheme.headline4,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black))
                 ],
               ),
             ),
-            style: ButtonStyle(
-              side: MaterialStateProperty.all(BorderSide(
-                  color: Colors.black, width: 2.5, style: BorderStyle.solid)),
-              shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                  RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5.0),
-              )),
-              backgroundColor: MaterialStateProperty.all(
-                  const Color.fromARGB(255, 245, 193, 71)),
-              padding: MaterialStateProperty.all(
-                  EdgeInsets.only(top: 10, bottom: 10, left: 10, right: 10)),
-            ))
-      ],
+          ),
+        ],
+      ),
     );
   }
 }
@@ -120,7 +140,7 @@ class NotfoundWidget extends StatelessWidget {
 //                 mainAxisAlignment: MainAxisAlignment.center,
 //                 children: [
 //                   Icon(
-//                     FontAwesomeIcons.houseChimneyWindow,
+//                     TablerIcons.home,
 //                     size: 15,
 //                   ),
 //                   SizedBox(
@@ -129,7 +149,7 @@ class NotfoundWidget extends StatelessWidget {
 //                   Text('Kembali ke Beranda',
 //                       textAlign: TextAlign.center,
 //                       style: GoogleFonts.ptSans(
-//                           textStyle: Theme.of(context).textTheme.headline4,
+//                           textStyle: Theme.of(context).textTheme.headlineMedium,
 //                           fontSize: 15,
 //                           fontWeight: FontWeight.bold,
 //                           color: config.text_light_color))
@@ -181,7 +201,7 @@ class NotfoundWidget extends StatelessWidget {
 //                 mainAxisAlignment: MainAxisAlignment.center,
 //                 children: [
 //                   Icon(
-//                     FontAwesomeIcons.houseChimneyWindow,
+//                     TablerIcons.home,
 //                     size: 15,
 //                   ),
 //                   SizedBox(
@@ -190,7 +210,7 @@ class NotfoundWidget extends StatelessWidget {
 //                   Text('Kembali ke Beranda',
 //                       textAlign: TextAlign.center,
 //                       style: GoogleFonts.ptSans(
-//                           textStyle: Theme.of(context).textTheme.headline4,
+//                           textStyle: Theme.of(context).textTheme.headlineMedium,
 //                           fontSize: 15,
 //                           fontWeight: FontWeight.bold,
 //                           color: config.text_light_color))
@@ -242,7 +262,7 @@ class NotfoundWidget extends StatelessWidget {
 //         //         mainAxisAlignment: MainAxisAlignment.center,
 //         //         children: [
 //         //           Icon(
-//         //             FontAwesomeIcons.houseChimneyWindow,
+//         //             TablerIcons.home,
 //         //             size: 15,
 //         //           ),
 //         //           SizedBox(
@@ -251,7 +271,7 @@ class NotfoundWidget extends StatelessWidget {
 //         //           Text('Kembali ke Beranda',
 //         //               textAlign: TextAlign.center,
 //         //               style: GoogleFonts.ptSans(
-//         //                   textStyle: Theme.of(context).textTheme.headline4,
+//         //                   textStyle: Theme.of(context).textTheme.headlineMedium,
 //         //                   fontSize: 15,
 //         //                   fontWeight: FontWeight.bold,
 //         //                   color: config.text_light_color))
@@ -272,3 +292,4 @@ class NotfoundWidget extends StatelessWidget {
 //     );
 //   }
 // }
+

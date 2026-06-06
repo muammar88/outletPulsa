@@ -17,12 +17,17 @@ class Model_info_deposit {
   String? get pesan => _pesan;
 
   Model_info_deposit.map(Map<String, dynamic> obj) {
-    _error = obj['error'];
-    _errorMsg = obj['error_msg'];
-    _list_tiket = obj['list_tiket'];
-    _list_bank = obj['list_bank']!;
-    _list_select_bank = obj['list_select_bank']!;
-    _pesan = obj['pesan'];
+    if (obj['error'] != null && obj['error'] != '') {
+      _error = obj['error'] == true || obj['error'] == 'true';
+    } else {
+      _error = obj['data'] == null || (obj['data'] is Map && obj['data'].isEmpty);
+    }
+    _errorMsg = obj['message'] ?? obj['error_msg'];
+    var data = obj['data'] ?? obj;
+    _list_tiket = data['list_tiket'];
+    _list_bank = data['list_bank']!;
+    _list_select_bank = data['list_select_bank']!;
+    _pesan = data['pesan'];
   }
 }
 

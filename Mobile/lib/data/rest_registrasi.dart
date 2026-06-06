@@ -2,63 +2,44 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/config.dart';
 import '../models/model_void.dart';
-import '../sql/SQLHelper.dart';
 import '../utils/network_util.dart';
 
 class Rest_registrasi {
   String? _get_otp_url;
   String? _get_otp_reset_password_url;
-  String? _main_url;
   String? _register_url;
   String? _reset_password_url;
 
   // constructor
   Rest_registrasi() {
     final config = ConfigApp();
-    _get_otp_url = config.get_otp_url;
+    _get_otp_url              = config.get_otp_url;
     _get_otp_reset_password_url = config.get_otp_reset_password_url;
-    _register_url = config.register_url;
-    _reset_password_url = config.reset_password_url;
-    _main_url = config.mainUrl;
+    _register_url             = config.register_url;
+    _reset_password_url       = config.reset_password_url;
   }
 
   final NetworkUtil _netUtil = NetworkUtil();
-  final db = SQLHelper();
+
+  // Tidak perlu auth header — registrasi adalah endpoint publik
+  final Map<String, String> _publicHeaders = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  };
 
   Future<Model_void> getOTP(String nomor_tujuan) async {
-    Map<String, String> headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
-    Uri url = Uri.parse(_main_url! + _get_otp_url!);
+    Uri url = Uri.parse(_get_otp_url!);
     return _netUtil
-        .post(
-            url,
-            headers,
-            jsonEncode({
-              "nomor_tujuan": nomor_tujuan,
-            }))
+        .post(url, _publicHeaders, jsonEncode({"nomor_tujuan": nomor_tujuan}))
         .then((dynamic res) async {
-      print("=========");
-      print(res);
-      print("=========");
       return new Model_void.map(res);
     });
   }
 
   Future<Model_void> getOTPResetPassword(String nomor_tujuan) async {
-    Map<String, String> headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
-    Uri url = Uri.parse(_main_url! + _get_otp_reset_password_url!);
+    Uri url = Uri.parse(_get_otp_reset_password_url!);
     return _netUtil
-        .post(
-            url,
-            headers,
-            jsonEncode({
-              "nomor_tujuan": nomor_tujuan,
-            }))
+        .post(url, _publicHeaders, jsonEncode({"nomor_tujuan": nomor_tujuan}))
         .then((dynamic res) async {
       return new Model_void.map(res);
     });
@@ -70,15 +51,9 @@ class Rest_registrasi {
       String otp,
       String password,
       String kode_referal) async {
-    Map<String, String> headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
-    Uri url = Uri.parse(_main_url! + _register_url!);
+    Uri url = Uri.parse(_register_url!);
     return _netUtil
-        .post(
-            url,
-            headers,
+        .post(url, _publicHeaders,
             jsonEncode({
               "nama_pengguna": nama_pengguna,
               "nomor_whatsapp": nomor_whatsapp,
@@ -91,17 +66,10 @@ class Rest_registrasi {
     });
   }
 
-  // resetPassword
   Future<Model_void> resetPassword(String nomor_whatsapp, String otp) async {
-    Map<String, String> headers = {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-    };
-    Uri url = Uri.parse(_main_url! + _reset_password_url!);
+    Uri url = Uri.parse(_reset_password_url!);
     return _netUtil
-        .post(
-            url,
-            headers,
+        .post(url, _publicHeaders,
             jsonEncode({
               "nomor_whatsapp": nomor_whatsapp,
               "otp": otp,

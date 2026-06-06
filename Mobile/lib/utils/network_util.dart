@@ -3,9 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class NetworkUtil {
-  // Map<String, String> headers = {};
-
-  // next three lines makes this class a Singleton
+  // Singleton pattern
   static NetworkUtil _instance = new NetworkUtil.internal();
   NetworkUtil.internal();
   factory NetworkUtil() => _instance;
@@ -13,22 +11,17 @@ class NetworkUtil {
   final JsonDecoder _decoder = new JsonDecoder();
 
   Future<dynamic> get(Uri url, headers) async {
-    // print("xxxxxxxxx-----url");
-    // print(url);
-    // print("xxxxxxxxx-----url");
-
+    print('==============================');
+    print('API GET URL: $url');
+    print('HEADERS: $headers');
+    print('==============================');
     return http.get(url, headers: headers).then((http.Response response) {
       final String res = response.body;
-      // print(' Response -----');
-      // print(res);
-      // print(' Response -----');
       final int statusCode = response.statusCode;
-      if (statusCode != 200 || statusCode > 400 || json == null) {
-        throw new Exception("Error while fetching data");
+      print('RESPONSE [${statusCode}] GET $url => $res');
+      if (statusCode < 200 || statusCode >= 400) {
+        throw new Exception("Error while fetching data (status: $statusCode)");
       }
-      // print("Type+++++++++++++++++++");
-      // print(res.runtimeType);
-      // print("Type+++++++++++++++++++");
       return _decoder.convert(res);
     });
   }
@@ -38,24 +31,20 @@ class NetworkUtil {
     headers,
     body,
   ) async {
-    // print("xxxxxxxxx-----url");
-    // print(url);
-    // print("xxxxxxxxx-----url");
+    print('==============================');
+    print('API POST URL: $url');
+    print('HEADERS: $headers');
+    print('BODY: $body');
+    print('==============================');
     return http
         .post(url, headers: headers, body: body)
         .then((http.Response response) {
       final String res = response.body;
       final int statusCode = response.statusCode;
-      if (statusCode < 200 || statusCode > 400 || json == null) {
-        throw new Exception("Error while fetching data");
+      print('RESPONSE [${statusCode}] POST $url => $res');
+      if (statusCode < 200 || statusCode >= 400) {
+        throw new Exception("Error while fetching data (status: $statusCode)");
       }
-      // print(' Response ');
-      // print(response);
-      // print(' Response ');
-      // // final String res = response.body;
-      // print(' Response -----');
-      // print(res);
-      // print(' Response -----');
       return _decoder.convert(res);
     });
   }
@@ -64,14 +53,15 @@ class NetworkUtil {
     Uri url,
     body,
   ) async {
+    print('POST_LOGIN HIT: $url');
+    print('BODY: $body');
     return http.post(url, body: body).then((http.Response response) {
+      print('RESPONSE STATUS: ${response.statusCode}');
+      print('RESPONSE BODY: ${response.body}');
       final String res = response.body;
       final int statusCode = response.statusCode;
-      // print("______________");
-      // print(statusCode);
-      // print("______________");
-      if (statusCode < 200 || statusCode > 400 || json == null) {
-        throw new Exception("Error while fetching data");
+      if (statusCode < 200 || statusCode >= 400) {
+        throw new Exception("Error while fetching data (status: $statusCode)");
       }
       return _decoder.convert(res);
     });

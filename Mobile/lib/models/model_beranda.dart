@@ -18,12 +18,18 @@ class Model_beranda {
   bool? get status_deposit => _status_deposit;
 
   Model_beranda.map(dynamic obj) {
-    _error = obj['error'];
-    _errorMsg = obj['error_msg'];
-    _kode = obj['kode'];
-    _name = obj['name'];
-    _nomor_whatsapp = obj['nomor_whatsapp'];
-    _saldo = obj['saldo'];
-    _status_deposit = obj['status_deposit'];
+    if (obj['error'] != null && obj['error'] != '') {
+      _error = obj['error'] == true || obj['error'] == 'true';
+    } else {
+      _error = obj['data'] == null || (obj['data'] is Map && obj['data'].isEmpty);
+    }
+    _errorMsg = obj['message'] ?? obj['error_msg'];
+
+    var data = obj['data'] ?? obj;
+    _kode = data['kode'];
+    _name = data['name'];
+    _nomor_whatsapp = data['nomor_whatsapp'];
+    _saldo = data['saldo'];
+    _status_deposit = data['status_deposit'];
   }
 }

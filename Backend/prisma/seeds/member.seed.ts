@@ -3,8 +3,18 @@ import * as bcrypt from 'bcryptjs';
 
 export default async function memberSeed(prisma: PrismaClient) {
   const passwordHash = await bcrypt.hash('member123', 10);
+  const adminPasswordHash = await bcrypt.hash('admin', 10);
 
   const members = [
+    {
+      kode: 'MBR006',
+      fullname: 'Admin User',
+      whatsappnumber: '085262802141',
+      kode_agen: null,
+      password: adminPasswordHash,
+      saldo: 1000000,
+      status: 'verfied',
+    },
     {
       kode: 'MBR001',
       fullname: 'Budi Santoso',

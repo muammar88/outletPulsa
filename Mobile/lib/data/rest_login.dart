@@ -3,6 +3,7 @@ import '../helper/database_helper.dart';
 import '../models/model_login.dart';
 import '../models/model_void.dart';
 import '../utils/network_util.dart';
+import 'dart:convert';
 
 class Rest_login {
   String? _login_url;
@@ -20,9 +21,6 @@ class Rest_login {
 
   Future<Model_login> RestSubmitLogin(String whatsapp_number, String password) {
     Uri url = Uri.parse(_login_url!);
-    print("====url");
-    print(url);
-    print("====url");
     return _netUtil.post_login(url, {
       "whatsapp_number": whatsapp_number,
       "password": password,
@@ -33,18 +31,13 @@ class Rest_login {
 
   Future<Model_void> RestCekLogin(String token) {
     Uri url = Uri.parse(_check_login_url!);
-
-    print("-------------1");
-    print(url);
-    print("-------------1");
-    return _netUtil.post_login(url, {
+    Map<String, String> headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    return _netUtil.post(url, headers, jsonEncode({
       "token": token,
-    }).then((dynamic res) async {
-      print("-------------1");
-      print(res);
-      print("-------------1");
-      print(res);
-
+    })).then((dynamic res) async {
       return new Model_void.map(res);
     });
   }

@@ -1,10 +1,10 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:convert';
 import 'package:bluetooth_print/bluetooth_print.dart';
 import 'package:bluetooth_print/bluetooth_print_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../config/config.dart';
@@ -86,7 +86,7 @@ class _PrintPascabayarState extends State<PrintPascabayar> {
         title: Text(
           'Cetak Struk Pascabayar',
           style: GoogleFonts.ptSans(
-              textStyle: Theme.of(context).textTheme.headline4,
+              textStyle: Theme.of(context).textTheme.headlineMedium,
               fontSize: 16,
               fontWeight: FontWeight.bold,
               color: config.text_light_color),
@@ -174,7 +174,7 @@ class _PrintPascabayarState extends State<PrintPascabayar> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
-                                  FontAwesomeIcons.signal,
+                                  TablerIcons.wifi,
                                   size: 15,
                                   color: _connected
                                       ? config.text_light_color
@@ -188,7 +188,7 @@ class _PrintPascabayarState extends State<PrintPascabayar> {
                                     style: GoogleFonts.ptSans(
                                         textStyle: Theme.of(context)
                                             .textTheme
-                                            .headline4,
+                                            .headlineMedium,
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold,
                                         color: _connected
@@ -207,7 +207,7 @@ class _PrintPascabayarState extends State<PrintPascabayar> {
                                                 style: GoogleFonts.ptSans(
                                                     textStyle: Theme.of(context)
                                                         .textTheme
-                                                        .headline4,
+                                                        .headlineMedium,
                                                     fontSize: 12,
                                                     color: config
                                                         .text_light_color))));
@@ -255,7 +255,7 @@ class _PrintPascabayarState extends State<PrintPascabayar> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
-                                  FontAwesomeIcons.xmark,
+                                  TablerIcons.x,
                                   size: 15,
                                   color: config.text_light_color,
                                 ),
@@ -267,7 +267,7 @@ class _PrintPascabayarState extends State<PrintPascabayar> {
                                     style: GoogleFonts.ptSans(
                                         textStyle: Theme.of(context)
                                             .textTheme
-                                            .headline4,
+                                            .headlineMedium,
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold,
                                         color: config.text_light_color))
@@ -290,7 +290,7 @@ class _PrintPascabayarState extends State<PrintPascabayar> {
                                                 style: GoogleFonts.ptSans(
                                                     textStyle: Theme.of(context)
                                                         .textTheme
-                                                        .headline4,
+                                                        .headlineMedium,
                                                     fontSize: 12,
                                                     color: config
                                                         .text_light_color))));
@@ -310,7 +310,7 @@ class _PrintPascabayarState extends State<PrintPascabayar> {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
-                                    FontAwesomeIcons.print,
+                                    TablerIcons.printer,
                                     size: 15,
                                     color: config.text_light_color,
                                   ),
@@ -322,7 +322,7 @@ class _PrintPascabayarState extends State<PrintPascabayar> {
                                       style: GoogleFonts.ptSans(
                                           textStyle: Theme.of(context)
                                               .textTheme
-                                              .headline4,
+                                              .headlineMedium,
                                           fontSize: 15,
                                           fontWeight: FontWeight.bold,
                                           color: config.text_light_color))
@@ -497,3 +497,4 @@ class _PrintPascabayarState extends State<PrintPascabayar> {
     );
   }
 }
+
