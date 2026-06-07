@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../data/rest_login.dart';
+import '../services/login.dart';
 import '../models/model_login.dart';
 import '../models/model_void.dart';
 import '../sql/ModelSQL.dart';
@@ -44,10 +44,7 @@ class Authentication_provider with ChangeNotifier {
       } else {
         // menyimpan data login ke dalam database (tanpa password)
         var dataProfil = ModelSQL(
-            id: '1',
-            kode: e.kode!,
-            username: nomor_whatsapp,
-            token: e.token!);
+            id: '1', kode: e.kode!, username: nomor_whatsapp, token: e.token!);
         db.insertDataProfil(dataProfil);
         _isLogin = true;
         notifyListeners();
@@ -84,4 +81,3 @@ class Authentication_provider with ChangeNotifier {
     }
   }
 }
-

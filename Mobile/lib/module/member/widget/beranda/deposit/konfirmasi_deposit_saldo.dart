@@ -45,7 +45,7 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Peringatan',
-              style: GoogleFonts.ptSans(
+              style: GoogleFonts.poppins(
                   textStyle: Theme.of(context).textTheme.headlineMedium,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -54,7 +54,7 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
             child: ListBody(
               children: <Widget>[
                 Text('Apakah anda ingin membatalkan permintaan deposit?.',
-                    style: GoogleFonts.ptSans(
+                    style: GoogleFonts.poppins(
                         textStyle: Theme.of(context).textTheme.headlineMedium,
                         fontSize: 15,
                         color: config.text_dark_color)),
@@ -64,7 +64,7 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
           actions: <Widget>[
             TextButton(
               child: Text('Tidak',
-                  style: GoogleFonts.ptSans(
+                  style: GoogleFonts.poppins(
                       textStyle: Theme.of(context).textTheme.headlineMedium,
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -75,7 +75,7 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
             ),
             TextButton(
               child: Text('Iya',
-                  style: GoogleFonts.ptSans(
+                  style: GoogleFonts.poppins(
                       textStyle: Theme.of(context).textTheme.headlineMedium,
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -101,7 +101,7 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
                       backgroundColor: Colors.teal,
                       behavior: SnackBarBehavior.floating,
                       content: Text(konf.errorMsg!,
-                          style: GoogleFonts.ptSans(
+                          style: GoogleFonts.poppins(
                               textStyle: Theme.of(context).textTheme.headlineMedium,
                               fontSize: 12,
                               color: config.text_light_color))));
@@ -111,7 +111,7 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
                       backgroundColor: const Color.fromARGB(255, 163, 57, 49),
                       behavior: SnackBarBehavior.floating,
                       content: Text(konf.errorMsg!,
-                          style: GoogleFonts.ptSans(
+                          style: GoogleFonts.poppins(
                               textStyle: Theme.of(context).textTheme.headlineMedium,
                               fontSize: 12,
                               color: config.text_light_color))));
@@ -132,7 +132,7 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Peringatan',
-              style: GoogleFonts.ptSans(
+              style: GoogleFonts.poppins(
                   textStyle: Theme.of(context).textTheme.headlineMedium,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -142,7 +142,7 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
               children: <Widget>[
                 Text(
                     'Apakah anda yakin sudah mengirimkan biaya sesuai dengan nomor rekening dan nominal transfer?.',
-                    style: GoogleFonts.ptSans(
+                    style: GoogleFonts.poppins(
                         textStyle: Theme.of(context).textTheme.headlineMedium,
                         fontSize: 15,
                         color: config.text_dark_color)),
@@ -152,7 +152,7 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
           actions: <Widget>[
             TextButton(
               child: Text('Tidak',
-                  style: GoogleFonts.ptSans(
+                  style: GoogleFonts.poppins(
                       textStyle: Theme.of(context).textTheme.headlineMedium,
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -163,7 +163,7 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
             ),
             TextButton(
               child: Text('Iya',
-                  style: GoogleFonts.ptSans(
+                  style: GoogleFonts.poppins(
                       textStyle: Theme.of(context).textTheme.headlineMedium,
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
@@ -187,7 +187,7 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
                       backgroundColor: Colors.teal,
                       behavior: SnackBarBehavior.floating,
                       content: Text(konf.errorMsg!,
-                          style: GoogleFonts.ptSans(
+                          style: GoogleFonts.poppins(
                               textStyle: Theme.of(context).textTheme.headlineMedium,
                               fontSize: 12,
                               color: config.text_light_color))));
@@ -197,7 +197,7 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
                       backgroundColor: const Color.fromARGB(255, 163, 57, 49),
                       behavior: SnackBarBehavior.floating,
                       content: Text(konf.errorMsg!,
-                          style: GoogleFonts.ptSans(
+                          style: GoogleFonts.poppins(
                               textStyle: Theme.of(context).textTheme.headlineMedium,
                               fontSize: 12,
                               color: config.text_light_color))));
@@ -229,7 +229,7 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
         //   centerTitle: true,
         //   title: Text(
         //     'Konfirmasi Pembayaran',
-        //     style: GoogleFonts.ptSans(
+        //     style: GoogleFonts.poppins(
         //         textStyle: Theme.of(context).textTheme.headlineMedium,
         //         fontSize: 16,
         //         fontWeight: FontWeight.bold,
@@ -293,7 +293,7 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
                       //                             SnackBarBehavior.floating,
                       //                         content: Text(
                       //                             'Pesan Berhasil Di Copy Di Clipboard',
-                      //                             style: GoogleFonts.ptSans(
+                      //                             style: GoogleFonts.poppins(
                       //                                 textStyle:
                       //                                     Theme.of(context)
                       //                                         .textTheme
@@ -432,7 +432,7 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
                               },
                               child: Text(
                                 "Batalkan Permintaan Deposit",
-                                style: GoogleFonts.ptSans(
+                                style: GoogleFonts.poppins(
                                     textStyle:
                                         Theme.of(context).textTheme.headlineMedium,
                                     fontSize: 13,
@@ -469,7 +469,7 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
                               },
                               child: Text(
                                 "Konfirmasi Pembayaran",
-                                style: GoogleFonts.ptSans(
+                                style: GoogleFonts.poppins(
                                     textStyle:
                                         Theme.of(context).textTheme.headlineMedium,
                                     fontSize: 13,
@@ -531,7 +531,7 @@ class BoxDetail extends StatelessWidget {
           Expanded(
               child: Text(
             label,
-            style: GoogleFonts.ptSans(
+            style: GoogleFonts.poppins(
                 textStyle: Theme.of(context).textTheme.headlineMedium,
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
@@ -541,7 +541,7 @@ class BoxDetail extends StatelessWidget {
               child: Text(
             value,
             textAlign: TextAlign.end,
-            style: GoogleFonts.ptSans(
+            style: GoogleFonts.poppins(
                 textStyle: Theme.of(context).textTheme.headlineMedium,
                 fontSize: 13,
                 fontWeight: bold == true ? FontWeight.bold : FontWeight.normal,
@@ -559,7 +559,7 @@ class BoxDetail extends StatelessWidget {
                             behavior: SnackBarBehavior.floating,
                             content: Text(
                                 'Nomor Rekening Berhasil Di Copy Di Clipboard',
-                                style: GoogleFonts.ptSans(
+                                style: GoogleFonts.poppins(
                                     textStyle:
                                         Theme.of(context).textTheme.headlineMedium,
                                     fontSize: 12,
@@ -612,7 +612,7 @@ class BoxDetailText extends StatelessWidget {
                   child: Text(
                 title,
                 textAlign: TextAlign.start,
-                style: GoogleFonts.ptSans(
+                style: GoogleFonts.poppins(
                     textStyle: Theme.of(context).textTheme.headlineMedium,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -629,7 +629,7 @@ class BoxDetailText extends StatelessWidget {
                   child: Text(
                 text,
                 textAlign: TextAlign.justify,
-                style: GoogleFonts.ptSans(
+                style: GoogleFonts.poppins(
                     textStyle: Theme.of(context).textTheme.headlineMedium,
                     fontSize: 12,
                     // fontWeight: FontWeight.bold,

@@ -6,7 +6,9 @@ try {
     $ErrorActionPreference = "Stop"
 
     Write-Host "Resetting Prisma database..." -ForegroundColor Yellow
-    npx prisma migrate reset --force
+    npx prisma migrate reset --force --skip-seed
+    npx prisma db push --accept-data-loss
+    npx prisma db seed
 
     Write-Host "Generating Prisma Client..." -ForegroundColor Yellow
     npx prisma generate

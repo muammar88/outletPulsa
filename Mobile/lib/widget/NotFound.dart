@@ -148,7 +148,7 @@ class NotfoundWidget extends StatelessWidget {
 //                   ),
 //                   Text('Kembali ke Beranda',
 //                       textAlign: TextAlign.center,
-//                       style: GoogleFonts.ptSans(
+//                       style: GoogleFonts.poppins(
 //                           textStyle: Theme.of(context).textTheme.headlineMedium,
 //                           fontSize: 15,
 //                           fontWeight: FontWeight.bold,
@@ -209,7 +209,7 @@ class NotfoundWidget extends StatelessWidget {
 //                   ),
 //                   Text('Kembali ke Beranda',
 //                       textAlign: TextAlign.center,
-//                       style: GoogleFonts.ptSans(
+//                       style: GoogleFonts.poppins(
 //                           textStyle: Theme.of(context).textTheme.headlineMedium,
 //                           fontSize: 15,
 //                           fontWeight: FontWeight.bold,
@@ -270,7 +270,7 @@ class NotfoundWidget extends StatelessWidget {
 //         //           ),
 //         //           Text('Kembali ke Beranda',
 //         //               textAlign: TextAlign.center,
-//         //               style: GoogleFonts.ptSans(
+//         //               style: GoogleFonts.poppins(
 //         //                   textStyle: Theme.of(context).textTheme.headlineMedium,
 //         //                   fontSize: 15,
 //         //                   fontWeight: FontWeight.bold,

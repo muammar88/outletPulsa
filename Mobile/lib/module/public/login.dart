@@ -5,14 +5,14 @@ import 'package:outletpulsa/module/public/registration.dart';
 import 'package:outletpulsa/provider/AuthenticationProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:smart_alert_dialog/smart_alert_dialog.dart';
-import '../../config/config.dart';
-import '../../models/model_void.dart';
-import '../../provider/BerandaProvider.dart';
-import '../../provider/loadProvider.dart';
-import '../../widget/CircularProgressWidget.dart';
-import '../member/main.dart';
-import 'reset_password.dart';
-import '../../widget/loading_overlay.dart';
+import 'package:outletpulsa/config/config.dart';
+import 'package:outletpulsa/models/model_void.dart';
+import 'package:outletpulsa/provider/BerandaProvider.dart';
+import 'package:outletpulsa/provider/loadProvider.dart';
+import 'package:outletpulsa/widget/CircularProgressWidget.dart';
+import 'package:outletpulsa/module/member/main.dart';
+import 'package:outletpulsa/module/public/reset_password.dart';
+import 'package:outletpulsa/widget/loading_overlay.dart';
 
 class Login_page extends StatefulWidget {
   const Login_page({super.key});
@@ -72,7 +72,8 @@ class _Login_pageState extends State<Login_page>
   void _showSnackBar(String message, {required bool isSuccess}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: isSuccess ? const Color(0xFF2E7D32) : const Color(0xFFD32F2F),
+        backgroundColor:
+            isSuccess ? const Color(0xFF2E7D32) : const Color(0xFFD32F2F),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         content: Text(
@@ -152,7 +153,7 @@ class _Login_pageState extends State<Login_page>
                                         color: Colors.grey),
                                     hintText: "Nomor Whatsapp",
                                     hintStyle:
-                                        const TextStyle(color: Colors.grey),
+                                        GoogleFonts.poppins(color: Colors.grey),
                                     floatingLabelBehavior:
                                         FloatingLabelBehavior.never,
                                     filled: true,
@@ -196,7 +197,7 @@ class _Login_pageState extends State<Login_page>
                                           color: Colors.grey),
                                       hintText: "Password",
                                       hintStyle:
-                                          const TextStyle(color: Colors.grey),
+                                          GoogleFonts.poppins(color: Colors.grey),
                                       floatingLabelBehavior:
                                           FloatingLabelBehavior.never,
                                       filled: true,
@@ -227,14 +228,17 @@ class _Login_pageState extends State<Login_page>
                                 height: 55,
                                 child: ElevatedButton(
                                     onPressed: () async {
-                                      if (_formKey.currentState != null && _formKey.currentState!.validate()) {
+                                      if (_formKey.currentState != null &&
+                                          _formKey.currentState!.validate()) {
                                         var err = false;
                                         var err_msg = '';
-                                        if (nomor_whatsapp == null || nomor_whatsapp == '') {
+                                        if (nomor_whatsapp == null ||
+                                            nomor_whatsapp == '') {
                                           err_msg += 'Nomor whatsapp ';
                                           err = true;
                                         }
-                                        if (password == null || password == '') {
+                                        if (password == null ||
+                                            password == '') {
                                           if (err == true) {
                                             err_msg += '& ';
                                           }
@@ -247,17 +251,29 @@ class _Login_pageState extends State<Login_page>
 
                                         if (err == false) {
                                           loader.isLoad = true;
-                                          final auth = Provider.of<Authentication_provider>(context, listen: false);
-                                          var feedBack = await auth.submit_login(nomor_whatsapp!, password!);
+                                          final auth = Provider.of<
+                                                  Authentication_provider>(
+                                              context,
+                                              listen: false);
+                                          var feedBack =
+                                              await auth.submit_login(
+                                                  nomor_whatsapp!, password!);
                                           loader.isLoad = false;
-                                          
+
                                           if (feedBack.error == false) {
-                                            _showSnackBar(feedBack.errorMsg ?? 'Login berhasil', isSuccess: true);
+                                            _showSnackBar(
+                                                feedBack.errorMsg ??
+                                                    'Login berhasil',
+                                                isSuccess: true);
                                           } else {
-                                            _showSnackBar(feedBack.errorMsg ?? 'Gagal login', isSuccess: false);
+                                            _showSnackBar(
+                                                feedBack.errorMsg ??
+                                                    'Gagal login',
+                                                isSuccess: false);
                                           }
                                         } else {
-                                          _showSnackBar(err_msg, isSuccess: false);
+                                          _showSnackBar(err_msg,
+                                              isSuccess: false);
                                         }
                                       }
                                     },

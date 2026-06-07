@@ -8,7 +8,7 @@ import '../../../provider/InfoBelumBacaProvider.dart';
 import '../../../provider/InfoSudahBacaProvider.dart';
 import '../../../widget/allBoxLoading.dart';
 import '../../../widget/NotFound.dart';
-import '../widget/beranda/transaksi/detail_info.dart';
+import '../widget/info/detail_info.dart';
 
 class Info_tab extends StatefulWidget {
   const Info_tab({super.key});
@@ -258,143 +258,113 @@ class BoxInfo extends StatelessWidget {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isRead
+                ? Colors.grey.shade200
+                : const Color(0xFF1F2AAA).withOpacity(0.1),
+            width: 1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: const Color(0xFF1F2AAA).withOpacity(0.04),
+              blurRadius: 24,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
-        child: Column(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top accent bar
+            // Icon Container
             Container(
-              height: 4,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: isRead
-                      ? [Colors.grey.shade300, Colors.grey.shade400]
-                      : [const Color(0xFF1F2AAA), const Color(0xFF3A47C5)],
-                ),
-                borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(14)),
+                color: isRead
+                    ? Colors.grey.shade50
+                    : const Color(0xFF1F2AAA).withOpacity(0.06),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                isRead ? TablerIcons.mail_opened : TablerIcons.bell,
+                color: isRead ? Colors.grey.shade400 : const Color(0xFF1F2AAA),
+                size: 24,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-              child: Row(
+            const SizedBox(width: 16),
+            // Text Content
+            Expanded(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Icon
-                  Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: isRead
-                          ? Colors.grey.shade100
-                          : const Color(0xFF1F2AAA).withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      isRead
-                          ? TablerIcons.mail_opened
-                          : TablerIcons.mail,
-                      color: isRead
-                          ? Colors.grey.shade400
-                          : const Color(0xFF1F2AAA),
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Content
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                title,
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: isRead
-                                      ? Colors.grey.shade500
-                                      : const Color(0xFF1A1A2E),
-                                ),
-                              ),
-                            ),
-                            if (!isRead)
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF1F2AAA),
-                                  shape: BoxShape.circle,
-                                ),
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          desc,
-                          maxLines: 3,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: Colors.grey[500],
-                            height: 1.5,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: isRead
+                                ? Colors.grey.shade600
+                                : const Color(0xFF1A1A2E),
+                            height: 1.3,
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: isRead
-                                    ? Colors.grey.shade100
-                                    : const Color(0xFF1F2AAA).withOpacity(0.08),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    TablerIcons.eye,
-                                    size: 14,
-                                    color: isRead
-                                        ? Colors.grey.shade400
-                                        : const Color(0xFF1F2AAA),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Baca Selengkapnya',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
-                                      color: isRead
-                                          ? Colors.grey.shade400
-                                          : const Color(0xFF1F2AAA),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                      ),
+                      if (!isRead)
+                        Container(
+                          margin: const EdgeInsets.only(left: 8, top: 4),
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Colors.redAccent,
+                            shape: BoxShape.circle,
+                          ),
                         ),
-                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    desc,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                      height: 1.5,
                     ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Text(
+                        'Baca Selengkapnya',
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: isRead
+                              ? Colors.grey.shade400
+                              : const Color(0xFF1F2AAA),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        TablerIcons.arrow_right,
+                        size: 16,
+                        color: isRead
+                            ? Colors.grey.shade400
+                            : const Color(0xFF1F2AAA),
+                      ),
+                    ],
                   ),
                 ],
               ),

@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import '../../config/config.dart';
-import '../../provider/RegistrasiProvider.dart';
-import '../../provider/loadProvider.dart';
-import '../../widget/CircularProgressWidget.dart';
-import 'login.dart';
-import '../../widget/loading_overlay.dart';
+import 'package:outletpulsa/config/config.dart';
+import 'package:outletpulsa/provider/RegistrasiProvider.dart';
+import 'package:outletpulsa/provider/loadProvider.dart';
+import 'package:outletpulsa/widget/CircularProgressWidget.dart';
+import 'package:outletpulsa/module/public/login.dart';
+import 'package:outletpulsa/widget/loading_overlay.dart';
 
 class Register_page extends StatefulWidget {
   const Register_page({super.key});
@@ -102,7 +102,7 @@ class _Register_pageState extends State<Register_page>
         decoration: InputDecoration(
           prefixIcon: Icon(icon, color: Colors.grey),
           hintText: hintText,
-          hintStyle: const TextStyle(color: Colors.grey),
+          hintStyle: GoogleFonts.poppins(color: Colors.grey),
           floatingLabelBehavior: FloatingLabelBehavior.never,
           filled: true,
           fillColor: Colors.transparent,

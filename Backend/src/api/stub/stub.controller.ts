@@ -13,19 +13,6 @@ export class StubController {
   constructor(private readonly jwtService: JwtService) {}
 
   // ── AKUN ─────────────────────────────────────────
-  /** POST /api/akun-update-nama */
-  @UseGuards(JwtApiGuard)
-  @Post('akun-update-nama')
-  updateNamaAkun(@Body() body: any) {
-    return { error: false, error_msg: '' };
-  }
-
-  /** POST /api/akun-update-password */
-  @UseGuards(JwtApiGuard)
-  @Post('akun-update-password')
-  updatePasswordAkun(@Body() body: any) {
-    return { error: false, error_msg: '' };
-  }
 
   /** POST /api/transfer-saldo */
   @UseGuards(JwtApiGuard)
@@ -77,12 +64,6 @@ export class StubController {
     return { error: false, error_msg: '' };
   }
 
-  /** POST /api/deposit-detail */
-  @UseGuards(JwtApiGuard)
-  @Post('deposit-detail')
-  detailDeposit(@Body() body: any) {
-    return { error: false, error_msg: '', data: {} };
-  }
 
   // ── TRANSAKSI PRABAYAR ────────────────────────────
   /** POST /api/get-prefix */
@@ -92,12 +73,6 @@ export class StubController {
     return { error: false, error_msg: '' };
   }
 
-  /** POST /api/daftar-produk */
-  @UseGuards(JwtApiGuard)
-  @Post('daftar-produk')
-  getDaftarProduk(@Body() body: any) {
-    return { error: false, error_msg: '', list: {} };
-  }
 
   /** POST /api/daftar-produk-data */
   @UseGuards(JwtApiGuard)
@@ -110,20 +85,6 @@ export class StubController {
   @UseGuards(JwtApiGuard)
   @Post('daftar-operator')
   getDaftarOperator(@Body() body: any) {
-    return { error: false, error_msg: '', list: {} };
-  }
-
-  /** POST /api/daftar-kategori */
-  @UseGuards(JwtApiGuard)
-  @Post('daftar-kategori')
-  getDaftarKategori(@Body() body: any) {
-    return { error: false, error_msg: '', list: {} };
-  }
-
-  /** POST /api/daftar-kategori-pascabayar */
-  @UseGuards(JwtApiGuard)
-  @Post('daftar-kategori-pascabayar')
-  getDaftarKategoriPascabayar(@Body() body: any) {
     return { error: false, error_msg: '', list: {} };
   }
 
@@ -142,27 +103,6 @@ export class StubController {
   }
 
   // ── TRANSAKSI PASCABAYAR ──────────────────────────
-  /** POST /api/pascabayar-inquiry */
-  @UseGuards(JwtApiGuard)
-  @Post('pascabayar-inquiry')
-  inquiryPascabayar(@Body() body: any) {
-    return {
-      error: false,
-      error_msg: '',
-      data: {
-        ref_id: '', tr_id: '', kode_product: '',
-        nomor_tujuan: '', nama_pelanggan: '',
-        nominal: '', totalTagihan: '', biaya_admin: '', fee: '',
-      },
-    };
-  }
-
-  /** POST /api/pascabayar-pembayaran */
-  @UseGuards(JwtApiGuard)
-  @Post('pascabayar-pembayaran')
-  pembayaranPascabayar(@Body() body: any) {
-    return { error: false, error_msg: '' };
-  }
 
   /** POST /api/transaksi-detail-pascabayar */
   @UseGuards(JwtApiGuard)

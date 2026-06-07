@@ -64,7 +64,7 @@ class _Daftar_operatorState extends State<Daftar_operator> {
               )),
           title: Text(
             'Daftar Kategori Paket',
-            style: GoogleFonts.ptSans(
+            style: GoogleFonts.poppins(
                 textStyle: Theme.of(context).textTheme.headlineMedium,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -186,14 +186,14 @@ class BoxListProduk extends StatelessWidget {
                     children: [
                       Text(
                         kode,
-                        style: GoogleFonts.ptSans(
+                        style: GoogleFonts.poppins(
                             textStyle: Theme.of(context).textTheme.headlineMedium,
                             fontSize: 11,
                             color: config.text_grey_color),
                       ),
                       Text(name,
                           overflow: TextOverflow.clip,
-                          style: GoogleFonts.ptSans(
+                          style: GoogleFonts.poppins(
                               textStyle: Theme.of(context).textTheme.headlineMedium,
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
@@ -201,7 +201,7 @@ class BoxListProduk extends StatelessWidget {
                       // Text(
                       //   operator,
                       //   overflow: TextOverflow.ellipsis,
-                      //   style: GoogleFonts.ptSans(
+                      //   style: GoogleFonts.poppins(
                       //       textStyle: Theme.of(context).textTheme.headlineMedium,
                       //       fontSize: 12,
                       //       fontWeight: FontWeight.bold,
@@ -220,7 +220,7 @@ class BoxListProduk extends StatelessWidget {
                   //     Container(
                   //       margin: EdgeInsets.symmetric(horizontal: 10),
                   //       child: Text(harga,
-                  //           style: GoogleFonts.ptSans(
+                  //           style: GoogleFonts.poppins(
                   //               textStyle:
                   //                   Theme.of(context).textTheme.headlineMedium,
                   //               fontSize: 12,
@@ -250,7 +250,7 @@ class BoxListProduk extends StatelessWidget {
                   //             alignment: Alignment.center,
                   //             child: Text(
                   //               status.toUpperCase(),
-                  //               style: GoogleFonts.ptSans(
+                  //               style: GoogleFonts.poppins(
                   //                   textStyle:
                   //                       Theme.of(context).textTheme.headlineMedium,
                   //                   fontSize: 11,

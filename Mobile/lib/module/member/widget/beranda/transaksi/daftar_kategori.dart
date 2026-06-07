@@ -62,7 +62,7 @@ class _Daftar_kategoriState extends State<Daftar_kategori> {
             )),
         title: Text(
           'Daftar Kategori',
-          style: GoogleFonts.ptSans(
+          style: GoogleFonts.poppins(
               textStyle: Theme.of(context).textTheme.headlineMedium,
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -119,117 +119,111 @@ class BoxKategori extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => Input_ppob(
-                  label: trans.list_kategori![index.toString()]['name'],
-                  title: trans.list_kategori![index.toString()]['name'],
-                  path: trans.list_kategori![index.toString()]['kode'],
-                  tipe: 'prabayar',
-                  checkPrefix: false)),
+    int staggerIndex = index > 15 ? 15 : index;
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.0, end: 1.0),
+      duration: Duration(milliseconds: 300 + (staggerIndex * 50)),
+      curve: Curves.easeOutQuart,
+      builder: (context, value, child) {
+        return Transform.translate(
+          offset: Offset(0, 50 * (1 - value)),
+          child: Opacity(
+            opacity: value,
+            child: child,
+          ),
         );
       },
       child: Container(
         margin: EdgeInsets.only(
-            top: (index == 0 ? 20 : 0),
-            bottom: (lengths == index + 1 ? 50 : 0)),
-        child: Row(
-          children: [
-            Container(
-              height: 50,
-              width: 50,
-              padding: EdgeInsets.symmetric(horizontal: 5, vertical: 0),
-              decoration: BoxDecoration(
-                  color: Color.fromARGB(255, 255, 255, 255),
-                  borderRadius: BorderRadius.circular(10)),
-              child: Center(
-                child: Image.asset(
-                    'assets/img/' +
-                        (trans.list_kategori![index.toString()]['bank'] ==
-                                'true'
-                            ? 'BANK'
-                            : trans.list_kategori![index.toString()]['kode']) +
-                        '.png',
-                    width: 100,
-                    fit: BoxFit.fill),
-              ),
-            ),
-            SizedBox(
-              width: 10,
-            ),
-            Expanded(
-              child: Container(
-                // margin: EdgeInsets.only(top: (index == 0 ? 20 : 0)),
-                constraints: BoxConstraints(
-                    minHeight: 40,
-                    minWidth: double.infinity,
-                    maxHeight: double.infinity),
-                // color: index % 2 == 1
-                //     ? config.background_tab
-                //     : Color.fromARGB(255, 223, 223, 223),
-                // margin: EdgeInsets.only(
-                //     top: (index == 0 ? 20 : 0),
-                //     bottom: (index == trans.list_kategori!.length - 1 ? 50 : 0)),
-                // padding: EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
-
-                padding:
-                    EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
-                margin: EdgeInsets.only(top: 5, bottom: 5),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.white,
-                  // boxShadow: [
-                  //   BoxShadow(color: Colors.green, spreadRadius: 3),
-                  // ],
-                ),
-                child: Column(
-                  children: [
-                    Row(
+            top: index == 0 ? 20 : 6, bottom: lengths == index + 1 ? 50 : 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 10,
+              spreadRadius: 0,
+              offset: Offset(0, 4),
+            )
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => Input_ppob(
+                        label: trans.list_kategori![index.toString()]['name'],
+                        title: trans.list_kategori![index.toString()]['name'],
+                        path: trans.list_kategori![index.toString()]['kode'],
+                        tipe: 'prabayar',
+                        checkPrefix: false)),
+              );
+            },
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    height: 50,
+                    width: 50,
+                    padding: EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: Image.asset(
+                          'assets/img/' +
+                              (trans.list_kategori![index.toString()]['bank'] ==
+                                      'true'
+                                  ? 'BANK'
+                                  : trans.list_kategori![index.toString()]
+                                      ['kode']) +
+                              '.png',
+                          fit: BoxFit.contain,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Icon(Icons.category, color: Colors.grey)),
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          margin: EdgeInsets.symmetric(horizontal: 10),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                  trans.list_kategori![index.toString()]
-                                      ['kode'],
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.ptSans(
-                                      textStyle:
-                                          Theme.of(context).textTheme.headlineMedium,
-                                      fontSize: 11,
-                                      // fontWeight: FontWeight.bold,
-                                      color: config.text_dark_color)),
-                              Text(
-                                  trans.list_kategori![index.toString()]
-                                      ['name'],
-                                  textAlign: TextAlign.left,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.ptSans(
-                                      textStyle:
-                                          Theme.of(context).textTheme.headlineMedium,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: config.text_dark_color)),
-                            ],
+                        Text(
+                          trans.list_kategori![index.toString()]['name'],
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: config.text_dark_color,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          trans.list_kategori![index.toString()]['kode'],
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: Colors.grey[600],
                           ),
                         ),
                       ],
                     ),
-                    // SizedBox(
-                    //   height: 10,
-                    // ),
-                    // Divider()
-                  ],
-                ),
+                  ),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: Colors.grey[400],
+                    size: 24,
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );

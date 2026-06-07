@@ -28,7 +28,7 @@ class _Detail_tiket_depositState extends State<Detail_tiket_deposit> {
             )),
         title: Text(
           'Detail Deposit Saldo',
-          style: GoogleFonts.ptSans(
+          style: GoogleFonts.poppins(
               textStyle: Theme.of(context).textTheme.headlineMedium,
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -105,7 +105,7 @@ class BoxDetail extends StatelessWidget {
           Expanded(
               child: Text(
             label,
-            style: GoogleFonts.ptSans(
+            style: GoogleFonts.poppins(
                 textStyle: Theme.of(context).textTheme.headlineMedium,
                 fontSize: 14,
                 color: config.text_grey_color),
@@ -114,7 +114,7 @@ class BoxDetail extends StatelessWidget {
               child: Text(
             value,
             textAlign: TextAlign.end,
-            style: GoogleFonts.ptSans(
+            style: GoogleFonts.poppins(
                 textStyle: Theme.of(context).textTheme.headlineMedium,
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -147,7 +147,7 @@ class BoxDetailBank extends StatelessWidget {
           Expanded(
               child: Text(
             label,
-            style: GoogleFonts.ptSans(
+            style: GoogleFonts.poppins(
                 textStyle: Theme.of(context).textTheme.headlineMedium,
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
@@ -161,7 +161,7 @@ class BoxDetailBank extends StatelessWidget {
               Text(
                 value,
                 textAlign: TextAlign.end,
-                style: GoogleFonts.ptSans(
+                style: GoogleFonts.poppins(
                     textStyle: Theme.of(context).textTheme.headlineMedium,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -170,7 +170,7 @@ class BoxDetailBank extends StatelessWidget {
               Text(
                 'AN : ' + an,
                 textAlign: TextAlign.end,
-                style: GoogleFonts.ptSans(
+                style: GoogleFonts.poppins(
                     textStyle: Theme.of(context).textTheme.headlineMedium,
                     fontSize: 13,
                     color: config.text_dark_color),

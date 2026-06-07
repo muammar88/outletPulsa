@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
@@ -59,7 +59,7 @@ class _Konfirmasi_pembelianState extends State<Konfirmasi_pembelian> {
               )),
           title: Text(
             'Konfirmasi Pembelian',
-            style: GoogleFonts.ptSans(
+            style: GoogleFonts.poppins(
                 textStyle: Theme.of(context).textTheme.headlineMedium,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -81,21 +81,36 @@ class _Konfirmasi_pembelianState extends State<Konfirmasi_pembelian> {
                     height: 20,
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 0),
-                    constraints: BoxConstraints(
-                        minHeight: 180,
-                        minWidth: double.infinity,
-                        maxHeight: double.infinity),
+                    margin: EdgeInsets.only(top: 20),
+                    padding: EdgeInsets.symmetric(vertical: 20),
                     decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(5)),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 15,
+                            offset: Offset(0, 5),
+                          )
+                        ]),
                     child: Column(
                       children: [
+                        Padding(
+                          padding: EdgeInsets.only(bottom: 10),
+                          child: Text(
+                            "Detail Pesanan",
+                            style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: config.text_dark_color),
+                          ),
+                        ),
+                        Divider(color: Colors.grey.withOpacity(0.2)),
+                        SizedBox(height: 10),
                         BoxKonfirmasiWidget(
                             config: config,
                             label: 'Kode Produk',
                             value: widget.kode),
-                        // Divider(),
                         Image.asset(
                           'assets/img/tengah.png',
                           fit: BoxFit.cover,
@@ -153,7 +168,7 @@ class _Konfirmasi_pembelianState extends State<Konfirmasi_pembelian> {
                                         backgroundColor: Colors.teal,
                                         behavior: SnackBarBehavior.floating,
                                         content: Text(feedBack.errorMsg!,
-                                            style: GoogleFonts.ptSans(
+                                            style: GoogleFonts.poppins(
                                                 textStyle: Theme.of(context)
                                                     .textTheme
                                                     .headlineMedium,
@@ -176,7 +191,7 @@ class _Konfirmasi_pembelianState extends State<Konfirmasi_pembelian> {
                                             255, 163, 57, 49),
                                         behavior: SnackBarBehavior.floating,
                                         content: Text(feedBack.errorMsg!,
-                                            style: GoogleFonts.ptSans(
+                                            style: GoogleFonts.poppins(
                                                 textStyle: Theme.of(context)
                                                     .textTheme
                                                     .headlineMedium,
@@ -185,30 +200,31 @@ class _Konfirmasi_pembelianState extends State<Konfirmasi_pembelian> {
                                                     config.text_light_color))));
                               }
                             },
-                            child: Text(
-                              "Beli Produk",
-                              style: GoogleFonts.ptSans(
-                                  textStyle: Theme.of(context)
-                                      .textTheme
-                                      .headlineMedium,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: config.text_light_color),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.check_circle_outline_rounded, size: 20, color: Colors.white),
+                                SizedBox(width: 8),
+                                Text(
+                                  "Konfirmasi Pembelian",
+                                  style: GoogleFonts.poppins(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white),
+                                ),
+                              ],
                             ),
                             style: ButtonStyle(
                               shape: MaterialStateProperty.all<
                                       RoundedRectangleBorder>(
                                   RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5.0),
+                                borderRadius: BorderRadius.circular(12.0),
                               )),
                               backgroundColor: MaterialStateProperty.all(
                                   config.btn_primary_color),
+                              elevation: MaterialStateProperty.all(4),
                               padding: MaterialStateProperty.all(
-                                  EdgeInsets.only(
-                                      top: 17,
-                                      bottom: 16,
-                                      left: 20,
-                                      right: 20)),
+                                  EdgeInsets.symmetric(vertical: 18)),
                             )),
                       ),
                     ],
@@ -236,9 +252,7 @@ class BoxKonfirmasiWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 15),
-      constraints: BoxConstraints(
-          minHeight: 25, minWidth: double.infinity, maxHeight: double.infinity),
+      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -246,20 +260,17 @@ class BoxKonfirmasiWidget extends StatelessWidget {
               flex: 2,
               child: Text(
                 label,
-                style: GoogleFonts.ptSans(
-                    textStyle: Theme.of(context).textTheme.headlineMedium,
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: config.text_dark_color),
+                style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    color: config.text_grey_color),
               )),
           Expanded(
               flex: 3,
               child: Text(
                 value,
                 textAlign: TextAlign.right,
-                style: GoogleFonts.ptSans(
-                    textStyle: Theme.of(context).textTheme.headlineMedium,
-                    fontSize: 13,
+                style: GoogleFonts.poppins(
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: config.text_dark_color),
               )),

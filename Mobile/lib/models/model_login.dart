@@ -14,10 +14,10 @@ class Model_login {
   Model_login.map(dynamic obj) {
     // Karena TransformInterceptor backend mengubah obj['error'] menjadi null,
     // kita asumsikan error = true jika obj['data'] bernilai null.
-    _error = obj['data'] == null;
+    _error = obj['data'] == null || (obj['data'] is Map && obj['data'].isEmpty);
     _errorMsg = obj['message'] ?? obj['error_msg'];
     
-    if (obj['data'] != null) {
+    if (obj['data'] != null && !(obj['data'] is Map && obj['data'].isEmpty)) {
       _token = obj['data']['token'];
       _kode = obj['data']['kode'];
     } else {

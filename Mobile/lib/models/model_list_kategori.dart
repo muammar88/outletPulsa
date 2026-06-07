@@ -15,6 +15,16 @@ class Model_list_kategori {
     }
     _errorMsg = obj['message'] ?? obj['error_msg'];
     var data = obj['data'] ?? obj;
-    _list_kategori = data['list_kategori'];
+    
+    if (data['list_kategori'] is List) {
+      Map<String, dynamic> convertedMap = {};
+      List<dynamic> list = data['list_kategori'];
+      for (int i = 0; i < list.length; i++) {
+        convertedMap[i.toString()] = list[i];
+      }
+      _list_kategori = convertedMap;
+    } else {
+      _list_kategori = data['list_kategori'];
+    }
   }
 }

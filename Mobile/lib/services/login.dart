@@ -1,8 +1,8 @@
-import '../config/config.dart';
-import '../helper/database_helper.dart';
-import '../models/model_login.dart';
-import '../models/model_void.dart';
-import '../utils/network_util.dart';
+import 'package:outletpulsa/config/config.dart';
+import 'package:outletpulsa/helper/database_helper.dart';
+import 'package:outletpulsa/models/model_login.dart';
+import 'package:outletpulsa/models/model_void.dart';
+import 'package:outletpulsa/utils/network_util.dart';
 import 'dart:convert';
 
 class Rest_login {
@@ -35,9 +35,14 @@ class Rest_login {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     };
-    return _netUtil.post(url, headers, jsonEncode({
-      "token": token,
-    })).then((dynamic res) async {
+    return _netUtil
+        .post(
+            url,
+            headers,
+            jsonEncode({
+              "token": token,
+            }))
+        .then((dynamic res) async {
       return new Model_void.map(res);
     });
   }

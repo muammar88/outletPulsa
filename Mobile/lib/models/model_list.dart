@@ -15,6 +15,16 @@ class Model_list {
     }
     _errorMsg = obj['message'] ?? obj['error_msg'];
     var data = obj['data'] ?? obj;
-    _list = data['list'];
+    
+    if (data['list'] is List) {
+      Map<String, dynamic> convertedMap = {};
+      List<dynamic> arr = data['list'];
+      for (int i = 0; i < arr.length; i++) {
+        convertedMap[i.toString()] = arr[i];
+      }
+      _list = convertedMap;
+    } else {
+      _list = data['list'];
+    }
   }
 }

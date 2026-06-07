@@ -58,7 +58,7 @@ class _Daftar_produk_dataState extends State<Daftar_produk_data> {
               )),
           title: Text(
             'Daftar Produk Data',
-            style: GoogleFonts.ptSans(
+            style: GoogleFonts.poppins(
                 textStyle: Theme.of(context).textTheme.headlineMedium,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -182,7 +182,7 @@ class BoxListProduk extends StatelessWidget {
               backgroundColor: const Color.fromARGB(255, 163, 57, 49),
               behavior: SnackBarBehavior.floating,
               content: Text('Produk tidak aktif tidak dapat dibeli',
-                  style: GoogleFonts.ptSans(
+                  style: GoogleFonts.poppins(
                       textStyle: Theme.of(context).textTheme.headlineMedium,
                       fontSize: 12,
                       color: config.text_light_color))));
@@ -208,14 +208,14 @@ class BoxListProduk extends StatelessWidget {
                     children: [
                       Text(
                         kode,
-                        style: GoogleFonts.ptSans(
+                        style: GoogleFonts.poppins(
                             textStyle: Theme.of(context).textTheme.headlineMedium,
                             fontSize: 12,
                             color: config.text_grey_color),
                       ),
                       Text(nominal,
                           // overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.ptSans(
+                          style: GoogleFonts.poppins(
                               textStyle: Theme.of(context).textTheme.headlineMedium,
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
@@ -223,7 +223,7 @@ class BoxListProduk extends StatelessWidget {
                       Text(
                         operator,
                         // overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.ptSans(
+                        style: GoogleFonts.poppins(
                             textStyle: Theme.of(context).textTheme.headlineMedium,
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -242,7 +242,7 @@ class BoxListProduk extends StatelessWidget {
                       Container(
                         margin: EdgeInsets.symmetric(horizontal: 10),
                         child: Text(harga,
-                            style: GoogleFonts.ptSans(
+                            style: GoogleFonts.poppins(
                                 textStyle:
                                     Theme.of(context).textTheme.headlineMedium,
                                 fontSize: 12,
@@ -272,7 +272,7 @@ class BoxListProduk extends StatelessWidget {
                               alignment: Alignment.center,
                               child: Text(
                                 status.toUpperCase(),
-                                style: GoogleFonts.ptSans(
+                                style: GoogleFonts.poppins(
                                     textStyle:
                                         Theme.of(context).textTheme.headlineMedium,
                                     fontSize: 11,

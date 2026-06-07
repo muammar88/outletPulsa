@@ -1,7 +1,8 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../../config/config.dart';
@@ -19,7 +20,6 @@ class Detail_deposit extends StatefulWidget {
 
 class _Detail_depositState extends State<Detail_deposit> {
   final config = ConfigApp();
-
   bool loadData = false;
 
   @override
@@ -31,299 +31,308 @@ class _Detail_depositState extends State<Detail_deposit> {
     super.didChangeDependencies();
   }
 
+  String _formatCurrency(String amount) {
+    try {
+      double val = double.parse(amount);
+      return NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(val);
+    } catch (e) {
+      return 'Rp ' + amount;
+    }
+  }
+
+  String _formatDate(String rawDate) {
+    try {
+      DateTime dt = DateTime.parse(rawDate).toLocal();
+      return DateFormat('dd MMM yyyy • HH:mm').format(dt);
+    } catch (e) {
+      return rawDate;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final deposit = Provider.of<Deposit_provider>(context);
-    var status = widget.status;
-    return Scaffold(
-      // appBar: AppBar(
-      //   backgroundColor: config.background_smooth_navy,
-      //   elevation: 0,
-      //   centerTitle: true,
-      //   leading: IconButton(
-      //       onPressed: () {
-      //         Navigator.pop(context);
-      //       },
-      //       icon: Icon(
-      //         Icons.arrow_back,
-      //         color: Colors.white,
-      //       )),
-      //   title: Text(
-      //     'Detail Status Deposit',
-      //     style: GoogleFonts.ptSans(
-      //         textStyle: Theme.of(context).textTheme.headlineMedium,
-      //         fontSize: 16,
-      //         fontWeight: FontWeight.bold,
-      //         color: config.text_light_color),
-      //   ),
-      // ),
-      backgroundColor: Colors.grey[200],
-      body: Stack(
-        children: [
-          Container(
-            height: 200,
-            color: config.background_color,
-          ),
-          Container(
-            padding: EdgeInsets.only(
-              left: 30,
-              right: 30,
-            ),
-            child: ListView(
-              children: [
-                SizedBox(
-                  height: 20,
-                ),
-                Row(children: [
-                  Expanded(
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          // Navigator.of(context)
-                          //     .popUntil((route) => route.isFirst);
-                        },
-                        child: Icon(
-                          Icons.arrow_back,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Expanded(
-                  //   child: detail.status == 'SUKSES'
-                  //       ? Align(
-                  //           alignment: Alignment.centerRight,
-                  //           child: IconButton(
-                  //               icon: Icon(
-                  //                 detail.type == 'prabayar'
-                  //                     ? TablerIcons.copy
-                  //                     : TablerIcons.share,
-                  //                 size: 20,
-                  //                 color: Colors.white,
-                  //               ),
-                  //               onPressed: () async {
-                  //                 await Clipboard.setData(
-                  //                     ClipboardData(text: detail.message!));
+    final s = (deposit.status_deposit ?? widget.status).toLowerCase();
+    
+    Color statusColor;
+    IconData statusIcon;
+    String statusTitle;
 
-                  //                 ScaffoldMessenger.of(context)
-                  //                     .showSnackBar(SnackBar(
-                  //                         backgroundColor: Colors.teal,
-                  //                         behavior:
-                  //                             SnackBarBehavior.floating,
-                  //                         content: Text(
-                  //                             'Pesan Berhasil Di Copy Di Clipboard',
-                  //                             style: GoogleFonts.ptSans(
-                  //                                 textStyle:
-                  //                                     Theme.of(context)
-                  //                                         .textTheme
-                  //                                         .headlineMedium,
-                  //                                 fontSize: 12,
-                  //                                 color: config
-                  //                                     .text_light_color))));
-                  //               }),
-                  //         )
-                  //       : SizedBox(),
-                  // )
-                ]),
-                SizedBox(
-                  height: 20,
-                ),
-                // Container(
-                //   child: Image.asset(
-                //     'assets/img/top.png',
-                //     fit: BoxFit.cover,
-                //   ),
-                // ),
-                // Container(
-                //     child: Column(
-                //   children: [
-                //     Icon(
-                //       status == 'sukses'
-                //           ? TablerIcons.circle_check_filled
-                //           : (status == 'proses'
-                //               ? TablerIcons.rotate
-                //               : TablerIcons.circle_x_filled),
-                //       size: 70,
-                //       color: status == 'sukses'
-                //           ? Colors.green
-                //           : (status == 'proses' ? Colors.orange : Colors.red),
-                //     ),
-                //     SizedBox(
-                //       height: 10,
-                //     ),
-                //     Text(
-                //       status == 'sukses'
-                //           ? 'Sukses'
-                //           : (status == 'proses' ? 'Proses' : 'Gagal'),
-                //       style: GoogleFonts.ptSans(
-                //           textStyle: Theme.of(context).textTheme.headlineMedium,
-                //           fontSize: 16,
-                //           fontWeight: FontWeight.bold,
-                //           color: config.text_dark_color),
-                //     ),
-                //   ],
-                // )),
-                Container(
-                  child: Image.asset(
-                    'assets/img/' +
-                        (status == 'sukses'
-                            ? 'top_success_struk.png'
-                            : status == 'proses'
-                                ? 'top_progress_struk.png'
-                                : 'top_failed_struk.png'),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Container(
-                  color: Colors.white,
-                  height: 300,
+    if (s == 'gagal' || s == 'failed') {
+      statusColor = const Color(0xFFE53935);
+      statusIcon = TablerIcons.x;
+      statusTitle = 'Deposit Gagal';
+    } else if (s == 'proses' || s == 'pending') {
+      statusColor = const Color(0xFFF9A825);
+      statusIcon = TablerIcons.clock;
+      statusTitle = 'Deposit Diproses';
+    } else {
+      statusColor = const Color(0xFF43A047);
+      statusIcon = TablerIcons.check;
+      statusTitle = 'Deposit Berhasil';
+    }
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF4F6F9),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1A1A2E)),
+        ),
+        title: Text(
+          'Detail Transaksi',
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFF1A1A2E),
+          ),
+        ),
+      ),
+      body: loadData && deposit.kode == null && deposit.error == true
+          ? Center(
+              child: Text(
+                deposit.errorMsg ?? 'Gagal memuat detail',
+                style: GoogleFonts.poppins(color: Colors.red),
+              ),
+            )
+          : deposit.kode == null
+              ? const Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   child: Column(
                     children: [
-                      BoxDetail(
-                        config: config,
-                        label: 'Kode Transaksi',
-                        value: '#' + (deposit.kode ?? '-'),
-                        btnCopy: false,
-                      ),
-                      BoxDetail(
-                        config: config,
-                        label: 'Nominal Deposit',
-                        value: deposit.nominal ?? '-',
-                        btnCopy: false,
-                      ),
-                      BoxDetail(
-                        config: config,
-                        label: 'Bank Tujuan Transfer',
-                        value: deposit.bank_tujuan_transfer ?? '-',
-                        btnCopy: false,
-                      ),
-                      BoxDetail(
-                        config: config,
-                        label: 'Nomor Rekening Tujuan Transfer',
-                        value: deposit.nomor_rekening_akun ?? '-',
-                        btnCopy: true,
-                      ),
-                      BoxDetail(
-                        config: config,
-                        label: 'Nama Akun Tujuan Transfer',
-                        value: deposit.nama_akun ?? '-',
-                        btnCopy: false,
-                      ),
-                      BoxDetail(
-                        config: config,
-                        label: 'Status Deposit',
-                        value: deposit.status_deposit == 'proses'
-                            ? 'PROSES'
-                            : deposit.status_deposit == 'gagal'
-                                ? 'GAGAL'
-                                : 'SUKSES',
-                        btnCopy: false,
-                      ),
-                      BoxDetail(
-                        config: config,
-                        label: 'Status Kirim',
-                        value: deposit.status_kirim == 'belum_kirim'
-                            ? 'BELUM KIRIM'
-                            : 'SUDAH KIRIM',
-                        btnCopy: false,
-                      ),
-                      deposit.status_deposit == 'gagal'
-                          ? Divider()
-                          : SizedBox(
-                              height: 0,
+                      // Card Utama
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF1F2AAA).withOpacity(0.04),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
                             ),
-                      deposit.status_deposit == 'gagal'
-                          ? BoxDetailText(
-                              config: config,
-                              title: "Alasan Penolakan",
-                              text: deposit.alasan_penolakan ?? '-')
-                          : SizedBox(
-                              height: 0,
-                            ),
-                      deposit.status_deposit == 'gagal'
-                          ? Divider()
-                          : SizedBox(
-                              height: 0,
-                            ),
-                      deposit.status_deposit == 'gagal'
-                          ? BoxDetailText(
-                              config: config,
-                              title: "Kontak Admin",
-                              text:
-                                  'Silahkan hubungi admin melalui Whatsapp disini : 085262802141.')
-                          : SizedBox(
-                              height: 0,
-                            ),
-                      deposit.status_deposit == 'gagal'
-                          ? SizedBox(
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 30),
+                            // Icon Status
+                            Container(
+                              width: 70,
                               height: 70,
-                            )
-                          : SizedBox(
-                              height: 0,
+                              decoration: BoxDecoration(
+                                color: statusColor.withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Container(
+                                  width: 50,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                    color: statusColor,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: statusColor.withOpacity(0.3),
+                                        blurRadius: 12,
+                                        offset: const Offset(0, 4),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Icon(statusIcon, color: Colors.white, size: 28),
+                                ),
+                              ),
                             ),
-                      // Image.asset(
-                      //   'assets/img/bottom.png',
-                      //   fit: BoxFit.cover,
-                      // ),
+                            const SizedBox(height: 16),
+                            Text(
+                              statusTitle,
+                              style: GoogleFonts.outfit(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF1A1A2E),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              _formatDate(deposit.waktu_kirim ?? ''),
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                color: const Color(0xFF6B7280),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            
+                            // Nominal
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFF8FAFC),
+                                border: Border.symmetric(
+                                  horizontal: BorderSide(color: Color(0xFFEEF2F6)),
+                                )
+                              ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    'Nominal Deposit',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      color: const Color(0xFF6B7280),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    _formatCurrency(deposit.nominal ?? '0'),
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.w700,
+                                      color: config.background_color,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            const SizedBox(height: 10),
+                            
+                            // Detail List
+                            Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                children: [
+                                  _buildDetailRow('Kode Transaksi', '#${deposit.kode ?? '-'}'),
+                                  _buildDetailRow('Metode Pembayaran', 'Transfer Bank'),
+                                  _buildDetailRow('Bank Tujuan', deposit.bank_tujuan_transfer ?? '-'),
+                                  _buildDetailRow('Nama Rekening', deposit.nama_akun ?? '-'),
+                                  _buildDetailRow(
+                                    'Nomor Rekening', 
+                                    deposit.nomor_rekening_akun ?? '-',
+                                    isCopyable: true,
+                                  ),
+                                  if (deposit.status_deposit?.toLowerCase() == 'gagal') ...[
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(vertical: 12),
+                                      child: Divider(color: Color(0xFFF3F4F6), height: 1),
+                                    ),
+                                    _buildDetailCol('Alasan Penolakan', deposit.alasan_penolakan ?? '-'),
+                                    const SizedBox(height: 12),
+                                    _buildDetailCol('Bantuan', 'Silahkan hubungi admin melalui WA: 085262802141'),
+                                  ]
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                      
+                      // Tombol OK
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: config.background_color,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).popUntil((route) => route.isFirst);
+                          },
+                          child: Text(
+                            'Kembali ke Beranda',
+                            style: GoogleFonts.poppins(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
                     ],
                   ),
                 ),
+    );
+  }
 
-                Image.asset(
-                  'assets/img/bottom.png',
-                  fit: BoxFit.cover,
-                ),
-
-                SizedBox(
-                  height: 30,
-                ),
-                TextButton(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text('OK',
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.ptSans(
-                                textStyle:
-                                    Theme.of(context).textTheme.headlineMedium,
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: config.text_light_color))
-                      ],
+  Widget _buildDetailRow(String label, String value, {bool isCopyable = false}) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF6B7280),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 3,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    value,
+                    textAlign: TextAlign.right,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF1A1A2E),
                     ),
-                    style: ButtonStyle(
-                      padding: MaterialStateProperty.all<EdgeInsets>(
-                          EdgeInsets.all(15)),
-                      foregroundColor: MaterialStateProperty.all<Color>(
-                          config.background_color),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                          RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5.0),
-                              side:
-                                  BorderSide(color: config.background_color))),
-                      backgroundColor:
-                          MaterialStateProperty.all(config.background_color),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).popUntil((route) => route.isFirst);
-                    }),
-                SizedBox(
-                  height: 30,
+                  ),
                 ),
-
-                // Divider(),
-
-                // Divider(),
-
-                // Divider(),
-
-                // Divider(),
-
-                // Divider(),
-
-                // Divider(),
+                if (isCopyable) ...[
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () async {
+                      await Clipboard.setData(ClipboardData(text: value));
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            backgroundColor: const Color(0xFF1A1A2E),
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            content: Row(
+                              children: [
+                                const Icon(Icons.check_circle_outline, color: Colors.greenAccent),
+                                const SizedBox(width: 10),
+                                Text(
+                                  'Tersalin: $value',
+                                  style: GoogleFonts.poppins(fontSize: 12),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    child: const Icon(
+                      TablerIcons.copy,
+                      size: 18,
+                      color: Color(0xFF1565C0),
+                    ),
+                  )
+                ]
               ],
             ),
           ),
@@ -331,140 +340,29 @@ class _Detail_depositState extends State<Detail_deposit> {
       ),
     );
   }
-}
 
-class BoxDetail extends StatelessWidget {
-  const BoxDetail(
-      {super.key,
-      required this.config,
-      required this.label,
-      required this.value,
-      required this.btnCopy});
-
-  final ConfigApp config;
-  final String label;
-  final String value;
-  final bool btnCopy;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(left: 25, right: 25, top: 7, bottom: 7),
-      child: Row(
-        children: [
-          Expanded(
-              child: Text(
-            label,
-            style: GoogleFonts.ptSans(
-                textStyle: Theme.of(context).textTheme.headlineMedium,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: config.text_dark_color),
-          )),
-          Expanded(
-              child: Text(
-            value,
-            textAlign: TextAlign.end,
-            style: GoogleFonts.ptSans(
-                textStyle: Theme.of(context).textTheme.headlineMedium,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: config.text_dark_color),
-          )),
-          btnCopy == true
-              ? Container(
-                  width: 40,
-                  margin: EdgeInsets.only(left: 10),
-                  child: ElevatedButton(
-                      onPressed: () async {
-                        await Clipboard.setData(ClipboardData(text: value));
-
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            backgroundColor: Colors.teal,
-                            behavior: SnackBarBehavior.floating,
-                            content: Text(
-                                'Nomor Rekening Berhasil Di Copy Di Clipboard',
-                                style: GoogleFonts.ptSans(
-                                    textStyle: Theme.of(context)
-                                        .textTheme
-                                        .headlineMedium,
-                                    fontSize: 12,
-                                    color: config.text_light_color))));
-                      },
-                      child: Icon(
-                        TablerIcons.copy,
-                        size: 15,
-                        color: config.text_dark_color,
-                      ),
-                      style: ButtonStyle(
-                        shape:
-                            MaterialStateProperty.all<RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5.0),
-                        )),
-                        backgroundColor:
-                            MaterialStateProperty.all(Colors.white),
-                        padding: MaterialStateProperty.all(EdgeInsets.only(
-                            top: 0, bottom: 0, left: 0, right: 0)),
-                      )),
-                )
-              : SizedBox()
-        ],
-      ),
-    );
-  }
-}
-
-class BoxDetailText extends StatelessWidget {
-  const BoxDetailText(
-      {super.key,
-      required this.config,
-      required this.text,
-      required this.title});
-
-  final ConfigApp config;
-  final String text;
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(left: 25, right: 25, top: 7, bottom: 7),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                  child: Text(
-                title,
-                textAlign: TextAlign.start,
-                style: GoogleFonts.ptSans(
-                    textStyle: Theme.of(context).textTheme.headlineMedium,
-                    fontSize: 14,
-                    // fontWeight: FontWeight.bold,
-                    color: config.text_grey_color),
-              ))
-            ],
+  Widget _buildDetailCol(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFFE53935),
           ),
-          SizedBox(
-            height: 5,
+        ),
+        const SizedBox(height: 6),
+        Text(
+          value,
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            color: const Color(0xFF1A1A2E),
+            height: 1.5,
           ),
-          Row(
-            children: [
-              Expanded(
-                  child: Text(
-                text,
-                textAlign: TextAlign.justify,
-                style: GoogleFonts.ptSans(
-                    textStyle: Theme.of(context).textTheme.headlineMedium,
-                    fontSize: 14,
-                    // fontWeight: FontWeight.bold,
-                    color: config.text_dark_color),
-              ))
-            ],
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

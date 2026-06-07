@@ -1,9 +1,10 @@
 import 'dart:convert';
-import '../config/config.dart';
-import '../models/model_list.dart';
-import '../models/model_void.dart';
-import '../sql/SQLHelper.dart';
-import '../utils/network_util.dart';
+import 'package:outletpulsa/config/config.dart';
+import 'package:outletpulsa/models/model_list.dart';
+import 'package:outletpulsa/models/model_void.dart';
+import 'package:outletpulsa/sql/SQLHelper.dart';
+import 'package:outletpulsa/utils/network_util.dart';
+import 'api_headers.dart';
 
 class Rest_info {
   String? _getInfoBelumBaca_url;
@@ -21,18 +22,8 @@ class Rest_info {
   final NetworkUtil _netUtil = NetworkUtil();
   final db = SQLHelper();
 
-  Future<Map<String, String>> _buildHeaders() async {
-    Map<String, dynamic>? dataProfils = await db.getSingleData('1');
-    final token = dataProfils!['token'];
-    return {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': 'Bearer $token',
-    };
-  }
-
   Future<Model_list> getInfoBelumBaca() async {
-    final headers = await _buildHeaders();
+    final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_getInfoBelumBaca_url!);
     return _netUtil.get(url, headers).then((dynamic res) async {
       return new Model_list.map(res);
@@ -40,7 +31,7 @@ class Rest_info {
   }
 
   Future<Model_list> getInfoSudahBaca() async {
-    final headers = await _buildHeaders();
+    final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_getInfoSudahBaca_url!);
     return _netUtil.get(url, headers).then((dynamic res) async {
       return new Model_list.map(res);
@@ -48,7 +39,7 @@ class Rest_info {
   }
 
   Future<Model_void> updateStatusBaca(id) async {
-    final headers = await _buildHeaders();
+    final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_updateStatusBaca_url!);
     return _netUtil
         .post(url, headers, jsonEncode({"id": id}))

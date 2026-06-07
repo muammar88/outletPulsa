@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../data/rest_info.dart';
+import '../services/info.dart';
 import '../models/model_list.dart';
 
 class Info_belum_baca_provider with ChangeNotifier {
@@ -12,13 +12,29 @@ class Info_belum_baca_provider with ChangeNotifier {
   Map<String, dynamic>? get list => _list;
 
   Future<void> getInfoBelumBaca() async {
-    await Rest_info().getInfoBelumBaca().then((Model_list e) async {
-      if (e.error == false) {
-        _list = e.list;
-      }
-      _error = e.error;
-      _errorMsg = e.errorMsg;
+    Future.microtask(() {
+      _list = null;
+      _error = null;
+      _errorMsg = null;
       notifyListeners();
     });
+
+    try {
+      await Rest_info().getInfoBelumBaca().then((Model_list e) async {
+        if (e.error == false) {
+          _list = e.list ?? {};
+        } else {
+          _list = {};
+        }
+        _error = e.error;
+        _errorMsg = e.errorMsg;
+        notifyListeners();
+      });
+    } catch (e) {
+      _error = true;
+      _errorMsg = e.toString();
+      _list = {};
+      notifyListeners();
+    }
   }
 }

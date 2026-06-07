@@ -1,7 +1,7 @@
-import '../config/config.dart';
-import '../models/model_beranda.dart';
-import '../sql/SQLHelper.dart';
-import '../utils/network_util.dart';
+import 'package:outletpulsa/config/config.dart';
+import 'package:outletpulsa/models/model_beranda.dart';
+import 'package:outletpulsa/sql/SQLHelper.dart';
+import 'package:outletpulsa/utils/network_util.dart';
 
 class Rest_beranda {
   String? _beranda_url;

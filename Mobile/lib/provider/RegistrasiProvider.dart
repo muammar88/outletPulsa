@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../data/rest_registrasi.dart';
+import '../services/registrasi.dart';
 import '../models/model_void.dart';
 
 class Registrasi_provider with ChangeNotifier {

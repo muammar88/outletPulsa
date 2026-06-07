@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../../../../../config/config.dart';
@@ -45,7 +45,7 @@ class _Input_ppob_pascabayarState extends State<Input_ppob_pascabayar> {
             )),
         title: Text(
           widget.name,
-          style: GoogleFonts.ptSans(
+          style: GoogleFonts.poppins(
               textStyle: Theme.of(context).textTheme.headlineMedium,
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -67,286 +67,220 @@ class _Input_ppob_pascabayarState extends State<Input_ppob_pascabayar> {
                           ),
                           Container(
                             padding: EdgeInsets.symmetric(
-                                vertical: 15, horizontal: 15),
+                                vertical: 25, horizontal: 20),
                             margin: EdgeInsets.symmetric(
                                 vertical: 15, horizontal: 15),
-                            height: 180,
                             decoration: BoxDecoration(
-                                // boxShadow: [
-                                //   BoxShadow(
-                                //     color: config.color_shadow,
-                                //     spreadRadius: 2,
-                                //     blurRadius: 7,
-                                //     offset: Offset(0, 3),
-                                //   ),
-                                // ],
-                                color: config.text_light_color,
-                                borderRadius: BorderRadius.circular(10)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.withOpacity(0.08),
+                                    spreadRadius: 4,
+                                    blurRadius: 15,
+                                    offset: Offset(0, 5),
+                                  ),
+                                ],
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(20)),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.start,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  'ID Pelanggan',
-                                  style: GoogleFonts.ptSans(
-                                      textStyle: Theme.of(context)
-                                          .textTheme
-                                          .headlineMedium,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                      color: config.text_dark_color),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: config.text_navy_color.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(10)
+                                      ),
+                                      child: Icon(Icons.confirmation_num_outlined, color: config.text_navy_color, size: 24),
+                                    ),
+                                    SizedBox(width: 15),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Masukkan ID Pelanggan',
+                                            style: GoogleFonts.poppins(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.black87),
+                                          ),
+                                          SizedBox(height: 2),
+                                          Text(
+                                            'Pastikan ID sudah benar.',
+                                            style: GoogleFonts.poppins(
+                                                fontSize: 11,
+                                                color: Colors.grey.shade500),
+                                          ),
+                                        ]
+                                      )
+                                    )
+                                  ],
                                 ),
-                                SizedBox(
-                                  height: 10,
-                                ),
+                                SizedBox(height: 25),
                                 TextFormField(
                                   onChanged: (text) =>
                                       setState(() => nomor_tujuan = text),
                                   onSaved: (val) => nomor_tujuan = val!,
-                                  // validator: (text) {
-                                  //   if (text == null || text.isEmpty) {
-                                  //     return widget.tipe == 'prabayar'
-                                  //         ? 'Nomor Tujuan tidak boleh kosong'
-                                  //         : 'ID Pelanggan tidak boleh kosong';
-                                  //   }
-                                  //   return null;
-                                  // },
                                   enableSuggestions: false,
                                   autocorrect: false,
                                   keyboardType: TextInputType.number,
                                   decoration: InputDecoration(
-                                    hintText: 'ID Pelanggan',
-                                    hintStyle: GoogleFonts.ptSans(
-                                        textStyle: Theme.of(context)
-                                            .textTheme
-                                            .headlineMedium,
+                                    hintText: 'Contoh: 1234567890',
+                                    hintStyle: GoogleFonts.poppins(
                                         fontSize: 13,
-                                        // fontWeight: FontWeight.bold,
-                                        color: config.text_dark_color),
+                                        color: Colors.grey.shade400),
+                                    prefixIcon: Icon(Icons.tag, color: Colors.grey.shade400, size: 20),
                                     floatingLabelBehavior:
                                         FloatingLabelBehavior.never,
                                     filled: true,
-                                    fillColor: config.input_grey_color,
+                                    fillColor: Colors.grey.shade50,
                                     contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 15.0, horizontal: 10.0),
+                                        vertical: 18.0, horizontal: 15.0),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius:
-                                          new BorderRadius.circular(5.0),
+                                          new BorderRadius.circular(12.0),
                                       borderSide: BorderSide(
-                                          color: config.input_light_color),
+                                          color: Colors.grey.shade200),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius:
-                                          new BorderRadius.circular(5.0),
+                                          new BorderRadius.circular(12.0),
                                       borderSide: BorderSide(
-                                          color: config.input_light_color),
+                                          color: config.text_navy_color),
                                     ),
                                   ),
                                 ),
+                                SizedBox(height: 25),
                                 SizedBox(
-                                  height: 15,
-                                ),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: ElevatedButton(
-                                          onPressed: () async {
-                                            var err = false;
-                                            var err_msg = '';
-                                            if (nomor_tujuan == null ||
-                                                nomor_tujuan == '') {
-                                              err_msg +=
-                                                  'Nomor tujuan wajib diisi';
-                                              err = true;
-                                            }
-                                            if (err == false) {
-                                              if (widget.status == 'active') {
-                                                loader.isLoad = true;
-                                                print("widget.kode");
-                                                print(widget.kode);
-                                                print("widget.kode");
-                                                final trans = Provider.of<
-                                                        Transaction_provider>(
-                                                    context,
-                                                    listen: false);
-                                                var feedBack = await trans
-                                                    .inquiryPascabayar(
-                                                  widget.kode,
-                                                  nomor_tujuan!,
-                                                );
-                                                if (feedBack.error == false) {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            Konfirmasi_pembelian_pascabayar(
-                                                              trId: feedBack
-                                                                  .trId!,
-                                                              refId: feedBack
-                                                                  .refId!,
-                                                              kode: feedBack
-                                                                  .kodeProduct!,
-                                                              nomor_tujuan:
-                                                                  nomor_tujuan!,
-                                                              namaPelanggan:
-                                                                  feedBack
-                                                                      .namaPelanggan!,
-                                                              name: widget.name,
-                                                              status:
-                                                                  widget.status,
-                                                              fee: widget.fee,
-                                                              nominal: feedBack
-                                                                  .nominal!,
-                                                              totalTagihan: feedBack
-                                                                  .totalTagihan!,
-                                                              biaya_admin: feedBack
-                                                                  .biayaAdmin!,
-                                                            )),
-                                                  );
-                                                } else {
-                                                  loader.isLoad = false;
-                                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                                      backgroundColor:
-                                                          const Color.fromARGB(
-                                                              255, 163, 57, 49),
-                                                      behavior: SnackBarBehavior
-                                                          .floating,
-                                                      content: Text(
-                                                          feedBack.errorMsg!,
-                                                          style: GoogleFonts.ptSans(
-                                                              textStyle: Theme.of(
-                                                                      context)
-                                                                  .textTheme
-                                                                  .headlineMedium,
-                                                              fontSize: 12,
-                                                              color: config
-                                                                  .text_light_color))));
-                                                }
-                                              } else {
-                                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                                    backgroundColor:
-                                                        const Color.fromARGB(
-                                                            255, 163, 57, 49),
-                                                    behavior: SnackBarBehavior
-                                                        .floating,
-                                                    content: Text(
-                                                        'Produk tidak aktif tidak dapat dibeli',
-                                                        style: GoogleFonts.ptSans(
-                                                            textStyle: Theme.of(
-                                                                    context)
-                                                                .textTheme
-                                                                .headlineMedium,
-                                                            fontSize: 12,
-                                                            color: config
-                                                                .text_light_color))));
-                                              }
-
-                                              // print("++++++++++=1");
-                                              // if (widget.checkPrefix == false) {
-                                              //   print("++++++++++=2");
-                                              //   Navigator.push(
-                                              //       context,
-                                              //       MaterialPageRoute(
-                                              //           builder: (context) => Daftar_produk(
-                                              //               nomor_tujuan: nomor_tujuan!,
-                                              //               label: widget.label,
-                                              //               path: widget.path,
-                                              //               title: widget.title,
-                                              //               tipe: widget.tipe,
-                                              //               prefix: widget.checkPrefix)));
-                                              // } else {
-                                              //   print("++++++++++=3");
-                                              //   final trans =
-                                              //       Provider.of<Transaction_provider>(
-                                              //           context,
-                                              //           listen: false);
-                                              //   await trans.getPrefix(
-                                              //       nomor_tujuan!, widget.path!);
-                                              //   if (trans.error == false) {
-                                              //     print("++++++++++=4");
-                                              //     Navigator.push(
-                                              //         context,
-                                              //         MaterialPageRoute(
-                                              //             builder: (context) =>
-                                              //                 Daftar_produk(
-                                              //                     nomor_tujuan:
-                                              //                         nomor_tujuan!,
-                                              //                     label: widget.label,
-                                              //                     path: widget.path,
-                                              //                     title: widget.title,
-                                              //                     tipe: widget.tipe,
-                                              //                     prefix: true)));
-                                              //   } else {
-                                              //     print("++++++++++=5");
-                                              //     print(trans.error);
-                                              //     print(trans.errorMsg);
-                                              //     print("++++++++++=5");
-                                              //     ScaffoldMessenger.of(context)
-                                              //         .showSnackBar(SnackBar(
-                                              //             backgroundColor:
-                                              //                 const Color.fromARGB(
-                                              //                     255, 163, 57, 49),
-                                              //             behavior:
-                                              //                 SnackBarBehavior.floating,
-                                              //             content: Text(trans.errorMsg!,
-                                              //                 style: GoogleFonts.ptSans(
-                                              //                     textStyle:
-                                              //                         Theme.of(context)
-                                              //                             .textTheme
-                                              //                             .headlineMedium,
-                                              //                     fontSize: 12,
-                                              //                     color: config
-                                              //                         .text_light_color))));
-                                              //   }
-                                              // }
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                      onPressed: () async {
+                                        var err = false;
+                                        var err_msg = '';
+                                        if (nomor_tujuan == null ||
+                                            nomor_tujuan == '') {
+                                          err_msg +=
+                                              'Nomor tujuan wajib diisi';
+                                          err = true;
+                                        }
+                                        if (err == false) {
+                                          if (widget.status == 'active') {
+                                            loader.isLoad = true;
+                                            print("widget.kode");
+                                            print(widget.kode);
+                                            print("widget.kode");
+                                            final trans = Provider.of<
+                                                    Transaction_provider>(
+                                                context,
+                                                listen: false);
+                                            var feedBack = await trans
+                                                .inquiryPascabayar(
+                                              widget.kode,
+                                              nomor_tujuan!,
+                                            );
+                                            if (feedBack.error == false) {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        Konfirmasi_pembelian_pascabayar(
+                                                          trId: feedBack
+                                                              .trId!,
+                                                          refId: feedBack
+                                                              .refId!,
+                                                          kode: feedBack
+                                                              .kodeProduct!,
+                                                          nomor_tujuan:
+                                                              nomor_tujuan!,
+                                                          namaPelanggan:
+                                                              feedBack
+                                                                  .namaPelanggan!,
+                                                          name: widget.name,
+                                                          status:
+                                                              widget.status,
+                                                          fee: widget.fee,
+                                                          nominal: feedBack
+                                                              .nominal!,
+                                                          totalTagihan: feedBack
+                                                              .totalTagihan!,
+                                                          biaya_admin: feedBack
+                                                              .biayaAdmin!,
+                                                        )),
+                                              );
                                             } else {
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(SnackBar(
-                                                      backgroundColor:
-                                                          const Color.fromARGB(
-                                                              255, 163, 57, 49),
-                                                      behavior: SnackBarBehavior
-                                                          .floating,
-                                                      content: Text(err_msg,
-                                                          style: GoogleFonts.ptSans(
-                                                              textStyle: Theme.of(
-                                                                      context)
-                                                                  .textTheme
-                                                                  .headlineMedium,
-                                                              fontSize: 12,
-                                                              color: config
-                                                                  .text_light_color))));
+                                              loader.isLoad = false;
+                                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                  backgroundColor:
+                                                      const Color.fromARGB(
+                                                          255, 163, 57, 49),
+                                                  behavior: SnackBarBehavior
+                                                      .floating,
+                                                  content: Text(
+                                                      feedBack.errorMsg!,
+                                                      style: GoogleFonts.poppins(
+                                                          textStyle: Theme.of(
+                                                                  context)
+                                                              .textTheme
+                                                              .headlineMedium,
+                                                          fontSize: 12,
+                                                          color: config
+                                                              .text_light_color))));
                                             }
-                                          },
-                                          child: Text(
-                                            "Lanjutkan",
-                                            style: GoogleFonts.ptSans(
-                                                textStyle: Theme.of(context)
-                                                    .textTheme
-                                                    .headlineMedium,
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                                color: config.text_light_color),
-                                          ),
-                                          style: ButtonStyle(
-                                            shape: MaterialStateProperty.all<
-                                                    RoundedRectangleBorder>(
-                                                RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(5.0),
-                                            )),
-                                            backgroundColor:
-                                                MaterialStateProperty.all(
-                                                    config.btn_primary_color),
-                                            padding: MaterialStateProperty.all(
-                                                EdgeInsets.only(
-                                                    top: 17,
-                                                    bottom: 16,
-                                                    left: 20,
-                                                    right: 20)),
-                                          )),
-                                    ),
-                                  ],
+                                          } else {
+                                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                                backgroundColor:
+                                                    const Color.fromARGB(
+                                                        255, 163, 57, 49),
+                                                behavior: SnackBarBehavior
+                                                    .floating,
+                                                content: Text(
+                                                    'Produk tidak aktif tidak dapat dibeli',
+                                                    style: GoogleFonts.poppins(
+                                                        textStyle: Theme.of(
+                                                                context)
+                                                            .textTheme
+                                                            .headlineMedium,
+                                                        fontSize: 12,
+                                                        color: config
+                                                            .text_light_color))));
+                                          }
+                                        } else {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(SnackBar(
+                                                  backgroundColor:
+                                                      const Color.fromARGB(
+                                                          255, 163, 57, 49),
+                                                  behavior: SnackBarBehavior
+                                                      .floating,
+                                                  content: Text(err_msg,
+                                                      style: GoogleFonts.poppins(
+                                                          textStyle: Theme.of(
+                                                                  context)
+                                                              .textTheme
+                                                              .headlineMedium,
+                                                          fontSize: 12,
+                                                          color: config
+                                                              .text_light_color))));
+                                        }
+                                      },
+                                      child: Text(
+                                        "Lanjutkan Pembayaran",
+                                        style: GoogleFonts.poppins(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: config.text_light_color),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: config.btn_primary_color,
+                                        padding: EdgeInsets.symmetric(vertical: 16),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(12.0),
+                                        ),
+                                        elevation: 0,
+                                      )),
                                 ),
                               ],
                             ),

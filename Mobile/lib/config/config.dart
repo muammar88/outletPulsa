@@ -60,7 +60,7 @@ class ConfigApp {
   ConfigApp() {
     // url
     // _mainurl = "http://api.outletpulsa.com";
-    // _mainurl = "http://localhost:3003";
+    // _mainurl = "http://localhost:3003";10.95.73.166
     _mainurl = "http://10.95.73.166:3005/api";
     _login_url = '$_mainurl/auth/login';
     _check_login_url = '$_mainurl/auth/check-login';
@@ -76,11 +76,11 @@ class ConfigApp {
     _getRiwayatPascabayar_url = '$_mainurl/riwayat-pascabayar';
     _getRiwayatDeposit_url = '$_mainurl/riwayat-deposit';
     _getRiwayatTransferSaldo_url = '$_mainurl/riwayat-transfer-saldo';
-    _getInfoBelumBaca_url = '$_mainurl/info-belum-baca';
-    _getInfoSudahBaca_url = '$_mainurl/info-sudah-baca';
-    _updateStatusBaca_url = '$_mainurl/info-update-baca';
-    _updateNamaAkun_url = '$_mainurl/akun-update-nama';
-    _updatePasswordAkun_url = '$_mainurl/akun-update-password';
+    _getInfoBelumBaca_url = '$_mainurl/info/belum-baca';
+    _getInfoSudahBaca_url = '$_mainurl/info/sudah-baca';
+    _updateStatusBaca_url = '$_mainurl/info/update-status-baca';
+    _updateNamaAkun_url = '$_mainurl/akun/akun-update-nama';
+    _updatePasswordAkun_url = '$_mainurl/akun/akun-update-password';
     _transferSaldo_url = '$_mainurl/transfer-saldo';
     _deposit_saldo_url = '$_mainurl/deposit-saldo';
     _info_konfirmasi_deposit_url = '$_mainurl/deposit-info-konfirmasi';

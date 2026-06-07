@@ -123,43 +123,60 @@ class _Update_passwordState extends State<Update_password> {
                   const SizedBox(height: 32),
                   
                   // --- Simpan Button ---
-                  GestureDetector(
-                    onTap: _submitForm,
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF1F2AAA), Color(0xFF3A47C5)],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF1F2AAA).withOpacity(0.3),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(TablerIcons.device_floppy,
-                              size: 18, color: Colors.white),
-                          const SizedBox(width: 8),
-                          Text(
-                            "Simpan Perubahan",
-                            style: GoogleFonts.poppins(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
+                  Consumer<Update_akun_provider>(
+                    builder: (context, provider, child) {
+                      return GestureDetector(
+                        onTap: provider.isLoading ? null : () => _submitForm(provider),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: provider.isLoading
+                                  ? [Colors.grey, Colors.grey.shade400]
+                                  : [const Color(0xFF1F2AAA), const Color(0xFF3A47C5)],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
                             ),
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF1F2AAA).withOpacity(0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ),
+                          child: provider.isLoading
+                              ? const Center(
+                                  child: SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(TablerIcons.device_floppy,
+                                        size: 18, color: Colors.white),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      "Simpan Perubahan",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
+                      );
+                    }
                   ),
                 ],
               ),
@@ -238,7 +255,7 @@ class _Update_passwordState extends State<Update_password> {
     );
   }
 
-  Future<void> _submitForm() async {
+  Future<void> _submitForm(Update_akun_provider update) async {
     _formKey.currentState!.save();
     var err = false;
     var errMsg = '';
@@ -258,7 +275,6 @@ class _Update_passwordState extends State<Update_password> {
     }
 
     if (!err) {
-      final update = Provider.of<Update_akun_provider>(context, listen: false);
       await update.updatePasswordAkun(
         passwordLamaController.text,
         passwordBaruController.text,
@@ -269,7 +285,7 @@ class _Update_passwordState extends State<Update_password> {
         if (update.error == false) {
           await Provider.of<Beranda_provider>(context, listen: false).get_data_beranda();
           _showSnackBar(update.errorMsg ?? 'Password berhasil diubah', isSuccess: true);
-          Navigator.pop(context);
+          if (mounted) Navigator.pop(context);
         } else {
           _showSnackBar(update.errorMsg ?? 'Gagal mengubah password', isSuccess: false);
         }

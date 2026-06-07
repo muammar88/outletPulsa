@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../data/rest_beranda.dart';
+import '../services/beranda.dart';
 import '../models/model_beranda.dart';
 
 class Beranda_provider with ChangeNotifier {

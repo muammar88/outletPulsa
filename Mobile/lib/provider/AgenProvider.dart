@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../data/rest_agen.dart';
-import '../data/rest_deposit.dart';
+import '../services/agen.dart';
+import '../services/deposit.dart';
 import '../models/model_agen.dart';
 import '../models/model_detail_deposit.dart';
 import '../models/model_list_produk.dart';

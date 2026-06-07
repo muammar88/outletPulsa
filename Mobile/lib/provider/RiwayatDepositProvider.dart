@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../data/rest_riwayat.dart';
+import '../services/riwayat.dart';
 import '../models/model_list.dart';
 
 class Riwayat_deposit_provider with ChangeNotifier {

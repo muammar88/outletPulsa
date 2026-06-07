@@ -153,115 +153,131 @@ class _Update_akun_nameState extends State<Update_akun_name> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  GestureDetector(
-                    onTap: () async {
-                      _formKey.currentState!.save();
-                      var err = false;
-                      var err_msg = '';
+                  Consumer<Update_akun_provider>(
+                    builder: (context, provider, child) {
+                      return GestureDetector(
+                        onTap: provider.isLoading
+                            ? null
+                            : () async {
+                                _formKey.currentState!.save();
+                                var err = false;
+                                var err_msg = '';
 
-                      if (textController.text.trim().isEmpty) {
-                        err_msg = 'Nama Akun wajib diisi';
-                        err = true;
-                      }
+                                if (textController.text.trim().isEmpty) {
+                                  err_msg = 'Nama Akun wajib diisi';
+                                  err = true;
+                                }
 
-                      if (err == false) {
-                        final update = Provider.of<Update_akun_provider>(
-                            context,
-                            listen: false);
-                        await update.updateNamaAkun(textController.text);
+                                if (err == false) {
+                                  await provider.updateNamaAkun(textController.text);
 
-                        if (update.error != null) {
-                          if (update.error == false) {
-                            await Provider.of<Beranda_provider>(context,
-                                    listen: false)
-                                .get_data_beranda();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                backgroundColor: const Color(0xFF2E7D32), // Green
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10)),
-                                content: Text(
-                                  update.errorMsg ?? 'Berhasil mengubah nama',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 13,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            );
-                            Navigator.pop(context);
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                backgroundColor: const Color(0xFFD32F2F), // Red
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10)),
-                                content: Text(
-                                  update.errorMsg ?? 'Gagal mengubah nama',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 13,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }
-                        }
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor: const Color(0xFFD32F2F), // Red
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                            content: Text(
-                              err_msg,
-                              style: GoogleFonts.poppins(
-                                fontSize: 13,
-                                color: Colors.white,
-                              ),
+                                  if (provider.error != null) {
+                                    if (provider.error == false) {
+                                      await Provider.of<Beranda_provider>(context,
+                                              listen: false)
+                                          .get_data_beranda();
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          backgroundColor: const Color(0xFF2E7D32),
+                                          behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(10)),
+                                          content: Text(
+                                            provider.errorMsg ?? 'Berhasil mengubah nama',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 13,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                      if (mounted) Navigator.pop(context);
+                                    } else {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          backgroundColor: const Color(0xFFD32F2F),
+                                          behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(10)),
+                                          content: Text(
+                                            provider.errorMsg ?? 'Gagal mengubah nama',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: 13,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  }
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      backgroundColor: const Color(0xFFD32F2F),
+                                      behavior: SnackBarBehavior.floating,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10)),
+                                      content: Text(
+                                        err_msg,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 13,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: provider.isLoading 
+                                ? [Colors.grey, Colors.grey.shade400]
+                                : [const Color(0xFF1F2AAA), const Color(0xFF3A47C5)],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
                             ),
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF1F2AAA).withOpacity(0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
                           ),
-                        );
-                      }
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF1F2AAA), Color(0xFF3A47C5)],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
+                          child: provider.isLoading
+                              ? const Center(
+                                  child: SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(TablerIcons.device_floppy,
+                                        size: 18, color: Colors.white),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      "Simpan Perubahan",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                         ),
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF1F2AAA).withOpacity(0.3),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(TablerIcons.device_floppy,
-                              size: 18, color: Colors.white),
-                          const SizedBox(width: 8),
-                          Text(
-                            "Simpan Perubahan",
-                            style: GoogleFonts.poppins(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                      );
+                    }
                   ),
                 ],
               ),

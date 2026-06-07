@@ -1,7 +1,8 @@
-import '../config/config.dart';
-import '../models/model_list.dart';
-import '../sql/SQLHelper.dart';
-import '../utils/network_util.dart';
+import 'package:outletpulsa/config/config.dart';
+import 'package:outletpulsa/models/model_list.dart';
+import 'package:outletpulsa/sql/SQLHelper.dart';
+import 'package:outletpulsa/utils/network_util.dart';
+import 'api_headers.dart';
 
 class Rest_riwayat {
   String? _getRiwayatPrabayar_url;
@@ -21,18 +22,8 @@ class Rest_riwayat {
   final NetworkUtil _netUtil = NetworkUtil();
   final db = SQLHelper();
 
-  Future<Map<String, String>> _buildHeaders() async {
-    Map<String, dynamic>? dataProfils = await db.getSingleData('1');
-    final token = dataProfils!['token'];
-    return {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': 'Bearer $token',
-    };
-  }
-
   Future<Model_list> getRiwayatPrabayar() async {
-    final headers = await _buildHeaders();
+    final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_getRiwayatPrabayar_url!);
     return _netUtil.get(url, headers).then((dynamic res) async {
       return new Model_list.map(res);
@@ -40,7 +31,7 @@ class Rest_riwayat {
   }
 
   Future<Model_list> getRiwayatPascabayar() async {
-    final headers = await _buildHeaders();
+    final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_getRiwayatPascabayar_url!);
     return _netUtil.get(url, headers).then((dynamic res) async {
       return new Model_list.map(res);
@@ -48,7 +39,7 @@ class Rest_riwayat {
   }
 
   Future<Model_list> getRiwayatDeposit() async {
-    final headers = await _buildHeaders();
+    final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_getRiwayatDeposit_url!);
     return _netUtil.get(url, headers).then((dynamic res) async {
       return new Model_list.map(res);
@@ -56,7 +47,7 @@ class Rest_riwayat {
   }
 
   Future<Model_list> getRiwayatTransferSaldo() async {
-    final headers = await _buildHeaders();
+    final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_getRiwayatTransferSaldo_url!);
     return _netUtil.get(url, headers).then((dynamic res) async {
       return new Model_list.map(res);

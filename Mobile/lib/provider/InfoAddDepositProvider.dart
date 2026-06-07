@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../data/rest_deposit.dart';
+import '../services/deposit.dart';
 import '../models/model_info_deposit.dart';
 
 class Banks {

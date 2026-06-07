@@ -36,8 +36,8 @@ class _Daftar_produkState extends State<Daftar_produk> {
   @override
   void didChangeDependencies() async {
     if (loadData == false) {
-      await Provider.of<Transaction_provider>(context)
-          .getDaftarProduk(widget.nomor_tujuan, widget.path, widget.prefix);
+      await Provider.of<Transaction_provider>(context, listen: false)
+          .getDaftarProduk(operator: widget.path);
       loadData = true;
     }
     super.didChangeDependencies();
@@ -61,7 +61,7 @@ class _Daftar_produkState extends State<Daftar_produk> {
               )),
           title: Text(
             'Daftar Produk',
-            style: GoogleFonts.ptSans(
+            style: GoogleFonts.poppins(
                 textStyle: Theme.of(context).textTheme.headlineMedium,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -81,18 +81,29 @@ class _Daftar_produkState extends State<Daftar_produk> {
                         : trans.list_produk!.length
                     : 1,
                 itemBuilder: (BuildContext context, int index) {
+                  if (trans.error == true && trans.errorMsg != null) {
+                    return Center(
+                      child: Container(
+                        padding: EdgeInsets.only(top: 50),
+                        child: Text(
+                          trans.errorMsg!,
+                          style: GoogleFonts.poppins(color: Colors.red),
+                        ),
+                      ),
+                    );
+                  }
                   if (trans.list_produk == null) {
                     return AllBoxLoading();
                   } else {
                     if (trans.list_produk!.length == 0) {
-                      // return NotfoundProdukWidget(config: config);
                       return NotfoundWidget(
-                          config: config, label: "Daftar Produk");
+                          config: config, label: "Daftar Produk Kosong");
                     } else {
                       if (index == 0) {
                         return Container(
                           padding: EdgeInsets.only(top: 20),
                           child: BoxListProduk(
+                              index: index,
                               config: config,
                               kode: trans.list_produk![index.toString()]
                                   ['kode'],
@@ -111,6 +122,7 @@ class _Daftar_produkState extends State<Daftar_produk> {
                           return Container(
                             padding: EdgeInsets.only(bottom: 50),
                             child: BoxListProduk(
+                                index: index,
                                 config: config,
                                 kode: trans.list_produk![index.toString()]
                                     ['kode'],
@@ -126,6 +138,7 @@ class _Daftar_produkState extends State<Daftar_produk> {
                           );
                         } else {
                           return BoxListProduk(
+                              index: index,
                               config: config,
                               kode: trans.list_produk![index.toString()]
                                   ['kode'],
@@ -149,6 +162,7 @@ class _Daftar_produkState extends State<Daftar_produk> {
 class BoxListProduk extends StatelessWidget {
   const BoxListProduk(
       {super.key,
+      required this.index,
       required this.config,
       required this.kode,
       required this.nominal,
@@ -157,6 +171,7 @@ class BoxListProduk extends StatelessWidget {
       required this.status,
       required this.nomor_tujuan});
 
+  final int index;
   final ConfigApp config;
   final String kode;
   final String nominal;
@@ -167,129 +182,163 @@ class BoxListProduk extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        if (status == 'active') {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => Konfirmasi_pembelian(
-                    kode: kode,
-                    nominal: nominal,
-                    operator: operator,
-                    harga: harga,
-                    nomor_tujuan: nomor_tujuan)),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-              backgroundColor: const Color.fromARGB(255, 163, 57, 49),
-              behavior: SnackBarBehavior.floating,
-              content: Text('Produk tidak aktif tidak dapat dibeli',
-                  style: GoogleFonts.ptSans(
-                      textStyle: Theme.of(context).textTheme.headlineMedium,
-                      fontSize: 12,
-                      color: config.text_light_color))));
-        }
+    bool isActive = status == 'active';
+    int staggerIndex = index > 15 ? 15 : index; // Limit the max stagger time
+
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.0, end: 1.0),
+      duration: Duration(milliseconds: 300 + (staggerIndex * 50)),
+      curve: Curves.easeOutQuart,
+      builder: (context, value, child) {
+        return Transform.translate(
+          offset: Offset(0, 50 * (1 - value)),
+          child: Opacity(
+            opacity: value,
+            child: child,
+          ),
+        );
       },
       child: Container(
-          //height: 70,
-          constraints: BoxConstraints(minHeight: 50),
-          padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 0),
-          margin: EdgeInsets.only(top: 5, bottom: 5),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: Colors.white,
+      margin: EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            spreadRadius: 0,
+            offset: Offset(0, 4),
           ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                      child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            if (isActive) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => Konfirmasi_pembelian(
+                        kode: kode,
+                        nominal: nominal,
+                        operator: operator,
+                        harga: harga,
+                        nomor_tujuan: nomor_tujuan)),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  backgroundColor: const Color.fromARGB(255, 163, 57, 49),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  content: Text('Produk sedang gangguan / tidak dapat dibeli',
+                      style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: config.text_light_color))));
+            }
+          },
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Leading Icon
+                Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isActive
+                        ? config.btn_primary_color.withOpacity(0.1)
+                        : Colors.grey.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(
+                    isActive ? Icons.phone_android_rounded : Icons.block_rounded,
+                    color: isActive ? config.btn_primary_color : Colors.grey,
+                    size: 24,
+                  ),
+                ),
+                SizedBox(width: 16),
+                
+                // Content Details
+                Expanded(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        kode,
-                        style: GoogleFonts.ptSans(
-                            textStyle: Theme.of(context).textTheme.headlineMedium,
-                            fontSize: 12,
-                            color: config.text_grey_color),
+                        nominal,
+                        style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: isActive ? config.text_dark_color : Colors.grey),
                       ),
-                      Text(nominal,
-                          // overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.ptSans(
-                              textStyle: Theme.of(context).textTheme.headlineMedium,
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: config.text_dark_color)),
+                      SizedBox(height: 4),
                       Text(
                         operator,
-                        // overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.ptSans(
-                            textStyle: Theme.of(context).textTheme.headlineMedium,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                        style: GoogleFonts.poppins(
+                            fontSize: 13,
                             color: config.text_grey_color),
                       ),
-                    ],
-                  )),
-                  Expanded(
-                      child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      SizedBox(
-                        height: 8,
-                      ),
+                      SizedBox(height: 6),
                       Container(
-                        margin: EdgeInsets.symmetric(horizontal: 10),
-                        child: Text(harga,
-                            style: GoogleFonts.ptSans(
-                                textStyle:
-                                    Theme.of(context).textTheme.headlineMedium,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: config.text_dark_color)),
+                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: config.background_tab,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          kode,
+                          style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: config.text_grey_color),
+                        ),
                       ),
-                      SizedBox(
-                        height: 2,
-                      ),
-                      Container(
-                          decoration: BoxDecoration(
-                              boxShadow: [
-                                BoxShadow(
-                                  color: config.color_shadow,
-                                  spreadRadius: 2,
-                                  blurRadius: 7,
-                                  offset: Offset(0, 3),
-                                ),
-                              ],
-                              color: status == 'active'
-                                  ? Colors.green
-                                  : Colors.red,
-                              borderRadius: BorderRadius.circular(5)),
-                          padding: EdgeInsets.symmetric(vertical: 4),
-                          width: 70,
-                          child: Align(
-                              alignment: Alignment.center,
-                              child: Text(
-                                status.toUpperCase(),
-                                style: GoogleFonts.ptSans(
-                                    textStyle:
-                                        Theme.of(context).textTheme.headlineMedium,
-                                    fontSize: 11,
-                                    color: config.text_light_color),
-                              ))),
                     ],
-                  )),
-                ],
-              ),
-              // Divider(
-              //   color: config.text_grey_color,
-              // ),
-            ],
-          )),
+                  ),
+                ),
+                
+                // Price and Badge
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      harga,
+                      style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: isActive ? config.btn_primary_color : Colors.grey),
+                    ),
+                    SizedBox(height: 8),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isActive ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isActive ? Colors.green.withOpacity(0.4) : Colors.red.withOpacity(0.4),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        isActive ? 'Tersedia' : 'Gangguan',
+                        style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: isActive ? Colors.green[700] : Colors.red[700]),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    ),
     );
   }
 }

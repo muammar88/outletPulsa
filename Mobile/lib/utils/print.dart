@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../../config/config.dart';
+import 'package:outletpulsa/config/config.dart';
 
 // import 'package:esc_pos_bluetooth/esc_pos_bluetooth.dart';
 import 'package:bluetooth_print/bluetooth_print.dart';
@@ -105,7 +105,7 @@ class _PrintState extends State<Print> {
         centerTitle: true,
         title: Text(
           'Cetak Struk',
-          style: GoogleFonts.ptSans(
+          style: GoogleFonts.poppins(
               textStyle: Theme.of(context).textTheme.headlineMedium,
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -205,7 +205,7 @@ class _PrintState extends State<Print> {
                                 ),
                                 Text('Connect',
                                     textAlign: TextAlign.center,
-                                    style: GoogleFonts.ptSans(
+                                    style: GoogleFonts.poppins(
                                         textStyle: Theme.of(context)
                                             .textTheme
                                             .headlineMedium,
@@ -224,7 +224,7 @@ class _PrintState extends State<Print> {
                                             behavior: SnackBarBehavior.floating,
                                             content: Text(
                                                 'ALREADY CONNECTED',
-                                                style: GoogleFonts.ptSans(
+                                                style: GoogleFonts.poppins(
                                                     textStyle: Theme.of(context)
                                                         .textTheme
                                                         .headlineMedium,
@@ -285,7 +285,7 @@ class _PrintState extends State<Print> {
                                 ),
                                 Text('Disconnect',
                                     textAlign: TextAlign.center,
-                                    style: GoogleFonts.ptSans(
+                                    style: GoogleFonts.poppins(
                                         textStyle: Theme.of(context)
                                             .textTheme
                                             .headlineMedium,
@@ -308,7 +308,7 @@ class _PrintState extends State<Print> {
                                             behavior: SnackBarBehavior.floating,
                                             content: Text(
                                                 'NOT CONNECTED',
-                                                style: GoogleFonts.ptSans(
+                                                style: GoogleFonts.poppins(
                                                     textStyle: Theme.of(context)
                                                         .textTheme
                                                         .headlineMedium,
@@ -340,7 +340,7 @@ class _PrintState extends State<Print> {
                                   ),
                                   Text('Cetak Struk',
                                       textAlign: TextAlign.center,
-                                      style: GoogleFonts.ptSans(
+                                      style: GoogleFonts.poppins(
                                           textStyle: Theme.of(context)
                                               .textTheme
                                               .headlineMedium,
@@ -537,4 +537,3 @@ class _PrintState extends State<Print> {
     );
   }
 }
-

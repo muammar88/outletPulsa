@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:outletpulsa/module/public/login.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:outletpulsa/provider/BerandaProvider.dart';
@@ -111,7 +112,11 @@ class _MyAppState extends State<MyApp> {
       ],
       child: MaterialApp(
           debugShowCheckedModeBanner: false,
-          theme: ThemeData(fontFamily: 'Poppins'),
+          theme: ThemeData(
+            textTheme: GoogleFonts.poppinsTextTheme(
+              Theme.of(context).textTheme,
+            ),
+          ),
           home: SupportWidget()),
     );
   }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:outletpulsa/data/rest_transaction.dart';
+import 'package:outletpulsa/services/transaction.dart';
 import 'package:outletpulsa/models/model_detail_transaksi_pascabayar.dart';
 
 class Detail_pascabayar_provider with ChangeNotifier {

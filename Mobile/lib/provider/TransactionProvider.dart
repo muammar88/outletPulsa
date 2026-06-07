@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:outletpulsa/data/rest_transaction.dart';
+import 'package:outletpulsa/services/transaction.dart';
 import 'package:outletpulsa/models/model_void.dart';
 import '../models/model_inquiry_pascabayar.dart';
 import '../models/model_list_kategori.dart';
@@ -46,17 +46,43 @@ class Transaction_provider with ChangeNotifier {
     });
   }
 
-  Future<void> getDaftarProduk(
-      String nomorTujuan, String path, bool prefix) async {
+  Future<void> getDaftarProduk({
+    String? search,
+    String? kategori,
+    String? operator,
+    int page = 1,
+    int limit = 20,
+  }) async {
+    _error = null;
+    _errorMsg = null;
+    _list_produk = null;
+    Future.microtask(() => notifyListeners());
+
     await Rest_transaction()
-        .getDaftarProduk(nomorTujuan, path, prefix)
+        .getDaftarProduk(
+      search: search,
+      kategori: kategori,
+      operator: operator,
+      page: page,
+      limit: limit,
+    )
         .then((Model_list_produk e) async {
-      if (e.error == false) {
-        _list_produk = e.list_produk;
-      }
+      print("11111********______________");
+      print(e);
+      print("11111********______________");
+
+      _list_produk = e.list_produk;
       _error = e.error;
       _errorMsg = e.errorMsg;
 
+      notifyListeners();
+    }).catchError((e) {
+      print("22222********______________");
+      print(e);
+      print("22222********______________");
+
+      _error = true;
+      _errorMsg = e.toString().replaceAll('Exception: ', '');
       notifyListeners();
     });
   }

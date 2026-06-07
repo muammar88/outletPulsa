@@ -10,12 +10,16 @@ import { AuthModule } from './api/auth/auth.module';
 import { BerandaModule } from './api/beranda/beranda.module';
 import { RiwayatModule } from './api/riwayat/riwayat.module';
 import { StubModule } from './api/stub/stub.module';
+import { InfoModule } from './api/info/info.module';
+import { AkunModule } from './api/akun/akun.module';
+import { ProdukModule } from './api/produk/produk.module';
+import { TransaksiModule } from './api/transaksi/transaksi.module';
+
+import { TransaksiPascabayarModule } from './api/transaksi_pascabayar/transaksi-pascabayar.module';
 
 @Module({
-  imports: [AdministratorModule, AuthModule, BerandaModule, RiwayatModule, StubModule],
+  imports: [AdministratorModule, AuthModule, BerandaModule, RiwayatModule, StubModule, InfoModule, AkunModule, ProdukModule, TransaksiModule, TransaksiPascabayarModule],
   controllers: [AppController, MemberController, ApiController],
   providers: [AppService, MemberService, ApiService],
 })
 export class AppModule {}
-
-

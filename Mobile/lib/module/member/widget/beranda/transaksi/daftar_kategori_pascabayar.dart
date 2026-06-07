@@ -7,6 +7,7 @@ import '../../../../../config/config.dart';
 import '../../../../../provider/TransactionProvider.dart';
 import '../../../../../widget/allBoxLoading.dart';
 import '../../../../../widget/NotFound.dart';
+import '../../../../../widget/ErrorStateWidget.dart';
 
 class Daftar_kategori_pascabayar extends StatefulWidget {
   const Daftar_kategori_pascabayar(
@@ -61,7 +62,7 @@ class _Daftar_kategori_pascabayarState
             )),
         title: Text(
           'Daftar Produk',
-          style: GoogleFonts.ptSans(
+          style: GoogleFonts.poppins(
               textStyle: Theme.of(context).textTheme.headlineMedium,
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -69,34 +70,41 @@ class _Daftar_kategori_pascabayarState
         ),
       ),
       backgroundColor: Colors.grey[200],
-      body: Container(
-          padding: EdgeInsets.only(
-            left: 30,
-            right: 30,
-          ),
-          child: ListView.builder(
-              itemCount: trans.list_kategori_pascabayar != null
-                  ? trans.list_kategori_pascabayar!.length == 0
-                      ? 1
-                      : trans.list_kategori_pascabayar!.length
-                  : 1,
-              itemBuilder: (BuildContext context, int index) {
-                if (trans.list_kategori_pascabayar == null) {
-                  return AllBoxLoading();
-                } else {
-                  if (trans.list_kategori_pascabayar!.length == 0) {
-                    // return NotfoundProdukWidget(config: config);
-                    return NotfoundWidget(
-                        config: config, label: "Daftar Produk");
-                  } else {
-                    return BoxKategoriPascabayar(
-                        config: config,
-                        trans: trans,
-                        index: index,
-                        length: trans.list_kategori_pascabayar!.length);
-                  }
-                }
-              })),
+      body: trans.error == true
+          ? ErrorStateWidget(
+              config: config,
+              errorMessage: trans.errorMsg ?? 'Terjadi kesalahan sistem',
+              onRetry: () {
+                trans.getDaftarKategoriPascabayar(widget.path);
+              },
+            )
+          : Container(
+              padding: EdgeInsets.only(
+                left: 30,
+                right: 30,
+              ),
+              child: ListView.builder(
+                  itemCount: trans.list_kategori_pascabayar != null
+                      ? trans.list_kategori_pascabayar!.length == 0
+                          ? 1
+                          : trans.list_kategori_pascabayar!.length
+                      : 1,
+                  itemBuilder: (BuildContext context, int index) {
+                    if (trans.list_kategori_pascabayar == null) {
+                      return AllBoxLoading();
+                    } else {
+                      if (trans.list_kategori_pascabayar!.length == 0) {
+                        return NotfoundWidget(
+                            config: config, label: "Daftar Produk");
+                      } else {
+                        return BoxKategoriPascabayar(
+                            config: config,
+                            trans: trans,
+                            index: index,
+                            length: trans.list_kategori_pascabayar!.length);
+                      }
+                    }
+                  })),
     );
   }
 }
@@ -116,6 +124,10 @@ class BoxKategoriPascabayar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String feeStr = trans.list_kategori_pascabayar![index.toString()]['fee'].toString();
+    String formattedFee = feeStr.replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.');
+    String statusStr = trans.list_kategori_pascabayar![index.toString()]['status'].toString();
+
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -123,163 +135,113 @@ class BoxKategoriPascabayar extends StatelessWidget {
           MaterialPageRoute(
               builder: (context) => Input_ppob_pascabayar(
                   name: trans.list_kategori_pascabayar![index.toString()]
-                      ['name'],
+                      ['name'].toString(),
                   kode: trans.list_kategori_pascabayar![index.toString()]
-                      ['kode'],
+                      ['kode'].toString(),
                   status: trans.list_kategori_pascabayar![index.toString()]
-                      ['status'],
+                      ['status'].toString(),
                   fee: trans.list_kategori_pascabayar![index.toString()]
-                      ['fee'])),
+                      ['fee'].toString())),
         );
       },
+      borderRadius: BorderRadius.circular(16),
       child: Container(
-        // constraints: BoxConstraints(
-        //     minHeight: 40,
-        //     minWidth: double.infinity,
-        //     maxHeight: double.infinity),
-        // color: index % 2 == 1
-        //     ? config.background_tab
-        //     : Color.fromARGB(255, 223, 223, 223),
-        // margin: EdgeInsets.only(
-        //     top: (index == 0 ? 20 : 0),
-        //     bottom:
-        //         (index == trans.list_kategori_pascabayar!.length - 1 ? 50 : 0)),
-        // padding: EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 15),
-        constraints: BoxConstraints(
-            minHeight: 40,
-            minWidth: double.infinity,
-            maxHeight: double.infinity),
-        // color: index % 2 == 1
-        //     ? config.background_tab
-        //     : Color.fromARGB(255, 223, 223, 223),
-        // margin: EdgeInsets.only(
-        //     top: (index == 0 ? 20 : 0),
-        //     bottom: (index == trans.list_kategori!.length - 1 ? 50 : 0)),
-        // padding: EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
-
-        padding: EdgeInsets.only(left: 10, right: 10, top: 10, bottom: 10),
-        // margin: EdgeInsets.only(top: 5, bottom: 5),
         margin: EdgeInsets.only(
-            top: (index == 0 ? 20 : 5), bottom: (length == index + 1 ? 50 : 5)),
+            left: 2, right: 2, top: (index == 0 ? 20 : 8), bottom: (length == index + 1 ? 50 : 8)),
+        padding: EdgeInsets.all(16),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
           color: Colors.white,
-          // boxShadow: [
-          //   BoxShadow(color: Colors.green, spreadRadius: 3),
-          // ],
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.08),
+              spreadRadius: 2,
+              blurRadius: 12,
+              offset: Offset(0, 4),
+            ),
+          ],
         ),
-        child: Column(
+        child: Row(
           children: [
-            Row(
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: config.text_navy_color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.receipt_long_rounded,
+                color: config.text_navy_color,
+                size: 26,
+              ),
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    trans.list_kategori_pascabayar![index.toString()]['name'].toString(),
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    trans.list_kategori_pascabayar![index.toString()]['kode'].toString(),
+                    style: GoogleFonts.poppins(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                // Expanded(
-                //   flex: 1,
-                //   child: Container(
-                //     height: 50,
-                //     padding: EdgeInsets.symmetric(horizontal: 5, vertical: 0),
-                //     color: Colors.white,
-                //     child: Center(
-                //       child: Image.asset(
-                //           'assets/img/' +
-                //               (trans.list_kategori![index.toString()]['bank'] ==
-                //                       'true'
-                //                   ? 'BANK'
-                //                   : trans.list_kategori![index.toString()]
-                //                       ['kode']) +
-                //               '.png',
-                //           width: 100,
-                //           fit: BoxFit.fill),
-                //     ),
-                //   ),
-                // ),
-                Expanded(
-                  // flex: 3,
-                  child: Container(
-                    margin: EdgeInsets.symmetric(horizontal: 10),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                            trans.list_kategori_pascabayar![index.toString()]
-                                ['kode'],
-                            style: GoogleFonts.ptSans(
-                                textStyle:
-                                    Theme.of(context).textTheme.headlineMedium,
-                                fontSize: 11,
-                                // fontWeight: FontWeight.bold,
-                                color: config.text_dark_color)),
-                        Text(
-                            trans.list_kategori_pascabayar![index.toString()]
-                                ['name'],
-                            style: GoogleFonts.ptSans(
-                                textStyle:
-                                    Theme.of(context).textTheme.headlineMedium,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: config.text_dark_color)),
-                      ],
+                Text(
+                  'Fee: Rp $formattedFee',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: config.text_navy_color,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusStr.toLowerCase() == 'active'
+                        ? Colors.green.shade50
+                        : Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: statusStr.toLowerCase() == 'active'
+                          ? Colors.green.shade200
+                          : Colors.red.shade200,
+                      width: 1,
+                    )
+                  ),
+                  child: Text(
+                    statusStr.toUpperCase(),
+                    style: GoogleFonts.poppins(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                      color: statusStr.toLowerCase() == 'active'
+                          ? Colors.green.shade700
+                          : Colors.red.shade700,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ),
-                Expanded(
-                  child: Container(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                            'Fee : ' +
-                                trans.list_kategori_pascabayar![index
-                                    .toString()]['fee'],
-                            style: GoogleFonts.ptSans(
-                                textStyle:
-                                    Theme.of(context).textTheme.headlineMedium,
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: config.text_dark_color)),
-                        SizedBox(
-                          height: 3,
-                        ),
-                        Container(
-                          width: 80,
-                          decoration: BoxDecoration(
-                              boxShadow: [
-                                BoxShadow(
-                                  color: config.color_shadow,
-                                  spreadRadius: 2,
-                                  blurRadius: 7,
-                                  offset: Offset(0, 3),
-                                ),
-                              ],
-                              color: trans.list_kategori_pascabayar![
-                                          index.toString()]['status'] ==
-                                      'active'
-                                  ? Colors.green
-                                  : Colors.red,
-                              borderRadius: BorderRadius.circular(5)),
-                          padding: EdgeInsets.symmetric(vertical: 4),
-                          child: Text(
-                              trans.list_kategori_pascabayar![index.toString()]
-                                  ['status'],
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.ptSans(
-                                  textStyle:
-                                      Theme.of(context).textTheme.headlineMedium,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: config.text_light_color)),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
               ],
             ),
-            // SizedBox(
-            //   height: 10,
-            // ),
-            // Divider()
           ],
         ),
       ),

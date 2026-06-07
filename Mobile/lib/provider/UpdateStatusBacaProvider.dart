@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:outletpulsa/models/model_void.dart';
-import '../data/rest_info.dart';
+import '../services/info.dart';
 
 class Update_status_baca_provider with ChangeNotifier {
   bool? _error;

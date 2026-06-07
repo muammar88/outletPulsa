@@ -7,9 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../../config/config.dart';
+import 'package:outletpulsa/config/config.dart';
 import 'package:bluetooth_print/bluetooth_print.dart';
-import '../provider/DetailPascabayarProvider.dart';
+import 'package:outletpulsa/provider/DetailPascabayarProvider.dart';
 
 class PrintPascabayar extends StatefulWidget {
   const PrintPascabayar({super.key, required this.kodeTrans});
@@ -85,7 +85,7 @@ class _PrintPascabayarState extends State<PrintPascabayar> {
         centerTitle: true,
         title: Text(
           'Cetak Struk Pascabayar',
-          style: GoogleFonts.ptSans(
+          style: GoogleFonts.poppins(
               textStyle: Theme.of(context).textTheme.headlineMedium,
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -185,7 +185,7 @@ class _PrintPascabayarState extends State<PrintPascabayar> {
                                 ),
                                 Text('Connect',
                                     textAlign: TextAlign.center,
-                                    style: GoogleFonts.ptSans(
+                                    style: GoogleFonts.poppins(
                                         textStyle: Theme.of(context)
                                             .textTheme
                                             .headlineMedium,
@@ -204,7 +204,7 @@ class _PrintPascabayarState extends State<PrintPascabayar> {
                                             behavior: SnackBarBehavior.floating,
                                             content: Text(
                                                 'ALREADY CONNECTED',
-                                                style: GoogleFonts.ptSans(
+                                                style: GoogleFonts.poppins(
                                                     textStyle: Theme.of(context)
                                                         .textTheme
                                                         .headlineMedium,
@@ -264,7 +264,7 @@ class _PrintPascabayarState extends State<PrintPascabayar> {
                                 ),
                                 Text('Disconnect',
                                     textAlign: TextAlign.center,
-                                    style: GoogleFonts.ptSans(
+                                    style: GoogleFonts.poppins(
                                         textStyle: Theme.of(context)
                                             .textTheme
                                             .headlineMedium,
@@ -287,7 +287,7 @@ class _PrintPascabayarState extends State<PrintPascabayar> {
                                             behavior: SnackBarBehavior.floating,
                                             content: Text(
                                                 'NOT CONNECTED',
-                                                style: GoogleFonts.ptSans(
+                                                style: GoogleFonts.poppins(
                                                     textStyle: Theme.of(context)
                                                         .textTheme
                                                         .headlineMedium,
@@ -319,7 +319,7 @@ class _PrintPascabayarState extends State<PrintPascabayar> {
                                   ),
                                   Text('Cetak Struk',
                                       textAlign: TextAlign.center,
-                                      style: GoogleFonts.ptSans(
+                                      style: GoogleFonts.poppins(
                                           textStyle: Theme.of(context)
                                               .textTheme
                                               .headlineMedium,
@@ -497,4 +497,3 @@ class _PrintPascabayarState extends State<PrintPascabayar> {
     );
   }
 }
-

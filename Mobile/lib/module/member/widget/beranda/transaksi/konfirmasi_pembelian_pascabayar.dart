@@ -72,7 +72,7 @@ class _Konfirmasi_pembelian_pascabayarState
               )),
           title: Text(
             'Konfirmasi Pembelian',
-            style: GoogleFonts.ptSans(
+            style: GoogleFonts.poppins(
                 textStyle: Theme.of(context).textTheme.headlineMedium,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -166,7 +166,7 @@ class _Konfirmasi_pembelian_pascabayarState
                                         backgroundColor: Colors.teal,
                                         behavior: SnackBarBehavior.floating,
                                         content: Text(feedBack.errorMsg!,
-                                            style: GoogleFonts.ptSans(
+                                            style: GoogleFonts.poppins(
                                                 textStyle: Theme.of(context)
                                                     .textTheme
                                                     .headlineMedium,
@@ -187,7 +187,7 @@ class _Konfirmasi_pembelian_pascabayarState
                                             255, 163, 57, 49),
                                         behavior: SnackBarBehavior.floating,
                                         content: Text(feedBack.errorMsg!,
-                                            style: GoogleFonts.ptSans(
+                                            style: GoogleFonts.poppins(
                                                 textStyle: Theme.of(context)
                                                     .textTheme
                                                     .headlineMedium,
@@ -198,7 +198,7 @@ class _Konfirmasi_pembelian_pascabayarState
                             },
                             child: Text(
                               "Bayar Tagihan",
-                              style: GoogleFonts.ptSans(
+                              style: GoogleFonts.poppins(
                                   textStyle: Theme.of(context)
                                       .textTheme
                                       .headlineMedium,
@@ -256,7 +256,7 @@ class BoxKonfirmasiWidget extends StatelessWidget {
               flex: 2,
               child: Text(
                 label,
-                style: GoogleFonts.ptSans(
+                style: GoogleFonts.poppins(
                     textStyle: Theme.of(context).textTheme.headlineMedium,
                     fontSize: 13,
                     // fontWeight: FontWeight.bold,
@@ -267,7 +267,7 @@ class BoxKonfirmasiWidget extends StatelessWidget {
               child: Text(
                 value,
                 textAlign: TextAlign.right,
-                style: GoogleFonts.ptSans(
+                style: GoogleFonts.poppins(
                     textStyle: Theme.of(context).textTheme.headlineMedium,
                     fontSize: 13,
                     fontWeight: FontWeight.bold,

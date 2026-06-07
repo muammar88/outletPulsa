@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../config/config.dart';
 import '../../../provider/BerandaProvider.dart';
@@ -7,6 +8,7 @@ import '../../../provider/RiwayatDepositProvider.dart';
 import '../../../provider/RiwayatPrabayarProvider.dart';
 import '../../../provider/RiwayatPascabayarProvider.dart';
 import '../../../widget/NotFound.dart';
+import '../../../widget/ErrorStateWidget.dart';
 import '../widget/beranda/transaksi/detail_deposit.dart';
 import '../widget/beranda/transaksi/detail_transaksi.dart';
 import '../widget/beranda/transaksi/detail_transaksi_pascabayar.dart';
@@ -200,6 +202,15 @@ class _Sub_riwayat_depositState extends State<Sub_riwayat_deposit> {
                 : riwayat.list!.length
             : 1,
         itemBuilder: (BuildContext context, int index) {
+          if (riwayat.error == true) {
+            return ErrorStateWidget(
+              config: config,
+              errorMessage: riwayat.errorMsg ?? "Terjadi kesalahan",
+              onRetry: () {
+                setState(() { loadData = false; });
+              },
+            );
+          }
           if (riwayat.list == null || riwayat.list!.length == 0) {
             return NotfoundWidget(config: config, label: 'Riwayat Deposit');
           }
@@ -209,21 +220,21 @@ class _Sub_riwayat_depositState extends State<Sub_riwayat_deposit> {
                   const SizedBox(height: 16),
                   BoxListDeposit(
                     config: config,
-                    tanggal: item['waktuRequest'],
-                    saldo: item['nominal'],
-                    status: item['status'],
+                    tanggal: item['waktuRequest']?.toString() ?? '',
+                    saldo: item['nominal']?.toString() ?? '0',
+                    status: item['status']?.toString() ?? '',
                     kode: 'DEP#${item['kode']}',
-                    id: item['id'],
+                    id: item['id']?.toString() ?? '',
                     index: index,
                   ),
                 ])
               : BoxListDeposit(
                   config: config,
-                  tanggal: item['waktuRequest'],
-                  saldo: item['nominal'],
-                  status: item['status'],
+                  tanggal: item['waktuRequest']?.toString() ?? '',
+                  saldo: item['nominal']?.toString() ?? '0',
+                  status: item['status']?.toString() ?? '',
                   kode: 'DEP#${item['kode']}',
-                  id: item['id'],
+                  id: item['id']?.toString() ?? '',
                   index: index,
                 );
         },
@@ -252,8 +263,40 @@ class BoxListDeposit extends StatelessWidget {
   final String kode;
   final index;
 
+  String _formatDate(String rawDate) {
+    try {
+      DateTime dt = DateTime.parse(rawDate).toLocal();
+      return DateFormat('dd MMM yyyy • HH:mm').format(dt);
+    } catch (e) {
+      return rawDate;
+    }
+  }
+
+  String _formatCurrency(String amount) {
+    try {
+      double val = double.parse(amount);
+      return NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(val);
+    } catch (e) {
+      return 'Rp ' + amount;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final formattedDate = _formatDate(tanggal);
+    final formattedSaldo = _formatCurrency(saldo);
+
+    // Tentukan warna berdasarkan status
+    final s = status.toLowerCase();
+    Color statusColor;
+    if (s == 'gagal' || s == 'failed') {
+      statusColor = const Color(0xFFE53935);
+    } else if (s == 'proses' || s == 'pending') {
+      statusColor = const Color(0xFFF9A825);
+    } else {
+      statusColor = const Color(0xFF43A047);
+    }
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -263,97 +306,130 @@ class BoxListDeposit extends StatelessWidget {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
+        margin: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: const Color(0xFF1F2AAA).withOpacity(0.06),
+              blurRadius: 15,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
-        child: Column(
-          children: [
-            // Top accent line
-            Container(
-              height: 4,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: status.toLowerCase() == 'gagal'
-                      ? [const Color(0xFFD32F2F), const Color(0xFFEF5350)]
-                      : status.toLowerCase() == 'proses'
-                          ? [const Color(0xFFF57F17), const Color(0xFFFFB300)]
-                          : [const Color(0xFF2E7D32), const Color(0xFF43A047)],
-                ),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-              child: Row(
-                children: [
-                  // Icon
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1F2AAA).withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.account_balance_wallet_rounded,
-                      color: config.background_smooth_navy,
-                      size: 22,
-                    ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            children: [
+              // Garis aksen samping
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: Container(
+                  width: 5,
+                  decoration: BoxDecoration(
+                    color: statusColor,
                   ),
-                  const SizedBox(width: 12),
-                  // Info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Text(
-                          saldo,
-                          style: GoogleFonts.poppins(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF1A1A2E),
+                        // Icon Deposit
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                const Color(0xFF1F2AAA).withOpacity(0.15),
+                                const Color(0xFF3A47C5).withOpacity(0.05),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(
+                            Icons.account_balance_wallet_rounded,
+                            color: Color(0xFF1F2AAA),
+                            size: 26,
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          tanggal,
-                          style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            color: Colors.grey[500],
+                        const SizedBox(width: 14),
+                        // Nominal & Kode
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                formattedSaldo,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF1A1A2E),
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                kode,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF6B7280),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+                        // Status Badge
+                        _StatusBadge(status: status),
                       ],
                     ),
-                  ),
-                  // Right side
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        kode,
-                        style: GoogleFonts.poppins(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: config.background_smooth_navy,
+                    const SizedBox(height: 14),
+                    const Divider(height: 1, color: Color(0xFFF3F4F6)),
+                    const SizedBox(height: 12),
+                    // Tanggal Transaksi
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.access_time_rounded,
+                              size: 14,
+                              color: Color(0xFF9CA3AF),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              formattedDate,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: const Color(0xFF6B7280),
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 6),
-                      _StatusBadge(status: status),
-                    ],
-                  ),
-                ],
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          size: 18,
+                          color: const Color(0xFF9CA3AF),
+                        )
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -396,6 +472,15 @@ class _Sub_riwayat_pascabayarState extends State<Sub_riwayat_pascabayar> {
                 : riwayat.list!.length
             : 1,
         itemBuilder: (BuildContext context, int index) {
+          if (riwayat.error == true) {
+            return ErrorStateWidget(
+              config: config,
+              errorMessage: riwayat.errorMsg ?? "Terjadi kesalahan",
+              onRetry: () {
+                setState(() { loadData = false; });
+              },
+            );
+          }
           if (riwayat.list == null || riwayat.list!.length == 0) {
             return NotfoundWidget(config: config, label: 'Riwayat Transaksi');
           }
@@ -456,8 +541,39 @@ class BoxListRiwayatPascabayar extends StatelessWidget {
   final String transaction_date;
   final index;
 
+  String _formatDate(String rawDate) {
+    try {
+      DateTime dt = DateTime.parse(rawDate).toLocal();
+      return DateFormat('dd MMM yyyy • HH:mm').format(dt);
+    } catch (e) {
+      return rawDate;
+    }
+  }
+
+  String _formatCurrency(String amount) {
+    try {
+      double val = double.parse(amount);
+      return NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(val);
+    } catch (e) {
+      return 'Rp ' + amount;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final formattedDate = _formatDate(transaction_date);
+    final formattedKomisi = _formatCurrency(komisi);
+
+    final s = status.toLowerCase();
+    Color statusColor;
+    if (s == 'gagal' || s == 'failed') {
+      statusColor = const Color(0xFFE53935);
+    } else if (s == 'proses' || s == 'pending') {
+      statusColor = const Color(0xFFF9A825);
+    } else {
+      statusColor = const Color(0xFF1E88E5);
+    }
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -468,109 +584,138 @@ class BoxListRiwayatPascabayar extends StatelessWidget {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
+        margin: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: const Color(0xFF1565C0).withOpacity(0.06),
+              blurRadius: 15,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
-        child: Column(
-          children: [
-            Container(
-              height: 4,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: status.toLowerCase() == 'gagal'
-                      ? [const Color(0xFFD32F2F), const Color(0xFFEF5350)]
-                      : status.toLowerCase() == 'proses'
-                          ? [const Color(0xFFF57F17), const Color(0xFFFFB300)]
-                          : [const Color(0xFF1565C0), const Color(0xFF1E88E5)],
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: Container(
+                  width: 5,
+                  decoration: BoxDecoration(color: statusColor),
                 ),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1565C0).withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.receipt_long_rounded,
-                      color: Color(0xFF1565C0),
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Text(
-                          nama_produk,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF1A1A2E),
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                const Color(0xFF1565C0).withOpacity(0.15),
+                                const Color(0xFF1E88E5).withOpacity(0.05),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: const Icon(
+                            Icons.receipt_long_rounded,
+                            color: Color(0xFF1565C0),
+                            size: 26,
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          nomor_tujuan,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: Colors.grey[600],
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                nama_produk,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF1A1A2E),
+                                  letterSpacing: 0.2,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                nomor_tujuan,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF6B7280),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 1),
-                        Text(
-                          transaction_date,
-                          style: GoogleFonts.poppins(
-                            fontSize: 10,
-                            color: Colors.grey[400],
-                          ),
+                        _StatusBadge(status: status),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    const Divider(height: 1, color: Color(0xFFF3F4F6)),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.access_time_rounded,
+                              size: 14,
+                              color: Color(0xFF9CA3AF),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              formattedDate,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: const Color(0xFF6B7280),
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              'ID#$kode_transaksi',
+                              style: GoogleFonts.poppins(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF1565C0),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Icon(
+                              Icons.chevron_right_rounded,
+                              size: 18,
+                              color: Color(0xFF9CA3AF),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'ID#$kode_transaksi',
-                        style: GoogleFonts.poppins(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1565C0),
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        komisi,
-                        style: GoogleFonts.poppins(
-                          fontSize: 11,
-                          color: Colors.grey[500],
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      _StatusBadge(status: status),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -613,6 +758,15 @@ class _Sub_riwayat_prabayarState extends State<Sub_riwayat_prabayar> {
                 : riwayat.list!.length
             : 1,
         itemBuilder: (BuildContext context, int index) {
+          if (riwayat.error == true) {
+            return ErrorStateWidget(
+              config: config,
+              errorMessage: riwayat.errorMsg ?? "Terjadi kesalahan",
+              onRetry: () {
+                setState(() { loadData = false; });
+              },
+            );
+          }
           if (riwayat.list == null || riwayat.list!.length == 0) {
             return NotfoundWidget(config: config, label: 'Riwayat Transaksi');
           }
@@ -673,8 +827,39 @@ class BoxListRiwayat extends StatelessWidget {
   final String status;
   final index;
 
+  String _formatDate(String rawDate) {
+    try {
+      DateTime dt = DateTime.parse(rawDate).toLocal();
+      return DateFormat('dd MMM yyyy • HH:mm').format(dt);
+    } catch (e) {
+      return rawDate;
+    }
+  }
+
+  String _formatCurrency(String amount) {
+    try {
+      double val = double.parse(amount);
+      return NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(val);
+    } catch (e) {
+      return 'Rp ' + amount;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final formattedDate = _formatDate(waktu);
+    final formattedHarga = _formatCurrency(harga);
+
+    final s = status.toLowerCase();
+    Color statusColor;
+    if (s == 'gagal' || s == 'failed') {
+      statusColor = const Color(0xFFE53935);
+    } else if (s == 'proses' || s == 'pending') {
+      statusColor = const Color(0xFFF9A825);
+    } else {
+      statusColor = config.background_color;
+    }
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -685,110 +870,138 @@ class BoxListRiwayat extends StatelessWidget {
         );
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
+        margin: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: config.background_color.withOpacity(0.06),
+              blurRadius: 15,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
-        child: Column(
-          children: [
-            Container(
-              height: 4,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: status.toLowerCase() == 'gagal'
-                      ? [const Color(0xFFD32F2F), const Color(0xFFEF5350)]
-                      : status.toLowerCase() == 'proses'
-                          ? [const Color(0xFFF57F17), const Color(0xFFFFB300)]
-                          : [const Color(0xFF00796B), const Color(0xFF26A69A)],
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                child: Container(
+                  width: 5,
+                  decoration: BoxDecoration(color: statusColor),
                 ),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF00796B).withOpacity(0.08),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.phone_android_rounded,
-                      color: Color(0xFF00796B),
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        Text(
-                          name,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF1A1A2E),
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                config.background_color.withOpacity(0.15),
+                                config.background_smooth_navy.withOpacity(0.05),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Icon(
+                            Icons.phone_android_rounded,
+                            color: config.background_color,
+                            size: 26,
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          nomor_tujuan,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: Colors.grey[600],
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                name,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF1A1A2E),
+                                  letterSpacing: 0.2,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                nomor_tujuan,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: const Color(0xFF6B7280),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 1),
-                        Text(
-                          waktu,
-                          style: GoogleFonts.poppins(
-                            fontSize: 10,
-                            color: Colors.grey[400],
-                          ),
+                        _StatusBadge(status: status),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    const Divider(height: 1, color: Color(0xFFF3F4F6)),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.access_time_rounded,
+                              size: 14,
+                              color: Color(0xFF9CA3AF),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              formattedDate,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: const Color(0xFF6B7280),
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Text(
+                              formattedHarga,
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: config.background_color,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Icon(
+                              Icons.chevron_right_rounded,
+                              size: 18,
+                              color: Color(0xFF9CA3AF),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'ID#${kode_transaksi ?? '-'}',
-                        style: GoogleFonts.poppins(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF00796B),
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        harga,
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1A1A2E),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      _StatusBadge(status: status),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

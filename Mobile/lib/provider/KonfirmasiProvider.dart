@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../data/rest_deposit.dart';
+import '../services/deposit.dart';
 import '../models/model_konfirmasi_deposit.dart';
 import '../models/model_void.dart';
 
