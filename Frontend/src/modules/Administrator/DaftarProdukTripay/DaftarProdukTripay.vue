@@ -170,24 +170,21 @@ onMounted(() => {
 <template>
   <div>
     <div class="px-8 py-6">
-      <div class="mb-10 flex items-center justify-between">
+      <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 class="text-3xl font-black text-[#0f2155] dark:text-white mb-2 uppercase tracking-tight font-semibold">
-          Daftar Produk Tripay
-        </h1>
+            Daftar Produk Tripay
+          </h1>
           <p class="text-xs text-gray-400 font-medium uppercase tracking-[0.2em]">
-          Manajemen Produk PPOB Tripay
-        </p>
+            Manajemen Produk PPOB Tripay
+          </p>
         </div>
       </div>
 
-      <div class="bg-white p-6 rounded-lg shadow-sm">
       <BaseTable
         :columns="tableColumns"
         :data="dataProduk"
         :is-loading="isLoading"
-        title="Daftar Produk Tripay"
-        subtitle="Manajemen katalog produk prabayar yang terhubung dengan Tripay"
         search-placeholder="Cari kode atau nama produk..."
         :pagination="paginationProps"
         :show-add="false"
@@ -245,8 +242,6 @@ onMounted(() => {
           </div>
         </template>
       </BaseTable>
-    </div>
-
     </div>
 
     <!-- Notification Modal -->

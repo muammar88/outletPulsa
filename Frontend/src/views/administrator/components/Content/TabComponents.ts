@@ -17,5 +17,8 @@ export const tabComponents: Record<string, any> = {
   daftar_produk_tripay: defineAsyncComponent(() => import('@/modules/Administrator/DaftarProdukTripay/DaftarProdukTripay.vue')),
   daftar_kategori_tripay: defineAsyncComponent(() => import('@/modules/Administrator/KategoriTripay/KategoriTripay.vue')),
   daftar_operator_tripay: defineAsyncComponent(() => import('@/modules/Administrator/OperatorTripay/OperatorTripay.vue')),
+  daftar_type_iak: defineAsyncComponent(() => import('@/modules/Administrator/DaftarTypeIAK/DaftarTypeIAK.vue')),
+  daftar_operator_iak: defineAsyncComponent(() => import('@/modules/Administrator/DaftarOperatorIAK/DaftarOperatorIAK.vue')),
+  daftar_produk_iak: defineAsyncComponent(() => import('@/modules/Administrator/DaftarProdukIAK/DaftarProdukIAK.vue')),
   notFound: defineAsyncComponent(() => import('@/views/errors/NotFoundView.vue')),
 };

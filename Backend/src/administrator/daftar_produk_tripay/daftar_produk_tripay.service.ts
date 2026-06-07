@@ -15,6 +15,7 @@ export class DaftarProdukTripayService {
     const operatorId = query.operatorId ? parseInt(query.operatorId) : undefined;
     const kategoriId = query.kategoriId ? parseInt(query.kategoriId) : undefined;
     const status = query.status;
+    const connectionStatus = query.connectionStatus;
     const sortBy = query.sortBy || 'createdAt';
     const sortOrder = query.sortOrder || 'desc';
 
@@ -30,6 +31,8 @@ export class DaftarProdukTripayService {
       ...(operatorId && { operatorId }),
       ...(kategoriId && { operator: { kategoriId } }),
       ...(status && { status }),
+      ...(connectionStatus === 'connected' && { produkId: { not: null } }),
+      ...(connectionStatus === 'disconnected' && { produkId: null }),
     };
 
     let orderBy: any = {};
@@ -53,6 +56,7 @@ export class DaftarProdukTripayService {
               kategori: true,
             },
           },
+          produk: true,
         },
       }),
       this.prisma.tripayPrabayarProduk.count({ where }),
@@ -86,12 +90,12 @@ export class DaftarProdukTripayService {
             kategori: true,
           },
         },
-        produk: true
+        produk: true, // Internal product if connected
       },
     });
 
     if (!product) {
-      throw new NotFoundException('Produk Tripay tidak ditemukan');
+      throw new NotFoundException(`Produk Tripay dengan ID ${id} tidak ditemukan`);
     }
 
     await this.prisma.activityLog.create({
@@ -105,6 +109,88 @@ export class DaftarProdukTripayService {
     });
 
     return product;
+  }
+
+  async getInternalOperators(search: string = '') {
+    const where: any = {};
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { kode: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+    
+    // Ambil operator yang memiliki produk prabayar
+    const operators = await this.prisma.operator.findMany({
+      where: {
+        ...where,
+        produks: { some: { type: 'prabayar' } }
+      },
+      select: {
+        id: true,
+        kode: true,
+        name: true,
+      },
+      orderBy: { name: 'asc' },
+      take: 50,
+    });
+
+    return operators.map(op => ({
+      ...op,
+      name: op.kode ? `${op.name} (${op.kode})` : op.name,
+    }));
+  }
+
+  async getInternalProducts(operatorId: number, search: string = '') {
+    const where: any = { type: 'prabayar', operatorId };
+    if (search) {
+      where.OR = [
+        { kode: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+    
+    // Hanya menampilkan maksimal 50 agar dropdown tidak terlalu berat
+    const products = await this.prisma.produk.findMany({
+      where,
+      select: {
+        id: true,
+        kode: true,
+        name: true,
+        type: true,
+        purchase_price: true,
+        markup: true,
+        operator: {
+          select: { name: true }
+        }
+      },
+      take: 50,
+      orderBy: { purchase_price: 'asc' },
+    });
+
+    return products.map(p => ({
+      ...p,
+      kode: p.operator?.name ? `${p.operator.name} - ${p.kode}` : p.kode,
+    }));
+  }
+
+  async connectProduct(tripayProdukId: number, produkId: number) {
+    const tripayProd = await this.prisma.tripayPrabayarProduk.findUnique({ where: { id: tripayProdukId } });
+    if (!tripayProd) throw new NotFoundException('Produk Tripay tidak ditemukan');
+
+    const internalProd = await this.prisma.produk.findUnique({ where: { id: produkId } });
+    if (!internalProd) throw new NotFoundException('Produk Internal tidak ditemukan');
+
+    const updated = await this.prisma.tripayPrabayarProduk.update({
+      where: { id: tripayProdukId },
+      data: { produkId },
+      include: {
+        operator: { include: { kategori: true } },
+        produk: true
+      }
+    });
+
+    return updated;
   }
 
   /**
@@ -248,7 +334,7 @@ export class DaftarProdukTripayService {
       if (!o.id) continue;
       const item = {
         id:         Number(o.id),
-        kategoriId: o.category_id ? Number(o.category_id) : null,
+        kategoriId: o.pembeliankategori_id ? Number(o.pembeliankategori_id) : null,
         name:       o.product_name,
         kode:       o.kode ?? o.product_name?.toUpperCase().replace(/\s+/g, '_') ?? '',
       };
@@ -263,6 +349,10 @@ export class DaftarProdukTripayService {
     //   json.data.status == 1 ? true : false
     //   1 = ACTIVE (tersedia), 2 = GANGGUAN, 0 = INACTIVE
     // ==========================================
+    const validOperatorIds = new Set<number>([
+      ...existingOp.map(o => o.id),
+      ...tripayOperators.map(o => Number(o.id)).filter(id => !isNaN(id))
+    ]);
     const existingProds = await this.prisma.tripayPrabayarProduk.findMany({ select: { id: true, kode: true } });
     const prodMap = new Map<string, number>();
     for (const p of existingProds) {
@@ -291,13 +381,21 @@ export class DaftarProdukTripayService {
         finalStatus = 'ACTIVE'; // default
       }
 
+
+      console.log("&&&&&&&&&&");
+      console.log(apiProd);
+      console.log("&&&&&&&&&&");
+
+      const rawOpId = apiProd.pembelianoperator_id ? Number(apiProd.pembelianoperator_id) : null;
+      const safeOpId = (rawOpId !== null && validOperatorIds.has(rawOpId)) ? rawOpId : null;
+
       const mappedData = {
         kode,
         name:       apiProd.product_name ?? apiProd.product_name ?? '',
         price:      Number(apiProd.price ?? apiProd.harga ?? 0),
         status:     finalStatus,
         deskripsi:  apiProd.description ?? apiProd.deskripsi ?? '',
-        operatorId: apiProd.operator_id ? Number(apiProd.operator_id) : null,
+        operatorId: safeOpId,
       };
 
       if (prodMap.has(kode)) {

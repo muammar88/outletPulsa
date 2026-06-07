@@ -21,6 +21,7 @@ import IconDetail from '@/components/Icons/IconDetail.vue';
 
 import { semuaProdukService } from './services/semuaProdukService';
 import type { Produk } from './types/semuaProduk';
+import { operatorService } from '@/service/administrator/operator';
 
 const {
   showNotification,
@@ -48,6 +49,10 @@ const isLoading = ref(false);
 const searchQuery = ref('');
 const statusFilter = ref('');
 const typeFilter = ref('');
+const filterOperatorId = ref('');
+
+// List Options
+const listOperator = ref<any[]>([]);
 
 // Form State
 const showFormModal = ref(false);
@@ -76,7 +81,8 @@ const fetchData = async (keyword?: string | Event) => {
       perPage.value,
       currentPage.value,
       statusFilter.value,
-      typeFilter.value
+      typeFilter.value,
+      filterOperatorId.value
     );
     dataProduk.value = response.data.data.list;
     totalRow.value = response.data.data.total;
@@ -146,7 +152,18 @@ const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value || 0);
 };
 
+const fetchOperators = async () => {
+  try {
+    const response = await operatorService.getAll('', 1000, 1);
+    let operators = response.data.data.list || response.data.data;
+    listOperator.value = operators.sort((a: any, b: any) => a.name.localeCompare(b.name));
+  } catch (error) {
+    console.error('Gagal mengambil operator:', error);
+  }
+};
+
 onMounted(() => {
+  fetchOperators();
   fetchData();
 });
 </script>
@@ -156,10 +173,10 @@ onMounted(() => {
     <div class="px-8 py-6">
     <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
       <div>
-        <h1 class="text-3xl font-extrabold text-[#0f2155] dark:text-white mb-2 tracking-tight">
+        <h1 class="text-3xl font-black text-[#0f2155] dark:text-white mb-2 uppercase tracking-tight font-semibold">
           Semua Produk
         </h1>
-        <p class="text-sm text-slate-500 font-medium">
+        <p class="text-xs text-gray-400 font-medium uppercase tracking-[0.2em]">
           Kelola daftar produk, konfigurasi harga beli, dan markup margin.
         </p>
       </div>
@@ -197,6 +214,16 @@ onMounted(() => {
             <option value="pascabayar">Pascabayar</option>
           </select>
           <select
+            v-model="filterOperatorId"
+            @change="applyFilter"
+            class="relative block w-40 px-4 py-2.5 text-sm text-gray-800 bg-white border-y border-r border-gray-200 hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200 cursor-pointer"
+          >
+            <option value="">Semua Operator</option>
+            <option v-for="op in listOperator" :key="op.id" :value="op.id">
+              {{ op.kode ? `${op.name} (${op.kode})` : op.name }}
+            </option>
+          </select>
+          <select
             v-model="statusFilter"
             @change="applyFilter"
             class="relative block w-40 px-4 py-2.5 text-sm text-gray-800 bg-white border-y border-r border-gray-200 rounded-e-xl hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200 cursor-pointer"
@@ -218,6 +245,12 @@ onMounted(() => {
       <template #cell-name="{ row }">
         <div class="flex flex-col">
           <span class="text-[14px] font-bold text-gray-800 tracking-tight">{{ row.name }}</span>
+          <div v-if="row.operator" class="flex items-center gap-1.5 mt-0.5">
+            <span class="text-[11px] font-medium text-gray-500">{{ row.operator.name }}</span>
+            <span v-if="row.operator.kode" class="px-1.5 py-0.5 bg-slate-100 border border-slate-200 text-slate-600 text-[9px] font-bold rounded-md font-mono tracking-wide shadow-sm">
+              {{ row.operator.kode }}
+            </span>
+          </div>
         </div>
       </template>
 

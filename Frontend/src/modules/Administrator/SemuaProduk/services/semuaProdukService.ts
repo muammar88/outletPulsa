@@ -7,14 +7,16 @@ export const semuaProdukService = {
     limit = 10,
     page = 1,
     status = '',
-    type = ''
+    type = '',
+    operatorId = ''
   ) {
     const params = new URLSearchParams({
       search,
       limit: limit.toString(),
       page: page.toString(),
       status,
-      type
+      type,
+      operatorId
     });
     
     return await api.get(`/administrator/semua-produk?${params.toString()}`);

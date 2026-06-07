@@ -15,6 +15,7 @@ export class SemuaProdukService {
     const search = query.search || '';
     const status = query.status as ProdukStatus | undefined;
     const type = query.type as ProdukType | undefined;
+    const operatorId = query.operatorId ? parseInt(query.operatorId, 10) : undefined;
 
     const skip = (page - 1) * limit;
 
@@ -33,6 +34,10 @@ export class SemuaProdukService {
 
     if (type) {
       where.type = type;
+    }
+
+    if (operatorId) {
+      where.operatorId = operatorId;
     }
 
     const [list, total] = await Promise.all([

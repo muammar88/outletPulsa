@@ -227,12 +227,11 @@ onMounted(() => {
         :data="dataServer"
         :loading="isLoading"
         :pagination="paginationProps"
-        add-label="Tambah Server"
-        @add="handleAdd"
         @page-change="pageNow"
         :showNumbering="false"
         :showActions="false"
         :showSearch="false"
+        :show-add="false"
       >
         <template #filters>
           <div class="inline-flex rounded-xl shadow-sm" role="group">
@@ -294,12 +293,6 @@ onMounted(() => {
             <LightButton @click="handleDetail(row)" title="Detail"
               ><IconDetail></IconDetail
             ></LightButton>
-            <LightButton @click="handleEdit(row)" title="Edit Server"
-              ><EditIcon></EditIcon
-            ></LightButton>
-            <DangerButton @click="triggerDelete(row)" title="Hapus Server"
-              ><DeleteIcon
-            /></DangerButton>
           </div>
         </template>
       </BaseTable>

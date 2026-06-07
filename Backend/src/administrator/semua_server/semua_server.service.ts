@@ -8,23 +8,6 @@ import { ServerStatus } from '@prisma/client';
 export class SemuaServerService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createSemuaServerDto: CreateSemuaServerDto) {
-    try {
-      const server = await this.prisma.server.create({
-        data: {
-          ...createSemuaServerDto,
-          status: createSemuaServerDto.status || 'active',
-        },
-      });
-      return {
-        statusCode: 201,
-        message: 'Server berhasil ditambahkan',
-        data: server,
-      };
-    } catch (error) {
-      throw new BadRequestException('Gagal menambahkan server');
-    }
-  }
 
   async findAll(search: string = '', limit: number = 10, page: number = 1, status: string = '') {
     const skip = (page - 1) * limit;
@@ -111,27 +94,5 @@ export class SemuaServerService {
     }
   }
 
-  async remove(id: number) {
-    const server = await this.prisma.server.findUnique({ where: { id } });
-    if (!server) {
-      throw new NotFoundException(`Server dengan ID ${id} tidak ditemukan`);
-    }
 
-    try {
-      await this.prisma.server.delete({
-        where: { id },
-      });
-
-      return {
-        statusCode: 200,
-        message: 'Server berhasil dihapus',
-      };
-    } catch (error: any) {
-      // Menangani foreign key constraint violation
-      if (error.code === 'P2003') {
-        throw new BadRequestException('Tidak dapat menghapus server karena sedang digunakan oleh produk atau entitas lain.');
-      }
-      throw new BadRequestException('Gagal menghapus server');
-    }
-  }
 }

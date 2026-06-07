@@ -13,9 +13,6 @@ import BaseTable from '@/components/Table/BaseTable.vue';
 import Confirmation from '@/components/Modal/Confirmation.vue';
 import Notification from '@/components/Modal/Notification.vue';
 import LightButton from '@/components/Button/LightButton.vue';
-import DangerButton from '@/components/Button/DangerButton.vue';
-import EditIcon from '@/components/Icons/EditIcon.vue';
-import DeleteIcon from '@/components/Icons/DeleteIcon.vue';
 import IconDetail from '@/components/Icons/IconDetail.vue';
 
 import { operatorTripayService, type OperatorTripay } from '@/service/administrator/operatorTripay';
@@ -35,14 +32,12 @@ const { showConfirmDialog, confirmTitle, confirmMessage, displayConfirmation, co
 
 // Definisi Kolom Tabel
 const tableColumns = [
-  { key: 'id', label: 'ID', headerClass: 'text-left w-[5%] pl-4', cellClass: 'text-left pl-4' },
-  { key: 'kode', label: 'Kode', headerClass: 'text-left w-[12%]', cellClass: 'text-left' },
-  { key: 'name', label: 'Nama Operator', headerClass: 'text-left w-[22%]', cellClass: 'text-left' },
-  { key: 'kategori', label: 'Kategori', headerClass: 'text-left w-[15%]', cellClass: 'text-left' },
+  // { key: 'id', label: 'ID', headerClass: 'text-left w-[5%] pl-4', cellClass: 'text-left pl-4' },
+  { key: 'kode', label: 'Kode', headerClass: 'text-left w-[20%]', cellClass: 'text-left' },
+  { key: 'name', label: 'Nama Operator', headerClass: 'text-left w-[30%]', cellClass: 'text-left' },
+  { key: 'kategori', label: 'Kategori', headerClass: 'text-left w-[20%]', cellClass: 'text-left' },
   { key: 'jumlah_produk', label: 'Jml Produk', headerClass: 'text-center w-[10%]', cellClass: 'text-center' },
-  { key: 'createdAt', label: 'Dibuat', headerClass: 'text-center w-[13%]', cellClass: 'text-center' },
-  { key: 'updatedAt', label: 'Diperbarui', headerClass: 'text-center w-[13%]', cellClass: 'text-center' },
-  { key: 'action', label: 'Aksi', headerClass: 'text-center w-[10%]', cellClass: 'text-center' },
+  { key: 'action', label: 'Aksi', headerClass: 'text-center w-[15%]', cellClass: 'text-center' },
 ];
 
 const dataOperator = ref<OperatorTripay[]>([]);
@@ -63,7 +58,7 @@ const selectedDetailOperator = ref<any | null>(null);
 // Inisialisasi Composable Pagination
 const { currentPage, totalPages, pages, totalRow, pageNow, perPage } = usePagination(
   () => fetchData(),
-  { perPage: 10, totalRow: 0 },
+  { perPage: 100, totalRow: 0 },
 );
 
 // Load daftar kategori untuk filter
@@ -109,19 +104,6 @@ const paginationProps = ref({
   perPage,
 });
 
-// Aksi Tabel
-const handleAdd = () => {
-  formMode.value = 'add';
-  selectedOperator.value = null;
-  showFormModal.value = true;
-};
-
-const handleEdit = (row: OperatorTripay) => {
-  formMode.value = 'edit';
-  selectedOperator.value = { ...row };
-  showFormModal.value = true;
-};
-
 const handleDetail = async (row: OperatorTripay) => {
   try {
     const response = await operatorTripayService.getById(row.id);
@@ -132,27 +114,6 @@ const handleDetail = async (row: OperatorTripay) => {
   }
 };
 
-const confirmButtonText = ref('Ya, Hapus');
-const confirmButtonClass = ref('bg-rose-600 hover:bg-rose-700 shadow-[0_0_15px_rgba(225,29,72,0.5)]');
-
-const handleDelete = (row: OperatorTripay) => {
-  confirmButtonText.value = 'Hapus';
-  confirmButtonClass.value = 'bg-rose-600 hover:bg-rose-700 shadow-[0_0_15px_rgba(225,29,72,0.5)]';
-  displayConfirmation(
-    'Konfirmasi Hapus',
-    `Apakah Anda yakin ingin menghapus operator <strong>${row.name}</strong>?`,
-    async () => {
-      try {
-        await operatorTripayService.delete(row.id);
-        displayNotification('Operator berhasil dihapus', 'success');
-        fetchData();
-      } catch (error) {
-        displayNotification('Gagal menghapus operator', 'error');
-      }
-    },
-  );
-};
-
 // Watch filter kategori
 watch(filterKategoriId, () => {
   currentPage.value = 1;
@@ -160,6 +121,16 @@ watch(filterKategoriId, () => {
 });
 
 const formatDate = (date: string) => dayjs(date).format('DD MMM YYYY, HH:mm');
+
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+const onSearch = () => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1;
+    fetchData();
+  }, 500);
+};
+
 
 onMounted(() => {
   fetchKategori();
@@ -170,10 +141,10 @@ onMounted(() => {
 <template>
   <div>
     <div class="px-8 py-6">
-      <div class="mb-10 flex items-center justify-between">
+      <div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 class="text-3xl font-black text-[#0f2155] dark:text-white mb-2 uppercase tracking-tight font-semibold">
-            Operator Tripay
+            Operator PPOB
           </h1>
           <p class="text-xs text-gray-400 font-medium uppercase tracking-[0.2em]">
             Manajemen Master Data Operator PPOB
@@ -181,33 +152,38 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- Filter Bar -->
-      <div class="mb-4 flex items-center gap-3">
-        <label class="text-sm text-gray-600 font-medium">Filter Kategori:</label>
-        <select
-          v-model="filterKategoriId"
-          class="block rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm py-2 px-3 border bg-white"
-        >
-          <option :value="undefined">Semua Kategori</option>
-          <option v-for="kat in listKategori" :key="kat.id" :value="kat.id">
-            {{ kat.name }}
-          </option>
-        </select>
-      </div>
-
       <BaseTable
         :columns="tableColumns"
         :data="dataOperator"
         :loading="isLoading"
         :pagination="paginationProps"
-        search-placeholder="Cari operator (kode, nama, kategori)..."
-        add-label="Tambah Operator"
-        @search="fetchData"
-        @add="handleAdd"
         @page-change="pageNow"
         :showNumbering="false"
         :showActions="false"
+        :showSearch="false"
+        :showAdd="false"
       >
+        <template #filters>
+          <div class="inline-flex rounded-xl shadow-sm" role="group">
+            <input
+              type="text"
+              id="search"
+              class="relative block w-64 px-4 py-2.5 text-sm text-gray-800 bg-white border border-gray-200 rounded-s-xl hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200"
+              v-model="searchQuery"
+              @input="onSearch"
+              placeholder="Cari operator (kode, nama)..."
+            />
+            <select
+              v-model="filterKategoriId"
+              class="relative block w-40 px-4 py-2.5 text-sm text-gray-800 bg-white border-y border-r border-gray-200 rounded-e-xl hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200 cursor-pointer"
+            >
+              <option :value="undefined">Semua Kategori</option>
+              <option v-for="kat in listKategori" :key="kat.id" :value="kat.id">
+                {{ kat.name }}
+              </option>
+            </select>
+          </div>
+        </template>
         <template #cell-kode="{ row }">
           <span class="font-semibold text-slate-700">{{ row.kode || '-' }}</span>
         </template>
@@ -245,12 +221,6 @@ onMounted(() => {
             <LightButton @click="handleDetail(row)" title="Detail Operator">
               <IconDetail />
             </LightButton>
-            <LightButton @click="handleEdit(row)" title="Edit Operator">
-              <EditIcon />
-            </LightButton>
-            <DangerButton @click="handleDelete(row)" title="Hapus Operator">
-              <DeleteIcon />
-            </DangerButton>
           </div>
         </template>
       </BaseTable>

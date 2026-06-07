@@ -9,10 +9,6 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 export class SemuaServerController {
   constructor(private readonly semuaServerService: SemuaServerService) {}
 
-  @Post()
-  create(@Body() createSemuaServerDto: CreateSemuaServerDto) {
-    return this.semuaServerService.create(createSemuaServerDto);
-  }
 
   @Get()
   findAll(
@@ -39,8 +35,5 @@ export class SemuaServerController {
     return this.semuaServerService.update(+id, updateSemuaServerDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.semuaServerService.remove(+id);
-  }
+
 }

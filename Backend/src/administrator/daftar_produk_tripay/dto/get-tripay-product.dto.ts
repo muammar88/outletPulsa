@@ -27,6 +27,10 @@ export class GetTripayProductDto {
 
   @IsOptional()
   @IsString()
+  connectionStatus?: string;
+
+  @IsOptional()
+  @IsString()
   sortBy?: string; // e.g. "name", "price", "createdAt"
 
   @IsOptional()
