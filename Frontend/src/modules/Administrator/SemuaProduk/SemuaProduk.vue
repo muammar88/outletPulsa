@@ -2,11 +2,12 @@
 import { useConfirmation } from '@/composables/useConfirmation';
 import { useNotification } from '@/composables/useNotification';
 import { usePagination } from '@/composables/usePaginations';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 
 // Components
 import SemuaProdukFormModal from './components/SemuaProdukFormModal.vue';
 import SemuaProdukDetailModal from './components/SemuaProdukDetailModal.vue';
+import SemuaProdukPilihServerModal from './components/SemuaProdukPilihServerModal.vue';
 import BaseTable from '@/components/Table/BaseTable.vue';
 import Confirmation from '@/components/Modal/Confirmation.vue';
 import Notification from '@/components/Modal/Notification.vue';
@@ -18,6 +19,7 @@ import BaseButton from '@/components/Button/BaseButton.vue';
 import DeleteIcon from '@/components/Icons/DeleteIcon.vue';
 import EditIcon from '@/components/Icons/EditIcon.vue';
 import IconDetail from '@/components/Icons/IconDetail.vue';
+import IconEcosystem from '@/components/Icons/IconEcosystem.vue';
 
 import { semuaProdukService } from './services/semuaProdukService';
 import type { Produk } from './types/semuaProduk';
@@ -54,6 +56,16 @@ const filterOperatorId = ref('');
 // List Options
 const listOperator = ref<any[]>([]);
 
+const groupedOperators = computed(() => {
+  const groups: Record<string, any[]> = {};
+  listOperator.value.forEach(op => {
+    const k = op.kategori?.name || 'Lainnya';
+    if (!groups[k]) groups[k] = [];
+    groups[k].push(op);
+  });
+  return groups;
+});
+
 // Form State
 const showFormModal = ref(false);
 const formMode = ref<'add' | 'edit'>('add');
@@ -62,6 +74,9 @@ const isSubmitting = ref(false);
 
 // Detail State
 const showDetailModal = ref(false);
+
+// Pilih Server State
+const showServerModal = ref(false);
 
 const { currentPage, totalPages, pages, totalRow, pageNow, perPage } = usePagination(
   () => fetchData(),
@@ -129,6 +144,11 @@ const handleEdit = (row: Produk) => {
 const handleDetail = (row: Produk) => {
   selectedProduk.value = { ...row };
   showDetailModal.value = true;
+};
+
+const handlePilihServer = (row: Produk) => {
+  selectedProduk.value = { ...row };
+  showServerModal.value = true;
 };
 
 const handleDelete = (row: Produk) => {
@@ -219,9 +239,11 @@ onMounted(() => {
             class="relative block w-40 px-4 py-2.5 text-sm text-gray-800 bg-white border-y border-r border-gray-200 hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200 cursor-pointer"
           >
             <option value="">Semua Operator</option>
-            <option v-for="op in listOperator" :key="op.id" :value="op.id">
-              {{ op.kode ? `${op.name} (${op.kode})` : op.name }}
-            </option>
+            <optgroup v-for="(ops, kategoriName) in groupedOperators" :key="kategoriName" :label="String(kategoriName)">
+              <option v-for="op in ops" :key="op.id" :value="op.id">
+                {{ op.kode ? `${op.name} (${op.kode})` : op.name }} - {{ kategoriName }}
+              </option>
+            </optgroup>
           </select>
           <select
             v-model="statusFilter"
@@ -255,9 +277,36 @@ onMounted(() => {
       </template>
 
       <template #cell-server="{ row }">
-        <div class="flex items-center">
-          <span class="px-2.5 py-1 bg-sky-50 text-sky-700 border border-sky-200 text-[11px] font-bold rounded-md whitespace-nowrap shadow-sm">
-            {{ row.server?.name || 'Tanpa Server' }}
+        <div class="flex flex-col gap-1.5 items-start">
+          <span 
+            v-for="iak in row.iakPrabayarProduks" 
+            :key="'iak-' + iak.id"
+            :class="['px-2.5 py-1 text-[11px] rounded-md shadow-sm border whitespace-nowrap', 
+              row.serverId === 1 ? 'font-bold bg-sky-100 text-sky-800 border-sky-300' : 'font-medium bg-gray-50 text-gray-600 border-gray-200']"
+          >
+            IAK: {{ iak.name }}
+            <span v-if="iak.nominal" class="text-emerald-600 font-bold ml-1">[{{ iak.nominal }}]</span>
+          </span>
+          <span 
+            v-for="tripay in row.tripayPrabayarProduks" 
+            :key="'tripay-' + tripay.id"
+            :class="['px-2.5 py-1 text-[11px] rounded-md shadow-sm border whitespace-nowrap', 
+              row.serverId === 2 ? 'font-bold bg-sky-100 text-sky-800 border-sky-300' : 'font-medium bg-gray-50 text-gray-600 border-gray-200']"
+          >
+            Tripay: {{ tripay.name }}
+          </span>
+          <span 
+            v-for="digi in row.digiflazzProducts" 
+            :key="'digi-' + digi.id"
+            :class="['px-2.5 py-1 text-[11px] rounded-md shadow-sm border whitespace-nowrap', 
+              row.serverId === 3 ? 'font-bold bg-sky-100 text-sky-800 border-sky-300' : 'font-medium bg-gray-50 text-gray-600 border-gray-200']"
+          >
+            Digiflazz: {{ digi.name }}
+          </span>
+
+          <span v-if="(!row.iakPrabayarProduks || row.iakPrabayarProduks.length === 0) && (!row.tripayPrabayarProduks || row.tripayPrabayarProduks.length === 0) && (!row.digiflazzProducts || row.digiflazzProducts.length === 0)" 
+                class="px-2.5 py-1 bg-rose-50 text-rose-700 border border-rose-200 text-[11px] font-bold rounded-md whitespace-nowrap shadow-sm">
+            Tanpa Provider
           </span>
         </div>
       </template>
@@ -307,6 +356,9 @@ onMounted(() => {
 
       <template #cell-action="{ row }">
         <div class="flex justify-center gap-2 items-center transition-opacity duration-200">
+          <LightButton @click="handlePilihServer(row)" title="Pilih Server Aktif" class="hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all">
+            <IconEcosystem />
+          </LightButton>
           <LightButton @click="handleDetail(row)" title="Detail Produk" class="hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all">
             <IconDetail />
           </LightButton>
@@ -366,6 +418,14 @@ onMounted(() => {
       showDetailModal = false;
       selectedProduk = null;
     "
+  />
+
+  <SemuaProdukPilihServerModal
+    :show="showServerModal"
+    :produk="selectedProduk"
+    @close="showServerModal = false; selectedProduk = null;"
+    @refresh="fetchData"
+    @notify="(msg, type) => displayNotification(msg, type)"
   />
   </div>
 </template>

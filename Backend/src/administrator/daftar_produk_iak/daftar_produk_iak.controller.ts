@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Query, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Query, UseGuards, Request, Param, Body } from '@nestjs/common';
 import { DaftarProdukIakService } from './daftar_produk_iak.service';
 import { GetProdukIakDto } from './dto/get-produk-iak.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -25,6 +25,43 @@ export class DaftarProdukIakController {
     const data = await this.daftarProdukIakService.findAll(query);
     return {
       message: 'Success',
+      error: null,
+      data,
+    };
+  }
+
+  @Get('internal-operators')
+  async getInternalOperators(@Query('search') search: string) {
+    const data = await this.daftarProdukIakService.getInternalOperators(search);
+    return {
+      message: 'Success',
+      error: null,
+      data,
+    };
+  }
+
+  @Get('internal-products')
+  async getInternalProducts(
+    @Query('operatorId') operatorId: string,
+    @Query('search') search: string
+  ) {
+    if (!operatorId) throw new Error('operatorId is required');
+    const data = await this.daftarProdukIakService.getInternalProducts(+operatorId, search);
+    return {
+      message: 'Success',
+      error: null,
+      data,
+    };
+  }
+
+  @Post(':id/connect')
+  async connectProduct(
+    @Param('id') id: string,
+    @Body('produkId') produkId: number,
+  ) {
+    const data = await this.daftarProdukIakService.connectProduct(+id, produkId);
+    return {
+      message: 'Koneksi produk berhasil disimpan',
       error: null,
       data,
     };

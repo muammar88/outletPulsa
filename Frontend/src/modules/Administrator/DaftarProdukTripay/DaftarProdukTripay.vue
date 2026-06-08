@@ -2,17 +2,19 @@
 import { usePagination } from '@/composables/usePaginations';
 import { useConfirmation } from '@/composables/useConfirmation';
 import { useNotification } from '@/composables/useNotification';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 
 // Table & Modal
 import BaseTable from '@/components/Table/BaseTable.vue';
 import LightButton from '@/components/Button/LightButton.vue';
 import IconDetail from '@/components/Icons/IconDetail.vue';
 import DaftarProdukTripayDetailModal from './components/DaftarProdukTripayDetailModal.vue';
+import DaftarProdukTripayKoneksiModal from './components/DaftarProdukTripayKoneksiModal.vue';
 import IconEcosystem from '@/components/Icons/IconEcosystem.vue';
 
 // Service
 import { daftarProdukTripayService } from '@/service/administrator/daftarProdukTripay';
+import { operatorTripayService } from '@/service/administrator/operatorTripay';
 
 // Utils
 import dayjs from 'dayjs';
@@ -39,6 +41,12 @@ const tableColumns = [
     cellClass: 'text-left',
   },
   {
+    key: 'produk',
+    label: 'Produk Internal',
+    headerClass: 'text-left w-[15%]',
+    cellClass: 'text-left',
+  },
+  {
     key: 'price',
     label: 'Harga',
     headerClass: 'text-right w-[15%] pr-4',
@@ -61,9 +69,23 @@ const tableColumns = [
 const dataProduk = ref<any[]>([]);
 const isLoading = ref(false);
 const searchQuery = ref('');
+const connectionFilter = ref('');
+const filterOperatorId = ref('');
+const listOperators = ref<any[]>([]);
+
+const groupedOperators = computed(() => {
+  const groups: Record<string, any[]> = {};
+  listOperators.value.forEach(op => {
+    const k = op.kategori?.name || 'Lainnya';
+    if (!groups[k]) groups[k] = [];
+    groups[k].push(op);
+  });
+  return groups;
+});
 
 // Detail Modal State
 const showDetailModal = ref(false);
+const showKoneksiModal = ref(false);
 const selectedProduk = ref<any | null>(null);
 
 const { currentPage, totalPages, pages, totalRow, pageNow, perPage } = usePagination(
@@ -85,6 +107,39 @@ const { showConfirmDialog, confirmTitle, confirmMessage, displayConfirmation, co
 const confirmButtonText = ref('Ya, Scan Sekarang');
 const confirmButtonClass = ref('bg-emerald-600 hover:bg-emerald-700 shadow-[0_0_15px_rgba(5,150,105,0.5)]');
 
+const fetchOperators = async () => {
+  try {
+    const res = await operatorTripayService.getAll('', 1000, 1);
+    let ops = [];
+    if (res?.data?.data?.list) {
+      ops = res.data.data.list;
+    } else if (Array.isArray(res?.data?.data)) {
+      ops = res.data.data;
+    } else if (Array.isArray(res?.data)) {
+      ops = res.data;
+    }
+    
+    listOperators.value = ops
+      .filter((op: any) => op && op.name)
+      .sort((a: any, b: any) => String(a.name).localeCompare(String(b.name)));
+  } catch (error) {
+    console.error('Failed to fetch operators', error);
+  }
+};
+
+const applyFilter = () => {
+  currentPage.value = 1;
+  fetchData();
+};
+
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+const onSearch = () => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    applyFilter();
+  }, 500);
+};
+
 const fetchData = async (keyword?: string | Event) => {
   if (typeof keyword === 'string') {
     searchQuery.value = keyword;
@@ -96,7 +151,11 @@ const fetchData = async (keyword?: string | Event) => {
     const response = await daftarProdukTripayService.getAll(
       currentPage.value,
       perPage.value,
-      searchQuery.value
+      searchQuery.value,
+      filterOperatorId.value,
+      '',
+      '',
+      connectionFilter.value
     );
     dataProduk.value = response.data.data.list;
     totalRow.value = response.data.data.meta.total;
@@ -118,6 +177,17 @@ const paginationProps = ref({
 const handleDetail = (row: any) => {
   selectedProduk.value = row;
   showDetailModal.value = true;
+};
+
+const handleKoneksi = (row: any) => {
+  selectedProduk.value = row;
+  showKoneksiModal.value = true;
+};
+
+const handleKoneksiSaved = () => {
+  showKoneksiModal.value = false;
+  displayNotification('Berhasil menghubungkan produk Tripay dengan produk internal', 'success');
+  fetchData();
 };
 
 const formatCurrency = (value: number) => {
@@ -163,6 +233,7 @@ const handleSync = () => {
 };
 
 onMounted(() => {
+  fetchOperators();
   fetchData();
 });
 </script>
@@ -188,10 +259,48 @@ onMounted(() => {
         search-placeholder="Cari kode atau nama produk..."
         :pagination="paginationProps"
         :show-add="false"
+        :show-search="false"
+        :show-actions="false"
         @search="fetchData"
         @page-change="(page) => { currentPage = page; fetchData(); }"
         @refresh="fetchData"
       >
+        <template #filters>
+          <div class="flex gap-3">
+            <div class="inline-flex rounded-xl shadow-sm" role="group">
+              <input
+                type="text"
+                id="search"
+                class="relative block w-64 px-4 py-2.5 text-sm text-gray-800 bg-white border border-gray-200 rounded-s-xl hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200"
+                v-model="searchQuery"
+                @input="onSearch"
+                placeholder="Cari kode atau nama produk..."
+              />
+              <select
+                v-model="filterOperatorId"
+                @change="applyFilter"
+                class="relative block w-48 px-4 py-2.5 text-sm text-gray-800 bg-white border-y border-r border-gray-200 hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200 cursor-pointer"
+              >
+                <option value="">Semua Operator</option>
+                <optgroup v-for="(ops, kategoriName) in groupedOperators" :key="kategoriName" :label="String(kategoriName)">
+                  <option v-for="op in ops" :key="op.id" :value="op.id">
+                    {{ op.name }} {{ op.kode ? `(${op.kode})` : '' }} - {{ kategoriName }}
+                  </option>
+                </optgroup>
+              </select>
+              <select
+                v-model="connectionFilter"
+                @change="applyFilter"
+                class="relative block w-48 px-4 py-2.5 text-sm text-gray-800 bg-white border-y border-r border-gray-200 rounded-e-xl hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200 cursor-pointer"
+              >
+                <option value="">Semua Status Koneksi</option>
+                <option value="connected">Terkoneksi</option>
+                <option value="disconnected">Belum Terkoneksi</option>
+              </select>
+            </div>
+          </div>
+        </template>
+        
         <!-- Tombol Sync -->
         <template #custom-actions>
           <button
@@ -216,6 +325,16 @@ onMounted(() => {
           </div>
         </template>
 
+        <template #cell-produk="{ row }">
+          <div v-if="row.produk" class="flex flex-col">
+            <span class="font-medium text-indigo-700 text-sm">{{ row.produk.name }}</span>
+            <span class="text-[10px] text-gray-500 font-mono">{{ row.produk.kode }}</span>
+          </div>
+          <span v-else class="px-2 py-1 bg-red-50 text-red-600 text-[10px] font-semibold rounded border border-red-100 uppercase tracking-wider">
+            Belum Terkoneksi
+          </span>
+        </template>
+
         <template #cell-price="{ row }">
           {{ formatCurrency(row.price) }}
         </template>
@@ -238,6 +357,9 @@ onMounted(() => {
           <div class="flex justify-center gap-2">
             <LightButton @click="handleDetail(row)" title="Lihat Detail Produk">
               <IconDetail class="w-4 h-4" />
+            </LightButton>
+            <LightButton @click="handleKoneksi(row)" title="Koneksikan Produk Internal">
+              <IconEcosystem class="w-4 h-4" />
             </LightButton>
           </div>
         </template>
@@ -278,6 +400,14 @@ onMounted(() => {
       :show="showDetailModal"
       :produk="selectedProduk"
       @close="showDetailModal = false"
+    />
+
+    <DaftarProdukTripayKoneksiModal
+      v-if="showKoneksiModal"
+      :show="showKoneksiModal"
+      :produk="selectedProduk"
+      @close="showKoneksiModal = false"
+      @saved="handleKoneksiSaved"
     />
   </div>
 </template>

@@ -8,15 +8,9 @@ import dayjs from 'dayjs';
 
 const tableColumns = [
   {
-    key: 'id',
-    label: 'ID',
-    headerClass: 'text-left w-[10%] pl-4',
-    cellClass: 'text-left pl-4 font-mono font-medium',
-  },
-  {
     key: 'name',
     label: 'Nama Operator',
-    headerClass: 'text-left w-[30%]',
+    headerClass: 'text-left w-[40%]',
     cellClass: 'text-left font-bold text-gray-800',
   },
   {
@@ -47,7 +41,7 @@ const listTypes = ref<any[]>([]);
 
 const { currentPage, totalPages, pages, totalRow, pageNow, perPage } = usePagination(
   () => fetchData(),
-  { perPage: 15, totalRow: 0 },
+  { perPage: 100, totalRow: 0 },
 );
 
 const fetchTypes = async () => {
@@ -135,7 +129,7 @@ onMounted(() => {
           :showNumbering="false"
           :showActions="false"
           :showSearch="false"
-          :showAddButton="false"
+          :showAdd="false"
         >
           <template #filters>
             <div class="inline-flex rounded-xl shadow-sm" role="group">

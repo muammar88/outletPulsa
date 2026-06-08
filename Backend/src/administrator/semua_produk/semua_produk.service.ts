@@ -49,6 +49,9 @@ export class SemuaProdukService {
         include: {
           operator: true,
           server: true,
+          iakPrabayarProduks: true,
+          tripayPrabayarProduks: true,
+          digiflazzProducts: true,
         },
       }),
       this.prisma.produk.count({ where }),
@@ -108,7 +111,18 @@ export class SemuaProdukService {
   }
 
   async update(id: number, updateSemuaProdukDto: UpdateSemuaProdukDto) {
-    await this.findOne(id); // Ensure produk exists
+    const produk = await this.prisma.produk.findUnique({
+      where: { id },
+      include: {
+        iakPrabayarProduks: true,
+        tripayPrabayarProduks: true,
+        digiflazzProducts: true,
+      },
+    });
+
+    if (!produk) {
+      throw new NotFoundException(`Produk with ID ${id} not found`);
+    }
 
     if (updateSemuaProdukDto.kode) {
       const existing = await this.prisma.produk.findFirst({
@@ -116,6 +130,19 @@ export class SemuaProdukService {
       });
       if (existing) {
         throw new BadRequestException(`Produk dengan kode ${updateSemuaProdukDto.kode} sudah terdaftar`);
+      }
+    }
+
+    if (updateSemuaProdukDto.serverId !== undefined && updateSemuaProdukDto.serverId !== null) {
+      const serverId = updateSemuaProdukDto.serverId;
+      if (serverId === 1 && produk.iakPrabayarProduks.length === 0) {
+        throw new BadRequestException('Server IAK tidak memiliki produk yang terhubung dengan produk ini');
+      }
+      if (serverId === 2 && produk.tripayPrabayarProduks.length === 0) {
+        throw new BadRequestException('Server Tripay tidak memiliki produk yang terhubung dengan produk ini');
+      }
+      if (serverId === 3 && produk.digiflazzProducts.length === 0) {
+        throw new BadRequestException('Server Digiflazz tidak memiliki produk yang terhubung dengan produk ini');
       }
     }
 

@@ -142,7 +142,14 @@ export class DaftarProdukTripayService {
   }
 
   async getInternalProducts(operatorId: number, search: string = '') {
-    const where: any = { type: 'prabayar', operatorId };
+    const where: any = { 
+      type: 'prabayar', 
+      operatorId,
+      // Memastikan produk internal ini belum memiliki koneksi dengan produk Tripay manapun
+      tripayPrabayarProduks: {
+        none: {}
+      }
+    };
     if (search) {
       where.OR = [
         { kode: { contains: search, mode: 'insensitive' } },

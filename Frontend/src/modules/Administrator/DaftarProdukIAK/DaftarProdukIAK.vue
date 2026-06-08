@@ -2,11 +2,15 @@
 import { usePagination } from '@/composables/usePaginations';
 import { useConfirmation } from '@/composables/useConfirmation';
 import { useNotification } from '@/composables/useNotification';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import BaseTable from '@/components/Table/BaseTable.vue';
 import Confirmation from '@/components/Modal/Confirmation.vue';
 import Notification from '@/components/Modal/Notification.vue';
 import IconEcosystem from '@/components/Icons/IconEcosystem.vue';
+import IconDetail from '@/components/Icons/IconDetail.vue';
+import LightButton from '@/components/Button/LightButton.vue';
+import DaftarProdukIAKDetailModal from './components/DaftarProdukIAKDetailModal.vue';
+import DaftarProdukIAKKoneksiModal from './components/DaftarProdukIAKKoneksiModal.vue';
 import { produkIakService } from '@/service/administrator/produkIak';
 import { operatorIakService } from '@/service/administrator/operatorIak';
 
@@ -44,6 +48,12 @@ const tableColumns = [
   {
     key: 'status',
     label: 'Status',
+    headerClass: 'text-center w-[10%]',
+    cellClass: 'text-center',
+  },
+  {
+    key: 'action',
+    label: 'Aksi',
     headerClass: 'text-center w-[15%]',
     cellClass: 'text-center',
   },
@@ -55,6 +65,20 @@ const searchQuery = ref('');
 const connectionFilter = ref('');
 const filterOperatorId = ref('');
 const listOperators = ref<any[]>([]);
+
+const groupedOperators = computed(() => {
+  const groups: Record<string, any[]> = {};
+  listOperators.value.forEach(op => {
+    const t = op.type?.type || 'Lainnya';
+    if (!groups[t]) groups[t] = [];
+    groups[t].push(op);
+  });
+  return groups;
+});
+
+const showDetailModal = ref(false);
+const showKoneksiModal = ref(false);
+const selectedProduk = ref<any | null>(null);
 
 const { currentPage, totalPages, pages, totalRow, pageNow, perPage } = usePagination(
   () => fetchData(),
@@ -144,6 +168,22 @@ const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value || 0);
 };
 
+const handleDetail = (row: any) => {
+  selectedProduk.value = row;
+  showDetailModal.value = true;
+};
+
+const handleKoneksi = (row: any) => {
+  selectedProduk.value = row;
+  showKoneksiModal.value = true;
+};
+
+const handleKoneksiSaved = () => {
+  showKoneksiModal.value = false;
+  displayNotification('Berhasil menghubungkan produk IAK dengan produk internal', 'success');
+  fetchData();
+};
+
 const handleSync = () => {
   confirmButtonText.value = 'Ya, Scan Sekarang';
   confirmButtonClass.value = 'bg-emerald-600 hover:bg-emerald-700 shadow-[0_0_15px_rgba(5,150,105,0.5)]';
@@ -220,15 +260,17 @@ onMounted(() => {
                   placeholder="Cari kode atau nama produk..."
                 />
                 <select
-                  v-model="filterOperatorId"
-                  @change="applyFilter"
-                  class="relative block w-48 px-4 py-2.5 text-sm text-gray-800 bg-white border-y border-r border-gray-200 hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200 cursor-pointer"
-                >
-                  <option value="">Semua Operator</option>
-                  <option v-for="op in listOperators" :key="op.id" :value="op.id">
-                    {{ op.name }}
+                v-model="filterOperatorId"
+                @change="applyFilter"
+                class="relative block w-48 px-4 py-2.5 text-sm text-gray-800 bg-white border-y border-r border-gray-200 hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200 cursor-pointer"
+              >
+                <option value="">Semua Operator</option>
+                <optgroup v-for="(ops, typeName) in groupedOperators" :key="typeName" :label="String(typeName)">
+                  <option v-for="op in ops" :key="op.id" :value="op.id">
+                    {{ op.name }} ({{ typeName }})
                   </option>
-                </select>
+                </optgroup>
+              </select>
                 <select
                   v-model="connectionFilter"
                   @change="applyFilter"
@@ -265,7 +307,12 @@ onMounted(() => {
           </template>
 
           <template #cell-name="{ row }">
-            <span class="text-[14px] font-bold text-gray-800 tracking-tight">{{ row.name }}</span>
+            <div class="flex flex-col">
+              <span class="text-[14px] font-bold text-gray-800 tracking-tight">{{ row.name }}</span>
+              <span v-if="row.nominal" class="text-[11px] font-semibold text-emerald-600 mt-0.5 tracking-wide">
+                Nominal: {{ row.nominal }}
+              </span>
+            </div>
           </template>
 
           <template #cell-operator="{ row }">
@@ -304,6 +351,17 @@ onMounted(() => {
             </span>
           </template>
 
+          <template #cell-action="{ row }">
+            <div class="flex justify-center gap-2">
+              <LightButton @click="handleDetail(row)" title="Lihat Detail Produk">
+                <IconDetail class="w-4 h-4" />
+              </LightButton>
+              <LightButton @click="handleKoneksi(row)" title="Koneksikan Produk Internal">
+                <IconEcosystem class="w-4 h-4" />
+              </LightButton>
+            </div>
+          </template>
+
         </BaseTable>
     </div>
     
@@ -334,5 +392,21 @@ onMounted(() => {
         {{ confirmButtonText }}
       </button>
     </Confirmation>
+
+    <!-- Modals -->
+    <DaftarProdukIAKDetailModal
+      v-if="showDetailModal"
+      :show="showDetailModal"
+      :produk="selectedProduk"
+      @close="showDetailModal = false"
+    />
+
+    <DaftarProdukIAKKoneksiModal
+      v-if="showKoneksiModal"
+      :show="showKoneksiModal"
+      :produk="selectedProduk"
+      @close="showKoneksiModal = false"
+      @saved="handleKoneksiSaved"
+    />
   </div>
 </template>

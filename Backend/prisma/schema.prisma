@@ -605,6 +605,7 @@ model IakPrabayarProduk {
   operatorId Int?
   kode       String?
   name       String?
+  nominal    String?
   price      Int?
   status     ProdukStatus? @default(active)
   createdAt  DateTime      @default(now())

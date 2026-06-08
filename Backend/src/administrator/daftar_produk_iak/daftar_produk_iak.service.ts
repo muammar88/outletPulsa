@@ -83,111 +83,80 @@ export class DaftarProdukIakService {
 
     const sign = this.signMd5(username, apiKey, 'pl');
     
-    let json: any;
-    try {
-      const response = await fetch(`${baseUrl}api/pricelist`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-          username,
-          sign,
-          status: "all"
-        })
-      });
+    let json: any = { data: { pricelist: [] } };
+    
+    const operators = await this.prisma.iakPrabayarOperator.findMany({
+      include: {
+        type: true
+      }
+    });
 
-      const bodyText = await response.text();
-      json = JSON.parse(bodyText);
+    try {
+      this.logger.log(`[IAK SYNC] Mengambil data pricelist dari ${operators.length} operator...`);
+
+      for (const op of operators) {
+        if (!op.type?.type || !op.name) continue;
+
+        const typeName = op.type.type.toLowerCase();
+        const opName = op.name.toLowerCase();
+
+        try {
+          const response = await fetch(`${baseUrl}api/pricelist/${typeName}/${opName}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+              username,
+              sign,
+              status: "all"
+            })
+          });
+
+          const bodyText = await response.text();
+          const opJson = JSON.parse(bodyText);
+
+          // Skip jika mendapat response error (contoh: rc '20' CODE NOT FOUND)
+          if (opJson.data && opJson.data.rc && opJson.data.rc !== '00') {
+            this.logger.warn(`[IAK SYNC] Skip operator ${opName}: ${opJson.data.message || 'Error IAK'}`);
+            continue;
+          }
+
+          // Menampilkan raw response ke console log
+          console.log(`--------- RESPONSE DARI ${typeName.toUpperCase()} - ${opName.toUpperCase()} ---------`);
+          console.dir(opJson, { depth: null, colors: true });
+
+          // Jika ada daftar harga, masukkan ke dalam penampung json utama
+          if (opJson.data && Array.isArray(opJson.data.pricelist)) {
+            const mappedPricelist = opJson.data.pricelist.map((p: any) => ({
+              ...p,
+              operatorId: op.id
+            }));
+            json.data.pricelist.push(...mappedPricelist);
+          }
+        } catch (fetchErr: any) {
+          this.logger.warn(`[IAK SYNC] Gagal fetch untuk operator ${opName}: ${fetchErr.message}`);
+        }
+      }
     } catch (err: any) {
       this.logger.error(`[IAK SYNC] Gagal fetch ke IAK: ${err.message}`);
       throw new Error(`Gagal menghubungi server IAK: ${err.message}`);
     }
-
-    if (!json.data || !json.data.pricelist) {
-      this.logger.error(`[IAK SYNC] Invalid response dari IAK: ${JSON.stringify(json)}`);
-      throw new Error('API IAK mengembalikan response yang tidak valid.');
-    }
-
-    // Tampilkan data mentah dari IAK di console log sesuai instruksi
-    console.log('---------RAW JSON RESPONSE DARI IAK----------');
-    console.dir(json, { depth: null, colors: true });
-    console.log('---------------------------------------------');
 
     const pricelist = json.data.pricelist;
     if (!Array.isArray(pricelist) || pricelist.length === 0) {
       throw new Error('Data produk IAK kosong.');
     }
 
-    this.logger.log(`[IAK SYNC] Berhasil mendapatkan ${pricelist.length} produk dari API IAK.`);
-
-    // ==========================================
-    // PHASE 2 - TIPE MAPPING
-    // ==========================================
-    const typeSet = new Set<string>();
-    for (const p of pricelist) {
-      if (p.product_type) typeSet.add(p.product_type);
-    }
-
-    const existingTypes = await this.prisma.iakPrabayarType.findMany();
-    const existingTypeMap = new Map<string, number>();
-    for (const t of existingTypes) {
-      if (t.type) existingTypeMap.set(t.type.toLowerCase(), t.id);
-    }
-
-    let insertedTypes = 0;
-    for (const typeName of Array.from(typeSet)) {
-      if (!existingTypeMap.has(typeName.toLowerCase())) {
-        const newType = await this.prisma.iakPrabayarType.create({ data: { type: typeName } });
-        existingTypeMap.set(typeName.toLowerCase(), newType.id);
-        insertedTypes++;
-      }
-    }
-    this.logger.log(`[IAK SYNC] Kategori Tipe (Baru: ${insertedTypes})`);
-
-    // ==========================================
-    // PHASE 3 - OPERATOR MAPPING
-    // ==========================================
-    // Kelompokkan operator berdasarkan nama & tipe
-    const operatorMap = new Map<string, { name: string, typeId: number }>();
-    for (const p of pricelist) {
-      if (!p.product_operator || !p.product_type) continue;
-      const typeId = existingTypeMap.get(p.product_type.toLowerCase());
-      if (!typeId) continue;
-      
-      const key = `${p.product_operator.toLowerCase()}_${typeId}`;
-      if (!operatorMap.has(key)) {
-        operatorMap.set(key, { name: p.product_operator, typeId });
-      }
-    }
-
-    const existingOps = await this.prisma.iakPrabayarOperator.findMany();
-    // Key gabungan: "name_typeId"
-    const existingOpMap = new Map<string, number>();
-    for (const o of existingOps) {
-      if (o.name && o.typeId) {
-        existingOpMap.set(`${o.name.toLowerCase()}_${o.typeId}`, o.id);
-      }
-    }
-
-    let insertedOps = 0;
-    for (const [key, val] of operatorMap.entries()) {
-      if (!existingOpMap.has(key)) {
-        const newOp = await this.prisma.iakPrabayarOperator.create({
-          data: { name: val.name, typeId: val.typeId }
-        });
-        existingOpMap.set(key, newOp.id);
-        insertedOps++;
-      }
-    }
-    this.logger.log(`[IAK SYNC] Operator (Baru: ${insertedOps})`);
+    this.logger.log(`[IAK SYNC] Berhasil mengumpulkan ${pricelist.length} produk dari seluruh operator.`);
 
     // ==========================================
     // PHASE 4 - PRODUK MAPPING
     // ==========================================
+
     const existingProds = await this.prisma.iakPrabayarProduk.findMany({
-      select: { id: true, kode: true, price: true, status: true }
+      select: { id: true, kode: true, price: true, status: true, nominal: true }
     });
     
     const prodMap = new Map<string, any>();
@@ -209,29 +178,26 @@ export class DaftarProdukIakService {
       else if (rawStatus === 'inactive') finalStatus = 'inactive';
       else finalStatus = 'active';
 
-      let opId: number | null = null;
-      if (apiProd.product_operator && apiProd.product_type) {
-        const typeId = existingTypeMap.get(apiProd.product_type.toLowerCase());
-        if (typeId) {
-          opId = existingOpMap.get(`${apiProd.product_operator.toLowerCase()}_${typeId}`) || null;
-        }
-      }
+      const opId = apiProd.operatorId || null;
 
       const price = Number(apiProd.product_price || 0);
+      const nominal = apiProd.product_nominal ? String(apiProd.product_nominal) : null;
 
       const existingProd = prodMap.get(kode);
       if (existingProd) {
-        if (existingProd.price !== price || existingProd.status !== finalStatus) {
+        if (existingProd.price !== price || existingProd.status !== finalStatus || existingProd.nominal !== nominal) {
           dataToUpdate.push({
             id: existingProd.id,
             price: price,
             status: finalStatus,
+            nominal: nominal,
           });
         }
       } else {
         dataToInsert.push({
           kode,
           name: apiProd.product_description || '',
+          nominal: nominal,
           price: price,
           status: finalStatus,
           operatorId: opId,
@@ -257,7 +223,7 @@ export class DaftarProdukIakService {
           chunk.map((item) =>
             this.prisma.iakPrabayarProduk.update({
               where: { id: item.id },
-              data: { price: item.price, status: item.status },
+              data: { price: item.price, status: item.status, nominal: item.nominal },
             })
           )
         );
@@ -280,6 +246,91 @@ export class DaftarProdukIakService {
       updated: dataToUpdate.length,
       total: pricelist.length
     };
+  }
+  async getInternalOperators(search: string = '') {
+    const where: any = {};
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { kode: { contains: search, mode: 'insensitive' } }
+      ];
+    }
+    
+    const operators = await this.prisma.operator.findMany({
+      where: {
+        ...where,
+        produks: { some: { type: 'prabayar' } }
+      },
+      select: {
+        id: true,
+        kode: true,
+        name: true,
+      },
+      orderBy: { name: 'asc' },
+      take: 50,
+    });
+
+    return operators.map(op => ({
+      ...op,
+      name: op.kode ? `${op.name} (${op.kode})` : op.name,
+    }));
+  }
+
+  async getInternalProducts(operatorId: number, search: string = '') {
+    const where: any = { 
+      type: 'prabayar', 
+      operatorId,
+      iakPrabayarProduks: {
+        none: {}
+      }
+    };
+    if (search) {
+      where.OR = [
+        { kode: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+    
+    const products = await this.prisma.produk.findMany({
+      where,
+      select: {
+        id: true,
+        kode: true,
+        name: true,
+        type: true,
+        purchase_price: true,
+        markup: true,
+        operator: {
+          select: { name: true }
+        }
+      },
+      take: 50,
+      orderBy: { purchase_price: 'asc' },
+    });
+
+    return products.map(p => ({
+      ...p,
+      kode: p.operator?.name ? `${p.operator.name} - ${p.kode}` : p.kode,
+    }));
+  }
+
+  async connectProduct(iakProdukId: number, produkId: number) {
+    const iakProd = await this.prisma.iakPrabayarProduk.findUnique({ where: { id: iakProdukId } });
+    if (!iakProd) throw new Error('Produk IAK tidak ditemukan');
+
+    const internalProd = await this.prisma.produk.findUnique({ where: { id: produkId } });
+    if (!internalProd) throw new Error('Produk Internal tidak ditemukan');
+
+    const updated = await this.prisma.iakPrabayarProduk.update({
+      where: { id: iakProdukId },
+      data: { produkId },
+      include: {
+        operator: { include: { type: true } },
+        produk: true
+      }
+    });
+
+    return updated;
   }
 }
 

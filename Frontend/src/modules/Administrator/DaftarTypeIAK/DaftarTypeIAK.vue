@@ -7,12 +7,6 @@ import dayjs from 'dayjs';
 
 const tableColumns = [
   {
-    key: 'id',
-    label: 'ID',
-    headerClass: 'text-left w-[10%] pl-4',
-    cellClass: 'text-left pl-4 font-mono font-medium',
-  },
-  {
     key: 'type',
     label: 'Tipe',
     headerClass: 'text-left w-[40%]',
@@ -21,7 +15,7 @@ const tableColumns = [
   {
     key: 'operatorsCount',
     label: 'Jumlah Operator',
-    headerClass: 'text-center w-[25%]',
+    headerClass: 'text-center w-[35%]',
     cellClass: 'text-center',
   },
   {
@@ -38,7 +32,7 @@ const searchQuery = ref('');
 
 const { currentPage, totalPages, pages, totalRow, pageNow, perPage } = usePagination(
   () => fetchData(),
-  { perPage: 10, totalRow: 0 },
+  { perPage: 100, totalRow: 0 },
 );
 
 const fetchData = async (keyword?: string | Event) => {
@@ -104,7 +98,7 @@ onMounted(() => {
           @page-change="pageNow"
           :showNumbering="false"
           :showActions="false"
-          :showAddButton="false"
+          :showAdd="false"
         >
           <template #cell-operatorsCount="{ row }">
             <span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md text-xs font-bold border border-indigo-100">
