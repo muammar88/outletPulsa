@@ -22,7 +22,7 @@ export default async function transactionSeed(prisma: PrismaClient) {
 
   // 2. Cari produk prabayar bebas
   const produk = await prisma.produk.findFirst({
-    where: { status: 'active', type: 'prabayar' },
+    where: { status: 'active' },
   });
 
   if (produk) {

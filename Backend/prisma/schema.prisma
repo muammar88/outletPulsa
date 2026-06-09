@@ -166,7 +166,6 @@ model Produk {
   operatorId     Int?
   kode           String?
   name           String?
-  type           ProdukType?
   purchase_price Int?
   markup         Int?
   serverId       Int?
@@ -205,10 +204,11 @@ model ProdukPascabayar {
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 
-  kategori               Kategori?               @relation(fields: [kategoriId], references: [id])
-  server                 Server?                 @relation(fields: [serverId], references: [id])
+  kategori               Kategori?                @relation(fields: [kategoriId], references: [id])
+  server                 Server?                  @relation(fields: [serverId], references: [id])
   transactionsPascabayar TransactionPascabayar[]
   iakPascabayarProducts  IakPascabayarProduct[]
+  TripayPascabayarProduk TripayPascabayarProduk[]
 }
 
 model Transaction {
@@ -793,4 +793,40 @@ model ActivityLog {
 
   user   User?   @relation(fields: [userId], references: [id])
   member Member? @relation(fields: [memberId], references: [id])
+}
+
+model TripayPascabayarKategori {
+  id        Int      @id @default(autoincrement())
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tripayPascabayarOperators TripayPascabayarOperator[]
+}
+
+model TripayPascabayarOperator {
+  id         Int      @id @default(autoincrement())
+  kategoriId Int?
+  kode       String?
+  name       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  kategori                TripayPascabayarKategori? @relation(fields: [kategoriId], references: [id])
+  tripayPascabayarProduks TripayPascabayarProduk[]
+}
+
+model TripayPascabayarProduk {
+  id         Int      @id @default(autoincrement())
+  produkId   Int?
+  operatorId Int?
+  kode       String?
+  name       String?
+  biayaAdmin Int?
+  status     String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  operator TripayPascabayarOperator? @relation(fields: [operatorId], references: [id])
+  produk   ProdukPascabayar?         @relation(fields: [produkId], references: [id])
 }

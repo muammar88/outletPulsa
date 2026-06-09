@@ -17,11 +17,7 @@ export class GetSemuaProdukDto {
   @IsOptional()
   status?: string;
 
-  @IsString()
   @IsOptional()
-  type?: string;
-
   @IsString()
-  @IsOptional()
   operatorId?: string;
 }

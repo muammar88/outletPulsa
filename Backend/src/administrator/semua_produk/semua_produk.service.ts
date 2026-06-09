@@ -14,7 +14,6 @@ export class SemuaProdukService {
     const limit = parseInt(query.limit || '10', 10);
     const search = query.search || '';
     const status = query.status as ProdukStatus | undefined;
-    const type = query.type as ProdukType | undefined;
     const operatorId = query.operatorId ? parseInt(query.operatorId, 10) : undefined;
 
     const skip = (page - 1) * limit;
@@ -30,10 +29,6 @@ export class SemuaProdukService {
 
     if (status) {
       where.status = status;
-    }
-
-    if (type) {
-      where.type = type;
     }
 
     if (operatorId) {
@@ -96,7 +91,6 @@ export class SemuaProdukService {
         operatorId: createSemuaProdukDto.operatorId,
         kode: createSemuaProdukDto.kode,
         name: createSemuaProdukDto.name,
-        type: createSemuaProdukDto.type,
         purchase_price: createSemuaProdukDto.purchase_price || 0,
         markup: createSemuaProdukDto.markup || 0,
         serverId: createSemuaProdukDto.serverId,

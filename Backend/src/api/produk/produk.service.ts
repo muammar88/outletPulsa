@@ -12,7 +12,6 @@ export class ProdukService {
     const skip = (page - 1) * limit;
 
     const where: any = {
-      type: 'prabayar',
       status: 'active',
     };
 
@@ -68,7 +67,6 @@ export class ProdukService {
           name: item.name || '',
           kategori: item.operator?.kategori?.name || '',
           operator: item.operator?.name || '',
-          type: item.type,
           harga_modal: harga_modal.toString(),
           price: 'Rp ' + harga_jual.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."),
           keuntungan: markup.toString(),

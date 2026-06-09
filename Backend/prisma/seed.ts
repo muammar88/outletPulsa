@@ -16,6 +16,7 @@ import notifSeed from './seeds/notif.seed';
 import transactionSeed from './seeds/transaction.seed';
 import depositSeed from './seeds/deposit.seed';
 import iakPrabayarSeed from './seeds/iak_prabayar.seed';
+import iakPascabayarSeed from './seeds/iak_pascabayar.seed';
 const prisma = new PrismaClient();
 
 async function main() {
@@ -67,6 +68,8 @@ async function main() {
 
   console.log('Seeding IAK Prabayar Master Data...');
   await iakPrabayarSeed(prisma);
+
+  await iakPascabayarSeed(prisma);
 
   console.log('Seeding completed successfully.');
 }
