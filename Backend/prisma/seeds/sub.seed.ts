@@ -20,7 +20,7 @@ export default async function subSeed(prisma: PrismaClient) {
     { menu_name: 'Produk', name: 'Daftar Produk', icon: 'IconBox', path: 'daftar_produk', tab: JSON.stringify([{ id: tabs[3].id }, { id: tabs[19].id } ]) },
     { menu_name: 'Produk', name: 'Daftar Produk Tripay', icon: 'IconBox', path: 'daftar_produk_tripay', tab: JSON.stringify([{ id: tabs[13].id },{ id: tabs[20].id },{ id: tabs[14].id },{ id: tabs[15].id },{ id: tabs[23].id },{ id: tabs[22].id } ]) },
     { menu_name: 'Produk', name: 'Daftar Produk IAK', icon: 'IconBox', path: 'daftar_produk_iak', tab: JSON.stringify([{ id: tabs[16].id },{ id: tabs[21].id },{ id: tabs[17].id },{ id: tabs[18].id } ]) },
-    { menu_name: 'Produk', name: 'Daftar Produk DigiFlazz', icon: 'IconBox', path: 'daftar_produk_digiflazz', tab: JSON.stringify([{ id: tabs[13].id },{ id: tabs[14].id },{ id: tabs[15].id } ]) },
+    { menu_name: 'Produk', name: 'Daftar Produk DigiFlazz', icon: 'IconBox', path: 'daftar_produk_digiflazz', tab: JSON.stringify([{ id: tabs[24].id },{ id: tabs[25].id },{ id: tabs[26].id } ]) },
     { menu_name: 'Produk', name: 'Daftar Server', icon: 'IconServer', path: 'daftar_server', tab: JSON.stringify([{ id: tabs[5].id } ]) },
     { menu_name: 'Master Data', name: 'Kategori', icon: 'IconCategory', path: 'kategori', tab: JSON.stringify([{ id: tabs[7].id } ]) },
     { menu_name: 'Master Data', name: 'Operator', icon: 'IconAntenna', path: 'operator', tab: JSON.stringify([{ id: tabs[8].id } ]) },
