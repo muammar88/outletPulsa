@@ -22,8 +22,8 @@
       <div class="relative z-10 max-w-md w-full px-10 panel-enter">
         <!-- Brand -->
         <div class="flex items-center gap-3 mb-10">
-          <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/30 logo-pulse">
-            <IconBolt class="w-7 h-7 text-white" :stroke="2.5" />
+          <div class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-lg shadow-blue-500/30 logo-pulse p-1">
+            <img src="/logo.png" alt="Logo" class="w-full h-full object-contain drop-shadow-md" />
           </div>
           <div>
             <p class="text-white/50 text-xs font-semibold uppercase tracking-widest">Administrator</p>
@@ -199,7 +199,6 @@ import { useRouter } from 'vue-router';
 import { login_administrator } from '@/service/auth';
 import { setAdminLoggedIn } from '@/utils/cookies';
 import {
-  IconBolt,
   IconShieldLock,
   IconUser,
   IconLock,

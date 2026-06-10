@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IconListDetails, IconPlug, IconList } from '@tabler/icons-vue';
+import { IconListDetails, IconPlug, IconList, IconCheck } from '@tabler/icons-vue';
 
 import { useConfirmation } from '@/composables/useConfirmation';
 import { useNotification } from '@/composables/useNotification';
@@ -187,6 +187,38 @@ const fetchOperators = async () => {
   }
 };
 
+const isSyncingTermurah = ref(false);
+
+const handlePilihTermurah = () => {
+  displayConfirmation(
+    'Konfirmasi Pilih Termurah',
+    'Apakah Anda yakin ingin mencari dan mengatur produk termurah secara otomatis? Proses ini akan memperbarui status dan harga beli pada semua produk prabayar Anda berdasarkan server yang terkoneksi.',
+    async () => {
+      isSyncingTermurah.value = true;
+      try {
+        const response = await ProdukPrabayarService.syncTermurah();
+        const data = response.data.data;
+        displayNotification(
+          `Berhasil memproses produk!<br>
+          <ul class="list-disc pl-4 mt-2 text-sm text-left">
+            <li>Berhasil diperbarui: <b>${data.berhasil_diperbarui}</b></li>
+            <li>Dinonaktifkan: <b>${data.dinonaktifkan}</b></li>
+            <li>Tanpa koneksi: <b>${data.tidak_ada_koneksi}</b></li>
+            <li>Gagal: <b>${data.gagal}</b></li>
+          </ul>`,
+          'success'
+        );
+        fetchData();
+      } catch (error) {
+        displayNotification('Gagal memproses produk termurah', 'error');
+        console.error('Error sync termurah:', error);
+      } finally {
+        isSyncingTermurah.value = false;
+      }
+    }
+  );
+};
+
 onMounted(() => {
   fetchOperators();
   fetchData();
@@ -219,6 +251,17 @@ onMounted(() => {
       :showActions="false"
       :showSearch="false"
     >
+      <template #custom-actions>
+        <button
+          @click="handlePilihTermurah"
+          :disabled="isSyncingTermurah"
+          class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 border border-transparent rounded-xl shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+        >
+          <IconCheck v-if="!isSyncingTermurah" class="w-4 h-4" />
+          <svg v-else class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          {{ isSyncingTermurah ? 'Memproses...' : 'Pilih Produk Termurah' }}
+        </button>
+      </template>
       <template #filters>
         <div class="inline-flex rounded-xl shadow-sm" role="group">
           <input
@@ -384,10 +427,18 @@ onMounted(() => {
       Batal
     </button>
     <button
+      v-if="confirmTitle.toLowerCase().includes('hapus')"
       @click="confirm"
       class="rounded-md bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-700 focus:outline-none shadow-[0_0_15px_rgba(225,29,72,0.5)]"
     >
       Hapus
+    </button>
+    <button
+      v-else
+      @click="confirm"
+      class="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 focus:outline-none shadow-[0_0_15px_rgba(5,150,105,0.5)]"
+    >
+      Lanjutkan
     </button>
   </Confirmation>
 

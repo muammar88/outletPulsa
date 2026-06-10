@@ -149,6 +149,102 @@ export class ProdukPrabayarService {
     });
   }
 
+  async syncTermurah() {
+    const produks = await this.prisma.produk.findMany({
+      include: {
+        iakPrabayarProduks: true,
+        tripayPrabayarProduks: true,
+        digiflazzProducts: true,
+      },
+    });
+
+    let countSuccess = 0;
+    let countDeactivated = 0;
+    let countNoConnection = 0;
+    let countFailed = 0;
+
+    for (const p of produks) {
+      try {
+        const iakProducts = p.iakPrabayarProduks.filter(i => i.status === 'active' && i.price !== null && i.price !== undefined);
+        const tripayProducts = p.tripayPrabayarProduks.filter(t => t.status?.toLowerCase() === 'active' && t.price !== null && t.price !== undefined);
+        const digiProducts = p.digiflazzProducts.filter(d => d.status === 'active' && d.selectedSellerPrice !== null && d.selectedSellerPrice !== undefined);
+
+        if (iakProducts.length === 0 && tripayProducts.length === 0 && digiProducts.length === 0) {
+          // No connection or all inactive
+          if (p.status !== 'inactive' || p.serverId !== null) {
+            await this.prisma.produk.update({
+              where: { id: p.id },
+              data: { status: 'inactive', serverId: null },
+            });
+            countDeactivated++;
+          } else {
+            countNoConnection++;
+          }
+          continue;
+        }
+
+        let cheapestPrice = Infinity;
+        let selectedServerId: number | null = null;
+
+        // IAK = 1
+        if (iakProducts.length > 0) {
+          const cheapestIak = Math.min(...iakProducts.map(i => i.price!));
+          if (cheapestIak < cheapestPrice) {
+            cheapestPrice = cheapestIak;
+            selectedServerId = 1;
+          }
+        }
+
+        // Tripay = 2
+        if (tripayProducts.length > 0) {
+          const cheapestTripay = Math.min(...tripayProducts.map(t => t.price!));
+          if (cheapestTripay < cheapestPrice) {
+            cheapestPrice = cheapestTripay;
+            selectedServerId = 2;
+          }
+        }
+
+        // Digiflazz = 3
+        if (digiProducts.length > 0) {
+          const cheapestDigi = Math.min(...digiProducts.map(d => d.selectedSellerPrice!));
+          if (cheapestDigi < cheapestPrice) {
+            cheapestPrice = cheapestDigi;
+            selectedServerId = 3;
+          }
+        }
+
+        if (selectedServerId !== null) {
+          await this.prisma.produk.update({
+            where: { id: p.id },
+            data: {
+              serverId: selectedServerId,
+              purchase_price: cheapestPrice,
+              status: 'active',
+            },
+          });
+          countSuccess++;
+        } else {
+          // Fallback if somehow no server selected (should not happen due to length check)
+          await this.prisma.produk.update({
+            where: { id: p.id },
+            data: { status: 'inactive', serverId: null },
+          });
+          countDeactivated++;
+        }
+      } catch (err) {
+        console.error(`Error updating produk ID ${p.id}:`, err);
+        countFailed++;
+      }
+    }
+
+    return {
+      berhasil_diperbarui: countSuccess,
+      dinonaktifkan: countDeactivated,
+      tidak_ada_koneksi: countNoConnection,
+      gagal: countFailed,
+    };
+  }
+
   async remove(id: number) {
     await this.findOne(id);
 

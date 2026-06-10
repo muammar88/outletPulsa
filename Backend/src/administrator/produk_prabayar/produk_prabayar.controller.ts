@@ -20,6 +20,16 @@ export class ProdukPrabayarController {
     };
   }
 
+  @Post('sync-termurah')
+  async syncTermurah() {
+    const data = await this.produkPrabayarService.syncTermurah();
+    return {
+      success: true,
+      message: 'Sinkronisasi produk termurah berhasil diproses',
+      data,
+    };
+  }
+
   @Get()
   async findAll(@Query() query: GetProdukPrabayarDto) {
     const data = await this.produkPrabayarService.findAll(query);

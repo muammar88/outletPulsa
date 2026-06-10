@@ -35,4 +35,8 @@ export const ProdukPrabayarService = {
   async delete(id: number) {
     return await api.delete(`/administrator/produk-prabayar/${id}`);
   },
+
+  async syncTermurah() {
+    return await api.post('/administrator/produk-prabayar/sync-termurah');
+  },
 };
