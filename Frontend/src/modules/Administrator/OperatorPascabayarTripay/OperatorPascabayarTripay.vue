@@ -220,7 +220,7 @@ onMounted(() => {
         <template #cell-action="{ row }">
           <div class="flex justify-center gap-2">
             <LightButton @click="handleDetail(row)" title="Detail Operator">
-              <IconListDetails />
+              <IconListDetails class="w-4 h-4" />
             </LightButton>
           </div>
         </template>

@@ -124,9 +124,12 @@ const formatCurrency = (val: number) => {
                 <p class="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">Produk Terkoneksi:</p>
                 <ul class="space-y-1.5" v-if="getConnectedProducts(server).length > 0">
                   <li v-for="conn in getConnectedProducts(server)" :key="conn.id" class="flex items-center text-sm font-medium text-gray-700 bg-gray-50 px-2.5 py-1.5 rounded border border-gray-100">
-                    <span class="truncate">{{ conn.name }}</span>
-                    <span v-if="server.id === 1 && conn.nominal" class="ml-2 px-1.5 py-0.5 text-[10px] bg-emerald-100 text-emerald-700 font-bold rounded">
+                    <span class="truncate flex-1">{{ conn.name }}</span>
+                    <span v-if="server.id === 1 && conn.nominal" class="ml-2 px-1.5 py-0.5 text-[10px] bg-emerald-100 text-emerald-700 font-bold rounded whitespace-nowrap">
                       Nominal: {{ conn.nominal }}
+                    </span>
+                    <span v-if="conn.price || conn.selectedSellerPrice" class="ml-2 px-1.5 py-0.5 text-[10px] bg-blue-100 text-blue-700 font-bold rounded whitespace-nowrap">
+                      {{ formatCurrency(conn.price || conn.selectedSellerPrice) }}
                     </span>
                   </li>
                 </ul>

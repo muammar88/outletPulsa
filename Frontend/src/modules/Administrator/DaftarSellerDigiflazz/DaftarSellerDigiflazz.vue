@@ -166,7 +166,7 @@ onMounted(() => {
             @click="openProductsModal(row)"
             class="inline-flex items-center justify-center px-3 py-1.5 text-xs font-bold text-white bg-[#0f2155] rounded-md hover:bg-[#0f2155]/90 focus:outline-none transition-colors shadow-sm"
           >
-            <IconList class=" mr-1.5" size="18" /> Lihat Produk
+            <IconList class="mr-1.5 w-4 h-4" /> Lihat Produk
           </button>
         </template>
       </BaseTable>
@@ -180,7 +180,7 @@ onMounted(() => {
       @close="showProductsModal = false"
     >
       <div v-if="isProductsLoading" class="flex justify-center py-10">
-        <IconLoader2 class="animate-spin  text-3xl text-gray-400" size="24" />
+        <IconLoader2 class="animate-spin  text-3xl text-gray-400 w-4 h-4" />
       </div>
       <div v-else class="max-h-[65vh] overflow-y-auto pr-2 custom-scrollbar">
         <table class="min-w-full divide-y divide-gray-200 border-b border-gray-200">

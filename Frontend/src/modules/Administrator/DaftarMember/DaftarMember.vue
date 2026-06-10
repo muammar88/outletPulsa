@@ -273,7 +273,7 @@ onMounted(() => {
       <template #cell-action="{ row }">
         <div class="flex justify-center gap-2">
           <LightButton @click="handleTambahSaldo(row)" title="Tambah Saldo"
-            ><IconCash></IconMoney
+            ><IconCash class="w-4 h-4"></IconCash
           ></LightButton>
           <LightButton v-if="row.status === 'verfied'" @click="handleSetAgen(row)" title="Set Kode Agen"
             ><TieIcon></TieIcon

@@ -1,43 +1,73 @@
-# 💡 Outlet Pulsa — Aplikasi Manajemen Transaksi Pulsa
+# 💡 Outlet Pulsa — Sistem Manajemen Outlet & Transaksi Produk Digital
 
-Aplikasi **Outlet Pulsa** adalah sistem manajemen outlet yang digunakan untuk mencatat, mengelola, dan memantau transaksi pulsa serta produk digital.  
-Dibangun menggunakan **Express.js** untuk backend API, **Vue.js** untuk frontend SPA, dan **MySQL** sebagai database utama.
+**Outlet Pulsa** adalah platform lengkap untuk mengelola outlet pulsa dan produk digital secara end-to-end.  
+Sistem ini mencakup **panel administrator** berbasis web, **API backend** yang tangguh, serta **aplikasi mobile** untuk member/agen — memungkinkan pencatatan transaksi, manajemen produk, deposit saldo, hingga cetak struk langsung dari perangkat Android.
+
+Dibangun menggunakan **NestJS** (TypeScript) untuk backend, **Vue.js 3** (TypeScript) untuk frontend web, **Flutter** untuk aplikasi mobile, dan **PostgreSQL** sebagai database utama.
 
 ---
 
 ## 🚀 Teknologi yang Digunakan
 
-| Layer        | Teknologi Utama         | Deskripsi Singkat                            |
-|---------------|--------------------------|-----------------------------------------------|
-| Frontend      | [Vue.js 3](https://vuejs.org/) | Framework SPA untuk tampilan interaktif       |
-| Backend       | [Express.js](https://expressjs.com/) | RESTful API untuk logika bisnis dan data      |
-| Database      | [MySQL](https://www.mysql.com/) | Penyimpanan data transaksi dan user           |
-| ORM           | [Sequelize](https://sequelize.org/) | Abstraksi ORM untuk komunikasi ke database    |
-| Container     | [Docker](https://www.docker.com/) (opsional) | Untuk pengemasan aplikasi client & server     |
+| Layer         | Teknologi Utama                                          | Deskripsi Singkat                                        |
+|---------------|----------------------------------------------------------|----------------------------------------------------------|
+| Frontend Web  | [Vue.js 3](https://vuejs.org/) + TypeScript              | SPA dengan Vite, TailwindCSS, dan PrimeVue               |
+| Backend API   | [NestJS](https://nestjs.com/) + TypeScript               | RESTful API modular dengan Swagger documentation          |
+| Database      | [PostgreSQL](https://www.postgresql.org/)                | Database relasional untuk seluruh data transaksional      |
+| ORM           | [Prisma](https://www.prisma.io/)                         | Type-safe ORM dengan migration dan seeding                |
+| Mobile        | [Flutter](https://flutter.dev/) + Dart                   | Aplikasi Android/iOS untuk member dan agen                |
+| Auth          | [Passport.js](http://www.passportjs.org/) + JWT          | Autentikasi berbasis token dengan refresh token           |
+| UI Components | [PrimeVue](https://primevue.org/)                        | Komponen UI premium untuk dashboard admin                 |
+| Container     | [Docker](https://www.docker.com/) (opsional)             | Containerisasi frontend dengan Dockerfile                 |
 
 ---
 
 ## 📂 Struktur Proyek
 
 ```
-project-root/
-├── client/               # Frontend (Vue.js)
+outletPulsa/
+├── Backend/                  # Backend API (NestJS + TypeScript)
 │   ├── src/
-│   ├── public/
-│   ├── package.json
-│   └── vite.config.js
+│   │   ├── administrator/    # Modul admin (produk, pengguna, transaksi, dll)
+│   │   ├── api/              # API publik (auth, beranda, produk, transaksi)
+│   │   ├── member/           # Modul member
+│   │   ├── common/           # Shared utilities & helpers
+│   │   ├── prisma.service.ts # Prisma database service
+│   │   ├── app.module.ts     # Root module
+│   │   └── main.ts           # Entry point
+│   ├── prisma/
+│   │   ├── schema.prisma     # Database schema
+│   │   ├── migrations/       # Database migrations
+│   │   ├── seed.ts           # Seed data
+│   │   └── seeds/            # Seed data files
+│   ├── .env                  # Environment variables
+│   └── package.json
 │
-├── server/               # Backend (Express.js)
+├── Frontend/                 # Frontend Web (Vue.js 3 + TypeScript)
 │   ├── src/
-│   │   ├── models/       # Model Sequelize
-│   │   ├── controllers/  # Logika bisnis
-│   │   ├── routes/       # Endpoint REST API
-│   │   ├── middlewares/  # Middleware (auth, validasi, dll)
-│   │   └── config/       # Koneksi DB & konfigurasi lain
-│   ├── package.json
-│   └── server.js
+│   │   ├── modules/
+│   │   │   ├── Administrator/  # Panel admin (27+ halaman)
+│   │   │   ├── Member/         # Halaman member
+│   │   │   └── Public/         # Halaman publik
+│   │   ├── components/       # Reusable components
+│   │   ├── composables/      # Vue composables
+│   │   ├── stores/           # Pinia state management
+│   │   ├── router/           # Vue Router
+│   │   ├── service/          # API service layer
+│   │   └── types/            # TypeScript type definitions
+│   ├── Dockerfile            # Production Docker config
+│   ├── tailwind.config.js    # TailwindCSS configuration
+│   └── package.json
 │
-├── docker-compose.yml    # (opsional) Konfigurasi Docker multi-service
+├── Mobile/                   # Aplikasi Mobile (Flutter + Dart)
+│   ├── lib/                  # Source code Dart
+│   ├── android/              # Android platform files
+│   ├── ios/                  # iOS platform files
+│   ├── assets/               # Gambar & aset aplikasi
+│   └── pubspec.yaml          # Flutter dependencies
+│
+├── *.sql                     # File SQL untuk data referensi
+├── resetdb.ps1               # Script reset database (PowerShell)
 └── README.md
 ```
 
@@ -46,38 +76,59 @@ project-root/
 ## ⚙️ Instalasi dan Menjalankan Aplikasi
 
 ### 1️⃣ Clone Repository
+
 ```bash
-git clone https://github.com/username/outlet-pulsa.git
-cd outlet-pulsa
+git clone https://github.com/username/outletPulsa.git
+cd outletPulsa
 ```
-
-### 2️⃣ Setup Backend (Express.js)
-```bash
-cd server
-npm install
-```
-
-Buat file `.env` di folder `server`:
-```env
-PORT=3001
-DB_HOST=localhost
-DB_USER=root
-DB_PASS=
-DB_NAME=outlet_pulsa
-```
-
-Jalankan server:
-```bash
-npm start
-```
-
-> Server akan berjalan di: [http://localhost:3001](http://localhost:3001)
 
 ---
 
-### 3️⃣ Setup Frontend (Vue.js)
+### 2️⃣ Setup Backend (NestJS)
+
 ```bash
-cd ../client
+cd Backend
+npm install
+```
+
+Buat file `.env` di folder `Backend`:
+
+```env
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/outletpulsa_db"
+
+PORT=3005
+JWT_SECRET=localenv
+JWT_EXPIRES=60m
+
+JWT_REFRESH_SECRET=refresh_secret_key
+JWT_REFRESH_EXPIRES=7d
+
+NODE_ENV=development
+
+# TRIPAY PAYMENT GATEWAY
+TRIPAY_API_KEY=your_api_key
+TRIPAY_PRIVATE_KEY=your_private_key
+TRIPAY_MERCHANT_CODE=your_merchant_code
+TRIPAY_MODE=sandbox
+```
+
+Jalankan migrasi database dan seed:
+
+```bash
+npx prisma migrate dev
+npx prisma generate
+npm run start:dev
+```
+
+> Server akan berjalan di: [http://localhost:3005](http://localhost:3005)  
+> Swagger API docs tersedia di: [http://localhost:3005/api](http://localhost:3005/api)
+
+---
+
+### 3️⃣ Setup Frontend (Vue.js 3)
+
+```bash
+cd Frontend
 npm install
 npm run dev
 ```
@@ -86,105 +137,96 @@ npm run dev
 
 ---
 
-### 4️⃣ Setup Database (MySQL)
-Pastikan MySQL sudah aktif, lalu buat database:
+### 4️⃣ Setup Database (PostgreSQL)
+
+Pastikan PostgreSQL sudah terinstal dan aktif, lalu buat database:
+
 ```sql
-CREATE DATABASE outlet_pulsa;
+CREATE DATABASE outletpulsa_db;
 ```
 
-Kemudian jalankan migrasi Sequelize:
+Import data referensi (opsional):
+
 ```bash
-cd server
-npx sequelize db:migrate
+psql -U postgres -d outletpulsa_db -f kategoris.sql
+psql -U postgres -d outletpulsa_db -f operators.sql
+psql -U postgres -d outletpulsa_db -f produks.sql
 ```
+
+> Atau gunakan script `resetdb.ps1` untuk reset dan re-seed database secara otomatis.
+
+---
+
+### 5️⃣ Setup Mobile (Flutter)
+
+```bash
+cd Mobile
+flutter pub get
+flutter run
+```
+
+> Pastikan emulator Android/iOS sudah berjalan, atau hubungkan perangkat fisik.
 
 ---
 
 ## 🧩 Fitur Utama
 
-- 🔐 Autentikasi dan otorisasi pengguna  
-- 💰 Transaksi pulsa, paket data, dan produk digital  
-- 🧾 Laporan penjualan dan saldo  
-- 🏪 Manajemen outlet dan user  
-- ⚙️ API berbasis REST dengan struktur modular  
-- 📊 Dashboard interaktif dengan grafik penjualan  
+### 🔐 Autentikasi & Otorisasi
+- Login dengan JWT + refresh token
+- Role-based access (Administrator, Member, Agen)
+- Guard dan middleware otentikasi
+
+### 🏪 Manajemen Administrator
+- Dashboard ringkasan dengan grafik penjualan
+- Manajemen pengguna, member, dan agen
+- Manajemen grup dan hierarki outlet
+- Pengaturan umum aplikasi
+- Log aktivitas sistem
+
+### 📦 Manajemen Produk
+- Produk **prabayar** (pulsa, paket data, token PLN, e-money, dll)
+- Produk **pascabayar** (BPJS, PLN, Telkom, PDAM, dll)
+- Sinkronisasi produk dari **Digiflazz**, **IAK**, dan **Tripay**
+- Kustomisasi harga jual per seller
+- Manajemen kategori dan operator
+
+### 💰 Transaksi & Deposit
+- Transaksi pulsa dan produk digital real-time
+- Deposit saldo via Tripay payment gateway
+- Riwayat saldo dan mutasi keuangan
+- Cetak struk transaksi (mobile via Bluetooth printer)
+
+### 🔗 Integrasi Pihak Ketiga
+- **[Digiflazz](https://digiflazz.com/)** — Provider produk digital (prabayar)
+- **[IAK (Indobest Artha Kreasi)](https://iak.id/)** — Provider produk prabayar & pascabayar
+- **[Tripay](https://tripay.co.id/)** — Payment gateway untuk deposit dan pembayaran
+
+### 📱 Aplikasi Mobile
+- Beranda dengan saldo dan menu produk
+- Pembelian produk prabayar & pascabayar
+- Riwayat transaksi & deposit
+- Cetak struk via Bluetooth thermal printer
+- Transfer saldo antar member
 
 ---
 
-## 🐳 Menjalankan dengan Docker (Opsional)
+## 🐳 Menjalankan dengan Docker (Frontend)
 
-Pastikan Docker & Docker Compose sudah terinstal, lalu jalankan:
+Frontend sudah dilengkapi Dockerfile untuk deployment:
+
 ```bash
-docker-compose up --build
+cd Frontend
+docker build -t outlet-pulsa-frontend .
+docker run -p 5173:80 outlet-pulsa-frontend
 ```
-
-Berikut contoh `docker-compose.yml` yang bisa digunakan:
-```yaml
-version: "3.9"
-
-services:
-  mysql:
-    image: mysql:8.0
-    container_name: outlet_mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: outlet_pulsa
-      MYSQL_USER: userapp
-      MYSQL_PASSWORD: passapp
-    volumes:
-      - mysql_data:/var/lib/mysql
-    ports:
-      - "3306:3306"
-    networks:
-      - outlet_network
-
-  server:
-    build: ./server
-    container_name: outlet_server
-    restart: always
-    depends_on:
-      - mysql
-    environment:
-      - DB_HOST=mysql
-      - DB_USER=userapp
-      - DB_PASS=passapp
-      - DB_NAME=outlet_pulsa
-      - PORT=3001
-    ports:
-      - "3001:3001"
-    networks:
-      - outlet_network
-
-  client:
-    build: ./client
-    container_name: outlet_client
-    restart: always
-    depends_on:
-      - server
-    ports:
-      - "5173:5173"
-    networks:
-      - outlet_network
-
-volumes:
-  mysql_data:
-
-networks:
-  outlet_network:
-    driver: bridge
-```
-
-> Setelah build selesai, buka browser ke:  
-> **Frontend:** http://localhost:5173  
-> **Backend API:** http://localhost:3001  
 
 ---
 
 ## 🧠 Kontributor
 
-| Nama | Peran | Kontak |
-|------|--------|--------|
-| Muammar Kadafi | Fullstack Developer | [GitHub](https://github.com/muammar88) |
+| Nama             | Peran              | Kontak                                          |
+|------------------|--------------------|-------------------------------------------------|
+| Muammar Kadafi   | Fullstack Developer | [GitHub](https://github.com/muammar88)          |
 
 ---
 
@@ -197,21 +239,23 @@ Silakan digunakan, dimodifikasi, dan dikembangkan sesuai kebutuhan.
 
 ## 🖼️ Cuplikan Tampilan
 
-*(Tambahkan screenshot UI atau dashboard di sini jika ada)*
+*(Tambahkan screenshot UI atau dashboard di sini)*
 
 ```
-![Dashboard](docs/screenshot-dashboard.png)
+![Dashboard Admin](docs/screenshot-dashboard.png)
 ![Transaksi](docs/screenshot-transaksi.png)
+![Mobile App](docs/screenshot-mobile.png)
 ```
 
 ---
 
 ## 🛠️ TODO (Pengembangan Selanjutnya)
 
-- [ ] Integrasi WhatsApp Gateway untuk notifikasi transaksi  
-- [ ] Fitur top-up otomatis via API penyedia pulsa  
-- [ ] Laporan keuangan bulanan otomatis dalam format PDF  
+- [ ] Integrasi WhatsApp Gateway untuk notifikasi transaksi
+- [ ] Laporan keuangan bulanan otomatis dalam format PDF
+- [ ] Push notification di aplikasi mobile
+- [ ] Fitur multi-outlet untuk satu akun
 
 ---
 
-> Dibuat dengan ❤️ menggunakan **Express.js + Vue.js + MySQL**
+> Dibuat dengan ❤️ menggunakan **NestJS + Vue.js 3 + Flutter + PostgreSQL**

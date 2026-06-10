@@ -183,7 +183,7 @@ onMounted(() => {
             class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
             :disabled="isLoading"
           >
-            <IconRefresh class=" mr-2" :class="{ 'animate-spin': isLoading }" size="18" />
+            <IconRefresh class="mr-2 w-4 h-4" :class="{ 'animate-spin': isLoading }" />
             {{ isLoading ? 'Memproses...' : 'Scan Produk Digiflazz' }}
           </button>
         </template>

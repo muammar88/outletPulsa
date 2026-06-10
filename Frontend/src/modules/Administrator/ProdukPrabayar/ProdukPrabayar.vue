@@ -349,10 +349,10 @@ onMounted(() => {
       <template #cell-action="{ row }">
         <div class="flex justify-center gap-2 items-center transition-opacity duration-200">
           <LightButton @click="handlePilihServer(row)" title="Pilih Server Aktif" class="hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all">
-            <IconPlug />
+            <IconPlug class="w-4 h-4" />
           </LightButton>
           <LightButton @click="handleDetail(row)" title="Detail Produk" class="hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all">
-            <IconListDetails />
+            <IconListDetails class="w-4 h-4" />
           </LightButton>
           <LightButton @click="handleEdit(row)" title="Edit Produk" class="hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-all">
             <EditIcon />
