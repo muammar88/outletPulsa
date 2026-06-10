@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { IconRefresh } from '@tabler/icons-vue';
+
 import { usePagination } from '@/composables/usePaginations';
 import { useNotification } from '@/composables/useNotification';
 import { useConfirmation } from '@/composables/useConfirmation';
@@ -87,24 +89,26 @@ const fetchData = async (keyword?: string | Event) => {
 };
 
 const handleSync = () => {
-  confirmTitle.value = 'Scan Produk Digiflazz';
-  confirmMessage.value = 'Apakah Anda yakin ingin melakukan sinkronisasi produk dari Digiflazz? Proses ini mungkin memerlukan waktu beberapa saat.';
   confirmButtonText.value = 'Ya, Sinkronkan';
   confirmButtonClass.value = 'bg-emerald-600 hover:bg-emerald-700 shadow-[0_0_15px_rgba(5,150,105,0.5)]';
   
-  showConfirmDialog(async () => {
-    isLoading.value = true;
-    try {
-      const response = await daftarProdukSellerDigiflazzService.sync();
-      displayNotification('success', response.data.message || 'Sinkronisasi berhasil dilakukan');
-      fetchSellers();
-      fetchData();
-    } catch (error: any) {
-      displayNotification('error', error.response?.data?.message || 'Gagal melakukan sinkronisasi');
-    } finally {
-      isLoading.value = false;
+  displayConfirmation(
+    'Scan Produk Digiflazz',
+    'Apakah Anda yakin ingin melakukan sinkronisasi produk dari Digiflazz? Proses ini mungkin memerlukan waktu beberapa saat.',
+    async () => {
+      isLoading.value = true;
+      try {
+        const response = await daftarProdukSellerDigiflazzService.sync();
+        displayNotification( response.data.message || 'Sinkronisasi berhasil dilakukan', 'success');
+        fetchSellers();
+        fetchData();
+      } catch (error: any) {
+        displayNotification(error.response?.data?.message || 'Gagal melakukan sinkronisasi', 'error');
+      } finally {
+        isLoading.value = false;
+      }
     }
-  });
+  );
 };
 
 const paginationProps = ref({
@@ -179,7 +183,7 @@ onMounted(() => {
             class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
             :disabled="isLoading"
           >
-            <i class="fas fa-sync-alt mr-2" :class="{ 'animate-spin': isLoading }"></i>
+            <IconRefresh class=" mr-2" :class="{ 'animate-spin': isLoading }" size="18" />
             {{ isLoading ? 'Memproses...' : 'Scan Produk Digiflazz' }}
           </button>
         </template>

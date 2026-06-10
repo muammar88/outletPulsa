@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { IconListDetails, IconList } from '@tabler/icons-vue';
+
 import { useConfirmation } from '@/composables/useConfirmation';
 import { useNotification } from '@/composables/useNotification';
 import { usePagination } from '@/composables/usePaginations';
@@ -13,7 +15,6 @@ import BaseTable from '@/components/Table/BaseTable.vue';
 import Confirmation from '@/components/Modal/Confirmation.vue';
 import Notification from '@/components/Modal/Notification.vue';
 import LightButton from '@/components/Button/LightButton.vue';
-import IconDetail from '@/components/Icons/IconDetail.vue';
 
 import { kategoriPascabayarTripayService, type KategoriPascabayarTripay } from '@/service/administrator/kategoriPascabayarTripay';
 import dayjs from 'dayjs';
@@ -152,7 +153,7 @@ onMounted(() => {
         <template #cell-action="{ row }">
           <div class="flex justify-center gap-2">
             <LightButton @click="handleDetail(row)" title="Detail Kategori">
-              <IconDetail />
+              <IconListDetails />
             </LightButton>
           </div>
         </template>

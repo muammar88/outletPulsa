@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { IconListDetails, IconPlug, IconList } from '@tabler/icons-vue';
+
 import { useConfirmation } from '@/composables/useConfirmation';
 import { useNotification } from '@/composables/useNotification';
 import { usePagination } from '@/composables/usePaginations';
@@ -18,8 +20,6 @@ import LightButton from '@/components/Button/LightButton.vue';
 import BaseButton from '@/components/Button/BaseButton.vue';
 import DeleteIcon from '@/components/Icons/DeleteIcon.vue';
 import EditIcon from '@/components/Icons/EditIcon.vue';
-import IconDetail from '@/components/Icons/IconDetail.vue';
-import IconEcosystem from '@/components/Icons/IconEcosystem.vue';
 
 import { ProdukPrabayarService } from './services/ProdukPrabayarService';
 import type { Produk } from './types/ProdukPrabayar';
@@ -349,10 +349,10 @@ onMounted(() => {
       <template #cell-action="{ row }">
         <div class="flex justify-center gap-2 items-center transition-opacity duration-200">
           <LightButton @click="handlePilihServer(row)" title="Pilih Server Aktif" class="hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all">
-            <IconEcosystem />
+            <IconPlug />
           </LightButton>
           <LightButton @click="handleDetail(row)" title="Detail Produk" class="hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all">
-            <IconDetail />
+            <IconListDetails />
           </LightButton>
           <LightButton @click="handleEdit(row)" title="Edit Produk" class="hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-all">
             <EditIcon />

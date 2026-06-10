@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { IconCash } from '@tabler/icons-vue';
+
 import { useConfirmation } from '@/composables/useConfirmation';
 import { useNotification } from '@/composables/useNotification';
 import { usePagination } from '@/composables/usePaginations';
@@ -21,7 +23,6 @@ import LightButton from '@/components/Button/LightButton.vue';
 import DeleteIcon from '@/components/Icons/DeleteIcon.vue';
 import EditIcon from '@/components/Icons/EditIcon.vue';
 import TieIcon from '@/components/Icons/TieIcon.vue';
-import IconMoney from '@/components/Icons/IconMoney.vue';
 import { memberService, type Member } from '@/service/administrator/member';
 
 const {
@@ -272,7 +273,7 @@ onMounted(() => {
       <template #cell-action="{ row }">
         <div class="flex justify-center gap-2">
           <LightButton @click="handleTambahSaldo(row)" title="Tambah Saldo"
-            ><IconMoney></IconMoney
+            ><IconCash></IconMoney
           ></LightButton>
           <LightButton v-if="row.status === 'verfied'" @click="handleSetAgen(row)" title="Set Kode Agen"
             ><TieIcon></TieIcon

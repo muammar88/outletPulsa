@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { IconListDetails, IconList } from '@tabler/icons-vue';
+
 import { useConfirmation } from '@/composables/useConfirmation';
 import { useNotification } from '@/composables/useNotification';
 import { usePagination } from '@/composables/usePaginations';
@@ -13,7 +15,6 @@ import BaseTable from '@/components/Table/BaseTable.vue';
 import Confirmation from '@/components/Modal/Confirmation.vue';
 import Notification from '@/components/Modal/Notification.vue';
 import LightButton from '@/components/Button/LightButton.vue';
-import IconDetail from '@/components/Icons/IconDetail.vue';
 
 import { operatorPrabayarTripayService, type OperatorPrabayarTripay } from '@/service/administrator/operatorPrabayarTripay';
 import { kategoriPrabayarTripayService, type KategoriPrabayarTripay } from '@/service/administrator/kategoriPrabayarTripay';
@@ -219,7 +220,7 @@ onMounted(() => {
         <template #cell-action="{ row }">
           <div class="flex justify-center gap-2">
             <LightButton @click="handleDetail(row)" title="Detail Operator">
-              <IconDetail />
+              <IconListDetails />
             </LightButton>
           </div>
         </template>

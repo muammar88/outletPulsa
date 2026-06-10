@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { IconListDetails, IconList } from '@tabler/icons-vue';
+
 import { ref, onMounted, computed } from 'vue';
 
 import { useNotification } from '@/composables/useNotification';
@@ -10,7 +12,6 @@ import Notification from '@/components/Modal/Notification.vue';
 import Confirmation from '@/components/Modal/Confirmation.vue';
 import DeleteIcon from '@/components/Icons/DeleteIcon.vue';
 import EditIcon from '@/components/Icons/EditIcon.vue';
-import IconDetail from '@/components/Icons/IconDetail.vue';
 import PowerIcon from '@/components/Icons/PowerIcon.vue';
 import DangerButton from '@/components/Button/DangerButton.vue';
 import LightButton from '@/components/Button/LightButton.vue';
@@ -291,7 +292,7 @@ onMounted(() => {
         <template #cell-action="{ row }">
           <div class="flex justify-center gap-2">
             <LightButton @click="handleDetail(row)" title="Detail"
-              ><IconDetail></IconDetail
+              ><IconListDetails></IconDetail
             ></LightButton>
           </div>
         </template>

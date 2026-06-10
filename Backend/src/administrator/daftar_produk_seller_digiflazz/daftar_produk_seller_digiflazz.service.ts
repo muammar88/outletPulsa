@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
 import { GetProdukSellerDigiflazzDto } from './dto/get-produk-seller-digiflazz.dto';
 import * as crypto from 'crypto';
@@ -99,14 +99,18 @@ export class DaftarProdukSellerDigiflazzService {
       if (opJson.data && Array.isArray(opJson.data)) {
         digiflazzData = opJson.data;
       } else {
-        throw new Error('Format response Digiflazz tidak valid atau data kosong.');
+        const digiflazzMessage = opJson.data?.message || opJson.message || JSON.stringify(opJson);
+        throw new BadRequestException(`Format response Digiflazz tidak valid. Pesan dari server: ${digiflazzMessage}`);
       }
     } catch (err: any) {
       this.logger.error(`[DIGIFLAZZ SYNC] Gagal fetch ke Digiflazz: ${err.message}`);
-      throw new Error(`Gagal menghubungi server Digiflazz: ${err.message}`);
+      if (err instanceof BadRequestException) throw err;
+      throw new BadRequestException(`Gagal menghubungi server Digiflazz: ${err.message}`);
     }
 
     this.logger.log(`[DIGIFLAZZ SYNC] Berhasil mengumpulkan ${digiflazzData.length} produk dari server Digiflazz.`);
+
+
 
     // ==========================================
     // PHASE 2 - MAP EXISTING DATA
@@ -173,6 +177,10 @@ export class DaftarProdukSellerDigiflazzService {
 
     // Loop 1: Find unrecorded relations
     for (const apiProd of digiflazzData) {
+
+      console.log("!!-------!!");
+      console.log(apiProd);
+      console.log("!!-------!!");
       const e_category = (apiProd.category || '').trim().replace(/\s/g, "_");
       const e_brand = (apiProd.brand || '').trim().replace(/\s/g, "_");
       const e_type = (apiProd.type || '').trim().replace(/\s/g, "_");
@@ -259,10 +267,12 @@ export class DaftarProdukSellerDigiflazzService {
     // Loop 3: Upsert Seller Products
     const dummyDate = "1970-01-01T";
     const parseTime = (timeStr: string) => {
-      if (!timeStr) return null;
+      if (!timeStr || timeStr === "-" || timeStr === "") return null;
       try {
         // timeStr usually "23:00" or "02:00"
-        return new Date(`${dummyDate}${timeStr.trim()}:00.000Z`);
+        const d = new Date(`${dummyDate}${timeStr.trim()}:00.000Z`);
+        if (isNaN(d.getTime())) return null;
+        return d;
       } catch (e) {
         return null;
       }

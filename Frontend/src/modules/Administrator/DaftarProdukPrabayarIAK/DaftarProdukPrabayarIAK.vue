@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { IconListDetails, IconPlug, IconList } from '@tabler/icons-vue';
+
 import { usePagination } from '@/composables/usePaginations';
 import { useConfirmation } from '@/composables/useConfirmation';
 import { useNotification } from '@/composables/useNotification';
@@ -6,8 +8,6 @@ import { onMounted, ref, computed } from 'vue';
 import BaseTable from '@/components/Table/BaseTable.vue';
 import Confirmation from '@/components/Modal/Confirmation.vue';
 import Notification from '@/components/Modal/Notification.vue';
-import IconEcosystem from '@/components/Icons/IconEcosystem.vue';
-import IconDetail from '@/components/Icons/IconDetail.vue';
 import LightButton from '@/components/Button/LightButton.vue';
 import DaftarprodukPrabayarIakDetailModal from './components/DaftarprodukPrabayarIakDetailModal.vue';
 import DaftarprodukPrabayarIakKoneksiModal from './components/DaftarprodukPrabayarIakKoneksiModal.vue';
@@ -308,7 +308,7 @@ onMounted(() => {
               class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
               :disabled="isLoading"
             >
-              <IconEcosystem v-if="!isLoading" class="w-4 h-4 mr-2" />
+              <IconPlug v-if="!isLoading" class="w-4 h-4 mr-2" />
               <svg v-else class="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -371,10 +371,10 @@ onMounted(() => {
           <template #cell-action="{ row }">
             <div class="flex justify-center gap-2">
               <LightButton @click="handleDetail(row)" title="Lihat Detail Produk Prabayar">
-                <IconDetail class="w-4 h-4" />
+                <IconListDetails class="w-4 h-4" />
               </LightButton>
               <LightButton @click="handleKoneksi(row)" title="Koneksikan Produk Prabayar Internal">
-                <IconEcosystem class="w-4 h-4" />
+                <IconPlug class="w-4 h-4" />
               </LightButton>
             </div>
           </template>

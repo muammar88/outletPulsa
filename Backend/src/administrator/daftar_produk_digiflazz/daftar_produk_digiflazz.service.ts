@@ -1,0 +1,213 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { PrismaService } from '../../prisma.service';
+import { GetDigiflazzProductDto } from './dto/get-digiflazz-product.dto';
+
+@Injectable()
+export class DaftarProdukDigiflazzService {
+  private readonly logger = new Logger(DaftarProdukDigiflazzService.name);
+
+  constructor(private readonly prisma: PrismaService) {}
+
+  async findAll(query: GetDigiflazzProductDto) {
+    const page = parseInt(query.page || '1', 10);
+    const limit = parseInt(query.limit || '100', 10);
+    const search = query.search || '';
+    
+    const kategoriId = query.kategoriId ? parseInt(query.kategoriId, 10) : undefined;
+    const brandId = query.brandId ? parseInt(query.brandId, 10) : undefined;
+    const typeId = query.typeId ? parseInt(query.typeId, 10) : undefined;
+
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { selectedSellerBuyerSkuKode: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (kategoriId) {
+      where.categoryId = kategoriId;
+    }
+    
+    if (brandId) {
+      where.brandId = brandId;
+    }
+
+    if (typeId) {
+      where.typeId = typeId;
+    }
+
+    if (query.connectionStatus) {
+      if (query.connectionStatus === 'connected') {
+        where.produkId = { not: null };
+      } else if (query.connectionStatus === 'disconnected') {
+        where.produkId = null;
+      }
+    }
+
+    if (query.status) {
+      where.status = query.status;
+    }
+
+    const [list, total] = await Promise.all([
+      this.prisma.digiflazzProduct.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { selectedSellerPrice: 'asc' },
+        include: {
+          category: true,
+          brand: true,
+          type: true,
+          produk: true, // internal product connection
+          digiflazzSellerProducts: {
+            include: { digiflazzSeller: true }
+          },
+          _count: {
+            select: {
+              digiflazzSellerProducts: true,
+            },
+          },
+        },
+      }),
+      this.prisma.digiflazzProduct.count({ where }),
+    ]);
+
+    return {
+      list,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      }
+    };
+  }
+
+  async getFilters() {
+    // Return unique categories, brands, and types for the frontend filters
+    const [categories, brands, types] = await Promise.all([
+      this.prisma.digiflazzCategory.findMany({ orderBy: { name: 'asc' } }),
+      this.prisma.digiflazzBrand.findMany({ orderBy: { name: 'asc' } }),
+      this.prisma.digiflazzType.findMany({ orderBy: { name: 'asc' } }),
+    ]);
+
+    return {
+      categories,
+      brands,
+      types
+    };
+  }
+
+  async selectCheapestSeller() {
+    this.logger.log('Memulai proses pemilihan produk seller termurah...');
+    
+    const digiflazzProducts = await this.prisma.digiflazzProduct.findMany({
+      include: {
+        digiflazzSellerProducts: {
+          where: {
+            sellerProductStatus: true,
+            digiflazzSeller: {
+              status: 'unbanned',
+            },
+          },
+          orderBy: {
+            price: 'asc',
+          },
+          take: 1,
+        },
+      },
+    });
+
+    let totalProcessed = digiflazzProducts.length;
+    let totalUpdated = 0;
+    let totalSkipped = 0;
+
+    const updateOperations: any[] = [];
+
+    for (const product of digiflazzProducts) {
+      if (product.digiflazzSellerProducts.length > 0) {
+        const cheapestSellerProduct = product.digiflazzSellerProducts[0];
+        
+        if (
+          product.selectedSellerBuyerSkuKode !== cheapestSellerProduct.buyerSkuKode ||
+          product.selectedSellerPrice !== cheapestSellerProduct.price
+        ) {
+          updateOperations.push(
+            this.prisma.digiflazzProduct.update({
+              where: { id: product.id },
+              data: {
+                selectedSellerBuyerSkuKode: cheapestSellerProduct.buyerSkuKode,
+                selectedSellerPrice: cheapestSellerProduct.price,
+              },
+            })
+          );
+        }
+        totalUpdated++;
+      } else {
+        totalSkipped++;
+      }
+    }
+
+    if (updateOperations.length > 0) {
+      const chunkSize = 500;
+      for (let i = 0; i < updateOperations.length; i += chunkSize) {
+        const chunk = updateOperations.slice(i, i + chunkSize);
+        await this.prisma.$transaction(chunk);
+      }
+    }
+
+    this.logger.log(`Proses selesai. Processed: ${totalProcessed}, Updated: ${totalUpdated}, Skipped: ${totalSkipped}`);
+
+    return {
+      totalProcessed,
+      totalUpdated,
+      totalSkipped,
+    };
+  }
+
+  async getInternalOperators(search?: string) {
+    const where: any = {};
+    if (search) {
+      where.name = { contains: search, mode: 'insensitive' };
+    }
+    return this.prisma.operator.findMany({
+      where,
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async getInternalProducts(operatorId: number, search?: string) {
+    const where: any = { operatorId };
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { kode: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+    return this.prisma.produk.findMany({
+      where,
+      orderBy: { purchase_price: 'asc' },
+    });
+  }
+
+  async connectProduct(id: number, produkId: number) {
+    return this.prisma.digiflazzProduct.update({
+      where: { id },
+      data: { produkId },
+    });
+  }
+
+  async getConnectedSellers(id: number) {
+    return this.prisma.digiflazzSellerProduct.findMany({
+      where: { productDigiflazzId: id },
+      include: {
+        digiflazzSeller: true,
+      },
+      orderBy: { price: 'asc' },
+    });
+  }
+}

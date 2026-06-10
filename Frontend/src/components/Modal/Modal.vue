@@ -25,7 +25,8 @@
         <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
         <div
-          class="relative inline-block transform rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:align-middle max-w-lg"
+          class="relative inline-block transform rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:align-middle"
+          :class="maxWidthClass"
         >
           <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 rounded-t-lg">
             <div class="sm:flex sm:items-start">
@@ -59,6 +60,10 @@ defineProps({
     type: String,
     default: '',
   },
+  maxWidthClass: {
+    type: String,
+    default: 'max-w-lg',
+  }
 });
 
 defineEmits(['close']);

@@ -24,6 +24,11 @@ export class DaftarSellerDigiflazzService {
         skip,
         take: limit,
         orderBy: { name: 'asc' },
+        include: {
+          _count: {
+            select: { digiflazzSellerProducts: true }
+          }
+        }
       }),
       this.prisma.digiflazzSeller.count({ where }),
     ]);
