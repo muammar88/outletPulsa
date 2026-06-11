@@ -6,4 +6,7 @@ export const daftarSellerDigiflazzService = {
       params: { search: searchQuery, limit, page },
     });
   },
+  updateStatus: async (id: number, status: 'banned' | 'unbanned') => {
+    return await api.patch(`/administrator/daftar-seller-digiflazz/${id}/status`, { status });
+  },
 };

@@ -25,6 +25,11 @@ export class SemuaServerController {
     );
   }
 
+  @Get('balances')
+  getBalances() {
+    return this.semuaServerService.getBalances();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.semuaServerService.findOne(+id);

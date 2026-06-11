@@ -219,6 +219,14 @@ export default async function tabSeed(prisma: PrismaClient) {
         created_at: new Date(),
         updated_at: new Date(), 
       },
+      { 
+        name: 'Riwayat Transfer Saldo', 
+        icon: 'users',
+        path: 'riwayat_transfer_saldo',
+        desc: 'Riwayat Transfer Saldo',
+        created_at: new Date(),
+        updated_at: new Date(), 
+      },
     ],
     skipDuplicates: true,
   });

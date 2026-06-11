@@ -41,4 +41,16 @@ export class DaftarSellerDigiflazzService {
       totalPages: Math.ceil(total / limit),
     };
   }
+
+  async updateStatus(id: number, status: 'banned' | 'unbanned') {
+    const seller = await this.prisma.digiflazzSeller.findUnique({ where: { id } });
+    if (!seller) {
+      throw new Error('Seller tidak ditemukan');
+    }
+    
+    return await this.prisma.digiflazzSeller.update({
+      where: { id },
+      data: { status },
+    });
+  }
 }

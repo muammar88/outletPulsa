@@ -27,6 +27,10 @@ export const depositService = {
     return await api.get(`/administrator/deposit/${id}`);
   },
 
+  manualDeposit: (data: { memberId: number; nominal: number; ket?: string }) => {
+    return api.post('/administrator/deposit/manual', data);
+  },
+
   create: async (data: Partial<RiwayatSaldo>) => {
     return await api.post('/administrator/deposit', data);
   },

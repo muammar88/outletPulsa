@@ -32,9 +32,11 @@ import { DaftarSellerDigiflazzModule } from './daftar_seller_digiflazz/daftar_se
 import { DaftarProdukSellerDigiflazzModule } from './daftar_produk_seller_digiflazz/daftar_produk_seller_digiflazz.module';
 
 import { DaftarProdukDigiflazzModule } from './daftar_produk_digiflazz/daftar_produk_digiflazz.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { RiwayatTransferSaldoModule } from './riwayat_transfer_saldo/riwayat_transfer_saldo.module';
 
 @Module({
-  imports: [AuthModule, MenuModule, DaftarMemberModule, DaftarAgenModule, TransaksiPulsaModule, ProdukPrabayarModule, ProdukPascabayarModule, SemuaServerModule, PengaturanUmumModule, KategoriModule, OperatorModule, DepositModule, LogModule, DaftarGrupModule, DaftarPenggunaModule, TripayModule, DaftarProdukPrabayarTripayModule, DaftarProdukPascabayarTripayModule, KategoriPrabayarTripayModule, OperatorPrabayarTripayModule, KategoriPascabayarTripayModule, OperatorPascabayarTripayModule, DaftarTypeIakModule, DaftarOperatorIakModule, DaftarProdukPrabayarIakModule, DaftarProdukPascabayarIakModule, DaftarSellerDigiflazzModule, DaftarProdukSellerDigiflazzModule, DaftarProdukDigiflazzModule],
+  imports: [AuthModule, MenuModule, DaftarMemberModule, DaftarAgenModule, TransaksiPulsaModule, ProdukPrabayarModule, ProdukPascabayarModule, SemuaServerModule, PengaturanUmumModule, KategoriModule, OperatorModule, DepositModule, LogModule, DaftarGrupModule, DaftarPenggunaModule, TripayModule, DaftarProdukPrabayarTripayModule, DaftarProdukPascabayarTripayModule, KategoriPrabayarTripayModule, OperatorPrabayarTripayModule, KategoriPascabayarTripayModule, OperatorPascabayarTripayModule, DaftarTypeIakModule, DaftarOperatorIakModule, DaftarProdukPrabayarIakModule, DaftarProdukPascabayarIakModule, DaftarSellerDigiflazzModule, DaftarProdukSellerDigiflazzModule, DaftarProdukDigiflazzModule, DashboardModule, RiwayatTransferSaldoModule],
   controllers: [AdministratorController],
   providers: [AdministratorService],
 })

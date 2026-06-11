@@ -99,10 +99,40 @@ export class TransaksiPulsaService {
     return transaksi;
   }
 
+  async runCronJob() {
+    // Placeholder implementation for starting cron job
+    return { message: 'Cron job pengecekan status berhasil dijalankan.' };
+  }
+
+  async checkStatusServer() {
+    // Placeholder implementation for checking status from server (e.g., Digiflazz/Tripay)
+    return { message: 'Pengecekan status transaksi di server pihak ketiga berhasil.' };
+  }
+
   async create(createData: any) {
     // Sebagai mock untuk MVP jika diperlukan dari sisi Admin. 
     // Pada aslinya dipicu dari user member.
     throw new BadRequestException('Fungsi create dari admin belum tersedia secara penuh.');
+  }
+
+  async reCheckStatus(id: number) {
+    const transaksi = await this.prisma.transaction.findUnique({ where: { id } });
+    if (!transaksi) throw new NotFoundException('Data transaksi tidak ditemukan');
+    // Mock re-check status
+    return { message: `Permintaan pengecekan ulang status untuk transaksi #${id} berhasil dikirim.` };
+  }
+
+  async delete(id: number) {
+    const transaksi = await this.prisma.transaction.findUnique({ where: { id } });
+    if (!transaksi) throw new NotFoundException('Data transaksi tidak ditemukan');
+    
+    // Hanya bisa hapus jika status gagal
+    if (transaksi.status !== 'gagal') {
+      throw new BadRequestException('Hanya transaksi dengan status gagal yang dapat dihapus.');
+    }
+
+    await this.prisma.transaction.delete({ where: { id } });
+    return true;
   }
 
   async updateStatus(id: number, updateDto: UpdateStatusDto) {

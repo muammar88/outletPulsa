@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import dayjs from 'dayjs';
+import Modal from '@/components/Modal/Modal.vue';
+import SecondaryButton from '@/components/Button/SecondaryButton.vue';
 
 const props = defineProps<{
   show: boolean;
@@ -17,18 +19,9 @@ const formatCurrency = (value: number) =>
 </script>
 
 <template>
-  <div
-    v-if="show"
-    class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm overflow-y-auto"
-    @click.self="emit('close')"
-  >
-    <div
-      class="bg-white rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden my-8 transform transition-all flex flex-col max-h-[90vh]"
-      role="dialog"
-      aria-modal="true"
-    >
-      <!-- Premium Header -->
-      <div class="relative bg-[#0f2155] px-6 py-8 overflow-hidden shrink-0">
+  <Modal :show="show" @close="emit('close')" max-widthClass="max-w-4xl">
+    <!-- Premium Header -->
+    <div class="relative bg-[#0f2155] px-6 py-8 overflow-hidden shrink-0 -mt-6 -mx-6 rounded-t-lg">
         <!-- Abstract background pattern -->
         <div class="absolute inset-0 opacity-10">
           <svg class="absolute h-full w-full" xmlns="http://www.w3.org/2000/svg">
@@ -170,8 +163,11 @@ const formatCurrency = (value: number) =>
           </div>
 
         </div>
+        </div>
       </div>
-      
-    </div>
-  </div>
+
+    <template #footer>
+      <SecondaryButton @click="emit('close')">Tutup</SecondaryButton>
+    </template>
+  </Modal>
 </template>

@@ -19,6 +19,26 @@ export class TransaksiPulsaController {
     };
   }
 
+  @Get('run-cron-job')
+  async runCronJob() {
+    const result = await this.transaksiPulsaService.runCronJob();
+    return {
+      message: result.message,
+      error: null,
+      data: null,
+    };
+  }
+
+  @Get('check-status-server')
+  async checkStatusServer() {
+    const result = await this.transaksiPulsaService.checkStatusServer();
+    return {
+      message: result.message,
+      error: null,
+      data: null,
+    };
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const data = await this.transaksiPulsaService.findOne(+id);
@@ -34,6 +54,26 @@ export class TransaksiPulsaController {
     const data = await this.transaksiPulsaService.create(createData);
     return {
       message: 'Transaksi berhasil dibuat',
+      error: null,
+      data,
+    };
+  }
+
+  @Post(':id/check-status')
+  async reCheckStatus(@Param('id') id: string) {
+    const data = await this.transaksiPulsaService.reCheckStatus(+id);
+    return {
+      message: data.message,
+      error: null,
+      data: null,
+    };
+  }
+
+  @Post('delete')
+  async deleteTransaksi(@Body('id') id: number) {
+    const data = await this.transaksiPulsaService.delete(+id);
+    return {
+      message: 'Transaksi berhasil dihapus',
       error: null,
       data,
     };

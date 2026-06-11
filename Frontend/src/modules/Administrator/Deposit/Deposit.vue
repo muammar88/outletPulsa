@@ -9,12 +9,14 @@ import BaseTable from '@/components/Table/BaseTable.vue';
 // Modal
 import Confirmation from '@/components/Modal/Confirmation.vue';
 import Notification from '@/components/Modal/Notification.vue';
-// Button
 import DangerButton from '@/components/Button/DangerButton.vue';
 import LightButton from '@/components/Button/LightButton.vue';
 // Icon
 import DeleteIcon from '@/components/Icons/DeleteIcon.vue';
 import { depositService, type RiwayatSaldo } from '@/service/administrator/deposit';
+import DepositManualModal from './components/DepositManualModal.vue';
+
+const showDepositModal = ref(false);
 
 const {
   showNotification,
@@ -213,7 +215,9 @@ onMounted(() => {
       :showNumbering="false"
       :showActions="false"
       :showSearch="false"
-      :showAdd="false"
+      :showAdd="true"
+      addLabel="Tambah Saldo"
+      @add="showDepositModal = true"
     >
       <template #filters>
         <div class="inline-flex rounded-xl shadow-sm" role="group">
@@ -307,6 +311,14 @@ onMounted(() => {
         {{ confirmButtonText }}
       </button>
     </Confirmation>
+
+    <!-- Deposit Manual Modal -->
+    <DepositManualModal
+      v-if="showDepositModal"
+      :show="showDepositModal"
+      @close="showDepositModal = false"
+      @success="() => { showDepositModal = false; displayNotification('Berhasil menambahkan saldo member', 'success'); fetchData(); }"
+    />
   </div>
 </template>
 

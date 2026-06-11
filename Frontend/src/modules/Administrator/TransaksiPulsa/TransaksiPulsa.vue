@@ -10,7 +10,11 @@ import TransaksiDetailModal from '@/modules/Administrator/TransaksiPulsa/compone
 import LightButton from '@/components/Button/LightButton.vue';
 // Icon
 import InfoIcon from '@/components/Icons/InfoIcon.vue';
+import { useNotification } from '@/composables/useNotification';
+import Notification from '@/components/Modal/Notification.vue';
 import { transaksiPulsaService } from '@/service/administrator/transaksi_pulsa';
+import { IconClockPlay, IconServerCog, IconX, IconChecks } from '@tabler/icons-vue';
+import BaseButton from '@/components/Button/BaseButton.vue';
 
 // Definisi Kolom Tabel & Interface
 const tableColumns = [
@@ -68,6 +72,17 @@ const dataTransaksi = ref<any[]>([]);
 const isLoading = ref(false);
 const searchQuery = ref('');
 const statusFilter = ref('');
+
+const isCronLoading = ref(false);
+const isStatusLoading = ref(false);
+
+const {
+  showNotification,
+  notificationType,
+  notificationMessage,
+  displayNotification,
+  hideNotification,
+} = useNotification();
 
 // Modal State
 const showDetailModal = ref(false);
@@ -140,6 +155,53 @@ const applyFilter = () => {
   fetchData();
 };
 
+const handleRunCron = async () => {
+  isCronLoading.value = true;
+  try {
+    const res = await transaksiPulsaService.runCronJob();
+    displayNotification(res.data?.message || 'Cron job berhasil dijalankan', 'success');
+  } catch (error: any) {
+    displayNotification(error.response?.data?.message || 'Gagal menjalankan cron job', 'error');
+  } finally {
+    isCronLoading.value = false;
+  }
+};
+
+const handleCheckStatus = async () => {
+  isStatusLoading.value = true;
+  try {
+    const res = await transaksiPulsaService.checkStatusServer();
+    displayNotification(res.data?.message || 'Berhasil memeriksa status di server', 'success');
+    fetchData();
+  } catch (error: any) {
+    displayNotification(error.response?.data?.message || 'Gagal memeriksa status di server', 'error');
+  } finally {
+    isStatusLoading.value = false;
+  }
+};
+
+const handleDeleteTransaksi = async (id: number) => {
+  if (confirm('Apakah Anda Yakin Untuk Menghapus Transaksi Ini?')) {
+    try {
+      const res = await transaksiPulsaService.delete(id);
+      displayNotification(res.data?.message || 'Transaksi berhasil dihapus', 'success');
+      fetchData();
+    } catch (error: any) {
+      displayNotification(error.response?.data?.message || 'Gagal menghapus transaksi', 'error');
+    }
+  }
+};
+
+const handleCheckStatusTransaksi = async (id: number) => {
+  try {
+    const res = await transaksiPulsaService.reCheckStatus(id);
+    displayNotification(res.data?.message || 'Pengecekan status berhasil', 'success');
+    fetchData();
+  } catch (error: any) {
+    displayNotification(error.response?.data?.message || 'Gagal memeriksa status', 'error');
+  }
+};
+
 onMounted(() => {
   fetchData();
 });
@@ -147,7 +209,7 @@ onMounted(() => {
 
 <template>
   <div class="px-8 py-6">
-    <div class="mb-10 flex items-center justify-between">
+    <div class="mb-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
         <h1 class="text-3xl font-black font-semibold text-[#0f2155] dark:text-white mb-2 uppercase tracking-tight">
           Transaksi Pulsa
@@ -168,10 +230,36 @@ onMounted(() => {
       @page-change="pageNow"
       :showNumbering="false"
       :showActions="false"
-      :hideAddButton="true"
-      add-label="Tambah Transaksi Pulsa"
-      @add="handleAdd"
+      :showAdd="false"
     >
+      <template #custom-actions>
+        <!-- <BaseButton
+          variant="secondary"
+          size="md"
+          :loading="isCronLoading"
+          @click="handleRunCron"
+          class="uppercase tracking-wider text-sm font-bold"
+        >
+          <template #icon-left v-if="!isCronLoading">
+            <IconClockPlay class="h-4 w-4 mr-1.5 text-gray-700" />
+          </template>
+          Jalankan Cron Job
+        </BaseButton> -->
+
+        <BaseButton
+          variant="primary"
+          size="md"
+          :loading="isStatusLoading"
+          @click="handleCheckStatus"
+          class="uppercase tracking-wider text-sm font-bold shadow-[0_4px_12px_rgba(15,33,85,0.2)] hover:shadow-[0_6px_16px_rgba(15,33,85,0.3)]"
+        >
+          <template #icon-left v-if="!isStatusLoading">
+            <IconServerCog class="h-4 w-4 mr-1.5 text-white" />
+          </template>
+          Check Status Di Server
+        </BaseButton>
+      </template>
+
       <template #cell-kode="{ row }">
         <span class="text-sm font-medium text-gray-800">{{ row.kode || '-' }}</span>
       </template>
@@ -218,7 +306,31 @@ onMounted(() => {
       </template>
 
       <template #cell-action="{ row }">
-        <div class="flex justify-center gap-2">
+        <div class="flex justify-center gap-1 flex-wrap">
+          <LightButton 
+            v-if="row.status === 'gagal'" 
+            @click="handleDeleteTransaksi(row.id)" 
+            title="Delete Transaksi"
+          >
+            <IconX class="h-4 w-4 text-gray-700" />
+          </LightButton>
+
+          <LightButton 
+            v-else-if="row.status === 'proses'" 
+            @click="handleCheckStatusTransaksi(row.id)" 
+            title="Periksa Request"
+          >
+            <IconChecks class="h-4 w-4 text-gray-700" />
+          </LightButton>
+
+          <LightButton 
+            v-else 
+            @click="handleCheckStatusTransaksi(row.id)" 
+            title="Periksa Ulang Request"
+          >
+            <IconChecks class="h-4 w-4 text-gray-700" />
+          </LightButton>
+
           <LightButton @click="handleDetail(row)" title="Detail Transaksi">
             <InfoIcon />
           </LightButton>
@@ -235,6 +347,13 @@ onMounted(() => {
         selectedTransactionId = null;
         fetchData();
       "
+    />
+    <!-- Notification Modal -->
+    <Notification
+      :show-notification="showNotification"
+      :notification-type="notificationType"
+      :notification-message-html="notificationMessage"
+      @close="hideNotification"
     />
   </div>
 </template>

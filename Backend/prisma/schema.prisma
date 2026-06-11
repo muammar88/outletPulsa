@@ -21,6 +21,8 @@ model User {
 
   group        Group?        @relation(fields: [groupId], references: [id])
   activityLogs ActivityLog[]
+  riwayatTransferSaldos RiwayatTransferSaldoServer[]
+  riwayatSaldos         RiwayatSaldo[]
 }
 
 model Group {
@@ -154,7 +156,10 @@ model Server {
   transactionsPascabayar TransactionPascabayar[]
   produks                Produk[]
   produkPascabayars      ProdukPascabayar[]
+  riwayatTransferSaldoAsal   RiwayatTransferSaldoServer[] @relation("ServerAsal")
+  riwayatTransferSaldoTujuan RiwayatTransferSaldoServer[] @relation("ServerTujuan")
 }
+
 
 enum ServerStatus {
   active
@@ -335,6 +340,7 @@ model RiwayatTransaksi {
   amraRentalFees         AmraRentalFee[]
   transferSaldos         TransferSaldo[]
   terimaSaldos           TerimaSaldo[]
+  riwayatSaldos          RiwayatSaldo[]
 }
 
 enum TipeTransaksi {
@@ -398,6 +404,28 @@ model TerimaSaldo {
 
   riwayatTransaksi RiwayatTransaksi? @relation(fields: [riwayatTransaksiId], references: [id])
 }
+
+model RiwayatTransferSaldoServer {
+  id                 Int      @id @default(autoincrement())
+  trxId              String   @unique
+  serverAsalId       Int
+  serverTujuanId     Int
+  nominal            Int
+  saldoSebelumAsal   Int?
+  saldoSesudahAsal   Int?
+  saldoSebelumTujuan Int?
+  saldoSesudahTujuan Int?
+  status             String
+  keterangan         String?  @db.Text
+  userId             Int
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  serverAsal   Server @relation("ServerAsal", fields: [serverAsalId], references: [id])
+  serverTujuan Server @relation("ServerTujuan", fields: [serverTujuanId], references: [id])
+  user         User   @relation(fields: [userId], references: [id])
+}
+
 
 model Notif {
   id          Int      @id @default(autoincrement())
@@ -768,7 +796,12 @@ model RiwayatSaldo {
   created_at       DateTime           @default(now())
   updated_at       DateTime           @updatedAt
 
-  member Member @relation(fields: [member_id], references: [id])
+  riwayat_transaksi_id Int?
+  admin_id             Int?
+
+  member            Member            @relation(fields: [member_id], references: [id])
+  riwayat_transaksi RiwayatTransaksi? @relation(fields: [riwayat_transaksi_id], references: [id])
+  admin             User?             @relation(fields: [admin_id], references: [id])
 
   @@index([member_id])
   @@map("riwayat_saldo")

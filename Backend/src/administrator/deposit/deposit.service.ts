@@ -108,6 +108,58 @@ export class DepositService {
     });
   }
 
+  async manualDeposit(dto: import('./dto/deposit-manual.dto').DepositManualDto, adminId: number) {
+    if (dto.nominal <= 0) {
+      throw new BadRequestException('Nominal deposit harus lebih besar dari 0');
+    }
+
+    return await this.prisma.$transaction(async (prisma) => {
+      const member = await prisma.member.findUnique({
+        where: { id: dto.memberId },
+      });
+
+      if (!member) {
+        throw new NotFoundException(`Member with ID ${dto.memberId} not found`);
+      }
+
+      const saldoLama = member.saldo || 0;
+      const saldoBaru = saldoLama + dto.nominal;
+
+      // Buat RiwayatTransaksi
+      const riwayatTransaksi = await prisma.riwayatTransaksi.create({
+        data: {
+          memberId: member.id,
+          tipeTransaksi: 'deposit',
+        },
+      });
+
+      const generatedKode = `DEP-${Date.now()}`;
+
+      // Buat RiwayatSaldo
+      const riwayatSaldo = await prisma.riwayatSaldo.create({
+        data: {
+          kode: generatedKode,
+          member_id: member.id,
+          nominal: dto.nominal,
+          saldo_sebelumnya: saldoLama,
+          saldo_setelahnya: saldoBaru,
+          status: 'deposit',
+          ket: dto.ket || 'Deposit Manual oleh Administrator',
+          riwayat_transaksi_id: riwayatTransaksi.id,
+          admin_id: adminId,
+        },
+      });
+
+      // Update Saldo Member
+      await prisma.member.update({
+        where: { id: member.id },
+        data: { saldo: saldoBaru },
+      });
+
+      return { riwayatTransaksi, riwayatSaldo };
+    });
+  }
+
   async update(id: number, updateDepositDto: UpdateDepositDto) {
     const deposit = await this.findOne(id);
     

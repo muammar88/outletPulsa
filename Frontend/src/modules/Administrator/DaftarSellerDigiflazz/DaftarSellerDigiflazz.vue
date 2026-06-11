@@ -6,6 +6,7 @@ import { onMounted, ref } from 'vue';
 import BaseTable from '@/components/Table/BaseTable.vue';
 import { daftarSellerDigiflazzService } from '@/service/administrator/daftarSellerDigiflazz';
 import { daftarProdukSellerDigiflazzService } from '@/service/administrator/daftarProdukSellerDigiflazz';
+import { useNotification } from '@/composables/useNotification';
 import Modal from '@/components/Modal/Modal.vue';
 
 const tableColumns = [
@@ -56,6 +57,21 @@ const fetchData = async (keyword?: string | Event) => {
     console.error('Gagal mengambil data:', error);
   } finally {
     isLoading.value = false;
+  }
+};
+
+const notification = useNotification();
+
+const toggleStatus = async (row: any) => {
+  const newStatus = row.status === 'unbanned' ? 'banned' : 'unbanned';
+  const oldStatus = row.status;
+  try {
+    row.status = newStatus;
+    await daftarSellerDigiflazzService.updateStatus(row.id, newStatus);
+    notification.success({ message: `Status seller berhasil diubah menjadi ${newStatus}` });
+  } catch (error) {
+    row.status = oldStatus;
+    notification.error({ message: 'Gagal mengubah status seller' });
   }
 };
 
@@ -150,15 +166,23 @@ onMounted(() => {
         </template>
 
         <template #cell-status="{ row }">
-          <span
-            class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider"
-            :class="{
-              'bg-emerald-50 text-emerald-700 border border-emerald-200/60': row.status === 'unbanned',
-              'bg-rose-50 text-rose-700 border border-rose-200/60': row.status === 'banned'
-            }"
-          >
-            {{ row.status || 'UNKNOWN' }}
-          </span>
+          <div class="flex items-center justify-center">
+            <button 
+              type="button" 
+              class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[#0f2155]/50 focus:ring-offset-1"
+              :class="row.status === 'unbanned' ? 'bg-emerald-500' : 'bg-rose-500'"
+              @click="toggleStatus(row)"
+            >
+              <span class="sr-only">Toggle Status</span>
+              <span 
+                class="pointer-events-none relative inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                :class="row.status === 'unbanned' ? 'translate-x-4' : 'translate-x-0'"
+              ></span>
+            </button>
+            <span class="ml-2 text-xs font-bold uppercase tracking-wider" :class="row.status === 'unbanned' ? 'text-emerald-600' : 'text-rose-600'">
+              {{ row.status }}
+            </span>
+          </div>
         </template>
 
         <template #cell-actions="{ row }">

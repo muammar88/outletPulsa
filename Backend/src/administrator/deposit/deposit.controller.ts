@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Put, Param, Delete, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, Query, UseGuards, Req } from '@nestjs/common';
 import { DepositService } from './deposit.service';
 import { CreateDepositDto } from './dto/create-deposit.dto';
+import { DepositManualDto } from './dto/deposit-manual.dto';
 import { UpdateDepositDto } from './dto/update-deposit.dto';
 import { GetDepositDto } from './dto/get-deposit.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -9,6 +10,17 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 @UseGuards(JwtAuthGuard)
 export class DepositController {
   constructor(private readonly depositService: DepositService) {}
+
+  @Post('manual')
+  async manualDeposit(@Body() dto: DepositManualDto, @Req() req: any) {
+    const adminId = req.user.id;
+    const data = await this.depositService.manualDeposit(dto, adminId);
+    return {
+      message: 'Deposit manual berhasil diproses',
+      error: null,
+      data,
+    };
+  }
 
   @Get()
   async findAll(@Query() query: GetDepositDto) {

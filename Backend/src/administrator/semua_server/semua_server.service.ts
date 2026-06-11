@@ -94,5 +94,106 @@ export class SemuaServerService {
     }
   }
 
+  async getBalances() {
+    // Ambil server aktif
+    const servers = await this.prisma.server.findMany({
+      where: { status: 'active' }
+    });
+
+    const crypto = require('crypto');
+
+    // Jalankan request parallel
+    const promises = servers.map(async (server) => {
+      let balance = 0;
+      let isSuccess = false;
+      let errorMsg: string | null = null;
+
+      try {
+        if (server.kode === 'DIGI') {
+          const username = process.env.DIGIFLAZZ_USERNAME || 'gapajaD7VQKo';
+          const apiKey = process.env.DIGIFLAZZ_KEY || '39a2cc82-ffb3-5a56-9d99-59a9a49d99b3';
+          const sign = crypto.createHash('md5').update(username + apiKey + 'depo').digest('hex');
+          
+          const response = await fetch('https://api.digiflazz.com/v1/cek-saldo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ cmd: 'deposit', username, sign })
+          });
+          const json = await response.json();
+          if (json.data && json.data.deposit !== undefined) {
+            balance = json.data.deposit;
+            isSuccess = true;
+          } else {
+            errorMsg = 'Data saldo Digiflazz tidak valid';
+          }
+        } 
+        else if (server.kode === 'IAK') {
+          const username = process.env.IAK_USERNAME || '085262802141';
+          const apiKey = process.env.IAK_KEY || '472643293c215b8ayS8p';
+          const sign = crypto.createHash('md5').update(username + apiKey + 'bl').digest('hex');
+          
+          const response = await fetch('https://prepaid.iak.id/api/check-balance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ username, sign })
+          });
+          const json = await response.json();
+          if (json.data && json.data.balance !== undefined) {
+            balance = json.data.balance;
+            isSuccess = true;
+          } else {
+            errorMsg = 'Data saldo IAK tidak valid';
+          }
+        }
+        else if (server.kode === 'TRI') {
+          const apiKey = process.env.TRIPAY_KEY || '3SZA2ssdoqIzHJ39RNddeqDh9eO1OBMw';
+          
+          const response = await fetch('https://tripay.id/api/v2/ceksaldo', {
+            method: 'GET',
+            headers: { 
+              'Authorization': `Bearer ${apiKey}`,
+              'Content-Type': 'application/json', 
+              'Accept': 'application/json' 
+            }
+          });
+          const json = await response.json();
+          if (json.success && json.data !== undefined) {
+            balance = json.data;
+            isSuccess = true;
+          } else {
+            errorMsg = 'Data saldo Tripay tidak valid';
+          }
+        } else {
+          isSuccess = true;
+          balance = 0;
+        }
+      } catch (err: any) {
+        errorMsg = err.message;
+      }
+
+      return {
+        id: server.id,
+        kode: server.kode,
+        name: server.name,
+        status: isSuccess ? 'success' : 'error',
+        balance,
+        message: errorMsg,
+        lastUpdated: new Date().toISOString()
+      };
+    });
+
+    const results = await Promise.allSettled(promises);
+    
+    const finalData = results.map((result: any) => {
+      if (result.status === 'fulfilled') return result.value;
+      return { status: 'error', balance: 0, message: 'Promise rejected' };
+    });
+
+    return {
+      statusCode: 200,
+      message: 'Berhasil mengambil saldo server',
+      data: finalData
+    };
+  }
 
 }
