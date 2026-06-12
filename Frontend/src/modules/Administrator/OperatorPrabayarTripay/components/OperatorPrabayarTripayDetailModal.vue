@@ -163,7 +163,6 @@ const formatCurrency = (value: number) =>
           </div>
 
         </div>
-        </div>
       </div>
 
     <template #footer>

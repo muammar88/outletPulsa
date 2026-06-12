@@ -102,7 +102,6 @@ const totalProduk = computed(() => {
           </div>
         </div>
       </div>
-    </div>
     
     <template #footer>
       <SecondaryButton @click="emit('close')">Tutup</SecondaryButton>
