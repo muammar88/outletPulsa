@@ -9,8 +9,8 @@ import BaseTable from '@/components/Table/BaseTable.vue';
 import Confirmation from '@/components/Modal/Confirmation.vue';
 import Notification from '@/components/Modal/Notification.vue';
 import LightButton from '@/components/Button/LightButton.vue';
-import DaftarprodukPrabayarIakDetailModal from './components/DaftarprodukPrabayarIakDetailModal.vue';
-import DaftarprodukPrabayarIakKoneksiModal from './components/DaftarprodukPrabayarIakKoneksiModal.vue';
+import DaftarprodukPrabayarIakDetailModal from './components/DaftarProdukPrabayarIAKDetailModal.vue';
+import DaftarprodukPrabayarIakKoneksiModal from './components/DaftarProdukPrabayarIAKKoneksiModal.vue';
 import { produkPrabayarIakService } from '@/service/administrator/produkPrabayarIak';
 import { operatorIakService } from '@/service/administrator/operatorIak';
 

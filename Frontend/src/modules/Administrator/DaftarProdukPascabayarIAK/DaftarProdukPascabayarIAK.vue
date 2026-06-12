@@ -9,8 +9,8 @@ import BaseTable from '@/components/Table/BaseTable.vue';
 import Confirmation from '@/components/Modal/Confirmation.vue';
 import Notification from '@/components/Modal/Notification.vue';
 import LightButton from '@/components/Button/LightButton.vue';
-import DaftarprodukPascabayarIakDetailModal from './components/DaftarprodukPascabayarIakDetailModal.vue';
-import DaftarprodukPascabayarIakKoneksiModal from './components/DaftarprodukPascabayarIakKoneksiModal.vue';
+import DaftarprodukPascabayarIakDetailModal from './components/DaftarProdukPascabayarIAKDetailModal.vue';
+import DaftarprodukPascabayarIakKoneksiModal from './components/DaftarProdukPascabayarIAKKoneksiModal.vue';
 import { produkPascabayarIakService } from '@/service/administrator/produkPascabayarIak';
 
 const tableColumns = [
