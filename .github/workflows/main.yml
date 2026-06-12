@@ -1,0 +1,65 @@
+name: CI/CD Deploy Outlet Pulsa
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: './Backend/package-lock.json'
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_PASS }}
+
+      - name: Build and push Docker image backend
+        run: |
+          docker build \
+            --build-arg DATABASE_URL="postgresql://user:pass@localhost:5432/outletpulsa_db" \
+            -t muammar88/outletpulsa-backend:1.0.0 ./Backend
+            
+          docker push muammar88/outletpulsa-backend:1.0.0
+
+      - name: Build and push Docker image frontend
+        run: |
+          docker build \
+            --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} \
+            -t muammar88/outletpulsa-frontend:1.0.0 ./Frontend
+
+          docker push muammar88/outletpulsa-frontend:1.0.0
+
+      - name: Deploy to server via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.IP_SERVER_DATABASE_MACHINE }}
+          username: ${{ secrets.SSH_USER_DATABASE_MACHINE }}
+          key: ${{ secrets.SSH_PRIVATE_KEY_DATABASE_MACHINE }}
+          script: |
+            cd /home/vmmachine2/outletpulsa
+
+            echo "📥 Pull latest image"
+            docker pull muammar88/outletpulsa-frontend:1.0.0
+            docker pull muammar88/outletpulsa-backend:1.0.0
+
+            echo "♻️ Restart container"
+            docker compose down
+            docker compose up -d --force-recreate
+
+            # echo "📜 Run migration"
+            # docker exec -i selanga_backend npx prisma migrate reset --force
+
+            # echo "🌱 Generate Prisma Client"
+            # docker exec -i selanga_backend npx prisma generate
