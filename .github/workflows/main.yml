@@ -30,7 +30,7 @@ jobs:
           docker build \
             --build-arg DATABASE_URL="postgresql://user:pass@localhost:5432/outletpulsa_db" \
             -t muammar88/outletpulsa-backend:1.0.0 ./Backend
-            
+
           docker push muammar88/outletpulsa-backend:1.0.0
 
       - name: Build and push Docker image frontend
@@ -44,9 +44,9 @@ jobs:
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v1
         with:
-          host: ${{ secrets.IP_SERVER_DATABASE_MACHINE }}
-          username: ${{ secrets.SSH_USER_DATABASE_MACHINE }}
-          key: ${{ secrets.SSH_PRIVATE_KEY_DATABASE_MACHINE }}
+          host: ${{ secrets.IP_SERVER_MACHINE_2 }}
+          username: ${{ secrets.SSH_USER_SERVER_MACHINE_2 }}
+          key: ${{ secrets.SSH_PRIVATE_KEY_SERVER_MACHINE_2 }}
           script: |
             cd /home/vmmachine2/outletpulsa
 
@@ -59,7 +59,10 @@ jobs:
             docker compose up -d --force-recreate
 
             # echo "📜 Run migration"
-            # docker exec -i selanga_backend npx prisma migrate reset --force
+            # docker exec -i outletpulsa_backend npx prisma migrate reset --force
 
             # echo "🌱 Generate Prisma Client"
-            # docker exec -i selanga_backend npx prisma generate
+            # docker exec -i outletpulsa_backend npx prisma generate
+
+            # Contoh jika perlu menjalankan perintah pada frontend
+            # docker exec -i outletpulsa_frontend sh
