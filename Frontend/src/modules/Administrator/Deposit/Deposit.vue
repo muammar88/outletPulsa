@@ -79,8 +79,7 @@ const dataDeposit = ref<RiwayatSaldo[]>([]);
 const isLoading = ref(false);
 const searchQuery = ref('');
 
-// Filter Kategori
-const selectedKategori = ref('');
+
 
 // Inisialisasi Composable Pagination
 const { currentPage, totalPages, pages, totalRow, pageNow, perPage } = usePagination(
@@ -100,7 +99,7 @@ const fetchData = async (keyword?: string | Event) => {
       searchQuery.value,
       perPage.value,
       currentPage.value,
-      selectedKategori.value
+      'deposit'
     );
     dataDeposit.value = response.data.data.list;
     totalRow.value = response.data.data.total;
@@ -124,9 +123,7 @@ const onSearch = () => {
   }, 500);
 };
 
-watch(selectedKategori, () => {
-  applyFilter();
-});
+
 
 const paginationProps = ref({
   currentPage,
@@ -224,22 +221,11 @@ onMounted(() => {
           <input
             type="text"
             id="search"
-            class="relative block w-64 px-4 py-2.5 text-sm text-gray-800 bg-white border border-gray-200 rounded-s-xl hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200"
+            class="relative block w-64 px-4 py-2.5 text-sm text-gray-800 bg-white border border-gray-200 rounded-xl hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200"
             v-model="searchQuery"
             @input="onSearch"
             placeholder="Cari kode atau member..."
           />
-          <select
-            v-model="selectedKategori"
-            @change="applyFilter"
-            class="relative block w-48 px-4 py-2.5 text-sm text-gray-800 bg-white border-y border-r border-gray-200 rounded-e-xl hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200 cursor-pointer"
-          >
-            <option value="">Semua Kategori</option>
-            <option value="deposit">Deposit</option>
-            <option value="pembelian_pulsa">Pembelian Pulsa</option>
-            <option value="transfer_pulsa">Transfer Pulsa</option>
-            <option value="pencairan_fee_agen">Pencairan Fee Agen</option>
-          </select>
         </div>
       </template>
 

@@ -175,22 +175,24 @@ export class DepositService {
   async remove(id: number) {
     const deposit = await this.findOne(id);
 
+    if (deposit.status !== 'deposit') {
+      throw new BadRequestException('Hanya transaksi dengan status deposit yang dapat direversal/dihapus.');
+    }
+
     return await this.prisma.$transaction(async (prisma) => {
       const member = await prisma.member.findUnique({
         where: { id: deposit.member_id },
       });
 
       if (!member) {
-        throw new NotFoundException(`Member with ID ${deposit.member_id} not found`);
+        throw new NotFoundException(`Member dengan ID ${deposit.member_id} tidak ditemukan`);
       }
 
-      const saldoLama = member.saldo || 0;
-      let saldoBaru = saldoLama;
+      const saldoSekarang = member.saldo || 0;
+      const saldoBaru = saldoSekarang - deposit.nominal;
 
-      if (deposit.status === 'deposit' || deposit.status === 'pencairan_fee_agen') {
-        saldoBaru = saldoLama - deposit.nominal;
-      } else if (deposit.status === 'pembelian_pulsa' || deposit.status === 'transfer_pulsa') {
-        saldoBaru = saldoLama + deposit.nominal;
+      if (saldoBaru < 0) {
+        throw new BadRequestException(`Reversal dibatalkan: Saldo member akan menjadi negatif (${saldoBaru}) jika deposit ini dihapus.`);
       }
 
       await prisma.member.update({
@@ -198,9 +200,24 @@ export class DepositService {
         data: { saldo: saldoBaru },
       });
 
-      return prisma.riwayatSaldo.delete({
+      const deletedRiwayatSaldo = await prisma.riwayatSaldo.delete({
         where: { id },
       });
+
+      if (deposit.riwayat_transaksi_id) {
+        // Cek apakah riwayat transaksi ini dipakai di request_deposits atau transaksi lain
+        const requestDepositCount = await prisma.requestDeposit.count({
+          where: { riwayatTransaksiId: deposit.riwayat_transaksi_id }
+        });
+        
+        if (requestDepositCount === 0) {
+           await prisma.riwayatTransaksi.delete({
+             where: { id: deposit.riwayat_transaksi_id }
+           });
+        }
+      }
+
+      return deletedRiwayatSaldo;
     });
   }
 }
