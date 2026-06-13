@@ -57,10 +57,10 @@ jobs:
             docker-compose down
 
             echo "🗑️ 2. Menghapus image outletpulsa-frontend..."
-            docker rmi outletpulsa-frontend || true
+            docker rmi muammar88/outletpulsa-frontend:1.0.0 || true
 
             echo "🗑️ 3. Menghapus image outletpulsa-backend..."
-            docker rmi outletpulsa-backend || true
+            docker rmi muammar88/outletpulsa-backend:1.0.0 || true
 
             echo "📥 Pull latest image"
             docker pull muammar88/outletpulsa-frontend:1.0.0
