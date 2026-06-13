@@ -2,12 +2,6 @@
 CREATE TYPE "MemberStatus" AS ENUM ('unverified', 'verfied');
 
 -- CreateEnum
-CREATE TYPE "MemberType" AS ENUM ('outletpulsa', 'amra');
-
--- CreateEnum
-CREATE TYPE "AgenType" AS ENUM ('silver', 'gold', 'platinum');
-
--- CreateEnum
 CREATE TYPE "ServerStatus" AS ENUM ('active', 'inactive');
 
 -- CreateEnum
@@ -20,7 +14,7 @@ CREATE TYPE "ProdukStatus" AS ENUM ('active', 'inactive');
 CREATE TYPE "FeeAgenStatus" AS ENUM ('paid', 'unpaid');
 
 -- CreateEnum
-CREATE TYPE "TransactionStatus" AS ENUM ('proses', 'gagal', 'sukses');
+CREATE TYPE "TransactionStatus" AS ENUM ('proses', 'gagal', 'sukses', 'expired');
 
 -- CreateEnum
 CREATE TYPE "StatusKirim" AS ENUM ('sudah_kirim', 'belum_kirim');
@@ -49,6 +43,12 @@ CREATE TYPE "MutationType" AS ENUM ('credit', 'debet');
 -- CreateEnum
 CREATE TYPE "PaymentType" AS ENUM ('deposit', 'deposit_promo', 'withdraw');
 
+-- CreateEnum
+CREATE TYPE "UserType" AS ENUM ('administrator', 'staff');
+
+-- CreateEnum
+CREATE TYPE "RiwayatSaldoStatus" AS ENUM ('pembelian_pulsa', 'deposit', 'transfer_pulsa', 'pencairan_fee_agen');
+
 -- CreateTable
 CREATE TABLE "User" (
     "id" SERIAL NOT NULL,
@@ -57,10 +57,46 @@ CREATE TABLE "User" (
     "kode" TEXT NOT NULL,
     "refreshToken" TEXT,
     "password" TEXT NOT NULL,
+    "type" "UserType" NOT NULL DEFAULT 'administrator',
+    "groupId" INTEGER,
+    "twoFactorSecret" TEXT,
+    "twoFactorEnabled" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Group" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Group_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Permission" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Permission_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "GroupPermission" (
+    "id" SERIAL NOT NULL,
+    "groupId" INTEGER NOT NULL,
+    "permissionId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "GroupPermission_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -74,8 +110,6 @@ CREATE TABLE "Member" (
     "password" TEXT NOT NULL,
     "saldo" INTEGER DEFAULT 0,
     "status" "MemberStatus" NOT NULL DEFAULT 'unverified',
-    "type" "MemberType",
-    "agenType" "AgenType",
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -159,7 +193,6 @@ CREATE TABLE "Produk" (
     "operatorId" INTEGER,
     "kode" TEXT,
     "name" TEXT,
-    "type" "ProdukType",
     "purchase_price" INTEGER,
     "markup" INTEGER,
     "serverId" INTEGER,
@@ -259,6 +292,11 @@ CREATE TABLE "RequestDeposit" (
     "count_penolakan" INTEGER,
     "waktuKirim" TIMESTAMP(3),
     "waktuNotifikasi" TIMESTAMP(3),
+    "tripayReference" TEXT,
+    "tripayMerchantRef" TEXT,
+    "tripayMethod" TEXT,
+    "tripayFee" INTEGER,
+    "checkoutUrl" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -325,6 +363,26 @@ CREATE TABLE "TerimaSaldo" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "TerimaSaldo_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "RiwayatTransferSaldoServer" (
+    "id" SERIAL NOT NULL,
+    "trxId" TEXT NOT NULL,
+    "serverAsalId" INTEGER NOT NULL,
+    "serverTujuanId" INTEGER NOT NULL,
+    "nominal" INTEGER NOT NULL,
+    "saldoSebelumAsal" INTEGER,
+    "saldoSesudahAsal" INTEGER,
+    "saldoSebelumTujuan" INTEGER,
+    "saldoSesudahTujuan" INTEGER,
+    "status" TEXT NOT NULL,
+    "keterangan" TEXT,
+    "userId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "RiwayatTransferSaldoServer_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -522,6 +580,7 @@ CREATE TABLE "IakPrabayarProduk" (
     "operatorId" INTEGER,
     "kode" TEXT,
     "name" TEXT,
+    "nominal" TEXT,
     "price" INTEGER,
     "status" "ProdukStatus" DEFAULT 'active',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -620,7 +679,6 @@ CREATE TABLE "SubMenu" (
 -- CreateTable
 CREATE TABLE "TabMenu" (
     "id" SERIAL NOT NULL,
-    "submenu_id" INTEGER NOT NULL,
     "name" TEXT,
     "icon" TEXT,
     "path" TEXT,
@@ -657,11 +715,122 @@ CREATE TABLE "PaymentFeeAgenHistory" (
     CONSTRAINT "PaymentFeeAgenHistory_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "PengaturanUmum" (
+    "id" SERIAL NOT NULL,
+    "nama_aplikasi" TEXT DEFAULT 'Outlet Pulsa',
+    "deskripsi" TEXT,
+    "logo" TEXT,
+    "email" TEXT,
+    "telepon" TEXT,
+    "alamat" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "PengaturanUmum_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "riwayat_saldo" (
+    "id" SERIAL NOT NULL,
+    "kode" TEXT NOT NULL,
+    "member_id" INTEGER NOT NULL,
+    "nominal" INTEGER NOT NULL,
+    "saldo_sebelumnya" INTEGER NOT NULL,
+    "saldo_setelahnya" INTEGER NOT NULL,
+    "status" "RiwayatSaldoStatus" NOT NULL,
+    "ket" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "riwayat_transaksi_id" INTEGER,
+    "admin_id" INTEGER,
+
+    CONSTRAINT "riwayat_saldo_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ActivityLog" (
+    "id" SERIAL NOT NULL,
+    "userId" INTEGER,
+    "memberId" INTEGER,
+    "action" TEXT NOT NULL,
+    "entity" TEXT,
+    "entityId" TEXT,
+    "description" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ActivityLog_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "TripayPascabayarKategori" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "TripayPascabayarKategori_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "TripayPascabayarOperator" (
+    "id" SERIAL NOT NULL,
+    "kategoriId" INTEGER,
+    "kode" TEXT,
+    "name" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "TripayPascabayarOperator_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "TripayPascabayarProduk" (
+    "id" SERIAL NOT NULL,
+    "produkId" INTEGER,
+    "operatorId" INTEGER,
+    "kode" TEXT,
+    "name" TEXT,
+    "biayaAdmin" INTEGER,
+    "status" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "TripayPascabayarProduk_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_uuid_key" ON "User"("uuid");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Group_name_key" ON "Group"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Permission_name_key" ON "Permission"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "GroupPermission_groupId_permissionId_key" ON "GroupPermission"("groupId", "permissionId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Member_uuid_key" ON "Member"("uuid");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "RequestDeposit_tripayReference_key" ON "RequestDeposit"("tripayReference");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "RiwayatTransferSaldoServer_trxId_key" ON "RiwayatTransferSaldoServer"("trxId");
+
+-- CreateIndex
+CREATE INDEX "riwayat_saldo_member_id_idx" ON "riwayat_saldo"("member_id");
+
+-- AddForeignKey
+ALTER TABLE "User" ADD CONSTRAINT "User_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "Group"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "GroupPermission" ADD CONSTRAINT "GroupPermission_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "Group"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "GroupPermission" ADD CONSTRAINT "GroupPermission_permissionId_fkey" FOREIGN KEY ("permissionId") REFERENCES "Permission"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "BankTransferOutlet" ADD CONSTRAINT "BankTransferOutlet_bankId_fkey" FOREIGN KEY ("bankId") REFERENCES "Bank"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -725,6 +894,15 @@ ALTER TABLE "TransferSaldo" ADD CONSTRAINT "TransferSaldo_riwayatTransaksiId_fke
 
 -- AddForeignKey
 ALTER TABLE "TerimaSaldo" ADD CONSTRAINT "TerimaSaldo_riwayatTransaksiId_fkey" FOREIGN KEY ("riwayatTransaksiId") REFERENCES "RiwayatTransaksi"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RiwayatTransferSaldoServer" ADD CONSTRAINT "RiwayatTransferSaldoServer_serverAsalId_fkey" FOREIGN KEY ("serverAsalId") REFERENCES "Server"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RiwayatTransferSaldoServer" ADD CONSTRAINT "RiwayatTransferSaldoServer_serverTujuanId_fkey" FOREIGN KEY ("serverTujuanId") REFERENCES "Server"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "RiwayatTransferSaldoServer" ADD CONSTRAINT "RiwayatTransferSaldoServer_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "NotifMemberRead" ADD CONSTRAINT "NotifMemberRead_notifId_fkey" FOREIGN KEY ("notifId") REFERENCES "Notif"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -793,7 +971,28 @@ ALTER TABLE "TripayPrabayarProduk" ADD CONSTRAINT "TripayPrabayarProduk_produkId
 ALTER TABLE "SubMenu" ADD CONSTRAINT "SubMenu_menu_id_fkey" FOREIGN KEY ("menu_id") REFERENCES "Menu"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "TabMenu" ADD CONSTRAINT "TabMenu_submenu_id_fkey" FOREIGN KEY ("submenu_id") REFERENCES "SubMenu"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "PaymentFeeAgenHistory" ADD CONSTRAINT "PaymentFeeAgenHistory_memberId_fkey" FOREIGN KEY ("memberId") REFERENCES "Member"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "PaymentFeeAgenHistory" ADD CONSTRAINT "PaymentFeeAgenHistory_memberId_fkey" FOREIGN KEY ("memberId") REFERENCES "Member"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "riwayat_saldo" ADD CONSTRAINT "riwayat_saldo_member_id_fkey" FOREIGN KEY ("member_id") REFERENCES "Member"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "riwayat_saldo" ADD CONSTRAINT "riwayat_saldo_riwayat_transaksi_id_fkey" FOREIGN KEY ("riwayat_transaksi_id") REFERENCES "RiwayatTransaksi"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "riwayat_saldo" ADD CONSTRAINT "riwayat_saldo_admin_id_fkey" FOREIGN KEY ("admin_id") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_memberId_fkey" FOREIGN KEY ("memberId") REFERENCES "Member"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TripayPascabayarOperator" ADD CONSTRAINT "TripayPascabayarOperator_kategoriId_fkey" FOREIGN KEY ("kategoriId") REFERENCES "TripayPascabayarKategori"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TripayPascabayarProduk" ADD CONSTRAINT "TripayPascabayarProduk_operatorId_fkey" FOREIGN KEY ("operatorId") REFERENCES "TripayPascabayarOperator"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TripayPascabayarProduk" ADD CONSTRAINT "TripayPascabayarProduk_produkId_fkey" FOREIGN KEY ("produkId") REFERENCES "ProdukPascabayar"("id") ON DELETE SET NULL ON UPDATE CASCADE;
