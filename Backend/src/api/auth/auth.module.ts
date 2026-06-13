@@ -8,7 +8,7 @@ import { JwtModule } from '@nestjs/jwt';
   imports: [
     JwtModule.register({
       global: true, // Membuat JwtService tersedia untuk injeksi secara global
-      secret: process.env.JWT_SECRET || 'rahasia-outletpulsa-mobile',
+      secret: process.env.JWT_SECRET as string,
       signOptions: { expiresIn: '30d' }, // Sesi login berlaku selama 30 hari di mobile
     }),
   ],

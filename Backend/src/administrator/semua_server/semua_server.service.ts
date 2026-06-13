@@ -110,8 +110,8 @@ export class SemuaServerService {
 
       try {
         if (server.kode === 'DIGI') {
-          const username = process.env.DIGIFLAZZ_USERNAME || 'gapajaD7VQKo';
-          const apiKey = process.env.DIGIFLAZZ_KEY || '39a2cc82-ffb3-5a56-9d99-59a9a49d99b3';
+          const username = process.env.DIGIFLAZZ_USERNAME as string;
+          const apiKey = process.env.DIGIFLAZZ_KEY as string;
           const sign = crypto.createHash('md5').update(username + apiKey + 'depo').digest('hex');
           
           const response = await fetch('https://api.digiflazz.com/v1/cek-saldo', {
@@ -128,8 +128,8 @@ export class SemuaServerService {
           }
         } 
         else if (server.kode === 'IAK') {
-          const username = process.env.IAK_USERNAME || '085262802141';
-          const apiKey = process.env.IAK_KEY || '472643293c215b8ayS8p';
+          const username = process.env.IAK_USERNAME as string;
+          const apiKey = process.env.IAK_KEY as string;
           const sign = crypto.createHash('md5').update(username + apiKey + 'bl').digest('hex');
           
           const response = await fetch('https://prepaid.iak.id/api/check-balance', {
@@ -146,7 +146,7 @@ export class SemuaServerService {
           }
         }
         else if (server.kode === 'TRI') {
-          const apiKey = process.env.TRIPAY_KEY || '3SZA2ssdoqIzHJ39RNddeqDh9eO1OBMw';
+          const apiKey = process.env.TRIPAY_KEY as string;
           
           const response = await fetch('https://tripay.id/api/v2/ceksaldo', {
             method: 'GET',

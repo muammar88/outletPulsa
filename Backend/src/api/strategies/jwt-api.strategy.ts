@@ -8,7 +8,7 @@ export class JwtApiStrategy extends PassportStrategy(Strategy, 'jwt-api') {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET || 'rahasia-outletpulsa-mobile',
+      secretOrKey: process.env.JWT_SECRET as string,
     });
   }
 
