@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { logo } from '@/service/logo'; // fungsi buat ambil logo dari backend
 
-const BASE_URL = import.meta.env.VITE_APP_API_BASE_URL;
+const BASE_URL = import.meta.env.VITE_API_URL;
 const logoUrl = ref<string | null>(null);
 
 const getLogo = async () => {

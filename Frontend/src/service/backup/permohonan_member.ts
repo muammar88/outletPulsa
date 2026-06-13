@@ -1,4 +1,4 @@
-import api from './api_member'
+import api from '../api_member'
 
 export const get_desc = async (param : any) => {
   try {

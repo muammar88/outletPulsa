@@ -1,4 +1,4 @@
-import api_administrator from './api_administrator'
+import api_administrator from '../api_administrator'
 
 export const get_laporan_tahunan = async (param : any) => {
   try {

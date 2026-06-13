@@ -18,7 +18,7 @@ import { useNotification } from '@/composables/useNotification';
 import { getInfo, getInfoMember, submitSurvey } from '@/service/survey_lapangan';
 
 // API
-const BASE_URL = import.meta.env.VITE_APP_API_BASE_URL;
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 // Composable: notification
 const { showNotification, notificationType, notificationMessage, displayNotification } =

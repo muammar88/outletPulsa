@@ -1,4 +1,4 @@
-import api from './api_administrator';
+import api from '../api_administrator';
 
 export const get_filter_type = async () => {
   try {

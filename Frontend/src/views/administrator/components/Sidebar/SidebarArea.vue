@@ -31,7 +31,7 @@ const expandedMenus = ref<Record<number, boolean>>({});
 const activeMenu = ref('');
 const activeSubMenu = ref('');
 
-const BASE_URL = import.meta.env.VITE_APP_API_BASE_URL;
+const BASE_URL = import.meta.env.VITE_API_URL;
 
 const toggleMenu = (menuId: number) => {
   const isCurrentlyOpen = expandedMenus.value[menuId];

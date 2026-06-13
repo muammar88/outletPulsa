@@ -1,4 +1,4 @@
-import api_administrator from './api_administrator'
+import api_administrator from '../api_administrator'
 
 export const getBankPengumpulan = async (params: any) => {
   try {
