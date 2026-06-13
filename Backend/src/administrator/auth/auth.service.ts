@@ -102,7 +102,7 @@ export class AuthService {
 
     const secret = generateSecret();
     const otpauthUrl = generateURI({
-      issuer: 'OutletPulsa',
+      issuer: process.env.APP_NAME || 'OutletPulsa',
       label: user.kode,
       secret,
       algorithm: 'sha1',

@@ -90,11 +90,11 @@ export class DaftarProdukPrabayarIakService {
     this.syncResult = null;
 
     try {
-      const username = process.env.IAK_USERNAME || '085262802141';
-      const mode = process.env.IAK_MODE || 'development';
-      const apiKey = mode === 'production' 
-        ? process.env.IAK_API_KEY_PROD || '472643293c215b8ayS8p' 
-        : process.env.IAK_API_KEY_DEV || '8286432937d964cegRmg';
+      const username = String(process.env.IAK_USERNAME || '085262802141').padStart(12, '0');
+      const mode = process.env.IAK_MODE || (process.env.NODE_ENV === 'production' ? 'production' : 'development');
+      const apiKey = process.env.IAK_KEY || (mode === 'production' 
+        ? '472643293c215b8ayS8p' 
+        : '8286432937d964cegRmg');
       
       const baseUrl = mode === 'production'
         ? 'https://prepaid.iak.id/'
