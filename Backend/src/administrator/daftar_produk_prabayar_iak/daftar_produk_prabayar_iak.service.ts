@@ -6,8 +6,21 @@ import * as crypto from 'crypto';
 @Injectable()
 export class DaftarProdukPrabayarIakService {
   private readonly logger = new Logger(DaftarProdukPrabayarIakService.name);
+  private isSyncing = false;
+  private syncResult: any = null;
 
   constructor(private readonly prisma: PrismaService) {}
+
+  getSyncStatus() {
+    return {
+      isSyncing: this.isSyncing,
+      result: this.syncResult,
+    };
+  }
+
+  clearSyncResult() {
+    this.syncResult = null;
+  }
 
   async findAll(query: GetProdukIakDto) {
     const page = parseInt(query.page || '1', 10);
@@ -69,19 +82,27 @@ export class DaftarProdukPrabayarIakService {
   }
 
   async syncProducts(adminId: number) {
-    const username = process.env.IAK_USERNAME || '085262802141';
-    const mode = process.env.IAK_MODE || 'development';
-    const apiKey = mode === 'production' 
-      ? process.env.IAK_API_KEY_PROD || '472643293c215b8ayS8p' 
-      : process.env.IAK_API_KEY_DEV || '8286432937d964cegRmg';
-    
-    const baseUrl = mode === 'production'
-      ? 'https://prepaid.iak.id/'
-      : 'https://prepaid.iak.dev/';
+    if (this.isSyncing) {
+      throw new Error('Sinkronisasi IAK sedang berjalan');
+    }
 
-    this.logger.log(`[IAK SYNC] Memulai sinkronisasi IAK. Mode: ${mode}, URL: ${baseUrl}`);
+    this.isSyncing = true;
+    this.syncResult = null;
 
-    const sign = this.signMd5(username, apiKey, 'pl');
+    try {
+      const username = process.env.IAK_USERNAME || '085262802141';
+      const mode = process.env.IAK_MODE || 'development';
+      const apiKey = mode === 'production' 
+        ? process.env.IAK_API_KEY_PROD || '472643293c215b8ayS8p' 
+        : process.env.IAK_API_KEY_DEV || '8286432937d964cegRmg';
+      
+      const baseUrl = mode === 'production'
+        ? 'https://prepaid.iak.id/'
+        : 'https://prepaid.iak.dev/';
+
+      this.logger.log(`[IAK SYNC] Memulai sinkronisasi IAK. Mode: ${mode}, URL: ${baseUrl}`);
+
+      const sign = this.signMd5(username, apiKey, 'pl');
     
     let json: any = { data: { pricelist: [] } };
     
@@ -239,13 +260,24 @@ export class DaftarProdukPrabayarIakService {
       }
     });
 
-    return {
-      error: false,
-      error_msg: '',
-      inserted: dataToInsert.length,
-      updated: dataToUpdate.length,
-      total: pricelist.length
-    };
+      this.syncResult = {
+        success: true,
+        data: {
+          inserted: dataToInsert.length,
+          updated: dataToUpdate.length,
+          total: pricelist.length
+        }
+      };
+
+    } catch (globalError: any) {
+      this.logger.error(`[IAK SYNC] Proses dibatalkan karena error: ${globalError.message}`);
+      this.syncResult = {
+        success: false,
+        error: globalError.message
+      };
+    } finally {
+      this.isSyncing = false;
+    }
   }
   async getInternalOperators(search: string = '') {
     const where: any = {};

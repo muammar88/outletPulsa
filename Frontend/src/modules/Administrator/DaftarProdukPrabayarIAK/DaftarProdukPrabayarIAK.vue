@@ -61,6 +61,7 @@ const tableColumns = [
 
 const dataprodukPrabayarIak = ref<any[]>([]);
 const isLoading = ref(false);
+const isBackgroundSyncing = ref(false);
 const searchQuery = ref('');
 const connectionFilter = ref('');
 const filterOperatorId = ref('');
@@ -193,41 +194,102 @@ const handleKoneksiSaved = () => {
   fetchData();
 };
 
+let syncInterval: ReturnType<typeof setInterval> | null = null;
+
+const pollSyncStatus = async () => {
+  try {
+    const res = await produkPrabayarIakService.getSyncStatus();
+    const data = res.data?.data || res.data;
+    
+    if (data && data.isSyncing === false) {
+      // Sinkronisasi selesai
+      if (syncInterval) {
+        clearInterval(syncInterval);
+        syncInterval = null;
+      }
+      isBackgroundSyncing.value = false;
+      
+      // Jika ada hasil
+      if (data.result) {
+        if (data.result.success) {
+          const resData = data.result.data;
+          displayNotification(
+            `Sinkronisasi IAK Selesai.<br/>` +
+            `<b>Produk Prabayar IAK</b> (Baru: ${resData.inserted || 0}, Diperbarui: ${resData.updated || 0})<br/>` +
+            `Total Produk Prabayar: ${resData.total || 0}`,
+            'success'
+          );
+        } else {
+          displayNotification(
+            'Gagal sinkronisasi: ' + data.result.error,
+            'error'
+          );
+        }
+        await produkPrabayarIakService.clearSyncStatus();
+      }
+      
+      fetchData();
+    } else {
+      isBackgroundSyncing.value = true;
+    }
+  } catch (error) {
+    console.error('Gagal mengecek status sync:', error);
+  }
+};
+
 const handleSync = () => {
   confirmButtonText.value = 'Ya, Scan Sekarang';
   confirmButtonClass.value = 'bg-emerald-600 hover:bg-emerald-700 shadow-[0_0_15px_rgba(5,150,105,0.5)]';
   
   displayConfirmation(
     'Konfirmasi Scan IAK',
-    'Sistem akan melakukan sinkronisasi otomatis dari server IAK mulai dari Tipe, Operator, hingga Produk Prabayar. Ini memakan waktu beberapa saat.',
+    'Sistem akan melakukan sinkronisasi otomatis dari server IAK mulai dari Tipe, Operator, hingga Produk Prabayar. Proses akan berjalan di background.',
     async () => {
-      isLoading.value = true;
       try {
         const response = await produkPrabayarIakService.sync();
-        await fetchData();
+        const msg = response.data?.message || 'Proses sinkronisasi berjalan di background.';
         
-        const data = response.data.data;
         displayNotification(
-          `Sinkronisasi IAK Selesai.<br/>` +
-          `<b>Produk Prabayar IAK</b> (Baru: ${data.inserted || 0}, Diperbarui: ${data.updated || 0})<br/>` +
-          `Total Produk Prabayar: ${data.total || 0}`,
+          `${msg}<br/>Anda dapat melanjutkan aktivitas lain.`,
           'success'
         );
+        
+        isBackgroundSyncing.value = true;
+        if (!syncInterval) {
+          syncInterval = setInterval(pollSyncStatus, 3000);
+        }
       } catch (error: any) {
         displayNotification(
-          'Gagal sinkronisasi: ' + (error.response?.data?.message || error.message),
+          'Gagal memulai sinkronisasi: ' + (error.response?.data?.message || error.message),
           'error'
         );
-      } finally {
-        isLoading.value = false;
       }
     }
   );
 };
 
-onMounted(() => {
+import { onUnmounted } from 'vue';
+
+onMounted(async () => {
   fetchOperators();
   fetchData();
+  
+  // Cek apakah ada sync yang sedang berjalan saat halaman dimuat
+  const res = await produkPrabayarIakService.getSyncStatus();
+  const data = res.data?.data || res.data;
+  if (data && data.isSyncing) {
+    isBackgroundSyncing.value = true;
+    syncInterval = setInterval(pollSyncStatus, 3000);
+  } else if (data && data.result) {
+    // Jika ada hasil yang belum dihapus
+    pollSyncStatus();
+  }
+});
+
+onUnmounted(() => {
+  if (syncInterval) {
+    clearInterval(syncInterval);
+  }
 });
 </script>
 
@@ -306,14 +368,14 @@ onMounted(() => {
             <button
               @click="handleSync"
               class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
-              :disabled="isLoading"
+              :disabled="isLoading || isBackgroundSyncing"
             >
-              <IconPlug v-if="!isLoading" class="w-4 h-4 mr-2" />
+              <IconPlug v-if="!isBackgroundSyncing" class="w-4 h-4 mr-2" />
               <svg v-else class="animate-spin w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              Scan Produk Prabayar IAK
+              {{ isBackgroundSyncing ? 'Sedang Sinkronisasi...' : 'Scan Produk Prabayar IAK' }}
             </button>
           </template>
 

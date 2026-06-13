@@ -10,13 +10,37 @@ export class DaftarProdukPrabayarIakController {
 
   @Post('sync')
   async sync(@Request() req: any) {
-    // req.user from JwtAuthGuard usually contains userId
     const adminId = req.user?.id || 0;
-    const data = await this.DaftarProdukPrabayarIakService.syncProducts(adminId);
+    
+    // Dispatch ke background tanpa await
+    this.DaftarProdukPrabayarIakService.syncProducts(adminId).catch(err => {
+      console.error('[IAK Controller] Background sync failed:', err);
+    });
+
     return {
-      message: 'Sync produk IAK berhasil',
+      message: 'Proses sinkronisasi produk IAK sedang berjalan di background.',
       error: null,
-      data,
+      data: null,
+    };
+  }
+
+  @Get('sync-status')
+  getSyncStatus() {
+    const status = this.DaftarProdukPrabayarIakService.getSyncStatus();
+    return {
+      message: 'Success',
+      error: null,
+      data: status,
+    };
+  }
+
+  @Post('sync-clear')
+  clearSyncStatus() {
+    this.DaftarProdukPrabayarIakService.clearSyncResult();
+    return {
+      message: 'Status sinkronisasi dibersihkan',
+      error: null,
+      data: null,
     };
   }
 
