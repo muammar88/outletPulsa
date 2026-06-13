@@ -95,10 +95,25 @@ export class DaftarProdukPrabayarIakService {
       const apiKey = process.env.IAK_KEY || (mode === 'production' 
         ? '472643293c215b8ayS8p' 
         : '8286432937d964cegRmg');
+
+        console.log("API KEY");
+        console.log(apiKey);
+        console.log("API KEY");
+
+        console.log("USER NAME");
+        console.log(username);
+        console.log("USER NAME");
+
+       
       
       const baseUrl = mode === 'production'
         ? 'https://prepaid.iak.id/'
         : 'https://prepaid.iak.dev/';
+
+
+        console.log("BASE URL");
+        console.log(baseUrl);
+        console.log("BASE URL");
 
       this.logger.log(`[IAK SYNC] Memulai sinkronisasi IAK. Mode: ${mode}, URL: ${baseUrl}`);
 
