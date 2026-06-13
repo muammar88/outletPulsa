@@ -11,7 +11,7 @@ const parseDate = (val: string) => {
 export default async function seedServer(prisma: PrismaClient) {
   console.log('Mengekstrak data Server dari servers.sql...');
   
-  const sqlPath = path.join(__dirname, 'sql', 'servers.sql');
+  const sqlPath = path.resolve(process.cwd(), '../servers.sql');
   if (!fs.existsSync(sqlPath)) {
     console.log(`File SQL tidak ditemukan di ${sqlPath}`);
     return;

@@ -2,7 +2,7 @@ name: CI/CD Deploy Outlet Pulsa
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   deploy:
@@ -15,9 +15,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: './Backend/package-lock.json'
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: "./Backend/package-lock.json"
 
       - name: Login to DockerHub
         uses: docker/login-action@v3
@@ -48,21 +48,33 @@ jobs:
           username: ${{ secrets.SSH_USER_SERVER_MACHINE_2 }}
           key: ${{ secrets.SSH_PRIVATE_KEY_SERVER_MACHINE_2 }}
           script: |
+            set -e # Menghentikan script jika ada perintah penting yang gagal
+
+            echo "📁 Pindah ke direktori project..."
             cd /home/vmmachine2/outletpulsa
 
-            echo "📥 Pull latest image"
-            docker pull muammar88/outletpulsa-frontend:1.0.0
-            docker pull muammar88/outletpulsa-backend:1.0.0
+            echo "🛑 1. Menghentikan seluruh container..."
+            docker-compose down
 
-            echo "♻️ Restart container"
-            docker compose down
-            docker compose up -d --force-recreate
+            echo "🗑️ 2. Menghapus image outletpulsa-frontend..."
+            docker rmi outletpulsa-frontend || true
+
+            echo "🗑️ 3. Menghapus image outletpulsa-backend..."
+            docker rmi outletpulsa-backend || true
+
+            echo "⬇️ 4. Mengambil source code terbaru..."
+            git pull
+
+            echo "🏗️ 5. Membangun ulang image..."
+            docker-compose build
+
+            echo "🚀 6. Menjalankan seluruh service..."
+            docker-compose up -d
+
+            echo "✅ Deployment selesai dengan sukses!"
 
             # echo "📜 Run migration"
-            # docker exec -i outletpulsa_backend npx prisma migrate reset --force
+            # docker exec -i outletpulsa_backend npx prisma migrate deploy
 
             # echo "🌱 Generate Prisma Client"
             # docker exec -i outletpulsa_backend npx prisma generate
-
-            # Contoh jika perlu menjalankan perintah pada frontend
-            # docker exec -i outletpulsa_frontend sh

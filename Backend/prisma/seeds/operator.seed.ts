@@ -11,7 +11,7 @@ const parseDate = (val: string) => {
 export default async function seedOperator(prisma: PrismaClient) {
   console.log('Mengekstrak data Operator dari operators.sql...');
   
-  const sqlPath = path.join(__dirname, 'sql', 'operators.sql');
+  const sqlPath = path.resolve(process.cwd(), '../operators.sql');
   if (!fs.existsSync(sqlPath)) {
     console.log(`File SQL tidak ditemukan di ${sqlPath}`);
     return;
