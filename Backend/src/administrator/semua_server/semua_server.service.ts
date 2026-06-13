@@ -128,7 +128,11 @@ export class SemuaServerService {
           }
         } 
         else if (server.kode === 'IAK') {
-          const username = String(process.env.IAK_USERNAME || '').padStart(12, '0');
+          let rawUsername = process.env.IAK_USERNAME || '';
+          if (String(rawUsername).includes('e+')) {
+            rawUsername = Number(rawUsername).toString();
+          }
+          const username = String(rawUsername).padStart(12, '0');
           const apiKey = process.env.IAK_KEY as string;
           const sign = crypto.createHash('md5').update(username + apiKey + 'bl').digest('hex');
           
