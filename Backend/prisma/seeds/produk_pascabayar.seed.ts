@@ -23,8 +23,8 @@ export default async function seedProdukPascabayar(prisma: PrismaClient) {
   const produksData = rawData.map((item: any) => ({
     id: item.id,
     kategoriId: kategoriIds.has(item.kategoriId) ? item.kategoriId : null,
-    kode: item.kode,
-    name: item.name,
+    kode: item.kode != null ? String(item.kode) : null,
+    name: item.name != null ? String(item.name) : null,
     fee: item.fee,
     comission: item.komisi,
     outletFee: 0,
