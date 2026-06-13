@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "kode": "IAK",
+    "name": "IAK",
+    "status": "active",
+    "createdAt": "2023-07-28T13:35:46.000Z",
+    "updatedAt": "2024-01-08T06:33:20.000Z"
+  },
+  {
+    "id": 2,
+    "kode": "TRI",
+    "name": "Tripay",
+    "status": "active",
+    "createdAt": "2023-07-28T13:35:46.000Z",
+    "updatedAt": "2024-01-08T06:33:20.000Z"
+  },
+  {
+    "id": 3,
+    "kode": "DIGI",
+    "name": "Digiflazz",
+    "status": "active",
+    "createdAt": "2023-11-18T17:00:00.000Z",
+    "updatedAt": "2024-01-08T06:33:20.000Z"
+  }
+]

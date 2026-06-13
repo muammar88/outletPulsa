@@ -1,19 +1,13 @@
-import { PrismaClient, ProdukType, ProdukStatus } from '@prisma/client';
+import { PrismaClient, ProdukStatus } from '@prisma/client';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const parseDate = (val: string) => {
-  if (!val || val.includes('0000-00-00')) return new Date();
-  const d = new Date(val);
-  return isNaN(d.getTime()) ? new Date() : d;
-};
-
 export default async function seedProduk(prisma: PrismaClient) {
-  console.log('Mengekstrak data Produk dari produks.sql...');
+  console.log('Menjalankan seeding Produk...');
   
-  const sqlPath = path.resolve(process.cwd(), '../produks.sql');
-  if (!fs.existsSync(sqlPath)) {
-    console.log(`File SQL tidak ditemukan di ${sqlPath}`);
+  const jsonPath = path.join(__dirname, 'produks.json');
+  if (!fs.existsSync(jsonPath)) {
+    console.log(`File JSON tidak ditemukan di ${jsonPath}`);
     return;
   }
 
@@ -23,52 +17,12 @@ export default async function seedProduk(prisma: PrismaClient) {
   const operatorIds = new Set(validOperators.map(o => o.id));
   const serverIds = new Set(validServers.map(s => s.id));
   
-  const sql = fs.readFileSync(sqlPath, 'utf8');
-  const insertRegex = /INSERT INTO `produks` \([^)]+\) VALUES\s*([\s\S]*?);/g;
-  
-  let match;
-  const produksData: any[] = [];
-  const valRegex = /'(?:[^']|'')*'|NULL|-?\d+(?:\.\d+)?/g;
-
-  while ((match = insertRegex.exec(sql)) !== null) {
-    const block = match[1];
-    const rowStrings = block.split(/\),\s*\(/);
-    
-    for (let rowStr of rowStrings) {
-      rowStr = rowStr.replace(/^\s*\(/, '').replace(/\)\s*$/, '');
-      
-      const values: any[] = [];
-      let valMatch;
-      while ((valMatch = valRegex.exec(rowStr)) !== null) {
-        let val = valMatch[0];
-        if (val === 'NULL') {
-          values.push(null);
-        } else if (val.startsWith("'")) {
-          values.push(val.slice(1, -1).replace(/''/g, "'"));
-        } else {
-          values.push(Number(val));
-        }
-      }
-      
-      if (values.length >= 11) {
-        const operatorId = values[1];
-        const serverId = values[7];
-
-        produksData.push({
-          id: values[0],
-          operatorId: operatorIds.has(operatorId) ? operatorId : null,
-          kode: values[2],
-          name: values[3],
-          purchase_price: parseInt(values[5]),
-          markup: parseInt(values[6]),
-          serverId: serverIds.has(serverId) ? serverId : null,
-          status: values[8] as ProdukStatus,
-          createdAt: parseDate(values[9]),
-          updatedAt: parseDate(values[10]),
-        });
-      }
-    }
-  }
+  const rawData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+  const produksData = rawData.map((item: any) => ({
+    ...item,
+    operatorId: operatorIds.has(item.operatorId) ? item.operatorId : null,
+    serverId: serverIds.has(item.serverId) ? item.serverId : null,
+  }));
 
   if (produksData.length === 0) return;
   console.log(`Menemukan ${produksData.length} data produk. Memulai insert ke database...`);
@@ -84,4 +38,5 @@ export default async function seedProduk(prisma: PrismaClient) {
       console.error(`Gagal insert chunk ${i} - ${i + chunk.length}:`, (error as Error).message);
     }
   }
+  console.log(`Seeding Produk selesai. Berhasil memproses ${inserted} produk.`);
 }

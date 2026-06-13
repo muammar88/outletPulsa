@@ -33,7 +33,7 @@ export class TransformInterceptor implements NestInterceptor {
              if (data.error !== undefined) delete data.error;
           }
           
-          if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
+          if (!data || (typeof data === 'object' && !Array.isArray(data) && Object.keys(data).length === 0)) {
              data = {};
           }
         } else {

@@ -1,0 +1,2602 @@
+[
+  {
+    "id": 1,
+    "kategoriId": 1,
+    "kode": "PIUTSL",
+    "name": "Telkomsel",
+    "createdAt": "2023-03-23T16:41:36.000Z",
+    "updatedAt": "2026-06-13T08:40:52.694Z"
+  },
+  {
+    "id": 2,
+    "kategoriId": 1,
+    "kode": "PIUIST",
+    "name": "Indosat",
+    "createdAt": "2023-03-23T16:41:36.000Z",
+    "updatedAt": "2026-06-13T08:40:52.694Z"
+  },
+  {
+    "id": 3,
+    "kategoriId": 1,
+    "kode": "PIUTR",
+    "name": "Tri",
+    "createdAt": "2023-03-23T16:41:36.000Z",
+    "updatedAt": "2026-06-13T08:40:52.694Z"
+  },
+  {
+    "id": 4,
+    "kategoriId": 1,
+    "kode": "PIUSF",
+    "name": "Smartfren",
+    "createdAt": "2023-03-23T16:41:37.000Z",
+    "updatedAt": "2026-06-13T08:40:52.694Z"
+  },
+  {
+    "id": 5,
+    "kategoriId": 1,
+    "kode": "PIUBY",
+    "name": "By.U",
+    "createdAt": "2023-03-23T16:41:37.000Z",
+    "updatedAt": "2026-06-13T08:40:52.694Z"
+  },
+  {
+    "id": 6,
+    "kategoriId": 1,
+    "kode": "PIUAX",
+    "name": "Axis",
+    "createdAt": "2023-03-23T16:41:37.000Z",
+    "updatedAt": "2026-06-13T08:40:52.694Z"
+  },
+  {
+    "id": 7,
+    "kategoriId": 1,
+    "kode": "PIUISTG",
+    "name": "Indosat Gift",
+    "createdAt": "2023-03-23T16:41:38.000Z",
+    "updatedAt": "2026-06-13T08:40:52.694Z"
+  },
+  {
+    "id": 8,
+    "kategoriId": 2,
+    "kode": "PTTSL",
+    "name": "Telkomsel",
+    "createdAt": "2023-03-23T16:41:38.000Z",
+    "updatedAt": "2026-06-13T08:40:52.694Z"
+  },
+  {
+    "id": 9,
+    "kategoriId": 2,
+    "kode": "PTAX",
+    "name": "Axis",
+    "createdAt": "2023-03-23T16:41:39.000Z",
+    "updatedAt": "2026-06-13T08:40:52.694Z"
+  },
+  {
+    "id": 10,
+    "kategoriId": 2,
+    "kode": "PTXL",
+    "name": "XL Axiata",
+    "createdAt": "2023-03-23T16:41:39.000Z",
+    "updatedAt": "2026-06-13T08:40:52.694Z"
+  },
+  {
+    "id": 11,
+    "kategoriId": 2,
+    "kode": "PTIST",
+    "name": "Indosat",
+    "createdAt": "2023-03-23T16:41:39.000Z",
+    "updatedAt": "2026-06-13T08:40:52.694Z"
+  },
+  {
+    "id": 12,
+    "kategoriId": 2,
+    "kode": "PTTR",
+    "name": "Tri",
+    "createdAt": "2023-03-23T16:41:40.000Z",
+    "updatedAt": "2026-06-13T08:40:52.694Z"
+  },
+  {
+    "id": 13,
+    "kategoriId": 4,
+    "kode": "PDXLBJ",
+    "name": "XL Data Belajar",
+    "createdAt": "2023-03-23T16:41:40.000Z",
+    "updatedAt": "2026-06-13T08:40:52.694Z"
+  },
+  {
+    "id": 14,
+    "kategoriId": 4,
+    "kode": "PDTRB",
+    "name": "Tri Data Bulk",
+    "createdAt": "2023-03-23T16:41:40.000Z",
+    "updatedAt": "2026-06-13T08:40:52.694Z"
+  },
+  {
+    "id": 15,
+    "kategoriId": 4,
+    "kode": "PDTRAON",
+    "name": "Tri Data AON",
+    "createdAt": "2023-03-23T16:41:40.000Z",
+    "updatedAt": "2026-06-13T08:40:52.694Z"
+  },
+  {
+    "id": 16,
+    "kategoriId": 4,
+    "kode": "PDTRMN",
+    "name": "Tri Data Mini",
+    "createdAt": "2023-03-23T16:41:41.000Z",
+    "updatedAt": "2026-06-13T08:40:52.694Z"
+  },
+  {
+    "id": 17,
+    "kategoriId": 4,
+    "kode": "PDTRGM",
+    "name": "Tri Data Getmore",
+    "createdAt": "2023-03-23T16:41:41.000Z",
+    "updatedAt": "2026-06-13T08:40:52.694Z"
+  },
+  {
+    "id": 18,
+    "kategoriId": 4,
+    "kode": "PDTRUNL",
+    "name": "Tri Data Unlimited",
+    "createdAt": "2023-03-23T16:41:41.000Z",
+    "updatedAt": "2026-06-13T08:40:52.694Z"
+  },
+  {
+    "id": 19,
+    "kategoriId": 4,
+    "kode": "PDTRSP",
+    "name": "Tri Data Spesial",
+    "createdAt": "2023-03-23T16:41:41.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 20,
+    "kategoriId": 4,
+    "kode": "PDTRV",
+    "name": "Tri Data Voucher",
+    "createdAt": "2023-03-23T16:41:41.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 21,
+    "kategoriId": 4,
+    "kode": "PDSFUNL",
+    "name": "Smartfren Data Unlimited",
+    "createdAt": "2023-03-23T16:41:41.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 22,
+    "kategoriId": 4,
+    "kode": "PDSFNS",
+    "name": "Smartfren Data Nonstop",
+    "createdAt": "2023-03-23T16:41:41.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 23,
+    "kategoriId": 4,
+    "kode": "PDSFVB",
+    "name": "Smartfren Data Volume Base",
+    "createdAt": "2023-03-23T16:41:42.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 24,
+    "kategoriId": 4,
+    "kode": "PDSFVNS",
+    "name": "Smartfren Data Voucher Nonstop",
+    "createdAt": "2023-03-23T16:41:43.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 25,
+    "kategoriId": 4,
+    "kode": "PDISTY",
+    "name": "Indosat Data Yellow",
+    "createdAt": "2023-03-23T16:41:43.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 26,
+    "kategoriId": 4,
+    "kode": "PDISTB",
+    "name": "Indosat Data Bulk",
+    "createdAt": "2023-03-23T16:41:43.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 27,
+    "kategoriId": 4,
+    "kode": "PDISTFH",
+    "name": "Indosat Data Freedom Harian",
+    "createdAt": "2023-03-23T16:41:43.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 28,
+    "kategoriId": 4,
+    "kode": "PDISTF",
+    "name": "Indosat Data Freedom",
+    "createdAt": "2023-03-23T16:41:43.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 29,
+    "kategoriId": 4,
+    "kode": "PDISTUNL",
+    "name": "Indosat Data Freedom Unlimited Apps",
+    "createdAt": "2023-03-23T16:41:43.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 30,
+    "kategoriId": 4,
+    "kode": "PDISTFCA",
+    "name": "Indosat Data Freedom Combo Attack",
+    "createdAt": "2023-03-23T16:41:44.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 31,
+    "kategoriId": 4,
+    "kode": "PDISTFCNA",
+    "name": "Indosat Data Freedom Combo Non Attack",
+    "createdAt": "2023-03-23T16:41:44.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 32,
+    "kategoriId": 4,
+    "kode": "PDXLXCF",
+    "name": "XL Data Xtra Combo Flex",
+    "createdAt": "2023-03-23T16:41:44.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 33,
+    "kategoriId": 4,
+    "kode": "PDXLH",
+    "name": "XL Data Hotrod",
+    "createdAt": "2023-03-23T16:41:44.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 34,
+    "kategoriId": 4,
+    "kode": "PDXLB",
+    "name": "XL Data Bulk",
+    "createdAt": "2023-03-23T16:41:44.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 35,
+    "kategoriId": 4,
+    "kode": "PDTSLF",
+    "name": "Telkomsel Data Flash",
+    "createdAt": "2023-03-23T16:41:45.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 36,
+    "kategoriId": 4,
+    "kode": "PDTSLUMROH",
+    "name": "Telkomsel Data Umroh",
+    "createdAt": "2023-03-23T16:41:45.000Z",
+    "updatedAt": "2024-01-23T09:20:20.000Z"
+  },
+  {
+    "id": 37,
+    "kategoriId": 4,
+    "kode": "PDTSLBULK",
+    "name": "Telkomsel Data Bulk",
+    "createdAt": "2023-03-23T16:41:45.000Z",
+    "updatedAt": "2024-01-22T06:01:50.000Z"
+  },
+  {
+    "id": 38,
+    "kategoriId": 4,
+    "kode": "PDTRIBD",
+    "name": "Tri Data Ibadah",
+    "createdAt": "2023-03-23T16:41:45.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 44,
+    "kategoriId": 4,
+    "kode": "PDXLCL",
+    "name": "XL Data Combo Lite",
+    "createdAt": "2023-03-23T16:41:46.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 45,
+    "kategoriId": 4,
+    "kode": "PDXLXC",
+    "name": "XL Data Xtra Combo",
+    "createdAt": "2023-03-23T16:41:46.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 46,
+    "kategoriId": 4,
+    "kode": "PDXLXCVP",
+    "name": "XL Data Xtra Combo VIP",
+    "createdAt": "2023-03-23T16:41:46.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 47,
+    "kategoriId": 4,
+    "kode": "PDXLGH",
+    "name": "XL Data Games & Hiburan",
+    "createdAt": "2023-03-23T16:41:46.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 48,
+    "kategoriId": 4,
+    "kode": "PDXLXON",
+    "name": "XL Data Xtra On",
+    "createdAt": "2023-03-23T16:41:47.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 49,
+    "kategoriId": 4,
+    "kode": "PDAXBM",
+    "name": "Axis Data Bronet Mini",
+    "createdAt": "2023-03-23T16:41:47.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 50,
+    "kategoriId": 4,
+    "kode": "PDAXB",
+    "name": "Axis Data Bronet",
+    "createdAt": "2023-03-23T16:41:47.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 51,
+    "kategoriId": 4,
+    "kode": "PDAXBOU",
+    "name": "Axis Data Bronet Owsem Unlimited",
+    "createdAt": "2023-03-23T16:41:47.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 52,
+    "kategoriId": 4,
+    "kode": "PDAXBO",
+    "name": "Axis Data Bronet Owsem",
+    "createdAt": "2023-03-23T16:41:47.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 53,
+    "kategoriId": 4,
+    "kode": "PDAXV",
+    "name": "Axis Data Voucher Aigo",
+    "createdAt": "2023-03-23T16:41:47.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 54,
+    "kategoriId": 4,
+    "kode": "PDAXM",
+    "name": "Axis Data Multimedia",
+    "createdAt": "2023-03-23T16:41:48.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 55,
+    "kategoriId": 4,
+    "kode": "PDAXVKS",
+    "name": "Axis Data Voucher Kalimantan Sulawesi",
+    "createdAt": "2023-03-23T16:41:48.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 56,
+    "kategoriId": 4,
+    "kode": "PDAXVS",
+    "name": "Axis Data Voucher Sumatera",
+    "createdAt": "2023-03-23T16:41:48.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 57,
+    "kategoriId": 4,
+    "kode": "PDTSLYTUBE",
+    "name": "Telkomsel Data Youtube",
+    "createdAt": "2023-03-23T16:41:48.000Z",
+    "updatedAt": "2024-01-23T09:21:51.000Z"
+  },
+  {
+    "id": 60,
+    "kategoriId": 4,
+    "kode": "PDTSLKETENGANU",
+    "name": "Telkomsel Data Ketengan Umum",
+    "createdAt": "2023-03-23T16:41:48.000Z",
+    "updatedAt": "2024-01-23T09:22:15.000Z"
+  },
+  {
+    "id": 62,
+    "kategoriId": 4,
+    "kode": "PDAXVAM",
+    "name": "Axis Data Voucher Aigo Mini",
+    "createdAt": "2023-03-23T16:41:49.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 63,
+    "kategoriId": 4,
+    "kode": "PDSFVUNL",
+    "name": "Smartfren Data Voucher Unlimited",
+    "createdAt": "2023-03-23T16:41:49.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 64,
+    "kategoriId": 4,
+    "kode": "PDSFVM",
+    "name": "Smartfren Data Voucher Mini",
+    "createdAt": "2023-03-23T16:41:49.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 65,
+    "kategoriId": 4,
+    "kode": "PDSFVVB",
+    "name": "Smartfren Data Voucher Volume Base",
+    "createdAt": "2023-03-23T16:41:49.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 66,
+    "kategoriId": 4,
+    "kode": "PDTSLCS",
+    "name": "Telkomsel Data Combo Sakti",
+    "createdAt": "2023-03-23T16:41:49.000Z",
+    "updatedAt": "2024-01-23T09:21:08.000Z"
+  },
+  {
+    "id": 68,
+    "kategoriId": 4,
+    "kode": "PDXLVH",
+    "name": "XL Data Voucher Hotrod",
+    "createdAt": "2023-03-23T16:41:50.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 69,
+    "kategoriId": 4,
+    "kode": "PDXLVCF",
+    "name": "XL Data Voucher Xtra Combo Flex",
+    "createdAt": "2023-03-23T16:41:50.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 70,
+    "kategoriId": 4,
+    "kode": "PDXLVCL",
+    "name": "XL Data Voucher Combo Lite",
+    "createdAt": "2023-03-23T16:41:50.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 71,
+    "kategoriId": 4,
+    "kode": "PDISTVY",
+    "name": "Indosat Data Voucher Yellow",
+    "createdAt": "2023-03-23T16:41:50.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 72,
+    "kategoriId": 4,
+    "kode": "PDISTVFH",
+    "name": "Indosat Data Voucher Freedom Harian",
+    "createdAt": "2023-03-23T16:41:50.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 73,
+    "kategoriId": 4,
+    "kode": "PDISTVUA",
+    "name": "Indosat Data Voucher Unlimited Apps",
+    "createdAt": "2023-03-23T16:41:50.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 74,
+    "kategoriId": 4,
+    "kode": "PDISTVCNA",
+    "name": "Indosat Data Voucher Combo Non Attack",
+    "createdAt": "2023-03-23T16:41:51.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 75,
+    "kategoriId": 4,
+    "kode": "PDISTVCA",
+    "name": "Indosat Data Voucher Combo Attack",
+    "createdAt": "2023-03-23T16:41:51.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 78,
+    "kategoriId": 4,
+    "kode": "TDHPA",
+    "name": "Tri Data Happy 1 Hari",
+    "createdAt": "2023-03-23T16:41:51.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 79,
+    "kategoriId": 4,
+    "kode": "TDHPB",
+    "name": "Tri Data Happy 3 Hari",
+    "createdAt": "2023-03-23T16:41:51.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 80,
+    "kategoriId": 4,
+    "kode": "TDHPC",
+    "name": "Tri Data Happy 5 Hari",
+    "createdAt": "2023-03-23T16:41:52.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 81,
+    "kategoriId": 4,
+    "kode": "TDHPD",
+    "name": "Tri Data Happy 7 Hari",
+    "createdAt": "2023-03-23T16:41:52.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 82,
+    "kategoriId": 4,
+    "kode": "TDHPE",
+    "name": "Tri Data Happy 30 Hari",
+    "createdAt": "2023-03-23T16:41:52.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 83,
+    "kategoriId": 4,
+    "kode": "PDISTGY",
+    "name": "Indosat Data Gift Yellow",
+    "createdAt": "2023-03-23T16:41:52.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 84,
+    "kategoriId": 4,
+    "kode": "PDISTGFC",
+    "name": "Paket Data Indosat Gift Freedom Combo",
+    "createdAt": "2023-03-23T16:41:52.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 85,
+    "kategoriId": 4,
+    "kode": "TVD",
+    "name": "Tri Voucher Data",
+    "createdAt": "2023-03-23T16:41:52.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 86,
+    "kategoriId": 5,
+    "kode": "PTPAX",
+    "name": "Axis",
+    "createdAt": "2023-03-23T16:41:53.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 87,
+    "kategoriId": 5,
+    "kode": "PTPIST",
+    "name": "Indosat",
+    "createdAt": "2023-03-23T16:41:53.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 88,
+    "kategoriId": 5,
+    "kode": "PTPTR",
+    "name": "Tri",
+    "createdAt": "2023-03-23T16:41:53.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 92,
+    "kategoriId": 5,
+    "kode": "PTPTSLUMUM",
+    "name": "Telkomsel UMUM",
+    "createdAt": "2023-03-23T16:41:53.000Z",
+    "updatedAt": "2024-01-23T06:58:25.000Z"
+  },
+  {
+    "id": 93,
+    "kategoriId": 5,
+    "kode": "XLTLP",
+    "name": "XL Telpon Biasa",
+    "createdAt": "2023-03-23T16:41:54.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 94,
+    "kategoriId": 5,
+    "kode": "XLTLPA",
+    "name": "XL Telpon Anynet",
+    "createdAt": "2023-03-23T16:41:54.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 95,
+    "kategoriId": 5,
+    "kode": "PTPTSLSAKTI",
+    "name": "Telkomsel Nelpon Sakti",
+    "createdAt": "2023-03-23T16:41:54.000Z",
+    "updatedAt": "2024-01-23T08:44:26.000Z"
+  },
+  {
+    "id": 96,
+    "kategoriId": 6,
+    "kode": "PSIST",
+    "name": "Indosat",
+    "createdAt": "2023-03-23T16:41:54.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 97,
+    "kategoriId": 6,
+    "kode": "PSTR",
+    "name": "Tri",
+    "createdAt": "2023-03-23T16:41:54.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 98,
+    "kategoriId": 6,
+    "kode": "PSTSLA",
+    "name": "Telkomsel SMS 1 Harian",
+    "createdAt": "2023-03-23T16:41:54.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 99,
+    "kategoriId": 6,
+    "kode": "PSTSLB",
+    "name": "Telkomsel SMS 7 Harian",
+    "createdAt": "2023-03-23T16:41:54.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 100,
+    "kategoriId": 6,
+    "kode": "PSTSLC",
+    "name": "Telkomsel SMS 15 Harian",
+    "createdAt": "2023-03-23T16:41:55.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 101,
+    "kategoriId": 6,
+    "kode": "PSTSLD",
+    "name": "Telkomsel SMS 30 Harian",
+    "createdAt": "2023-03-23T16:41:55.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 102,
+    "kategoriId": 7,
+    "kode": "TLOP",
+    "name": "Token Listrik Promo",
+    "createdAt": "2023-03-23T16:41:55.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 103,
+    "kategoriId": 7,
+    "kode": "TLOV",
+    "name": "Token Listrik VIP",
+    "createdAt": "2023-03-23T16:41:56.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 104,
+    "kategoriId": 7,
+    "kode": "TLOF",
+    "name": "Token Listrik Full Reply",
+    "createdAt": "2023-03-23T16:41:56.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 105,
+    "kategoriId": 8,
+    "kode": "VGGP",
+    "name": "Google Play",
+    "createdAt": "2023-03-23T16:41:56.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 106,
+    "kategoriId": 8,
+    "kode": "VGGR",
+    "name": "Garena Shells",
+    "createdAt": "2023-03-23T16:41:56.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 107,
+    "kategoriId": 8,
+    "kode": "VGMC",
+    "name": "Megaxus MI-Cash",
+    "createdAt": "2023-03-23T16:41:56.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 108,
+    "kategoriId": 8,
+    "kode": "VGPC",
+    "name": "PlayStation Card",
+    "createdAt": "2023-03-23T16:41:57.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 109,
+    "kategoriId": 8,
+    "kode": "VGSW",
+    "name": "Steam Wallet IDR",
+    "createdAt": "2023-03-23T16:41:57.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 110,
+    "kategoriId": 8,
+    "kode": "VGPB",
+    "name": "Point Blank Zepetto",
+    "createdAt": "2023-03-23T16:41:57.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 111,
+    "kategoriId": 8,
+    "kode": "VGFF",
+    "name": "Free Fire",
+    "createdAt": "2023-03-23T16:41:57.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 112,
+    "kategoriId": 8,
+    "kode": "VGML",
+    "name": "Mobile Legend",
+    "createdAt": "2023-03-23T16:41:58.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 113,
+    "kategoriId": 8,
+    "kode": "VGPM",
+    "name": "PUBG Mobile",
+    "createdAt": "2023-03-23T16:41:58.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 114,
+    "kategoriId": 8,
+    "kode": "VGAV",
+    "name": "Arena Of Valor",
+    "createdAt": "2023-03-23T16:41:58.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 115,
+    "kategoriId": 8,
+    "kode": "VGRR",
+    "name": "Ragnarok Mobile Eternal Love",
+    "createdAt": "2023-03-23T16:41:58.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 116,
+    "kategoriId": 8,
+    "kode": "VGCD",
+    "name": "Call Of Duty Mobile",
+    "createdAt": "2023-03-23T16:41:59.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 117,
+    "kategoriId": 8,
+    "kode": "VGHD",
+    "name": "Hago Diamond",
+    "createdAt": "2023-03-23T16:41:59.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 118,
+    "kategoriId": 8,
+    "kode": "VGUP",
+    "name": "Unipin",
+    "createdAt": "2023-03-23T16:41:59.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 119,
+    "kategoriId": 8,
+    "kode": "VGRG",
+    "name": "Razer Gold",
+    "createdAt": "2023-03-23T16:41:59.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 120,
+    "kategoriId": 8,
+    "kode": "VGWC",
+    "name": "Wave Coin",
+    "createdAt": "2023-03-23T16:41:59.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 121,
+    "kategoriId": 8,
+    "kode": "VGCC",
+    "name": "Cherry Credits",
+    "createdAt": "2023-03-23T16:42:00.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 122,
+    "kategoriId": 8,
+    "kode": "VGALM",
+    "name": "Apex Legend Mobile",
+    "createdAt": "2023-03-23T16:42:00.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 123,
+    "kategoriId": 8,
+    "kode": "VGGI",
+    "name": "Genshin Impact",
+    "createdAt": "2023-03-23T16:42:00.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 124,
+    "kategoriId": 9,
+    "kode": "UDBRI",
+    "name": "Brizzi BRI",
+    "createdAt": "2023-03-23T16:42:00.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 125,
+    "kategoriId": 9,
+    "kode": "UDEM",
+    "name": "E-Money Mandiri",
+    "createdAt": "2023-03-23T16:42:00.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 126,
+    "kategoriId": 9,
+    "kode": "UDTCB",
+    "name": "Tapcash BNI",
+    "createdAt": "2023-03-23T16:42:00.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 128,
+    "kategoriId": 9,
+    "kode": "UDGP",
+    "name": "Gopay",
+    "createdAt": "2023-03-23T16:42:01.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 129,
+    "kategoriId": 9,
+    "kode": "UDGPD",
+    "name": "Gopay Driver",
+    "createdAt": "2023-03-23T16:42:01.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 130,
+    "kategoriId": 9,
+    "kode": "UDGR",
+    "name": "Grab",
+    "createdAt": "2023-03-23T16:42:01.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 131,
+    "kategoriId": 9,
+    "kode": "UDGRD",
+    "name": "Grab Driver",
+    "createdAt": "2023-03-23T16:42:02.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 132,
+    "kategoriId": 9,
+    "kode": "UDOVO",
+    "name": "OVO",
+    "createdAt": "2023-03-23T16:42:02.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 133,
+    "kategoriId": 9,
+    "kode": "UDDNA",
+    "name": "Dana",
+    "createdAt": "2023-03-23T16:42:02.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 134,
+    "kategoriId": 9,
+    "kode": "UDLA",
+    "name": "LinkAja",
+    "createdAt": "2023-03-23T16:42:02.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 135,
+    "kategoriId": 9,
+    "kode": "UDSKU",
+    "name": "Sakuku BCA",
+    "createdAt": "2023-03-23T16:42:02.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 136,
+    "kategoriId": 9,
+    "kode": "UDISKU",
+    "name": "I-SAKU Indomaret",
+    "createdAt": "2023-03-23T16:42:02.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 137,
+    "kategoriId": 9,
+    "kode": "UDKSP",
+    "name": "Kaspro",
+    "createdAt": "2023-03-23T16:42:03.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 138,
+    "kategoriId": 9,
+    "kode": "UDMXMD",
+    "name": "Maxim Driver",
+    "createdAt": "2023-03-23T16:42:03.000Z",
+    "updatedAt": "2026-06-13T08:40:52.695Z"
+  },
+  {
+    "id": 139,
+    "kategoriId": 9,
+    "kode": "UDBL",
+    "name": "Bukalapak",
+    "createdAt": "2023-03-23T16:42:03.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 142,
+    "kategoriId": 9,
+    "kode": "UDSHPA",
+    "name": "Shopeepay",
+    "createdAt": "2023-03-23T16:42:04.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 143,
+    "kategoriId": 9,
+    "kode": "UDSHPD",
+    "name": "ShopeeFood Driver",
+    "createdAt": "2023-03-23T16:42:04.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 144,
+    "kategoriId": 10,
+    "kode": "WIFID",
+    "name": "Wifi ID",
+    "createdAt": "2023-03-23T16:42:05.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 145,
+    "kategoriId": 11,
+    "kode": "TVKGM",
+    "name": "Garmedia",
+    "createdAt": "2023-03-23T16:42:05.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 146,
+    "kategoriId": 11,
+    "kode": "TVKKV",
+    "name": "K-Vision",
+    "createdAt": "2023-03-23T16:42:05.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 147,
+    "kategoriId": 11,
+    "kode": "TVKMR",
+    "name": "Matrix",
+    "createdAt": "2023-03-23T16:42:06.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 148,
+    "kategoriId": 11,
+    "kode": "TVKOR",
+    "name": "Orange",
+    "createdAt": "2023-03-23T16:42:06.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 149,
+    "kategoriId": 11,
+    "kode": "TVKSI",
+    "name": "Skynindo",
+    "createdAt": "2023-03-23T16:42:06.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 150,
+    "kategoriId": 11,
+    "kode": "TVKTP",
+    "name": "Topas",
+    "createdAt": "2023-03-23T16:42:06.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 151,
+    "kategoriId": 12,
+    "kode": "VMKFC",
+    "name": "KFC",
+    "createdAt": "2023-03-23T16:42:06.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 152,
+    "kategoriId": 12,
+    "kode": "VMHH",
+    "name": "Hop Hop",
+    "createdAt": "2023-03-23T16:42:06.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 153,
+    "kategoriId": 12,
+    "kode": "VMLR",
+    "name": "Lotteria",
+    "createdAt": "2023-03-23T16:42:07.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 154,
+    "kategoriId": 14,
+    "kode": "VDIT",
+    "name": "ITunes",
+    "createdAt": "2023-03-23T16:42:07.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 155,
+    "kategoriId": 15,
+    "kode": "MAAX",
+    "name": "Axis Masa Aktif Kuota",
+    "createdAt": "2023-03-23T16:42:07.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 156,
+    "kategoriId": 15,
+    "kode": "MATR",
+    "name": "Tri Masa Aktif Kartu",
+    "createdAt": "2023-03-23T16:42:07.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 157,
+    "kategoriId": 15,
+    "kode": "TMA",
+    "name": "Telkomsel Masa Aktif",
+    "createdAt": "2023-03-23T16:42:07.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 158,
+    "kategoriId": 17,
+    "kode": "BCA",
+    "name": "Bank Central Asia",
+    "createdAt": "2023-03-23T16:42:08.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 159,
+    "kategoriId": 17,
+    "kode": "MANDIRI",
+    "name": "Bank Mandiri",
+    "createdAt": "2023-03-23T16:42:08.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 160,
+    "kategoriId": 17,
+    "kode": "BNI",
+    "name": "Bank Negara Indonesia",
+    "createdAt": "2023-03-23T16:42:08.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 161,
+    "kategoriId": 17,
+    "kode": "PERMATA",
+    "name": "Bank Permata",
+    "createdAt": "2023-03-23T16:42:08.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 162,
+    "kategoriId": 17,
+    "kode": "BRI",
+    "name": "Bank Rakyat Indonesia",
+    "createdAt": "2023-03-23T16:42:08.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 163,
+    "kategoriId": 17,
+    "kode": "CIMB_NIAGA",
+    "name": "CIMB Niaga Bank",
+    "createdAt": "2023-03-23T16:42:09.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 164,
+    "kategoriId": 17,
+    "kode": "DANAMON",
+    "name": "Bank Danamon",
+    "createdAt": "2023-03-23T16:42:09.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 165,
+    "kategoriId": 17,
+    "kode": "PANIN",
+    "name": "Bank Panin",
+    "createdAt": "2023-03-23T16:42:09.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 166,
+    "kategoriId": 17,
+    "kode": "BII",
+    "name": "Bank Maybank",
+    "createdAt": "2023-03-23T16:42:09.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 167,
+    "kategoriId": 17,
+    "kode": "ANGLOMAS",
+    "name": "Anglomas International Bank",
+    "createdAt": "2023-03-23T16:42:09.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 168,
+    "kategoriId": 17,
+    "kode": "BANGKOK",
+    "name": "Bangkok Bank",
+    "createdAt": "2023-03-23T16:42:09.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 169,
+    "kategoriId": 17,
+    "kode": "IBK",
+    "name": "Bank IBK Indonesia",
+    "createdAt": "2023-03-23T16:42:10.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 170,
+    "kategoriId": 17,
+    "kode": "SINARMAS",
+    "name": "Sinarmas",
+    "createdAt": "2023-03-23T16:42:10.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 171,
+    "kategoriId": 17,
+    "kode": "BRI_AGRO",
+    "name": "Bank BRI Agro",
+    "createdAt": "2023-03-23T16:42:10.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 172,
+    "kategoriId": 17,
+    "kode": "ANDARA",
+    "name": "Bank Andara",
+    "createdAt": "2023-03-23T16:42:10.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 173,
+    "kategoriId": 17,
+    "kode": "ANTAR_DAERAH",
+    "name": "Bank CCB Indonesia",
+    "createdAt": "2023-03-23T16:42:10.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 174,
+    "kategoriId": 17,
+    "kode": "ANZ",
+    "name": "Bank ANZ Indonesia",
+    "createdAt": "2023-03-23T16:42:11.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 175,
+    "kategoriId": 17,
+    "kode": "ARTHA",
+    "name": "Bank Artha Graha International",
+    "createdAt": "2023-03-23T16:42:11.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 176,
+    "kategoriId": 17,
+    "kode": "ARTOS",
+    "name": "Bank Artos Indonesia",
+    "createdAt": "2023-03-23T16:42:11.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 177,
+    "kategoriId": 17,
+    "kode": "BISNIS",
+    "name": "Bank Bisnis Internasional",
+    "createdAt": "2023-03-23T16:42:11.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 178,
+    "kategoriId": 17,
+    "kode": "BJB",
+    "name": "Bank BJB",
+    "createdAt": "2023-03-23T16:42:11.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 179,
+    "kategoriId": 17,
+    "kode": "BNP",
+    "name": "Bank BNP Paribas",
+    "createdAt": "2023-03-23T16:42:11.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 180,
+    "kategoriId": 17,
+    "kode": "BUKOPIN",
+    "name": "Bank Bukopin",
+    "createdAt": "2023-03-23T16:42:13.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 181,
+    "kategoriId": 17,
+    "kode": "BUMI_ARTA",
+    "name": "Bank Bumi Arta",
+    "createdAt": "2023-03-23T16:42:13.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 182,
+    "kategoriId": 17,
+    "kode": "CAPITAL",
+    "name": "Bank Capital Indonesia",
+    "createdAt": "2023-03-23T16:42:13.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 183,
+    "kategoriId": 17,
+    "kode": "BCA_SYR",
+    "name": "Bank Central Asia (BCA) Syariah",
+    "createdAt": "2023-03-23T16:42:13.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 184,
+    "kategoriId": 17,
+    "kode": "CHINATRUST",
+    "name": "Bank Chinatrust Indonesia",
+    "createdAt": "2023-03-23T16:42:13.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 185,
+    "kategoriId": 17,
+    "kode": "CIMB_UUS",
+    "name": "Bank CIMB Niaga UUS",
+    "createdAt": "2023-03-23T16:42:13.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 186,
+    "kategoriId": 17,
+    "kode": "COMMONWEALTH",
+    "name": "Bank Commonwealth",
+    "createdAt": "2023-03-23T16:42:14.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 187,
+    "kategoriId": 17,
+    "kode": "DANAMON_UUS",
+    "name": "Bank Danamon UUS",
+    "createdAt": "2023-03-23T16:42:14.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 188,
+    "kategoriId": 17,
+    "kode": "DBS",
+    "name": "Bank DBS Indonesia",
+    "createdAt": "2023-03-23T16:42:14.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 189,
+    "kategoriId": 17,
+    "kode": "DINAR_INDONESIA",
+    "name": "Bank Dinar Indonesia",
+    "createdAt": "2023-03-23T16:42:14.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 190,
+    "kategoriId": 17,
+    "kode": "OKE",
+    "name": "Bank OKE",
+    "createdAt": "2023-03-23T16:42:14.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 191,
+    "kategoriId": 17,
+    "kode": "DKI",
+    "name": "Bank DKI",
+    "createdAt": "2023-03-23T16:42:14.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 192,
+    "kategoriId": 17,
+    "kode": "DKI_UUS",
+    "name": "Bank DKI UUS",
+    "createdAt": "2023-03-23T16:42:15.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 193,
+    "kategoriId": 17,
+    "kode": "FAMA",
+    "name": "Bank Fama International",
+    "createdAt": "2023-03-23T16:42:15.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 194,
+    "kategoriId": 17,
+    "kode": "GANESHA",
+    "name": "Bank Ganesha",
+    "createdAt": "2023-03-23T16:42:15.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 195,
+    "kategoriId": 17,
+    "kode": "HANA",
+    "name": "Bank Hana",
+    "createdAt": "2023-03-23T16:42:15.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 196,
+    "kategoriId": 17,
+    "kode": "HARDA_INTERNASIONAL",
+    "name": "Bank Harda Internasional",
+    "createdAt": "2023-03-23T16:42:15.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 197,
+    "kategoriId": 17,
+    "kode": "WOORI_SAUDARA",
+    "name": "Bank Woori Saudara",
+    "createdAt": "2023-03-23T16:42:15.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 198,
+    "kategoriId": 17,
+    "kode": "ICBC",
+    "name": "Bank ICBC Indonesia",
+    "createdAt": "2023-03-23T16:42:16.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 199,
+    "kategoriId": 17,
+    "kode": "INA_PERDANA",
+    "name": "Bank Ina Perdana",
+    "createdAt": "2023-03-23T16:42:16.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 200,
+    "kategoriId": 17,
+    "kode": "INDEX_SELINDO",
+    "name": "Bank Index Selindo",
+    "createdAt": "2023-03-23T16:42:16.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 201,
+    "kategoriId": 17,
+    "kode": "JASA_JAKARTA",
+    "name": "Bank Jasa Jakarta",
+    "createdAt": "2023-03-23T16:42:16.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 202,
+    "kategoriId": 17,
+    "kode": "KESEJAHTERAAN_EKONOMI",
+    "name": "Bank Kesejahteraan Ekonomi",
+    "createdAt": "2023-03-23T16:42:16.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 203,
+    "kategoriId": 17,
+    "kode": "MASPION",
+    "name": "Bank Maspion Indonesia",
+    "createdAt": "2023-03-23T16:42:17.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 204,
+    "kategoriId": 17,
+    "kode": "MAYAPADA",
+    "name": "Bank Mayapada International",
+    "createdAt": "2023-03-23T16:42:17.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 205,
+    "kategoriId": 17,
+    "kode": "MAYBANK_SYR",
+    "name": "Bank Maybank Syariah Indonesia",
+    "createdAt": "2023-03-23T16:42:17.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 206,
+    "kategoriId": 17,
+    "kode": "MAYORA",
+    "name": "Bank Mayora",
+    "createdAt": "2023-03-23T16:42:17.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 207,
+    "kategoriId": 17,
+    "kode": "MEGA",
+    "name": "Bank Mega",
+    "createdAt": "2023-03-23T16:42:17.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 208,
+    "kategoriId": 17,
+    "kode": "MESTIKA_DHARMA",
+    "name": "Bank Mestika Dharma",
+    "createdAt": "2023-03-23T16:42:18.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 209,
+    "kategoriId": 17,
+    "kode": "SHINHAN",
+    "name": "Bank Shinhan Indonesia",
+    "createdAt": "2023-03-23T16:42:18.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 210,
+    "kategoriId": 17,
+    "kode": "MIZUHO",
+    "name": "Bank Mizuho Indonesia",
+    "createdAt": "2023-03-23T16:42:18.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 211,
+    "kategoriId": 17,
+    "kode": "MNC_INTERNASIONAL",
+    "name": "Bank MNC Internasional",
+    "createdAt": "2023-03-23T16:42:18.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 212,
+    "kategoriId": 17,
+    "kode": "MUAMALAT",
+    "name": "Bank Muamalat Indonesia",
+    "createdAt": "2023-03-23T16:42:19.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 213,
+    "kategoriId": 17,
+    "kode": "MULTI_ARTA_SENTOSA",
+    "name": "Bank Multi Arta Sentosa",
+    "createdAt": "2023-03-23T16:42:19.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 214,
+    "kategoriId": 17,
+    "kode": "J_TRUST",
+    "name": "Bank J Trust Indonesia",
+    "createdAt": "2023-03-23T16:42:19.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 215,
+    "kategoriId": 17,
+    "kode": "NATIONALNOBU",
+    "name": "Bank Nationalnobu",
+    "createdAt": "2023-03-23T16:42:19.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 216,
+    "kategoriId": 17,
+    "kode": "NUSANTARA_PARAHYANGAN",
+    "name": "Bank Nusantara Parahyangan",
+    "createdAt": "2023-03-23T16:42:20.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 217,
+    "kategoriId": 17,
+    "kode": "OCBC",
+    "name": "Bank OCBC NISP",
+    "createdAt": "2023-03-23T16:42:21.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 218,
+    "kategoriId": 17,
+    "kode": "OCBC_UUS",
+    "name": "Bank OCBC NISP UUS",
+    "createdAt": "2023-03-23T16:42:21.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 219,
+    "kategoriId": 17,
+    "kode": "BAML",
+    "name": "Bank of America Merill-Lynch",
+    "createdAt": "2023-03-23T16:42:21.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 220,
+    "kategoriId": 17,
+    "kode": "BOC",
+    "name": "Bank of China (BOC)",
+    "createdAt": "2023-03-23T16:42:21.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 221,
+    "kategoriId": 17,
+    "kode": "INDIA",
+    "name": "Bank of India Indonesia",
+    "createdAt": "2023-03-23T16:42:21.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 222,
+    "kategoriId": 17,
+    "kode": "TOKYO",
+    "name": "Bank of Tokyo Mitsubishi UFJ",
+    "createdAt": "2023-03-23T16:42:21.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 223,
+    "kategoriId": 17,
+    "kode": "PANIN_SYR",
+    "name": "Bank Panin Syariah",
+    "createdAt": "2023-03-23T16:42:22.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 224,
+    "kategoriId": 17,
+    "kode": "PERMATA_UUS",
+    "name": "Bank Permata UUS",
+    "createdAt": "2023-03-23T16:42:22.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 225,
+    "kategoriId": 17,
+    "kode": "QNB",
+    "name": "Bank QNB Indonesia",
+    "createdAt": "2023-03-23T16:42:22.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 226,
+    "kategoriId": 17,
+    "kode": "RABOBANK",
+    "name": "Bank Rabobank International Indonesia",
+    "createdAt": "2023-03-23T16:42:22.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 227,
+    "kategoriId": 17,
+    "kode": "RESONA",
+    "name": "Bank Resona Perdania",
+    "createdAt": "2023-03-23T16:42:22.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 228,
+    "kategoriId": 17,
+    "kode": "ROYAL",
+    "name": "Bank Royal Indonesia",
+    "createdAt": "2023-03-23T16:42:23.000Z",
+    "updatedAt": "2026-06-13T08:40:52.696Z"
+  },
+  {
+    "id": 229,
+    "kategoriId": 17,
+    "kode": "BTPN_SYR",
+    "name": "Bank BTPN Syariah",
+    "createdAt": "2023-03-23T16:42:23.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 230,
+    "kategoriId": 17,
+    "kode": "SAHABAT_SAMPOERNA",
+    "name": "Bank Sahabat Sampoerna",
+    "createdAt": "2023-03-23T16:42:23.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 231,
+    "kategoriId": 17,
+    "kode": "SBI_INDONESIA",
+    "name": "Bank SBI Indonesia",
+    "createdAt": "2023-03-23T16:42:23.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 232,
+    "kategoriId": 17,
+    "kode": "MANDIRI_TASPEN",
+    "name": "Bank Mandiri Taspen",
+    "createdAt": "2023-03-23T16:42:24.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 233,
+    "kategoriId": 17,
+    "kode": "MITSUI",
+    "name": "Bank Sumitomo Mitsui Indonesia",
+    "createdAt": "2023-03-23T16:42:24.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 234,
+    "kategoriId": 17,
+    "kode": "BRI_SYR",
+    "name": "Bank Syariah BRI",
+    "createdAt": "2023-03-23T16:42:24.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 235,
+    "kategoriId": 17,
+    "kode": "BUKOPIN_SYR",
+    "name": "Bank Syariah Bukopin",
+    "createdAt": "2023-03-23T16:42:24.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 236,
+    "kategoriId": 17,
+    "kode": "MANDIRI_SYR",
+    "name": "Bank Syariah Mandiri",
+    "createdAt": "2023-03-23T16:42:24.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 237,
+    "kategoriId": 17,
+    "kode": "MEGA_SYR",
+    "name": "Bank Syariah Mega",
+    "createdAt": "2023-03-23T16:42:24.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 238,
+    "kategoriId": 17,
+    "kode": "BTN",
+    "name": "Bank Tabungan Negara (BTN)",
+    "createdAt": "2023-03-23T16:42:25.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 239,
+    "kategoriId": 17,
+    "kode": "BTN_UUS",
+    "name": "Bank Tabungan Negara (BTN) UUS",
+    "createdAt": "2023-03-23T16:42:25.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 240,
+    "kategoriId": 17,
+    "kode": "TABUNGAN_PENSIUNAN_NASIONAL",
+    "name": "Bank Tabungan Pensiunan Nasional",
+    "createdAt": "2023-03-23T16:42:25.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 241,
+    "kategoriId": 17,
+    "kode": "TABUNGAN_PENSIUNAN_NASIONAL_UU",
+    "name": "Bank Tabungan Pensiunan Nasional UUS",
+    "createdAt": "2023-03-23T16:42:25.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 242,
+    "kategoriId": 17,
+    "kode": "UOB",
+    "name": "Bank UOB Indonesia",
+    "createdAt": "2023-03-23T16:42:25.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 243,
+    "kategoriId": 17,
+    "kode": "VICTORIA_INTERNASIONAL",
+    "name": "Bank Victoria Internasional",
+    "createdAt": "2023-03-23T16:42:25.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 244,
+    "kategoriId": 17,
+    "kode": "VICTORIA_SYR",
+    "name": "Bank Victoria Syariah",
+    "createdAt": "2023-03-23T16:42:26.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 245,
+    "kategoriId": 17,
+    "kode": "CCB",
+    "name": "Bank CCB Indonesia",
+    "createdAt": "2023-03-23T16:42:26.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 246,
+    "kategoriId": 17,
+    "kode": "WOORI",
+    "name": "Bank Woori Indonesia",
+    "createdAt": "2023-03-23T16:42:26.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 247,
+    "kategoriId": 17,
+    "kode": "YUDHA_BHAKTI",
+    "name": "Bank Yudha Bhakti",
+    "createdAt": "2023-03-23T16:42:26.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 248,
+    "kategoriId": 17,
+    "kode": "ACEH",
+    "name": "BPD Aceh",
+    "createdAt": "2023-03-23T16:42:26.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 249,
+    "kategoriId": 17,
+    "kode": "ACEH_UUS",
+    "name": "BPD Aceh UUS",
+    "createdAt": "2023-03-23T16:42:26.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 250,
+    "kategoriId": 17,
+    "kode": "BANTEN",
+    "name": "BPD Banten",
+    "createdAt": "2023-03-23T16:42:27.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 251,
+    "kategoriId": 17,
+    "kode": "BALI",
+    "name": "BPD Bali",
+    "createdAt": "2023-03-23T16:42:27.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 252,
+    "kategoriId": 17,
+    "kode": "BENGKULU",
+    "name": "BPD Bengkulu",
+    "createdAt": "2023-03-23T16:42:27.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 253,
+    "kategoriId": 17,
+    "kode": "BPD_DIY",
+    "name": "Bank Pembangunan Daerah (BPD DIY)",
+    "createdAt": "2023-03-23T16:42:27.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 254,
+    "kategoriId": 17,
+    "kode": "BPD_DIY_SYR",
+    "name": "Bank Pembangunan Daerah (BPD DIY) Syariah",
+    "createdAt": "2023-03-23T16:42:27.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 255,
+    "kategoriId": 17,
+    "kode": "JAMBI",
+    "name": "BPD Jambi",
+    "createdAt": "2023-03-23T16:42:28.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 256,
+    "kategoriId": 17,
+    "kode": "JAMBI_UUS",
+    "name": "BPD Jambi UUS",
+    "createdAt": "2023-03-23T16:42:28.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 257,
+    "kategoriId": 17,
+    "kode": "JAWA_TENGAH",
+    "name": "BPD Jawa Tengah",
+    "createdAt": "2023-03-23T16:42:28.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 258,
+    "kategoriId": 17,
+    "kode": "JAWA_TENGAH_UUS",
+    "name": "BPD Jawa Tengah UUS",
+    "createdAt": "2023-03-23T16:42:28.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 259,
+    "kategoriId": 17,
+    "kode": "JAWA_TIMUR",
+    "name": "BPD Jawa Timur",
+    "createdAt": "2023-03-23T16:42:29.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 260,
+    "kategoriId": 17,
+    "kode": "JAWA_TIMUR_UUS",
+    "name": "BPD Jawa Timur UUS",
+    "createdAt": "2023-03-23T16:42:29.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 261,
+    "kategoriId": 17,
+    "kode": "KALIMANTAN_BARAT",
+    "name": "BPD Kalimantan Barat",
+    "createdAt": "2023-03-23T16:42:29.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 262,
+    "kategoriId": 17,
+    "kode": "KALIMANTAN_BARAT_UUS",
+    "name": "BPD Kalimantan Barat UUS",
+    "createdAt": "2023-03-23T16:42:29.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 263,
+    "kategoriId": 17,
+    "kode": "KALIMANTAN_SELATAN",
+    "name": "BPD Kalimantan Selatan",
+    "createdAt": "2023-03-23T16:42:30.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 264,
+    "kategoriId": 17,
+    "kode": "KALIMANTAN_SELATAN_UUS",
+    "name": "BPD Kalimantan Selatan UUS",
+    "createdAt": "2023-03-23T16:42:30.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 265,
+    "kategoriId": 17,
+    "kode": "KALIMANTAN_TENGAH",
+    "name": "BPD Kalimantan Tengah",
+    "createdAt": "2023-03-23T16:42:30.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 266,
+    "kategoriId": 17,
+    "kode": "KALIMANTAN_TIMUR",
+    "name": "BPD Kalimantan Timur",
+    "createdAt": "2023-03-23T16:42:30.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 267,
+    "kategoriId": 17,
+    "kode": "KALIMANTAN_TIMUR_UUS",
+    "name": "BPD Kalimantan Timur UUS",
+    "createdAt": "2023-03-23T16:42:30.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 268,
+    "kategoriId": 17,
+    "kode": "LAMPUNG",
+    "name": "BPD Lampung",
+    "createdAt": "2023-03-23T16:42:30.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 269,
+    "kategoriId": 17,
+    "kode": "MALUKU",
+    "name": "BPD Maluku",
+    "createdAt": "2023-03-23T16:42:31.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 270,
+    "kategoriId": 17,
+    "kode": "NUSA_TENGGARA_BARAT",
+    "name": "BPD Nusa Tenggara Barat",
+    "createdAt": "2023-03-23T16:42:31.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 271,
+    "kategoriId": 17,
+    "kode": "NUSA_TENGGARA_BARAT_UUS",
+    "name": "BPD Nusa Tenggara Barat UUS",
+    "createdAt": "2023-03-23T16:42:31.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 272,
+    "kategoriId": 17,
+    "kode": "NUSA_TENGGARA_TIMUR",
+    "name": "BPD Nusa Tenggara Timur",
+    "createdAt": "2023-03-23T16:42:31.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 273,
+    "kategoriId": 17,
+    "kode": "PAPUA",
+    "name": "BPD Papua",
+    "createdAt": "2023-03-23T16:42:31.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 274,
+    "kategoriId": 17,
+    "kode": "RIAU_DAN_KEPRI",
+    "name": "BPD Riau Dan Kepri",
+    "createdAt": "2023-03-23T16:42:31.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 275,
+    "kategoriId": 17,
+    "kode": "RIAU_DAN_KEPRI_UUS",
+    "name": "BPD Riau Dan Kepri UUS",
+    "createdAt": "2023-03-23T16:42:32.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 276,
+    "kategoriId": 17,
+    "kode": "SULAWESI",
+    "name": "BPD Sulawesi Tengah",
+    "createdAt": "2023-03-23T16:42:32.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 277,
+    "kategoriId": 17,
+    "kode": "SULAWESI_TENGGARA",
+    "name": "BPD Sulawesi Tenggara",
+    "createdAt": "2023-03-23T16:42:32.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 278,
+    "kategoriId": 17,
+    "kode": "SULSELBAR",
+    "name": "BPD Sulselbar",
+    "createdAt": "2023-03-23T16:42:32.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 279,
+    "kategoriId": 17,
+    "kode": "SULSELBAR_UUS",
+    "name": "BPD Sulselbar UUS",
+    "createdAt": "2023-03-23T16:42:32.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 280,
+    "kategoriId": 17,
+    "kode": "SULUTGO",
+    "name": "Bank Sulutgo",
+    "createdAt": "2023-03-23T16:42:32.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 281,
+    "kategoriId": 17,
+    "kode": "SUMATERA_BARAT",
+    "name": "BPD Sumatera Barat",
+    "createdAt": "2023-03-23T16:42:33.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 282,
+    "kategoriId": 17,
+    "kode": "SUMATERA_BARAT_UUS",
+    "name": "BPD Sumatera Barat UUS",
+    "createdAt": "2023-03-23T16:42:33.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 283,
+    "kategoriId": 17,
+    "kode": "SUMSEL_DAN_BABEL",
+    "name": "BPD Sumsel Dan Babel",
+    "createdAt": "2023-03-23T16:42:33.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 284,
+    "kategoriId": 17,
+    "kode": "SUMSEL_DAN_BABEL_UUS",
+    "name": "BPD Sumsel Dan Babel UUS",
+    "createdAt": "2023-03-23T16:42:33.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 285,
+    "kategoriId": 17,
+    "kode": "SUMUT",
+    "name": "BPD Sumut",
+    "createdAt": "2023-03-23T16:42:33.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 286,
+    "kategoriId": 17,
+    "kode": "SUMUT_UUS",
+    "name": "BPD Sumut UUS",
+    "createdAt": "2023-03-23T16:42:34.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 287,
+    "kategoriId": 17,
+    "kode": "CENTRATAMA",
+    "name": "Centratama Nasional Bank",
+    "createdAt": "2023-03-23T16:42:34.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 288,
+    "kategoriId": 17,
+    "kode": "CITIBANK",
+    "name": "Citibank",
+    "createdAt": "2023-03-23T16:42:34.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 289,
+    "kategoriId": 17,
+    "kode": "DEUTSCHE",
+    "name": "Deutsche Bank",
+    "createdAt": "2023-03-23T16:42:34.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 290,
+    "kategoriId": 17,
+    "kode": "HSBC",
+    "name": "Hongkong and Shanghai Bank Corporation (HSBC)",
+    "createdAt": "2023-03-23T16:42:34.000Z",
+    "updatedAt": "2026-06-13T08:40:52.697Z"
+  },
+  {
+    "id": 291,
+    "kategoriId": 17,
+    "kode": "HSBC_UUS",
+    "name": "Hongkong and Shanghai Bank Corporation (HSBC) UUS",
+    "createdAt": "2023-03-23T16:42:35.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 292,
+    "kategoriId": 17,
+    "kode": "JPMORGAN",
+    "name": "JP Morgan Chase Bank",
+    "createdAt": "2023-03-23T16:42:35.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 293,
+    "kategoriId": 17,
+    "kode": "PRIMA_MASTER",
+    "name": "Prima Master Bank",
+    "createdAt": "2023-03-23T16:42:35.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 294,
+    "kategoriId": 17,
+    "kode": "STANDARD_CHARTERED",
+    "name": "Standard Charted Bank",
+    "createdAt": "2023-03-23T16:42:35.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 295,
+    "kategoriId": 17,
+    "kode": "MITRA_NIAGA",
+    "name": "Bank Mitra Niaga",
+    "createdAt": "2023-03-23T16:42:35.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 296,
+    "kategoriId": 17,
+    "kode": "EKSPOR_INDONESIA",
+    "name": "Bank Ekspor Indonesia",
+    "createdAt": "2023-03-23T16:42:35.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 297,
+    "kategoriId": 17,
+    "kode": "ARTA_NIAGA_KENCANA",
+    "name": "Bank Arta Niaga Kencana",
+    "createdAt": "2023-03-23T16:42:36.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 298,
+    "kategoriId": 17,
+    "kode": "BJB_SYR",
+    "name": "Bank BJB Syariah",
+    "createdAt": "2023-03-23T16:42:36.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 299,
+    "kategoriId": 17,
+    "kode": "BNI_SYR",
+    "name": "Bank BNI Syariah",
+    "createdAt": "2023-03-23T16:42:36.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 300,
+    "kategoriId": 17,
+    "kode": "BPR_KS",
+    "name": "BPR Karyajatnika Sadaya",
+    "createdAt": "2023-03-23T16:42:36.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 301,
+    "kategoriId": 17,
+    "kode": "SOBATKU",
+    "name": "KSP SAHABAT MITRA SEJATI",
+    "createdAt": "2023-03-23T16:42:36.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 302,
+    "kategoriId": 17,
+    "kode": "DANAGUNG_ABADI",
+    "name": "BPR Danagung Abadi",
+    "createdAt": "2023-03-23T16:42:36.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 303,
+    "kategoriId": 17,
+    "kode": "DANAGUNG_BAKTI",
+    "name": "BPR Danagung Bakti",
+    "createdAt": "2023-03-23T16:42:37.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 304,
+    "kategoriId": 17,
+    "kode": "DANAGUNG_RAMULTI",
+    "name": "BPR Danagung Ramulti",
+    "createdAt": "2023-03-23T16:42:37.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 305,
+    "kategoriId": 17,
+    "kode": "AGRIS",
+    "name": "Bank Agris",
+    "createdAt": "2023-03-23T16:42:37.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 306,
+    "kategoriId": 17,
+    "kode": "AGRONIAGA",
+    "name": "Bank Agroniaga",
+    "createdAt": "2023-03-23T16:42:37.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 307,
+    "kategoriId": 17,
+    "kode": "HIMPUNAN_SAUDARA",
+    "name": "Bank Himpunan Saudara 1906",
+    "createdAt": "2023-03-23T16:42:38.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 308,
+    "kategoriId": 17,
+    "kode": "METRO_EXPRESS",
+    "name": "Bank Metro Express",
+    "createdAt": "2023-03-23T16:42:38.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 309,
+    "kategoriId": 17,
+    "kode": "MUTIARA",
+    "name": "Bank Mutiara",
+    "createdAt": "2023-03-23T16:42:38.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 310,
+    "kategoriId": 17,
+    "kode": "QNB_KESAWAN",
+    "name": "Bank QNB Kesawan",
+    "createdAt": "2023-03-23T16:42:38.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 311,
+    "kategoriId": 17,
+    "kode": "SAHABAT_PURBA_DANARTA",
+    "name": "Bank Sahabat Purba Danarta",
+    "createdAt": "2023-03-23T16:42:38.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 312,
+    "kategoriId": 17,
+    "kode": "SINAR_HARAPAN_BALI",
+    "name": "Bank Sinar Harapan Bali",
+    "createdAt": "2023-03-23T16:42:39.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 313,
+    "kategoriId": 17,
+    "kode": "WINDU",
+    "name": "Bank Windu Kentjana Int",
+    "createdAt": "2023-03-23T16:42:39.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 314,
+    "kategoriId": 17,
+    "kode": "SULUT",
+    "name": "BPD Sulut",
+    "createdAt": "2023-03-23T16:42:39.000Z",
+    "updatedAt": "2026-06-13T08:40:52.698Z"
+  },
+  {
+    "id": 315,
+    "kategoriId": 17,
+    "kode": "BNI_UUS",
+    "name": "Bank Negara Indonesia 1946 (UUS)",
+    "createdAt": "2023-03-23T16:42:39.000Z",
+    "updatedAt": "2026-06-13T08:40:52.700Z"
+  },
+  {
+    "id": 316,
+    "kategoriId": 17,
+    "kode": "BII_UUS",
+    "name": "Bank International Indonesia (UUS)",
+    "createdAt": "2023-03-23T16:42:39.000Z",
+    "updatedAt": "2026-06-13T08:40:52.700Z"
+  },
+  {
+    "id": 317,
+    "kategoriId": 17,
+    "kode": "BJB_UUS",
+    "name": "Bank BJB (UUS)",
+    "createdAt": "2023-03-23T16:42:39.000Z",
+    "updatedAt": "2026-06-13T08:40:52.700Z"
+  },
+  {
+    "id": 318,
+    "kategoriId": 17,
+    "kode": "PUNDI_INDONESIA",
+    "name": "Bank Eksekutif Internasional",
+    "createdAt": "2023-03-23T16:42:40.000Z",
+    "updatedAt": "2026-06-13T08:40:52.700Z"
+  },
+  {
+    "id": 319,
+    "kategoriId": 17,
+    "kode": "ABN_AMRO",
+    "name": "Bank ABN Amro",
+    "createdAt": "2023-03-23T16:42:40.000Z",
+    "updatedAt": "2026-06-13T08:40:52.700Z"
+  },
+  {
+    "id": 320,
+    "kategoriId": 17,
+    "kode": "KEBD",
+    "name": "Korea Exchange Bank Danamon",
+    "createdAt": "2023-03-23T16:42:40.000Z",
+    "updatedAt": "2026-06-13T08:40:52.700Z"
+  },
+  {
+    "id": 321,
+    "kategoriId": 17,
+    "kode": "BARCLAYS",
+    "name": "Bank Barclays Indonesia",
+    "createdAt": "2023-03-23T16:42:40.000Z",
+    "updatedAt": "2026-06-13T08:40:52.700Z"
+  },
+  {
+    "id": 322,
+    "kategoriId": 17,
+    "kode": "OCBC_INDONESIA",
+    "name": "Bank OCBC - Indonesia",
+    "createdAt": "2023-03-23T16:42:40.000Z",
+    "updatedAt": "2026-06-13T08:40:52.700Z"
+  },
+  {
+    "id": 323,
+    "kategoriId": 18,
+    "kode": "PDTSLUV",
+    "name": "Telkomsel Data Unlock Voucher",
+    "createdAt": "2023-03-23T16:42:41.000Z",
+    "updatedAt": "2026-06-13T08:40:52.700Z"
+  },
+  {
+    "id": 324,
+    "kategoriId": 18,
+    "kode": "PDAXUV",
+    "name": "Axis Unlock Voucher",
+    "createdAt": "2023-03-23T16:42:41.000Z",
+    "updatedAt": "2026-06-13T08:40:52.700Z"
+  },
+  {
+    "id": 325,
+    "kategoriId": 18,
+    "kode": "PDTRKVZ",
+    "name": "Tri Unlock Voucher Zero",
+    "createdAt": "2023-03-23T16:42:41.000Z",
+    "updatedAt": "2026-06-13T08:40:52.700Z"
+  },
+  {
+    "id": 326,
+    "kategoriId": 18,
+    "kode": "PDTRKVJ",
+    "name": "Tri Unlock Voucher Jabo",
+    "createdAt": "2023-03-23T16:42:41.000Z",
+    "updatedAt": "2026-06-13T08:40:52.700Z"
+  },
+  {
+    "id": 327,
+    "kategoriId": 18,
+    "kode": "PDISTUVY",
+    "name": "Indosat Unlock Voucher Yellow",
+    "createdAt": "2023-03-23T16:42:41.000Z",
+    "updatedAt": "2026-06-13T08:40:52.700Z"
+  },
+  {
+    "id": 328,
+    "kategoriId": 18,
+    "kode": "PDISTUVCA",
+    "name": "Indosat Unlock Voucher Combo Attack",
+    "createdAt": "2023-03-23T16:42:41.000Z",
+    "updatedAt": "2026-06-13T08:40:52.700Z"
+  },
+  {
+    "id": 329,
+    "kategoriId": 18,
+    "kode": "PDISTUVCNA",
+    "name": "Indosat Unlock Voucher Combo Non Attack",
+    "createdAt": "2023-03-23T16:42:42.000Z",
+    "updatedAt": "2026-06-13T08:40:52.700Z"
+  },
+  {
+    "id": 330,
+    "kategoriId": 18,
+    "kode": "PDSFUVN",
+    "name": "Smartfren Data Unlock Voucher Nonstop",
+    "createdAt": "2023-03-23T16:42:42.000Z",
+    "updatedAt": "2026-06-13T08:40:52.700Z"
+  },
+  {
+    "id": 331,
+    "kategoriId": 18,
+    "kode": "PDSFUVU",
+    "name": "Smartfren Data Unlock Voucher Unlimited",
+    "createdAt": "2023-03-23T16:42:43.000Z",
+    "updatedAt": "2026-06-13T08:40:52.700Z"
+  },
+  {
+    "id": 332,
+    "kategoriId": 19,
+    "kode": "UKPTR",
+    "name": "Unlock Kartu Perdana Tri",
+    "createdAt": "2023-03-23T16:42:43.000Z",
+    "updatedAt": "2026-06-13T08:40:52.700Z"
+  },
+  {
+    "id": 333,
+    "kategoriId": 3,
+    "kode": "PICELCOMMLY",
+    "name": "Celcom Malaysia",
+    "createdAt": "2023-08-17T17:00:00.000Z",
+    "updatedAt": "2023-08-17T17:00:00.000Z"
+  },
+  {
+    "id": 334,
+    "kategoriId": 3,
+    "kode": "PIDIGIMLY",
+    "name": "Digi Malaysia",
+    "createdAt": "2023-08-17T17:00:00.000Z",
+    "updatedAt": "2023-08-17T17:00:00.000Z"
+  },
+  {
+    "id": 335,
+    "kategoriId": 20,
+    "kode": "ETMANDIRI",
+    "name": "Mandiri E-Toll",
+    "createdAt": "2023-08-18T17:00:00.000Z",
+    "updatedAt": "2023-08-18T17:00:00.000Z"
+  },
+  {
+    "id": 336,
+    "kategoriId": 20,
+    "kode": "ETINDOMARET",
+    "name": "Indomaret Card E-Money",
+    "createdAt": "2023-08-18T17:00:00.000Z",
+    "updatedAt": "2023-08-18T17:00:00.000Z"
+  },
+  {
+    "id": 337,
+    "kategoriId": 20,
+    "kode": "ETBRIZZI",
+    "name": "BRI BRIZZI",
+    "createdAt": "2023-08-18T17:00:00.000Z",
+    "updatedAt": "2023-08-18T17:00:00.000Z"
+  },
+  {
+    "id": 338,
+    "kategoriId": 27,
+    "kode": "SPEEDY",
+    "name": "Telkom / Indihome",
+    "createdAt": "2023-08-18T17:00:00.000Z",
+    "updatedAt": "2023-08-18T17:00:00.000Z"
+  },
+  {
+    "id": 339,
+    "kategoriId": 27,
+    "kode": "ITNMYR",
+    "name": "MyRepublic",
+    "createdAt": "2023-08-18T17:00:00.000Z",
+    "updatedAt": "2023-08-18T17:00:00.000Z"
+  },
+  {
+    "id": 340,
+    "kategoriId": 27,
+    "kode": "ITNCBN",
+    "name": "CBN",
+    "createdAt": "2023-08-18T17:00:00.000Z",
+    "updatedAt": "2023-08-18T17:00:00.000Z"
+  },
+  {
+    "id": 348,
+    "kategoriId": 1,
+    "kode": "PIUXL",
+    "name": "XL",
+    "createdAt": "2023-12-12T01:18:39.000Z",
+    "updatedAt": "2023-12-12T01:18:39.000Z"
+  },
+  {
+    "id": 349,
+    "kategoriId": 5,
+    "kode": "PTPTSLPAS",
+    "name": "Telkomsel PAS",
+    "createdAt": "2024-01-23T23:29:48.000Z",
+    "updatedAt": "2024-01-23T23:29:48.000Z"
+  }
+]
