@@ -65,6 +65,9 @@ jobs:
             echo "⬇️ 4. Mengambil source code terbaru..."
             git pull
 
+            echo "🔑 Menyuntikkan environment variable Vite..."
+            echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > ./Frontend/.env
+
             echo "🏗️ 5. Membangun ulang image..."
             docker-compose build
 
