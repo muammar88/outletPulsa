@@ -62,8 +62,9 @@ jobs:
             echo "🗑️ 3. Menghapus image outletpulsa-backend..."
             docker rmi outletpulsa-backend || true
 
-            echo "⬇️ 4. Mengambil source code terbaru..."
-            git pull
+            echo "📥 Pull latest image"
+            docker pull muammar88/outletpulsa-frontend:1.0.0
+            docker pull muammar88/outletpulsa-backend:1.0.0
 
             echo "🔑 Menyuntikkan environment variable Vite..."
             echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > ./Frontend/.env
