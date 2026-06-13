@@ -11,7 +11,7 @@ const parseDate = (val: string) => {
 export default async function seedProdukPascabayar(prisma: PrismaClient) {
   console.log('Mengekstrak data Produk Pascabayar dari produk_pascabayars.sql...');
   
-  const sqlPath = path.resolve(process.cwd(), '../produk_pascabayars.sql');
+  const sqlPath = path.join(__dirname, 'sql', 'produk_pascabayars.sql');
   if (!fs.existsSync(sqlPath)) {
     console.log(`File SQL tidak ditemukan di ${sqlPath}`);
     return;
