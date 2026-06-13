@@ -55,7 +55,7 @@
         <!-- Bottom badge -->
         <div class="mt-10 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/8 border border-white/10 backdrop-blur">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="text-white/60 text-xs font-medium">Sistem aktif & aman — SSL 256-bit</span>
+          <span class="text-white/60 text-xs font-medium">Sistem aktif &amp; aman — SSL 256-bit</span>
         </div>
       </div>
     </div>
@@ -75,112 +75,205 @@
         <!-- Login Card -->
         <div class="bg-white rounded-[2rem] shadow-2xl shadow-slate-200/80 p-8 border border-gray-100/80">
 
-          <!-- Card Header -->
-          <div class="text-center mb-8">
-            <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center mb-4 shadow-inner">
-              <IconShieldLock class="w-8 h-8 text-blue-600" :stroke="1.8" />
-            </div>
-            <h2 class="text-2xl font-extrabold text-gray-900">Login Administrator</h2>
-            <p class="text-gray-400 text-sm mt-1.5">Masukkan kredensial akun admin Anda</p>
-          </div>
-
-          <form class="space-y-5" @submit.prevent="handleLogin" novalidate>
-
-            <!-- Username -->
-            <div class="space-y-1.5">
-              <label class="text-sm font-semibold text-gray-700">Username</label>
-              <div class="relative">
-                <span class="absolute top-1/2 -translate-y-1/2 left-4 flex items-center pointer-events-none z-10">
-                  <IconUser class="w-5 h-5 text-gray-400" :stroke="2" />
-                </span>
-                <input
-                  v-model="form.username"
-                  type="text"
-                  placeholder="Masukkan username"
-                  class="input-field pl-12"
-                  :class="{ 'input-field-error': errors.username }"
-                  required
-                  @blur="validateUsername"
-                />
+          <!-- ═══ STEP 1: CREDENTIALS ═══ -->
+          <transition name="step-fade" mode="out-in">
+            <div v-if="loginStep === 'credentials'" key="credentials">
+              <!-- Card Header -->
+              <div class="text-center mb-8">
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center mb-4 shadow-inner">
+                  <IconShieldLock class="w-8 h-8 text-blue-600" :stroke="1.8" />
+                </div>
+                <h2 class="text-2xl font-extrabold text-gray-900">Login Administrator</h2>
+                <p class="text-gray-400 text-sm mt-1.5">Masukkan kredensial akun admin Anda</p>
               </div>
-              <p v-if="errors.username" class="text-red-500 text-xs flex items-center gap-1">
-                <IconAlertCircle class="w-3.5 h-3.5" :stroke="2" />
-                {{ errors.username }}
-              </p>
+
+              <form class="space-y-5" @submit.prevent="handleLogin" novalidate>
+
+                <!-- Username -->
+                <div class="space-y-1.5">
+                  <label class="text-sm font-semibold text-gray-700">Username</label>
+                  <div class="relative">
+                    <span class="absolute top-1/2 -translate-y-1/2 left-4 flex items-center pointer-events-none z-10">
+                      <IconUser class="w-5 h-5 text-gray-400" :stroke="2" />
+                    </span>
+                    <input
+                      v-model="form.username"
+                      type="text"
+                      placeholder="Masukkan username"
+                      class="input-field pl-12"
+                      :class="{ 'input-field-error': errors.username }"
+                      required
+                      @blur="validateUsername"
+                    />
+                  </div>
+                  <p v-if="errors.username" class="text-red-500 text-xs flex items-center gap-1">
+                    <IconAlertCircle class="w-3.5 h-3.5" :stroke="2" />
+                    {{ errors.username }}
+                  </p>
+                </div>
+
+                <!-- Password -->
+                <div class="space-y-1.5">
+                  <label class="text-sm font-semibold text-gray-700">Password</label>
+                  <div class="relative">
+                    <span class="absolute top-1/2 -translate-y-1/2 left-4 flex items-center pointer-events-none z-10">
+                      <IconLock class="w-5 h-5 text-gray-400" :stroke="2" />
+                    </span>
+                    <input
+                      v-model="form.password"
+                      :type="showPassword ? 'text' : 'password'"
+                      placeholder="Masukkan password"
+                      class="input-field pl-12 pr-12"
+                      :class="{ 'input-field-error': errors.password }"
+                      required
+                      @blur="validatePassword"
+                    />
+                    <button
+                      type="button"
+                      @click="showPassword = !showPassword"
+                      class="absolute top-1/2 -translate-y-1/2 right-4 flex items-center text-gray-400 hover:text-blue-600 transition-colors z-10"
+                    >
+                      <IconEye v-if="!showPassword" class="w-5 h-5" :stroke="2" />
+                      <IconEyeOff v-else class="w-5 h-5" :stroke="2" />
+                    </button>
+                  </div>
+                  <p v-if="errors.password" class="text-red-500 text-xs flex items-center gap-1">
+                    <IconAlertCircle class="w-3.5 h-3.5" :stroke="2" />
+                    {{ errors.password }}
+                  </p>
+                </div>
+
+                <!-- Remember + Forgot -->
+                <div class="flex items-center justify-between text-sm">
+                  <label class="flex items-center gap-2 text-gray-500 cursor-pointer group select-none">
+                    <div class="relative">
+                      <input type="checkbox" v-model="form.remember" class="sr-only peer" />
+                      <div class="w-5 h-5 rounded-md border-2 border-gray-300 peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-all flex items-center justify-center">
+                        <IconCheck class="w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" :stroke="3" />
+                      </div>
+                    </div>
+                    Ingat saya
+                  </label>
+                  <a href="#" class="text-blue-600 font-semibold hover:underline hover:text-blue-700 transition-colors">Lupa password?</a>
+                </div>
+
+                <!-- Error global -->
+                <transition name="error-fade">
+                  <div v-if="loginError" class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-2xl px-4 py-3">
+                    <IconAlertCircle class="w-5 h-5 flex-shrink-0" :stroke="2" />
+                    <p class="text-sm font-medium">{{ loginError }}</p>
+                  </div>
+                </transition>
+
+                <!-- Submit Button -->
+                <button
+                  type="submit"
+                  :disabled="loading"
+                  class="submit-btn"
+                >
+                  <span v-if="!loading" class="flex items-center justify-center gap-2">
+                    <IconLogin class="w-5 h-5" :stroke="2" />
+                    Masuk ke Dashboard
+                  </span>
+                  <span v-else class="flex items-center justify-center gap-2">
+                    <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                    </svg>
+                    Memproses...
+                  </span>
+                </button>
+              </form>
             </div>
 
-            <!-- Password -->
-            <div class="space-y-1.5">
-              <label class="text-sm font-semibold text-gray-700">Password</label>
-              <div class="relative">
-                <span class="absolute top-1/2 -translate-y-1/2 left-4 flex items-center pointer-events-none z-10">
-                  <IconLock class="w-5 h-5 text-gray-400" :stroke="2" />
-                </span>
-                <input
-                  v-model="form.password"
-                  :type="showPassword ? 'text' : 'password'"
-                  placeholder="Masukkan password"
-                  class="input-field pl-12 pr-12"
-                  :class="{ 'input-field-error': errors.password }"
-                  required
-                  @blur="validatePassword"
-                />
+            <!-- ═══ STEP 2: OTP VERIFICATION ═══ -->
+            <div v-else-if="loginStep === 'otp'" key="otp">
+              <!-- Card Header -->
+              <div class="text-center mb-8">
+                <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center mb-4 shadow-inner">
+                  <IconShieldCheck class="w-8 h-8 text-emerald-600" :stroke="1.8" />
+                </div>
+                <h2 class="text-2xl font-extrabold text-gray-900">Verifikasi 2FA</h2>
+                <p class="text-gray-400 text-sm mt-1.5">Masukkan kode 6 digit dari Google Authenticator</p>
+              </div>
+
+              <form class="space-y-6" @submit.prevent="handleVerifyOtp" novalidate>
+
+                <!-- OTP Input Boxes -->
+                <div class="flex justify-center gap-3">
+                  <input
+                    v-for="(_, index) in 6"
+                    :key="index"
+                    :ref="el => { otpInputRefs[index] = el as HTMLInputElement }"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="1"
+                    class="otp-input"
+                    :class="{
+                      'otp-input-filled': otpDigits[index] !== '',
+                      'otp-input-error': otpError
+                    }"
+                    :value="otpDigits[index]"
+                    @input="handleOtpInput(index, $event)"
+                    @keydown="handleOtpKeydown(index, $event)"
+                    @paste="handleOtpPaste($event)"
+                    @focus="otpError = false"
+                  />
+                </div>
+
+                <!-- Timer visual -->
+                <div class="flex items-center justify-center gap-2 text-sm">
+                  <div class="relative w-6 h-6">
+                    <svg class="w-6 h-6 -rotate-90" viewBox="0 0 36 36">
+                      <circle cx="18" cy="18" r="15" fill="none" stroke="#e5e7eb" stroke-width="3" />
+                      <circle cx="18" cy="18" r="15" fill="none" stroke="#10b981" stroke-width="3"
+                        stroke-dasharray="94.25" :stroke-dashoffset="94.25 - (94.25 * totpTimer / 30)"
+                        stroke-linecap="round" class="transition-all duration-1000 ease-linear" />
+                    </svg>
+                  </div>
+                  <span class="text-gray-500 font-medium">Kode berubah dalam <span class="text-emerald-600 font-bold">{{ totpTimer }}s</span></span>
+                </div>
+
+                <!-- Error OTP -->
+                <transition name="error-fade">
+                  <div v-if="loginError" class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-2xl px-4 py-3">
+                    <IconAlertCircle class="w-5 h-5 flex-shrink-0" :stroke="2" />
+                    <p class="text-sm font-medium">{{ loginError }}</p>
+                  </div>
+                </transition>
+
+                <!-- Verify Button -->
+                <button
+                  type="submit"
+                  :disabled="loadingOtp || otpCode.length !== 6"
+                  class="submit-btn"
+                  :class="{ 'submit-btn-emerald': !loadingOtp && otpCode.length === 6 }"
+                >
+                  <span v-if="!loadingOtp" class="flex items-center justify-center gap-2">
+                    <IconShieldCheck class="w-5 h-5" :stroke="2" />
+                    Verifikasi Kode
+                  </span>
+                  <span v-else class="flex items-center justify-center gap-2">
+                    <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                    </svg>
+                    Memverifikasi...
+                  </span>
+                </button>
+
+                <!-- Back button -->
                 <button
                   type="button"
-                  @click="showPassword = !showPassword"
-                  class="absolute top-1/2 -translate-y-1/2 right-4 flex items-center text-gray-400 hover:text-blue-600 transition-colors z-10"
+                  @click="goBackToCredentials"
+                  class="w-full flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-blue-600 font-semibold transition-colors py-2"
                 >
-                  <IconEye v-if="!showPassword" class="w-5 h-5" :stroke="2" />
-                  <IconEyeOff v-else class="w-5 h-5" :stroke="2" />
+                  <IconArrowLeft class="w-4 h-4" :stroke="2" />
+                  Kembali ke halaman login
                 </button>
-              </div>
-              <p v-if="errors.password" class="text-red-500 text-xs flex items-center gap-1">
-                <IconAlertCircle class="w-3.5 h-3.5" :stroke="2" />
-                {{ errors.password }}
-              </p>
+              </form>
             </div>
-
-            <!-- Remember + Forgot -->
-            <div class="flex items-center justify-between text-sm">
-              <label class="flex items-center gap-2 text-gray-500 cursor-pointer group select-none">
-                <div class="relative">
-                  <input type="checkbox" v-model="form.remember" class="sr-only peer" />
-                  <div class="w-5 h-5 rounded-md border-2 border-gray-300 peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-all flex items-center justify-center">
-                    <IconCheck class="w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" :stroke="3" />
-                  </div>
-                </div>
-                Ingat saya
-              </label>
-              <a href="#" class="text-blue-600 font-semibold hover:underline hover:text-blue-700 transition-colors">Lupa password?</a>
-            </div>
-
-            <!-- Error global -->
-            <transition name="error-fade">
-              <div v-if="loginError" class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-2xl px-4 py-3">
-                <IconAlertCircle class="w-5 h-5 flex-shrink-0" :stroke="2" />
-                <p class="text-sm font-medium">{{ loginError }}</p>
-              </div>
-            </transition>
-
-            <!-- Submit Button -->
-            <button
-              type="submit"
-              :disabled="loading"
-              class="submit-btn"
-            >
-              <span v-if="!loading" class="flex items-center justify-center gap-2">
-                <IconLogin class="w-5 h-5" :stroke="2" />
-                Masuk ke Dashboard
-              </span>
-              <span v-else class="flex items-center justify-center gap-2">
-                <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-                </svg>
-                Memproses...
-              </span>
-            </button>
-          </form>
+          </transition>
         </div>
 
         <p class="text-center text-xs text-gray-400 mt-6 flex items-center justify-center gap-1">
@@ -194,12 +287,13 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { reactive, ref, computed, onUnmounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import { login_administrator } from '@/service/auth';
+import { login_administrator, verify_2fa } from '@/service/auth';
 import { setAdminLoggedIn } from '@/utils/cookies';
 import {
   IconShieldLock,
+  IconShieldCheck,
   IconUser,
   IconLock,
   IconEye,
@@ -211,11 +305,16 @@ import {
   IconUsers,
   IconReceipt,
   IconSettings,
+  IconArrowLeft,
 } from '@tabler/icons-vue';
 
 const showPassword = ref(false);
 const loading = ref(false);
+const loadingOtp = ref(false);
 const loginError = ref('');
+const loginStep = ref<'credentials' | 'otp'>('credentials');
+const tempToken = ref('');
+const otpError = ref(false);
 
 const router = useRouter();
 
@@ -228,6 +327,35 @@ const form = reactive({
 const errors = reactive({
   username: '',
   password: '',
+});
+
+// OTP state
+const otpDigits = reactive<string[]>(['', '', '', '', '', '']);
+const otpInputRefs = ref<(HTMLInputElement | null)[]>([]);
+const otpCode = computed(() => otpDigits.join(''));
+
+// TOTP timer (visual countdown 30s cycle)
+const totpTimer = ref(30);
+let totpInterval: ReturnType<typeof setInterval> | null = null;
+
+function startTotpTimer() {
+  // TOTP codes change every 30 seconds, synced to Unix time
+  const updateTimer = () => {
+    totpTimer.value = 30 - (Math.floor(Date.now() / 1000) % 30);
+  };
+  updateTimer();
+  totpInterval = setInterval(updateTimer, 1000);
+}
+
+function stopTotpTimer() {
+  if (totpInterval) {
+    clearInterval(totpInterval);
+    totpInterval = null;
+  }
+}
+
+onUnmounted(() => {
+  stopTotpTimer();
 });
 
 const features = [
@@ -244,6 +372,68 @@ function validatePassword() {
   errors.password = form.password.length < 6 ? 'Password minimal 6 karakter' : '';
 }
 
+// ─── OTP Input Handlers ────────────────────────────────────────────────
+
+function handleOtpInput(index: number, event: Event) {
+  const input = event.target as HTMLInputElement;
+  const value = input.value.replace(/[^0-9]/g, '');
+
+  if (value.length > 0) {
+    otpDigits[index] = value[0];
+    if (index < 5) {
+      nextTick(() => otpInputRefs.value[index + 1]?.focus());
+    }
+  } else {
+    otpDigits[index] = '';
+  }
+}
+
+function handleOtpKeydown(index: number, event: KeyboardEvent) {
+  if (event.key === 'Backspace') {
+    if (otpDigits[index] === '' && index > 0) {
+      otpDigits[index - 1] = '';
+      nextTick(() => otpInputRefs.value[index - 1]?.focus());
+    } else {
+      otpDigits[index] = '';
+    }
+  } else if (event.key === 'ArrowLeft' && index > 0) {
+    otpInputRefs.value[index - 1]?.focus();
+  } else if (event.key === 'ArrowRight' && index < 5) {
+    otpInputRefs.value[index + 1]?.focus();
+  }
+}
+
+function handleOtpPaste(event: ClipboardEvent) {
+  event.preventDefault();
+  const pastedData = event.clipboardData?.getData('text')?.replace(/[^0-9]/g, '') || '';
+  if (pastedData.length === 0) return;
+
+  for (let i = 0; i < 6; i++) {
+    otpDigits[i] = pastedData[i] || '';
+  }
+
+  // Focus terakhir yang terisi
+  const lastIndex = Math.min(pastedData.length, 6) - 1;
+  nextTick(() => otpInputRefs.value[lastIndex >= 0 ? lastIndex : 0]?.focus());
+}
+
+function clearOtp() {
+  for (let i = 0; i < 6; i++) {
+    otpDigits[i] = '';
+  }
+}
+
+function goBackToCredentials() {
+  loginStep.value = 'credentials';
+  tempToken.value = '';
+  loginError.value = '';
+  otpError.value = false;
+  clearOtp();
+  stopTotpTimer();
+}
+
+// ─── Login Handlers ────────────────────────────────────────────────────
+
 const handleLogin = async () => {
   validateUsername();
   validatePassword();
@@ -257,9 +447,21 @@ const handleLogin = async () => {
       username: form.username.trim(),
       password: form.password,
     });
-    
-    // Cek keberhasilan berdasarkan HTTP Status Code (200 OK / 201 Created)
+
     if (response.status === 200 || response.status === 201) {
+      const data = response.data?.data || response.data;
+
+      // Cek apakah server meminta verifikasi 2FA
+      if (data?.requiresTwoFactor) {
+        tempToken.value = data.tempToken;
+        loginStep.value = 'otp';
+        loginError.value = '';
+        startTotpTimer();
+        nextTick(() => otpInputRefs.value[0]?.focus());
+        return;
+      }
+
+      // Login langsung (2FA tidak aktif)
       setAdminLoggedIn(true);
       router.push('/backbone');
     } else {
@@ -273,6 +475,41 @@ const handleLogin = async () => {
     }
   } finally {
     loading.value = false;
+  }
+};
+
+const handleVerifyOtp = async () => {
+  if (otpCode.value.length !== 6) return;
+
+  loadingOtp.value = true;
+  loginError.value = '';
+  otpError.value = false;
+
+  try {
+    const response = await verify_2fa({
+      tempToken: tempToken.value,
+      otpCode: otpCode.value,
+    });
+
+    if (response.status === 200 || response.status === 201) {
+      setAdminLoggedIn(true);
+      stopTotpTimer();
+      router.push('/backbone');
+    } else {
+      throw new Error(response.data?.message || 'Verifikasi gagal');
+    }
+  } catch (error: any) {
+    otpError.value = true;
+    clearOtp();
+    nextTick(() => otpInputRefs.value[0]?.focus());
+
+    if (error.response && error.response.data && error.response.data.message) {
+      loginError.value = error.response.data.message;
+    } else {
+      loginError.value = 'Kode OTP salah atau sudah kedaluwarsa. Silakan coba lagi.';
+    }
+  } finally {
+    loadingOtp.value = false;
   }
 };
 </script>
@@ -354,6 +591,49 @@ const handleLogin = async () => {
   box-shadow: 0 0 0 4px rgba(248,113,113,0.15) !important;
 }
 
+/* OTP Input */
+.otp-input {
+  width: 3.25rem;
+  height: 3.75rem;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  color: #111827;
+  border: 2px solid #e5e7eb;
+  border-radius: 14px;
+  background: #f9fafb;
+  outline: none;
+  transition: all 0.25s ease;
+  caret-color: #3b82f6;
+}
+
+.otp-input:focus {
+  border-color: #10b981;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(16,185,129,0.12);
+  transform: translateY(-2px);
+}
+
+.otp-input-filled {
+  border-color: #10b981;
+  background: #ecfdf5;
+}
+
+.otp-input-error {
+  border-color: #f87171 !important;
+  background: #fff5f5 !important;
+  animation: otpShake 0.4s ease-in-out;
+}
+
+@keyframes otpShake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-6px); }
+  40%      { transform: translateX(6px); }
+  60%      { transform: translateX(-4px); }
+  80%      { transform: translateX(4px); }
+}
+
 /* Submit Button */
 .submit-btn {
   width: 100%;
@@ -389,6 +669,27 @@ const handleLogin = async () => {
   opacity: 0.7;
   cursor: not-allowed;
   transform: none;
+}
+
+.submit-btn-emerald {
+  background: linear-gradient(135deg, #059669 0%, #0d9488 100%);
+  box-shadow: 0 6px 20px rgba(16,185,129,0.35);
+}
+.submit-btn-emerald:hover {
+  box-shadow: 0 10px 28px rgba(16,185,129,0.45);
+}
+
+/* Step transition */
+.step-fade-enter-active { animation: stepIn 0.35s cubic-bezier(0.4,0,0.2,1) both; }
+.step-fade-leave-active { animation: stepOut 0.2s cubic-bezier(0.4,0,0.2,1) both; }
+
+@keyframes stepIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes stepOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(-12px) scale(0.98); }
 }
 
 /* Error alert transition */

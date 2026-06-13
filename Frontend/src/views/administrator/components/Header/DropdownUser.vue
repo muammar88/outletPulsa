@@ -4,8 +4,9 @@ import { ref } from 'vue';
 import Notification from '@/components/Modal/Notification.vue';
 import Logout from '@/views/administrator/components/Header/Logout.vue';
 import ModalEditProfile from '@/views/administrator/components/Header/ModalEditProfile.vue';
+import Modal2FA from '@/views/administrator/components/Header/Modal2FA.vue';
 import { SettingStore } from '@/stores/settings';
-import { IconChevronDown, IconUserEdit } from '@tabler/icons-vue';
+import { IconChevronDown, IconUserEdit, IconShieldLock } from '@tabler/icons-vue';
 
 const target = ref(null);
 const dropdownOpen = ref(false);
@@ -29,9 +30,14 @@ const closeDropdown = () => {
 
 const showModal = ref(false);
 const ModalEdit = ref(false);
+const Modal2FAState = ref(false);
 
 const openModalEdit = () => {
   ModalEdit.value = true;
+};
+
+const openModal2FA = () => {
+  Modal2FAState.value = true;
 };
 
 const showNotification = ref(false);
@@ -100,6 +106,16 @@ function showNotif(payload: { type: 'success' | 'error'; message: string }) {
             </div>
             Edit Profile
           </button>
+          
+          <button
+            @click="openModal2FA"
+            class="w-full flex items-center gap-3 px-4 py-2.5 mt-1 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 hover:text-emerald-600 transition-colors"
+          >
+            <div class="bg-emerald-100 p-1.5 rounded-lg text-emerald-600">
+              <IconShieldLock :size="18" :stroke="2" />
+            </div>
+            Keamanan Akun
+          </button>
         </div>
         
         <div class="px-2 py-2 bg-slate-50" @click="handleLogoutClick">
@@ -113,6 +129,12 @@ function showNotif(payload: { type: 'success' | 'error'; message: string }) {
     :formStatus="ModalEdit"
     @cancel="ModalEdit = false"
     @submitted="ModalEdit = false"
+    @notify="showNotif"
+  />
+
+  <Modal2FA
+    :formStatus="Modal2FAState"
+    @cancel="Modal2FAState = false"
     @notify="showNotif"
   />
 

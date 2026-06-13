@@ -8,16 +8,18 @@ datasource db {
 }
 
 model User {
-  id           Int      @id @default(autoincrement())
-  uuid         String   @unique @default(uuid())
-  name         String
-  kode         String
-  refreshToken String?  @db.Text
-  password     String
-  type         UserType @default(administrator)
-  groupId      Int?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id               Int      @id @default(autoincrement())
+  uuid             String   @unique @default(uuid())
+  name             String
+  kode             String
+  refreshToken     String?  @db.Text
+  password         String
+  type             UserType @default(administrator)
+  groupId          Int?
+  twoFactorSecret  String?  @db.Text
+  twoFactorEnabled Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   group        Group?        @relation(fields: [groupId], references: [id])
   activityLogs ActivityLog[]
