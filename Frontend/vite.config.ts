@@ -20,11 +20,11 @@ export default defineConfig({
   server: {
     host: '0.0.0.0', // Agar bisa diakses dari luar container
     port: 5173, // Port default Vite dev server
-    /* watch: {
-      usePolling: true, // Penting agar perubahan file terdeteksi dalam Docker
-      interval: 1000, // Biar pollingnya gak seberat itu
-      ignored: ['**/node_modules/**', '**/.git/**', '**/dist/**'],
-    }, */
+    // watch: {
+    //   usePolling: true, // Penting agar perubahan file terdeteksi dalam Docker
+    //   interval: 1000, // Biar pollingnya gak seberat itu
+    //   ignored: ['**/node_modules/**', '**/.git/**', '**/dist/**'],
+    // },
   },
   build: {
     rollupOptions: {
