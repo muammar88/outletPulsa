@@ -301,7 +301,7 @@ const fetchServerBalances = async () => {
     const res = await dashboardService.getServerBalances();
     if (res.data) balances.value = res.data;
   } catch (error: any) {
-    notification.error({ message: error?.response?.data?.message || 'Gagal memuat saldo server' });
+    notification.displayNotification(error?.response?.data?.message || 'Gagal memuat saldo server', 'error');
   } finally {
     isLoadingBalances.value = false;
   }
@@ -381,7 +381,7 @@ const fetchDashboardData = async () => {
     systemStatus.value = sysRes.data;
 
   } catch (error: any) {
-    notification.error({ message: 'Gagal memuat data dashboard' });
+    notification.displayNotification('Gagal memuat data dashboard', 'error');
   } finally {
     isLoadingDashboard.value = false;
   }
