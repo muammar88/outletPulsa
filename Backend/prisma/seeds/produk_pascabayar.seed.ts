@@ -21,10 +21,17 @@ export default async function seedProdukPascabayar(prisma: PrismaClient) {
 
   const rawData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
   const produksData = rawData.map((item: any) => ({
-    ...item,
+    id: item.id,
     kategoriId: kategoriIds.has(item.kategoriId) ? item.kategoriId : null,
-    operatorId: operatorIds.has(item.operatorId) ? item.operatorId : null,
+    kode: item.kode,
+    name: item.name,
+    fee: item.fee,
+    comission: item.komisi,
+    outletFee: 0,
     serverId: serverIds.has(item.serverId) ? item.serverId : null,
+    status: item.status,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt
   }));
 
   if (produksData.length === 0) return;

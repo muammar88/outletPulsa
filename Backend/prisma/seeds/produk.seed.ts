@@ -19,9 +19,16 @@ export default async function seedProduk(prisma: PrismaClient) {
   
   const rawData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
   const produksData = rawData.map((item: any) => ({
-    ...item,
+    id: item.id,
     operatorId: operatorIds.has(item.operatorId) ? item.operatorId : null,
+    kode: item.kode,
+    name: item.name,
+    purchase_price: item.purchase_price,
+    markup: item.markup,
     serverId: serverIds.has(item.serverId) ? item.serverId : null,
+    status: item.status,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt
   }));
 
   if (produksData.length === 0) return;
