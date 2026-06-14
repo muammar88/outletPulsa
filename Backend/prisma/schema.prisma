@@ -865,3 +865,15 @@ model TripayPascabayarProduk {
   operator TripayPascabayarOperator? @relation(fields: [operatorId], references: [id])
   produk   ProdukPascabayar?         @relation(fields: [produkId], references: [id])
 }
+
+model WebhookLog {
+  id             Int      @id @default(autoincrement())
+  provider       String   // Nilai: 'IAK', 'TRIPAY', atau 'DIGIFLAZZ'
+  event          String?  // Deskripsi event, misal: 'callback_prabayar'
+  transactionRef String?  // Kode referensi transaksi (ref_id, trx_id, atau kode)
+  payload        String?  @db.Text // Seluruh isi body request dalam format JSON string
+  status         String?  // Hasil proses: 'success', 'failed', 'ignored', 'error'
+  message        String?  @db.Text // Pesan tambahan atau error message
+  ipAddress      String?  // IP address pengirim webhook
+  createdAt      DateTime @default(now())
+}

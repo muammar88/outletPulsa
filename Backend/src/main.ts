@@ -6,7 +6,9 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    rawBody: true,
+  });
 
   app.enableCors({
     origin: true, // Mengizinkan semua origin (Frontend & Mobile)
