@@ -75,6 +75,10 @@ export class WebhookService {
     body: IakCallbackPayload,
     ipAddress: string,
   ): Promise<{ error: boolean; error_msg: string }> {
+
+    console.log("------1");
+    console.log(body);
+    console.log("------1");
     // STEP 1: Validasi kode verifikasi
     const expectedKey = process.env.IAK_CALLBACK_KEY || '';
     if (kodeVerifikasi !== expectedKey) {
@@ -82,6 +86,11 @@ export class WebhookService {
       await this.logWebhook('IAK', 'callback_prabayar', null, body, 'failed', 'Kode verifikasi tidak valid', ipAddress);
       return { error: true, error_msg: 'Kode verifikasi tidak valid', message: 'Kode verifikasi tidak valid', data: {} } as any;
     }
+
+    console.log("------2");
+    console.log(expectedKey);
+    console.log(kodeVerifikasi);
+    console.log("------2");
 
     // STEP 2: Ambil data dari payload
     const refId = body?.data?.ref_id;
@@ -94,6 +103,13 @@ export class WebhookService {
       return { error: true, error_msg: 'ref_id tidak ditemukan dalam payload', message: 'ref_id tidak ditemukan dalam payload', data: {} } as any;
     }
 
+
+    console.log("------3");
+    console.log(refId);
+    console.log(status);
+    console.log(sn);
+    console.log("------3");
+
     this.logger.log(`[IAK WEBHOOK] Menerima callback. ref_id=${refId}, status=${status}`);
 
     // STEP 3: Cari transaksi berdasarkan kode (= ref_id dari IAK)
@@ -105,6 +121,10 @@ export class WebhookService {
         },
       },
     });
+
+    console.log("------4");
+    console.log(transaction);
+    console.log("------4");
 
     if (!transaction) {
       this.logger.warn(`[IAK WEBHOOK] Transaksi tidak ditemukan: ref_id=${refId}`);
