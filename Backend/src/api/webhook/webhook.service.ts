@@ -10,9 +10,9 @@ import * as crypto from 'crypto';
 interface IakCallbackPayload {
   data: {
     ref_id: string;    // Kode transaksi kita (sama dengan field `kode` di tabel Transaction)
-    status: number;    // 1 = sukses, 2 = gagal
+    status: number | string; // 1 = sukses, 2 = gagal (IAK mengirimnya sebagai string '1' atau '2')
     sn: string;        // Serial Number (bukti transaksi)
-    price: number;     // Harga transaksi
+    price: number | string;  // Harga transaksi
   };
 }
 
@@ -121,12 +121,13 @@ export class WebhookService {
 
     // STEP 5 & 6: Proses berdasarkan status
     try {
-      if (status === 1) {
+      const statusCode = Number(status);
+      if (statusCode === 1 || String(status) === 'SUCCESS') {
         // SUKSES: Update transaksi dan hitung laba
         await this.updateSuccessTransaction(transaction.trx_id, sn, 'IAK', transaction);
         this.logger.log(`[IAK WEBHOOK] Transaksi SUKSES. ref_id=${refId}, sn=${sn}`);
         await this.logWebhook('IAK', 'callback_prabayar', refId, body, 'success', `Transaksi sukses. SN: ${sn}`, ipAddress);
-      } else if (status === 2) {
+      } else if (statusCode === 2 || String(status) === 'FAILED') {
         // GAGAL: Kembalikan saldo member
         await this.updateFailedTransaction(transaction.trx_id, 'IAK', transaction);
         this.logger.log(`[IAK WEBHOOK] Transaksi GAGAL. ref_id=${refId}`);
