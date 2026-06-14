@@ -1,8 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
-
-async function main() {
+export default async function webhookDummySeed(prisma: PrismaClient) {
   console.log('Seeding Dummy Transactions for Webhook Testing...');
 
   let server = await prisma.server.findFirst();
@@ -62,16 +60,4 @@ async function main() {
     },
   });
   console.log('Created dummy transaction for Digiflazz (ref_id/kode: DIGI-DUMMY-123)');
-
-  console.log('Seed completed successfully!');
 }
-
-main()
-  .then(async () => {
-    await prisma.$disconnect();
-  })
-  .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
-    process.exit(1);
-  });
