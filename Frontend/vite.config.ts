@@ -29,13 +29,21 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            return id.toString().split('node_modules/')[1].split('/')[0].toString();
-          }
+        manualChunks: {
+          vendor: [
+            'vue',
+            'vue-router',
+            'pinia',
+            'axios',
+            'primevue',
+            'sweetalert2',
+            '@fortawesome/vue-fontawesome',
+            'apexcharts',
+            'vue3-apexcharts'
+          ]
         }
       }
     },
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 1500,
   },
 });
