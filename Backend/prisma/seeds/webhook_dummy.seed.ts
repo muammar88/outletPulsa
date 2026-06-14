@@ -18,7 +18,7 @@ export default async function webhookDummySeed(prisma: PrismaClient) {
   // 1. Dummy Transaksi IAK
   await prisma.transaction.create({
     data: {
-      kode: 'IAK-DUMMY-123', // IAK mencocokkan ref_id dengan field kode
+      kode: 'IAK-DUMMY-1234567', // IAK mencocokkan ref_id dengan field kode
       type: 'prabayar',
       nomorTujuan: '081234567890',
       ket: 'Transaksi IAK Dummy',
@@ -33,7 +33,7 @@ export default async function webhookDummySeed(prisma: PrismaClient) {
   // 2. Dummy Transaksi Tripay
   await prisma.transaction.create({
     data: {
-      kode: 'TRI-DUMMY-123',
+      kode: 'TRI-DUMMY-1234567',
       trx_id: 999123, // Tripay mencocokkan trxid dengan field trx_id
       type: 'prabayar',
       nomorTujuan: '081234567891',
@@ -49,7 +49,7 @@ export default async function webhookDummySeed(prisma: PrismaClient) {
   // 3. Dummy Transaksi Digiflazz
   await prisma.transaction.create({
     data: {
-      kode: 'DIGI-DUMMY-123', // Digiflazz mencocokkan ref_id dengan field kode
+      kode: 'DIGI-DUMMY-1234567', // Digiflazz mencocokkan ref_id dengan field kode
       type: 'prabayar',
       nomorTujuan: '081234567892',
       ket: 'Transaksi Digiflazz Dummy',
