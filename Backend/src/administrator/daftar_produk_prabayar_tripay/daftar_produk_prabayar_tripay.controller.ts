@@ -80,4 +80,14 @@ export class DaftarProdukPrabayarTripayController {
       data,
     };
   }
+
+  @Post(':id/toggle-status')
+  async toggleStatus(@Param('id') id: string) {
+    const data = await this.daftarProdukTripayService.toggleStatus(+id);
+    return {
+      message: 'Status produk prabayar Tripay berhasil diperbarui',
+      error: null,
+      data,
+    };
+  }
 }

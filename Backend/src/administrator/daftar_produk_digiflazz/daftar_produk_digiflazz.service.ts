@@ -210,4 +210,16 @@ export class DaftarProdukDigiflazzService {
       orderBy: { price: 'asc' },
     });
   }
+
+  async toggleStatus(id: number) {
+    const product = await this.prisma.digiflazzProduct.findUnique({ where: { id } });
+    if (!product) {
+      throw new Error('Product not found');
+    }
+    const newStatus = product.status === 'active' ? 'inactive' : 'active';
+    return this.prisma.digiflazzProduct.update({
+      where: { id },
+      data: { status: newStatus },
+    });
+  }
 }

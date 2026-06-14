@@ -1,0 +1,75 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: outletpulsa_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: outletpulsa_db
+    #ports:
+    #  - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./pglogs:/var/log/postgresql
+    command: >
+      postgres
+      -c log_statement=all
+      -c log_connections=on
+      -c log_disconnections=on
+      -c logging_collector=on
+      -c log_destination=stderr
+      -c log_directory=/var/log/postgresql
+      -c log_filename=postgres.log
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backEnd:
+    image: muammar88/outletpulsa-backend:1.0.0 # 🔥 ganti ke image baru kamu
+    container_name: outletpulsa_backend
+    restart: always
+    ports:
+      - "3005:3005"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:root@postgres:5432/outletpulsa_db?connection_limit=10&pool_timeout=20
+      APP_NAME: OutletPulsa
+      NODE_ENV: production
+      PORT: 3005
+      JWT_SECRET: localenv
+      JWT_EXPIRES: 60m
+      JWT_REFRESH_SECRET: refresh_secret_key
+      JWT_REFRESH_EXPIRES: 7d
+      # TRIPAY PAYMENT GATEWAY
+      TRIPAY_API_KEY: 3SZA2ssdoqIzHJ39RNddeqDh9eO1OBMw
+      TRIPAY_PRIVATE_KEY: DEV-xxxxxx
+      TRIPAY_MERCHANT_CODE: Txxxxxx
+      TRIPAY_MODE: production
+      DIGIFLAZZ_USERNAME: gapajaD7VQKo
+      DIGIFLAZZ_KEY: 39a2cc82-ffb3-5a56-9d99-59a9a49d99b3
+      IAK_MODE: production
+      IAK_USERNAME: "085262802141"
+      IAK_KEY: 472643293c215b8ayS8p
+      TRIPAY_KEY: 3SZA2ssdoqIzHJ39RNddeqDh9eO1OBMw
+
+  frontEnd:
+    image: muammar88/outletpulsa-frontend:1.0.0 # 🔥 sudah disesuaikan
+    container_name: outletpulsa_frontend
+    restart: always
+    ports:
+      - "8088:80"
+    environment:
+      VITE_APP_API_BASE_URL: "http://app:3000"
+      NODE_ENV: "production"
+    depends_on:
+      - backEnd
+
+volumes:
+  postgres_data:

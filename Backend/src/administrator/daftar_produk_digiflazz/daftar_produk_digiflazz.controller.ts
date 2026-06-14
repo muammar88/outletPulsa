@@ -84,4 +84,14 @@ export class DaftarProdukDigiflazzController {
       data,
     };
   }
+
+  @Post(':id/toggle-status')
+  async toggleStatus(@Param('id') id: string) {
+    const data = await this.service.toggleStatus(+id);
+    return {
+      message: 'Status produk berhasil diperbarui',
+      error: null,
+      data,
+    };
+  }
 }

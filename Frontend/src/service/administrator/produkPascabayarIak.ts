@@ -21,4 +21,7 @@ export const produkPascabayarIakService = {
   connectProduct: (id: number, produkPascabayarId: number) => {
     return api.post(`/administrator/daftar-produk-pascabayar-iak/${id}/connect`, { produkPascabayarId });
   },
+  toggleStatus: (id: number) => {
+    return api.post(`/administrator/daftar-produk-pascabayar-iak/${id}/toggle-status`);
+  },
 };

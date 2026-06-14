@@ -479,4 +479,16 @@ export class DaftarProdukPrabayarTripayService {
       message:    'Sinkronisasi produk Tripay berhasil.',
     };
   }
+
+  async toggleStatus(id: number) {
+    const product = await this.prisma.tripayPrabayarProduk.findUnique({ where: { id } });
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+    const newStatus = product.status === 'active' || product.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    return this.prisma.tripayPrabayarProduk.update({
+      where: { id },
+      data: { status: newStatus },
+    });
+  }
 }

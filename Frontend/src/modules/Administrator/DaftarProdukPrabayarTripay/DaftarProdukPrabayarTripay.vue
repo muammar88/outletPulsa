@@ -199,6 +199,35 @@ const handleKoneksiSaved = () => {
   fetchData();
 };
 
+const loadingStatusId = ref<number | null>(null);
+
+const confirmToggleStatus = (row: any) => {
+  const isCurrentlyActive = row.status === 'ACTIVE' || row.status === 'active';
+  const targetStatus = isCurrentlyActive ? 'Inactive' : 'Active';
+  const targetStatusColorClass = isCurrentlyActive ? 'bg-rose-600 hover:bg-rose-700 shadow-sm' : 'bg-emerald-600 hover:bg-emerald-700 shadow-sm';
+
+  confirmButtonText.value = `Ya, Jadikan ${targetStatus}`;
+  confirmButtonClass.value = targetStatusColorClass;
+
+  displayConfirmation(
+    `Konfirmasi Perubahan Status`,
+    `Apakah Anda yakin ingin mengubah status produk <b>${row.name}</b> menjadi <b>${targetStatus}</b>?`,
+    async () => {
+      loadingStatusId.value = row.id;
+      try {
+        await daftarProdukPrabayarTripayService.toggleStatus(row.id);
+        displayNotification(`Status produk berhasil diubah menjadi ${targetStatus}.`, 'success');
+        // Update state locally without a full reload
+        row.status = isCurrentlyActive ? 'INACTIVE' : 'ACTIVE';
+      } catch (error: any) {
+        displayNotification('Gagal memperbarui status: ' + (error.response?.data?.message || error.message), 'error');
+      } finally {
+        loadingStatusId.value = null;
+      }
+    }
+  );
+};
+
 const formatCurrency = (value: number) => {
   if (value == null) return '-';
   return new Intl.NumberFormat('id-ID', {
@@ -357,16 +386,32 @@ onMounted(() => {
         </template>
 
         <template #cell-status="{ row }">
-          <span
-            class="px-2.5 py-0.5 rounded-full text-xs font-medium"
-            :class="{
-              'bg-green-100 text-green-800': row.status === 'ACTIVE' || row.status === 'active',
-              'bg-red-100 text-red-800': row.status === 'INACTIVE' || row.status === 'inactive' || row.status === 'GANGGUAN',
-              'bg-gray-100 text-gray-800': !row.status
-            }"
-          >
-            {{ row.status || 'Unknown' }}
-          </span>
+          <div class="flex flex-col items-center justify-center gap-1.5">
+            <button
+              type="button"
+              @click="confirmToggleStatus(row)"
+              class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              :class="(row.status === 'ACTIVE' || row.status === 'active') ? 'bg-emerald-500' : 'bg-gray-300'"
+              :disabled="loadingStatusId === row.id"
+              :title="(row.status === 'ACTIVE' || row.status === 'active') ? 'Nonaktifkan Produk' : 'Aktifkan Produk'"
+            >
+              <span
+                class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out flex items-center justify-center"
+                :class="(row.status === 'ACTIVE' || row.status === 'active') ? 'translate-x-4' : 'translate-x-0'"
+              >
+                <svg v-if="loadingStatusId === row.id" class="animate-spin h-3 w-3 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </span>
+            </button>
+            <span
+              class="text-[10px] font-bold uppercase tracking-wider"
+              :class="(row.status === 'ACTIVE' || row.status === 'active') ? 'text-emerald-600' : 'text-gray-500'"
+            >
+              {{ (row.status === 'ACTIVE' || row.status === 'active') ? 'Active' : (row.status === 'GANGGUAN' ? 'Gangguan' : 'Inactive') }}
+            </span>
+          </div>
         </template>
 
         <!-- Kolom Action -->

@@ -380,5 +380,18 @@ export class DaftarProdukPrabayarIakService {
 
     return updated;
   }
+
+  async toggleStatus(id: number) {
+    const product = await this.prisma.iakPrabayarProduk.findUnique({ where: { id } });
+    if (!product) {
+      throw new Error('Product not found');
+    }
+    const currentStatus = product.status as any;
+    const newStatus = currentStatus === 'active' || currentStatus === 'ACTIVE' ? 'inactive' : 'active';
+    return this.prisma.iakPrabayarProduk.update({
+      where: { id },
+      data: { status: newStatus as any },
+    });
+  }
 }
 

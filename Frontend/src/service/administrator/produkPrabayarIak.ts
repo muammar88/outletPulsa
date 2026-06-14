@@ -18,4 +18,13 @@ export const produkPrabayarIakService = {
   connectProduct: (id: number, produkId: number) => {
     return api.post(`/administrator/daftar-produk-prabayar-iak/${id}/connect`, { produkId });
   },
+  toggleStatus: (id: number) => {
+    return api.post(`/administrator/daftar-produk-prabayar-iak/${id}/toggle-status`);
+  },
+  getSyncStatus: () => {
+    return api.get(`/administrator/daftar-produk-prabayar-iak/sync-status`);
+  },
+  clearSyncStatus: () => {
+    return api.post(`/administrator/daftar-produk-prabayar-iak/sync-clear`);
+  }
 };

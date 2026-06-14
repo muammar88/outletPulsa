@@ -298,4 +298,17 @@ export class DaftarProdukPascabayarIakService {
 
     return updated;
   }
+
+  async toggleStatus(id: number) {
+    const product = await this.prisma.iakPascabayarProduct.findUnique({ where: { id } });
+    if (!product) {
+      throw new Error('Product not found');
+    }
+    const currentStatus = product.status as any;
+    const newStatus = currentStatus === 'active' || currentStatus === 'ACTIVE' ? 'inactive' : 'active';
+    return this.prisma.iakPascabayarProduct.update({
+      where: { id },
+      data: { status: newStatus as any },
+    });
+  }
 }

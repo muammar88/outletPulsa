@@ -90,4 +90,14 @@ export class DaftarProdukPrabayarIakController {
       data,
     };
   }
+
+  @Post(':id/toggle-status')
+  async toggleStatus(@Param('id') id: string) {
+    const data = await this.DaftarProdukPrabayarIakService.toggleStatus(+id);
+    return {
+      message: 'Status produk prabayar IAK berhasil diperbarui',
+      error: null,
+      data,
+    };
+  }
 }

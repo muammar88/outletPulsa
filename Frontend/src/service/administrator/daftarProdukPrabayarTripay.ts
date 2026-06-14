@@ -21,4 +21,7 @@ export const daftarProdukPrabayarTripayService = {
   connectProduct: (id: number, produkId: number) => {
     return api.post(`/administrator/daftar-produk-prabayar-tripay/${id}/connect`, { produkId });
   },
+  toggleStatus: (id: number) => {
+    return api.post(`/administrator/daftar-produk-prabayar-tripay/${id}/toggle-status`);
+  },
 };

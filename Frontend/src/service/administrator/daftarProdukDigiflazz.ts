@@ -47,5 +47,9 @@ export const daftarProdukDigiflazzService = {
 
   getSellers: (id: number) => {
     return api.get(`/administrator/daftar-produk-digiflazz/${id}/sellers`);
+  },
+
+  toggleStatus: (id: number) => {
+    return api.post(`/administrator/daftar-produk-digiflazz/${id}/toggle-status`);
   }
 };
