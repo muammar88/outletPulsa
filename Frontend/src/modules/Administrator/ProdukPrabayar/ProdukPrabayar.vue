@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IconListDetails, IconPlug, IconList, IconCheck } from '@tabler/icons-vue';
+import { IconListDetails, IconPlug, IconList, IconCheck, IconBan } from '@tabler/icons-vue';
 
 import { useConfirmation } from '@/composables/useConfirmation';
 import { useNotification } from '@/composables/useNotification';
@@ -18,6 +18,7 @@ import Notification from '@/components/Modal/Notification.vue';
 import DangerButton from '@/components/Button/DangerButton.vue';
 import LightButton from '@/components/Button/LightButton.vue';
 import BaseButton from '@/components/Button/BaseButton.vue';
+import ExpandableActionButton from '@/components/Button/ExpandableActionButton.vue';
 import DeleteIcon from '@/components/Icons/DeleteIcon.vue';
 import EditIcon from '@/components/Icons/EditIcon.vue';
 
@@ -37,6 +38,7 @@ const { showConfirmDialog, confirmTitle, confirmMessage, displayConfirmation, co
   useConfirmation();
 
 const tableColumns = [
+  { key: 'checkbox', label: '', headerClass: 'w-10 text-center', cellClass: 'text-center' },
   { key: 'kode', label: 'Kode', headerClass: 'text-left w-[15%] pl-4', cellClass: 'text-left pl-4' },
   { key: 'name', label: 'Nama Produk', headerClass: 'text-left w-[20%]', cellClass: 'text-left' },
   { key: 'server', label: 'Server', headerClass: 'text-left w-[15%]', cellClass: 'text-left' },
@@ -84,6 +86,32 @@ const { currentPage, totalPages, pages, totalRow, pageNow, perPage } = usePagina
   { perPage: 150, totalRow: 0 },
 );
 
+// Selection State
+const selectedProducts = ref<number[]>([]);
+const isBulkActionLoading = ref(false);
+
+const isAllSelected = computed(() => {
+  return dataProduk.value.length > 0 && selectedProducts.value.length === dataProduk.value.length;
+});
+
+const toggleSelectAll = (event: Event) => {
+  const isChecked = (event.target as HTMLInputElement).checked;
+  if (isChecked) {
+    selectedProducts.value = dataProduk.value.map(p => p.id);
+  } else {
+    selectedProducts.value = [];
+  }
+};
+
+const toggleSelectProduct = (id: number) => {
+  const index = selectedProducts.value.indexOf(id);
+  if (index === -1) {
+    selectedProducts.value.push(id);
+  } else {
+    selectedProducts.value.splice(index, 1);
+  }
+};
+
 const fetchData = async (keyword?: string | Event) => {
   if (typeof keyword === 'string') {
     searchQuery.value = keyword;
@@ -101,6 +129,8 @@ const fetchData = async (keyword?: string | Event) => {
     );
     dataProduk.value = response.data.data.list;
     totalRow.value = response.data.data.total;
+    // Reset selection on fetch
+    selectedProducts.value = [];
   } catch (error) {
     console.error('Gagal mengambil data:', error);
   } finally {
@@ -219,6 +249,41 @@ const handlePilihTermurah = () => {
   );
 };
 
+const handleBulkUpdateStatus = (status: 'active' | 'inactive') => {
+  if (selectedProducts.value.length === 0) return;
+
+  const actionName = status === 'active' ? 'mengaktifkan' : 'menonaktifkan';
+
+  displayConfirmation(
+    `Konfirmasi ${status === 'active' ? 'Aktifkan' : 'Nonaktifkan'} Produk`,
+    `Apakah Anda yakin ingin ${actionName} <strong>${selectedProducts.value.length}</strong> produk yang dipilih secara bersamaan?`,
+    async () => {
+      isBulkActionLoading.value = true;
+      try {
+        const response = await ProdukPrabayarService.bulkUpdateStatus(selectedProducts.value, status);
+        const result = response.data.data;
+        
+        displayNotification(
+          `Berhasil memproses produk!<br>
+          <ul class="list-disc pl-4 mt-2 text-sm text-left">
+            <li>Total dipilih: <b>${selectedProducts.value.length}</b></li>
+            <li>Berhasil ${actionName}: <b>${result.success}</b></li>
+            ${status === 'active' ? `<li>Dilewati (tanpa provider): <b>${result.skipped}</b></li>` : ''}
+            <li>Gagal: <b>${result.failed}</b></li>
+          </ul>`,
+          result.success > 0 ? 'success' : 'warning'
+        );
+        fetchData();
+      } catch (error) {
+        displayNotification(`Gagal ${actionName} produk`, 'error');
+        console.error(`Error bulk ${status}:`, error);
+      } finally {
+        isBulkActionLoading.value = false;
+      }
+    }
+  );
+};
+
 onMounted(() => {
   fetchOperators();
   fetchData();
@@ -252,15 +317,43 @@ onMounted(() => {
       :showSearch="false"
     >
       <template #custom-actions>
-        <button
-          @click="handlePilihTermurah"
-          :disabled="isSyncingTermurah"
-          class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 border border-transparent rounded-xl shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+        <ExpandableActionButton
+          v-if="selectedProducts.length > 0"
+          :label="`Aktifkan Terpilih (${selectedProducts.length})`"
+          title="Aktifkan Terpilih"
+          variant="emerald"
+          :loading="isBulkActionLoading"
+          @click="handleBulkUpdateStatus('active')"
         >
-          <IconCheck v-if="!isSyncingTermurah" class="w-4 h-4" />
-          <svg v-else class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-          {{ isSyncingTermurah ? 'Memproses...' : 'Pilih Produk Termurah' }}
-        </button>
+          <template #icon>
+            <IconCheck class="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
+          </template>
+        </ExpandableActionButton>
+
+        <ExpandableActionButton
+          v-if="selectedProducts.length > 0"
+          :label="`Nonaktifkan Terpilih (${selectedProducts.length})`"
+          title="Nonaktifkan Terpilih"
+          variant="rose"
+          :loading="isBulkActionLoading"
+          @click="handleBulkUpdateStatus('inactive')"
+        >
+          <template #icon>
+            <IconBan class="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
+          </template>
+        </ExpandableActionButton>
+
+        <ExpandableActionButton
+          :label="'Pilih Produk Termurah'"
+          title="Pilih Produk Termurah"
+          variant="slate"
+          :loading="isSyncingTermurah"
+          @click="handlePilihTermurah"
+        >
+          <template #icon>
+            <IconCheck class="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
+          </template>
+        </ExpandableActionButton>
       </template>
       <template #filters>
         <div class="inline-flex rounded-xl shadow-sm" role="group">
@@ -303,6 +396,28 @@ onMounted(() => {
           </select>
         </div>
       </template>
+      <template #header-checkbox>
+        <div class="flex items-center justify-center">
+          <input 
+            type="checkbox" 
+            :checked="isAllSelected"
+            @change="toggleSelectAll"
+            class="w-4 h-4 text-[#0f2155] bg-gray-100 border-gray-300 rounded focus:ring-[#0f2155] focus:ring-2 cursor-pointer transition-all"
+          >
+        </div>
+      </template>
+
+      <template #cell-checkbox="{ row }">
+        <div class="flex items-center justify-center">
+          <input 
+            type="checkbox" 
+            :checked="selectedProducts.includes(row.id)"
+            @change="toggleSelectProduct(row.id)"
+            class="w-4 h-4 text-[#0f2155] bg-gray-100 border-gray-300 rounded focus:ring-[#0f2155] focus:ring-2 cursor-pointer transition-all"
+          >
+        </div>
+      </template>
+
       <template #cell-kode="{ row }">
         <div class="flex items-center">
           <span class="px-2.5 py-1 bg-slate-100 border border-slate-200 text-slate-700 text-[11px] font-bold rounded-md font-mono tracking-wide shadow-sm">

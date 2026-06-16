@@ -26,7 +26,7 @@ export default async function seedProduk(prisma: PrismaClient) {
     purchase_price: item.purchase_price,
     markup: item.markup,
     serverId: serverIds.has(item.serverId) ? item.serverId : null,
-    status: item.status,
+    status: 'inactive', // Default non-active sesuai kebutuhan
     createdAt: item.createdAt,
     updatedAt: item.updatedAt
   }));

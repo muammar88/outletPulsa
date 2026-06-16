@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BaseButton from '@/components/Button/BaseButton.vue';
+import ExpandableActionButton from '@/components/Button/ExpandableActionButton.vue';
 import Pagination from '@/components/Pagination/Pagination.vue';
 import SkeletonTable from '@/components/SkeletonTable/SkeletonTable.vue';
 import { computed, ref } from 'vue';
@@ -155,18 +156,19 @@ defineExpose({ resetSearch });
       <div class="flex items-center gap-3 flex-shrink-0">
         <slot name="custom-actions"></slot>
         <slot name="actions">
-          <BaseButton
+          <ExpandableActionButton
             v-if="showAdd"
             @click="$emit('add')"
             variant="primary"
-            size="md"
             :disabled="addDisabled"
             class="base-table-add-btn"
+            :label="addLabel"
+            :title="addLabel"
           >
-            <template #icon-left>
+            <template #icon>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                class="h-4 w-4"
+                class="h-5 w-5 transition-transform duration-300 group-hover:scale-110"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -175,8 +177,7 @@ defineExpose({ resetSearch });
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
               </svg>
             </template>
-            {{ addLabel }}
-          </BaseButton>
+          </ExpandableActionButton>
         </slot>
       </div>
     </div>
@@ -190,7 +191,9 @@ defineExpose({ resetSearch });
           <tr>
             <th v-if="showNumbering" class="w-16 text-center">No</th>
             <th v-for="(col, index) in columns" :key="index" :class="col.headerClass">
-              {{ col.label }}
+              <slot :name="`header-${col.key}`" :col="col">
+                {{ col.label }}
+              </slot>
             </th>
             <th v-if="showActions" class="w-28 text-center">Aksi</th>
           </tr>

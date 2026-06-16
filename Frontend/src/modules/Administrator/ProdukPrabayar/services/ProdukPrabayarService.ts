@@ -39,4 +39,8 @@ export const ProdukPrabayarService = {
   async syncTermurah() {
     return await api.post('/administrator/produk-prabayar/sync-termurah');
   },
+
+  async bulkUpdateStatus(ids: number[], status: 'active' | 'inactive') {
+    return await api.post('/administrator/produk-prabayar/bulk-update-status', { ids, status });
+  },
 };

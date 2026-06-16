@@ -30,6 +30,19 @@ export class ProdukPrabayarController {
     };
   }
 
+  @Post('bulk-update-status')
+  async bulkUpdateStatus(@Body() payload: { ids: number[]; status: 'active' | 'inactive' }) {
+    if (!payload.ids || !payload.ids.length) {
+      return { success: false, message: 'Tidak ada produk yang dipilih' };
+    }
+    const data = await this.produkPrabayarService.bulkUpdateStatus(payload.ids, payload.status);
+    return {
+      success: true,
+      message: `Proses bulk update status selesai`,
+      data,
+    };
+  }
+
   @Get()
   async findAll(@Query() query: GetProdukPrabayarDto) {
     const data = await this.produkPrabayarService.findAll(query);

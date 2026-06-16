@@ -40,7 +40,7 @@ export class ProdukPrabayarService {
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { purchase_price: 'asc' },
         include: {
           operator: true,
           server: true,
@@ -242,6 +242,61 @@ export class ProdukPrabayarService {
       dinonaktifkan: countDeactivated,
       tidak_ada_koneksi: countNoConnection,
       gagal: countFailed,
+    };
+  }
+
+  async bulkUpdateStatus(ids: number[], status: 'active' | 'inactive') {
+    let successCount = 0;
+    let skippedCount = 0;
+    let failedCount = 0;
+
+    if (status === 'inactive') {
+      try {
+        const result = await this.prisma.produk.updateMany({
+          where: { id: { in: ids } },
+          data: { status: 'inactive' },
+        });
+        return { success: result.count, skipped: 0, failed: 0 };
+      } catch (err) {
+        console.error('Error bulk inactive:', err);
+        return { success: 0, skipped: 0, failed: ids.length };
+      }
+    }
+
+    // Active status validation
+    const produks = await this.prisma.produk.findMany({
+      where: { id: { in: ids } },
+      include: {
+        iakPrabayarProduks: true,
+        tripayPrabayarProduks: true,
+        digiflazzProducts: true,
+      },
+    });
+
+    for (const p of produks) {
+      try {
+        const hasProvider = p.iakPrabayarProduks.length > 0 || p.tripayPrabayarProduks.length > 0 || p.digiflazzProducts.length > 0;
+        
+        if (!hasProvider) {
+          skippedCount++;
+          continue;
+        }
+
+        await this.prisma.produk.update({
+          where: { id: p.id },
+          data: { status: 'active' },
+        });
+        successCount++;
+      } catch (err) {
+        console.error(`Error bulk activating produk ID ${p.id}:`, err);
+        failedCount++;
+      }
+    }
+
+    return {
+      success: successCount,
+      skipped: skippedCount,
+      failed: failedCount,
     };
   }
 

@@ -58,10 +58,7 @@ class ConfigApp {
 
   // constructor
   ConfigApp() {
-    // url
-    // _mainurl = "http://api.outletpulsa.com";
-    // _mainurl = "http://localhost:3003";10.95.73.166
-    _mainurl = "http://10.95.73.166:3005/api";
+    _mainurl = "http://10.60.27.166:3005/api";
     _login_url = '$_mainurl/auth/login';
     _check_login_url = '$_mainurl/auth/check-login';
     _beranda_url = '$_mainurl/beranda';
