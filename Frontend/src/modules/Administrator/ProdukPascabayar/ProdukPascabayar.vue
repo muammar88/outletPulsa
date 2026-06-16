@@ -4,7 +4,7 @@ import { IconListDetails, IconPlug, IconList } from '@/components/Icons';
 import { useConfirmation } from '@/composables/useConfirmation';
 import { useNotification } from '@/composables/useNotification';
 import { usePagination } from '@/composables/usePaginations';
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, shallowRef } from 'vue';
 
 // Components
 import ProdukPascabayarFormModal from './components/ProdukPascabayarFormModal.vue';
@@ -20,6 +20,8 @@ import LightButton from '@/components/Button/LightButton.vue';
 import BaseButton from '@/components/Button/BaseButton.vue';
 import IconDelete from '@/components/Icons/IconDelete.vue';
 import IconEdit from '@/components/Icons/IconEdit.vue';
+import { IconCheck, IconBan } from '@/components/Icons';
+import ExpandableActionButton from '@/components/Button/ExpandableActionButton.vue';
 
 import { ProdukPascabayarService } from './services/ProdukPascabayarService';
 import type { Produk } from './types/ProdukPascabayar';
@@ -37,6 +39,7 @@ const { showConfirmDialog, confirmTitle, confirmMessage, displayConfirmation, co
   useConfirmation();
 
 const tableColumns = [
+  { key: 'checkbox', label: '', headerClass: 'w-12 text-center', cellClass: 'text-center' },
   { key: 'kode', label: 'Kode', headerClass: 'text-left w-[15%] pl-4', cellClass: 'text-left pl-4' },
   { key: 'name', label: 'Nama Produk', headerClass: 'text-left w-[20%]', cellClass: 'text-left' },
   { key: 'server', label: 'Server', headerClass: 'text-left w-[15%]', cellClass: 'text-left' },
@@ -45,7 +48,7 @@ const tableColumns = [
   { key: 'action', label: 'Aksi', headerClass: 'text-center w-[15%]', cellClass: 'text-center' },
 ];
 
-const dataProduk = ref<Produk[]>([]);
+const dataProduk = shallowRef<Produk[]>([]);
 const isLoading = ref(false);
 const searchQuery = ref('');
 const statusFilter = ref('');
@@ -70,6 +73,77 @@ const { currentPage, totalPages, pages, totalRow, pageNow, perPage } = usePagina
   { perPage: 150, totalRow: 0 },
 );
 
+// Selection State
+const selectedProducts = ref<number[]>([]);
+const isBulkActionLoading = ref(false);
+const isSelectingAll = ref(false);
+
+const isAllSelected = computed(() => {
+  return dataProduk.value.length > 0 && selectedProducts.value.length === dataProduk.value.length;
+});
+
+const toggleSelectAll = (event: Event) => {
+  const isChecked = (event.target as HTMLInputElement).checked;
+  isSelectingAll.value = true;
+  
+  setTimeout(() => {
+    if (isChecked) {
+      selectedProducts.value = dataProduk.value.map(p => p.id);
+    } else {
+      selectedProducts.value = [];
+    }
+    isSelectingAll.value = false;
+  }, 50);
+};
+
+const bulkUpdateStatus = async (status: 'active' | 'inactive') => {
+  if (selectedProducts.value.length === 0) return;
+  
+  const actionText = status === 'active' ? 'mengaktifkan' : 'menonaktifkan';
+  
+  displayConfirmation(
+    `Konfirmasi ${status === 'active' ? 'Aktivasi' : 'Nonaktivasi'} Massal`,
+    `Apakah Anda yakin ingin ${actionText} ${selectedProducts.value.length} produk yang dipilih?`,
+    async () => {
+      isBulkActionLoading.value = true;
+      try {
+        await ProdukPascabayarService.bulkUpdateStatus(selectedProducts.value, status);
+        displayNotification(`Berhasil ${actionText} ${selectedProducts.value.length} produk`, 'success');
+        selectedProducts.value = [];
+        fetchData();
+      } catch (error: any) {
+        displayNotification(error.response?.data?.message || `Gagal ${actionText} produk`, 'error');
+        console.error(`Error bulk update status:`, error);
+      } finally {
+        isBulkActionLoading.value = false;
+      }
+    }
+  );
+};
+
+const bulkDelete = async () => {
+  if (selectedProducts.value.length === 0) return;
+  
+  displayConfirmation(
+    'Konfirmasi Hapus Massal',
+    `Apakah Anda yakin ingin menghapus ${selectedProducts.value.length} produk yang dipilih? Tindakan ini tidak dapat dibatalkan.`,
+    async () => {
+      isBulkActionLoading.value = true;
+      try {
+        await ProdukPascabayarService.bulkDelete(selectedProducts.value);
+        displayNotification(`Berhasil menghapus ${selectedProducts.value.length} produk`, 'success');
+        selectedProducts.value = [];
+        fetchData();
+      } catch (error: any) {
+        displayNotification(error.response?.data?.message || 'Gagal menghapus produk', 'error');
+        console.error('Error bulk delete:', error);
+      } finally {
+        isBulkActionLoading.value = false;
+      }
+    }
+  );
+};
+
 const fetchData = async (keyword?: string | Event) => {
   if (typeof keyword === 'string') {
     searchQuery.value = keyword;
@@ -87,6 +161,8 @@ const fetchData = async (keyword?: string | Event) => {
     );
     dataProduk.value = response.data.data.list;
     totalRow.value = response.data.data.total;
+    // Reset selection on fetch
+    selectedProducts.value = [];
   } catch (error) {
     console.error('Gagal mengambil data:', error);
   } finally {
@@ -229,6 +305,70 @@ onMounted(() => {
             <option value="active">Aktif</option>
             <option value="inactive">Non-Aktif</option>
           </select>
+        </div>
+      </template>
+
+      <!-- Bulk Actions -->
+      <template #custom-actions>
+        <ExpandableActionButton
+          v-if="selectedProducts.length > 0"
+          :label="`Aktifkan Terpilih (${selectedProducts.length})`"
+          title="Aktifkan Terpilih"
+          class="bg-emerald-500 hover:bg-emerald-600 text-white border-none"
+          :disabled="isBulkActionLoading"
+          @click="bulkUpdateStatus('active')"
+        >
+          <template #icon>
+            <IconCheck class="w-5 h-5 text-white" />
+          </template>
+        </ExpandableActionButton>
+        
+        <ExpandableActionButton
+          v-if="selectedProducts.length > 0"
+          :label="`Nonaktifkan Terpilih (${selectedProducts.length})`"
+          title="Nonaktifkan Terpilih"
+          class="bg-rose-500 hover:bg-rose-600 text-white border-none"
+          :disabled="isBulkActionLoading"
+          @click="bulkUpdateStatus('inactive')"
+        >
+          <template #icon>
+            <IconBan class="w-5 h-5 text-white" />
+          </template>
+        </ExpandableActionButton>
+
+        <ExpandableActionButton
+          v-if="selectedProducts.length > 0"
+          label="Hapus Terpilih"
+          title="Hapus Terpilih"
+          class="bg-red-600 hover:bg-red-700 text-white border-none mr-2"
+          :disabled="isBulkActionLoading"
+          @click="bulkDelete"
+        >
+          <template #icon>
+            <IconDelete class="w-5 h-5 text-white" />
+          </template>
+        </ExpandableActionButton>
+      </template>
+
+      <!-- Checkbox Column -->
+      <template #header-checkbox>
+        <div class="flex items-center justify-center">
+          <input 
+            type="checkbox" 
+            :checked="isAllSelected"
+            @change="toggleSelectAll"
+            class="w-4 h-4 text-[#0f2155] bg-gray-100 border-gray-300 rounded focus:ring-[#0f2155] focus:ring-2 cursor-pointer transition-all"
+          >
+        </div>
+      </template>
+      <template #cell-checkbox="{ row }">
+        <div class="flex items-center justify-center">
+          <input 
+            type="checkbox" 
+            :value="row.id"
+            v-model="selectedProducts"
+            class="w-4 h-4 text-[#0f2155] bg-gray-100 border-gray-300 rounded focus:ring-[#0f2155] focus:ring-2 cursor-pointer transition-all"
+          >
         </div>
       </template>
       <template #cell-kode="{ row }">
@@ -374,5 +514,24 @@ onMounted(() => {
     @refresh="fetchData"
     @notify="(msg, type) => displayNotification(msg, type)"
   />
+
+  <!-- Loading Overlay for Select All -->
+  <transition name="fade">
+    <div v-if="isSelectingAll" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-900/40 backdrop-blur-sm">
+      <div class="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center max-w-sm mx-4 transform transition-all">
+        <div class="relative w-16 h-16 mb-4">
+          <svg class="animate-spin w-full h-full text-blue-600" viewBox="0 0 24 24" fill="none">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="w-2 h-2 bg-blue-600 rounded-full animate-ping"></div>
+          </div>
+        </div>
+        <h3 class="text-lg font-bold text-slate-800 mb-1">Memproses Pilihan</h3>
+        <p class="text-sm text-slate-500 text-center">Mohon tunggu sebentar, sistem sedang memproses pilihan Anda...</p>
+      </div>
+    </div>
+  </transition>
   </div>
 </template>

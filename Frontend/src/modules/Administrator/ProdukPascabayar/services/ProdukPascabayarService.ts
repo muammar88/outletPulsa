@@ -35,4 +35,12 @@ export const ProdukPascabayarService = {
   async delete(id: number) {
     return await api.delete(`/administrator/produk-pascabayar/${id}`);
   },
+
+  async bulkUpdateStatus(ids: number[], status: 'active' | 'inactive') {
+    return await api.post('/administrator/produk-pascabayar/bulk-update-status', { ids, status });
+  },
+
+  async bulkDelete(ids: number[]) {
+    return await api.post('/administrator/produk-pascabayar/bulk-delete', { ids });
+  },
 };

@@ -148,4 +148,27 @@ export class ProdukPascabayarService {
       where: { id },
     });
   }
+
+  async bulkUpdateStatus(ids: number[], status: 'active' | 'inactive') {
+    const result = await this.prisma.produkPascabayar.updateMany({
+      where: { id: { in: ids } },
+      data: { status },
+    });
+
+    return {
+      success: result.count,
+      failed: ids.length - result.count,
+    };
+  }
+
+  async bulkDelete(ids: number[]) {
+    const result = await this.prisma.produkPascabayar.deleteMany({
+      where: { id: { in: ids } },
+    });
+
+    return {
+      success: result.count,
+      failed: ids.length - result.count,
+    };
+  }
 }

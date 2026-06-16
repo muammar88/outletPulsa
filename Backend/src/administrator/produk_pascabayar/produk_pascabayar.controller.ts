@@ -59,4 +59,30 @@ export class ProdukPascabayarController {
       data: {},
     };
   }
+
+  @Post('bulk-update-status')
+  async bulkUpdateStatus(@Body() payload: { ids: number[]; status: 'active' | 'inactive' }) {
+    if (!payload.ids || !payload.ids.length) {
+      return { success: false, message: 'Tidak ada produk yang dipilih' };
+    }
+    const data = await this.produkPascabayarService.bulkUpdateStatus(payload.ids, payload.status);
+    return {
+      success: true,
+      message: `Proses bulk update status selesai`,
+      data,
+    };
+  }
+
+  @Post('bulk-delete')
+  async bulkDelete(@Body() payload: { ids: number[] }) {
+    if (!payload.ids || !payload.ids.length) {
+      return { success: false, message: 'Tidak ada produk yang dipilih' };
+    }
+    const data = await this.produkPascabayarService.bulkDelete(payload.ids);
+    return {
+      success: true,
+      message: `Proses bulk delete selesai`,
+      data,
+    };
+  }
 }
