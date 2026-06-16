@@ -18,17 +18,17 @@ export default async function webhookDummySeed(prisma: PrismaClient) {
   // 1. Dummy Transaksi IAK
   await prisma.transaction.create({
     data: {
-      kode: 'IAK-DUMMY-1234567', // IAK mencocokkan ref_id dengan field kode
+      kode: '634539288', // IAK mencocokkan ref_id dengan field kode
       type: 'prabayar',
-      nomorTujuan: '081234567890',
-      ket: 'Transaksi IAK Dummy',
-      purchase_price: 9000,
-      selling_price: 10000,
+      nomorTujuan: '0812121212',
+      ket: 'Transaksi IAK Dummy (htelkomsel100000)',
+      purchase_price: 10325,
+      selling_price: 11000,
       status: 'proses',
       serverId: server.id,
     },
   });
-  console.log('Created dummy transaction for IAK (ref_id/kode: IAK-DUMMY-123)');
+  console.log('Created dummy transaction for IAK (ref_id/kode: 634539288)');
 
   // 2. Dummy Transaksi Tripay
   await prisma.transaction.create({

@@ -121,29 +121,6 @@ const bulkUpdateStatus = async (status: 'active' | 'inactive') => {
   );
 };
 
-const bulkDelete = async () => {
-  if (selectedProducts.value.length === 0) return;
-  
-  displayConfirmation(
-    'Konfirmasi Hapus Massal',
-    `Apakah Anda yakin ingin menghapus ${selectedProducts.value.length} produk yang dipilih? Tindakan ini tidak dapat dibatalkan.`,
-    async () => {
-      isBulkActionLoading.value = true;
-      try {
-        await ProdukPascabayarService.bulkDelete(selectedProducts.value);
-        displayNotification(`Berhasil menghapus ${selectedProducts.value.length} produk`, 'success');
-        selectedProducts.value = [];
-        fetchData();
-      } catch (error: any) {
-        displayNotification(error.response?.data?.message || 'Gagal menghapus produk', 'error');
-        console.error('Error bulk delete:', error);
-      } finally {
-        isBulkActionLoading.value = false;
-      }
-    }
-  );
-};
-
 const fetchData = async (keyword?: string | Event) => {
   if (typeof keyword === 'string') {
     searchQuery.value = keyword;
@@ -336,18 +313,6 @@ onMounted(() => {
           </template>
         </ExpandableActionButton>
 
-        <ExpandableActionButton
-          v-if="selectedProducts.length > 0"
-          label="Hapus Terpilih"
-          title="Hapus Terpilih"
-          class="bg-red-600 hover:bg-red-700 text-white border-none mr-2"
-          :disabled="isBulkActionLoading"
-          @click="bulkDelete"
-        >
-          <template #icon>
-            <IconDelete class="w-5 h-5 text-white" />
-          </template>
-        </ExpandableActionButton>
       </template>
 
       <!-- Checkbox Column -->
