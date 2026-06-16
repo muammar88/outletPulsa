@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IconListDetails, IconPlug, IconList } from '@tabler/icons-vue';
+import { IconListDetails, IconPlug, IconList } from '@/components/Icons';
 
 import { useConfirmation } from '@/composables/useConfirmation';
 import { useNotification } from '@/composables/useNotification';
@@ -18,8 +18,8 @@ import Notification from '@/components/Modal/Notification.vue';
 import DangerButton from '@/components/Button/DangerButton.vue';
 import LightButton from '@/components/Button/LightButton.vue';
 import BaseButton from '@/components/Button/BaseButton.vue';
-import DeleteIcon from '@/components/Icons/DeleteIcon.vue';
-import EditIcon from '@/components/Icons/EditIcon.vue';
+import IconDelete from '@/components/Icons/IconDelete.vue';
+import IconEdit from '@/components/Icons/IconEdit.vue';
 
 import { ProdukPascabayarService } from './services/ProdukPascabayarService';
 import type { Produk } from './types/ProdukPascabayar';
@@ -310,10 +310,10 @@ onMounted(() => {
             <IconListDetails class="w-4 h-4" />
           </LightButton>
           <LightButton @click="handleEdit(row)" title="Edit Produk" class="hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-all">
-            <EditIcon />
+            <IconEdit />
           </LightButton>
           <DangerButton @click="handleDelete(row)" title="Hapus Produk" class="hover:shadow-md transition-all">
-            <DeleteIcon />
+            <IconDelete />
           </DangerButton>
         </div>
       </template>

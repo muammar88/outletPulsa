@@ -3,7 +3,7 @@ import { ref } from 'vue';
 import api from '@/service/api_administrator';
 import { setAdminLoggedIn } from '@/utils/cookies';
 import { useMenuStore } from '@/stores/menu';
-import { IconLogout } from '@tabler/icons-vue';
+import { IconLogout } from '@/components/Icons';
 
 const emit = defineEmits(['close-dropdown']);
 
@@ -60,7 +60,7 @@ defineExpose({ showLogoutConfirmation, handleLogout });
       class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-red-50 hover:text-red-600 transition-colors"
     >
       <div class="bg-slate-200 p-1.5 rounded-lg text-slate-600 group-hover:bg-red-100 group-hover:text-red-600 transition-colors">
-        <IconLogout :size="18" :stroke="2" />
+        <IconLogout :size="18" :stroke-width="2" />
       </div>
       Log Out
     </button>

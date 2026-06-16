@@ -22,14 +22,14 @@
           href="/registration"
           class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-lg btn-primary"
         >
-          <IconUserPlus class="w-5 h-5" :stroke="2" />
+          <IconUserPlus class="w-5 h-5" :stroke-width="2" />
           Daftar Sekarang
         </a>
         <a
           href="/login"
           class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition btn-outline"
         >
-          <IconLogin class="w-5 h-5" :stroke="2" />
+          <IconLogin class="w-5 h-5" :stroke-width="2" />
           Login Member
         </a>
       </div>
@@ -44,7 +44,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import { IconUserPlus, IconLogin } from '@tabler/icons-vue';
+import { IconUserPlus, IconLogin } from '@/components/Icons';
 
 const heroVisible = ref(false);
 

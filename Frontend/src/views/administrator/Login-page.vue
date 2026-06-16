@@ -46,7 +46,7 @@
             class="flex items-center gap-3 bg-white/5 hover:bg-white/10 transition-colors border border-white/10 rounded-2xl px-4 py-3 backdrop-blur">
             <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
               :style="{ background: f.color + '22', border: '1px solid ' + f.color + '44' }">
-              <component :is="f.icon" class="w-5 h-5" :style="{ color: f.color }" :stroke="2" />
+              <component :is="f.icon" class="w-5 h-5" :style="{ color: f.color }" :stroke-width="2" />
             </div>
             <span class="text-white/75 text-sm font-medium">{{ f.text }}</span>
           </div>
@@ -67,7 +67,7 @@
         <!-- Mobile brand (only visible on small screens) -->
         <div class="flex items-center justify-center gap-3 mb-8 md:hidden">
           <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg">
-            <IconBolt class="w-5 h-5 text-white" :stroke="2.5" />
+            <IconBolt class="w-5 h-5 text-white" :stroke-width="2.5" />
           </div>
           <h1 class="text-xl font-extrabold text-gray-800">Outlet Pulsa</h1>
         </div>
@@ -81,7 +81,7 @@
               <!-- Card Header -->
               <div class="text-center mb-8">
                 <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center mb-4 shadow-inner">
-                  <IconShieldLock class="w-8 h-8 text-blue-600" :stroke="1.8" />
+                  <IconShieldLock class="w-8 h-8 text-blue-600" :stroke-width="1.8" />
                 </div>
                 <h2 class="text-2xl font-extrabold text-gray-900">Login Administrator</h2>
                 <p class="text-gray-400 text-sm mt-1.5">Masukkan kredensial akun admin Anda</p>
@@ -94,7 +94,7 @@
                   <label class="text-sm font-semibold text-gray-700">Username</label>
                   <div class="relative">
                     <span class="absolute top-1/2 -translate-y-1/2 left-4 flex items-center pointer-events-none z-10">
-                      <IconUser class="w-5 h-5 text-gray-400" :stroke="2" />
+                      <IconUser class="w-5 h-5 text-gray-400" :stroke-width="2" />
                     </span>
                     <input
                       v-model="form.username"
@@ -107,7 +107,7 @@
                     />
                   </div>
                   <p v-if="errors.username" class="text-red-500 text-xs flex items-center gap-1">
-                    <IconAlertCircle class="w-3.5 h-3.5" :stroke="2" />
+                    <IconAlertCircle class="w-3.5 h-3.5" :stroke-width="2" />
                     {{ errors.username }}
                   </p>
                 </div>
@@ -117,7 +117,7 @@
                   <label class="text-sm font-semibold text-gray-700">Password</label>
                   <div class="relative">
                     <span class="absolute top-1/2 -translate-y-1/2 left-4 flex items-center pointer-events-none z-10">
-                      <IconLock class="w-5 h-5 text-gray-400" :stroke="2" />
+                      <IconLock class="w-5 h-5 text-gray-400" :stroke-width="2" />
                     </span>
                     <input
                       v-model="form.password"
@@ -133,12 +133,12 @@
                       @click="showPassword = !showPassword"
                       class="absolute top-1/2 -translate-y-1/2 right-4 flex items-center text-gray-400 hover:text-blue-600 transition-colors z-10"
                     >
-                      <IconEye v-if="!showPassword" class="w-5 h-5" :stroke="2" />
-                      <IconEyeOff v-else class="w-5 h-5" :stroke="2" />
+                      <IconEye v-if="!showPassword" class="w-5 h-5" :stroke-width="2" />
+                      <IconEyeOff v-else class="w-5 h-5" :stroke-width="2" />
                     </button>
                   </div>
                   <p v-if="errors.password" class="text-red-500 text-xs flex items-center gap-1">
-                    <IconAlertCircle class="w-3.5 h-3.5" :stroke="2" />
+                    <IconAlertCircle class="w-3.5 h-3.5" :stroke-width="2" />
                     {{ errors.password }}
                   </p>
                 </div>
@@ -149,7 +149,7 @@
                     <div class="relative">
                       <input type="checkbox" v-model="form.remember" class="sr-only peer" />
                       <div class="w-5 h-5 rounded-md border-2 border-gray-300 peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-all flex items-center justify-center">
-                        <IconCheck class="w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" :stroke="3" />
+                        <IconCheck class="w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity" :stroke-width="3" />
                       </div>
                     </div>
                     Ingat saya
@@ -160,7 +160,7 @@
                 <!-- Error global -->
                 <transition name="error-fade">
                   <div v-if="loginError" class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-2xl px-4 py-3">
-                    <IconAlertCircle class="w-5 h-5 flex-shrink-0" :stroke="2" />
+                    <IconAlertCircle class="w-5 h-5 flex-shrink-0" :stroke-width="2" />
                     <p class="text-sm font-medium">{{ loginError }}</p>
                   </div>
                 </transition>
@@ -172,7 +172,7 @@
                   class="submit-btn"
                 >
                   <span v-if="!loading" class="flex items-center justify-center gap-2">
-                    <IconLogin class="w-5 h-5" :stroke="2" />
+                    <IconLogin class="w-5 h-5" :stroke-width="2" />
                     Masuk ke Dashboard
                   </span>
                   <span v-else class="flex items-center justify-center gap-2">
@@ -191,7 +191,7 @@
               <!-- Card Header -->
               <div class="text-center mb-8">
                 <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 flex items-center justify-center mb-4 shadow-inner">
-                  <IconShieldCheck class="w-8 h-8 text-emerald-600" :stroke="1.8" />
+                  <IconShieldCheck class="w-8 h-8 text-emerald-600" :stroke-width="1.8" />
                 </div>
                 <h2 class="text-2xl font-extrabold text-gray-900">Verifikasi 2FA</h2>
                 <p class="text-gray-400 text-sm mt-1.5">Masukkan kode 6 digit dari Google Authenticator</p>
@@ -237,7 +237,7 @@
                 <!-- Error OTP -->
                 <transition name="error-fade">
                   <div v-if="loginError" class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 rounded-2xl px-4 py-3">
-                    <IconAlertCircle class="w-5 h-5 flex-shrink-0" :stroke="2" />
+                    <IconAlertCircle class="w-5 h-5 flex-shrink-0" :stroke-width="2" />
                     <p class="text-sm font-medium">{{ loginError }}</p>
                   </div>
                 </transition>
@@ -250,7 +250,7 @@
                   :class="{ 'submit-btn-emerald': !loadingOtp && otpCode.length === 6 }"
                 >
                   <span v-if="!loadingOtp" class="flex items-center justify-center gap-2">
-                    <IconShieldCheck class="w-5 h-5" :stroke="2" />
+                    <IconShieldCheck class="w-5 h-5" :stroke-width="2" />
                     Verifikasi Kode
                   </span>
                   <span v-else class="flex items-center justify-center gap-2">
@@ -268,7 +268,7 @@
                   @click="goBackToCredentials"
                   class="w-full flex items-center justify-center gap-2 text-sm text-gray-500 hover:text-blue-600 font-semibold transition-colors py-2"
                 >
-                  <IconArrowLeft class="w-4 h-4" :stroke="2" />
+                  <IconArrowLeft class="w-4 h-4" :stroke-width="2" />
                   Kembali ke halaman login
                 </button>
               </form>
@@ -277,7 +277,7 @@
         </div>
 
         <p class="text-center text-xs text-gray-400 mt-6 flex items-center justify-center gap-1">
-          <IconLock class="w-3.5 h-3.5" :stroke="2" />
+          <IconLock class="w-3.5 h-3.5" :stroke-width="2" />
           Koneksi terenkripsi · © {{ new Date().getFullYear() }} Outlet Pulsa
         </p>
       </div>
@@ -291,8 +291,7 @@ import { reactive, ref, computed, onUnmounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { login_administrator, verify_2fa } from '@/service/auth';
 import { setAdminLoggedIn } from '@/utils/cookies';
-import {
-  IconShieldLock,
+import { IconShieldLock,
   IconShieldCheck,
   IconUser,
   IconLock,
@@ -305,8 +304,7 @@ import {
   IconUsers,
   IconReceipt,
   IconSettings,
-  IconArrowLeft,
-} from '@tabler/icons-vue';
+  IconArrowLeft, } from '@/components/Icons';
 
 const showPassword = ref(false);
 const loading = ref(false);

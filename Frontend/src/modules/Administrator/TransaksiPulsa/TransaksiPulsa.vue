@@ -9,11 +9,11 @@ import TransaksiDetailModal from '@/modules/Administrator/TransaksiPulsa/compone
 // Button
 import LightButton from '@/components/Button/LightButton.vue';
 // Icon
-import InfoIcon from '@/components/Icons/InfoIcon.vue';
+import IconInfo from '@/components/Icons/IconInfo.vue';
 import { useNotification } from '@/composables/useNotification';
 import Notification from '@/components/Modal/Notification.vue';
 import { transaksiPulsaService } from '@/service/administrator/transaksi_pulsa';
-import { IconClockPlay, IconServerCog, IconX, IconChecks } from '@tabler/icons-vue';
+import { IconClockPlay, IconServerCog, IconX, IconChecks } from '@/components/Icons';
 import BaseButton from '@/components/Button/BaseButton.vue';
 
 // Definisi Kolom Tabel & Interface
@@ -332,7 +332,7 @@ onMounted(() => {
           </LightButton>
 
           <LightButton @click="handleDetail(row)" title="Detail Transaksi">
-            <InfoIcon />
+            <IconInfo />
           </LightButton>
         </div>
       </template>

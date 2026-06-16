@@ -9,8 +9,8 @@ import {
 import { SettingStore } from '@/stores/settings';
 import type { Menu } from '@/service/menu';
 import { ref, onMounted, watch } from 'vue';
-import { IconX } from '@tabler/icons-vue';
-import * as TablerIcons from '@tabler/icons-vue';
+import { IconX } from '@/components/Icons';
+import * as TablerIcons from '@/components/Icons';
 import { useTabStore } from '@/stores/useTabStore';
 
 const props = defineProps<{
@@ -143,7 +143,7 @@ onMounted(() => {
 
       <!-- Mobile Close Button -->
       <button class="block lg:hidden text-slate-400 hover:text-white hover:bg-white/10 p-1.5 rounded-lg transition-colors duration-200 flex-shrink-0" @click="sidebarStore.toggleSidebar()">
-        <IconX :size="20" stroke="2.5" />
+        <IconX :size="20" stroke-width="2.5" />
       </button>
     </div>
 
@@ -171,7 +171,7 @@ onMounted(() => {
               "
             >
               <div class="flex items-center justify-center w-6 flex-shrink-0 transition-transform duration-300" :class="!sidebarStore.isSidebarOpen ? 'scale-110 ml-0.5' : ''">
-                <component :is="TablerIcons[item.icon] || TablerIcons.IconCircleDashed" class="w-[20px] h-[20px]" :stroke="2" />
+                <component :is="TablerIcons[item.icon] || TablerIcons.IconInfoCircle" class="w-[20px] h-[20px]" :stroke-width="2" />
               </div>
               <span class="flex-grow transition-opacity duration-300" :class="sidebarStore.isSidebarOpen ? 'opacity-100' : 'opacity-0'">{{ item.name }}</span>
               

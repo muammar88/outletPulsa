@@ -2,21 +2,21 @@
   <div class="flex items-center gap-3">
     <a href="#" class="social-icon-btn group" title="Facebook">
       <div class="absolute inset-0 bg-blue-500 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <IconBrandFacebook class="w-5 h-5 relative z-10 group-hover:text-white transition-colors" :stroke="2" />
+      <IconBrandFacebook class="w-5 h-5 relative z-10 group-hover:text-white transition-colors" :stroke-width="2" />
     </a>
     <a href="#" class="social-icon-btn group" title="Instagram">
       <div class="absolute inset-0 bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-500 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <IconBrandInstagram class="w-5 h-5 relative z-10 group-hover:text-white transition-colors" :stroke="2" />
+      <IconBrandInstagram class="w-5 h-5 relative z-10 group-hover:text-white transition-colors" :stroke-width="2" />
     </a>
     <a href="#" class="social-icon-btn group" title="TikTok">
       <div class="absolute inset-0 bg-black rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <IconBrandTiktok class="w-5 h-5 relative z-10 group-hover:text-white transition-colors" :stroke="2" />
+      <IconBrandTiktok class="w-5 h-5 relative z-10 group-hover:text-white transition-colors" :stroke-width="2" />
     </a>
   </div>
 </template>
 
 <script setup lang="ts">
-import { IconBrandFacebook, IconBrandInstagram, IconBrandTiktok } from '@tabler/icons-vue';
+import { IconBrandFacebook, IconBrandInstagram, IconBrandTiktok } from '@/components/Icons';
 </script>
 
 <style scoped>

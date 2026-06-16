@@ -6,7 +6,7 @@ import Logout from '@/views/administrator/components/Header/Logout.vue';
 import ModalEditProfile from '@/views/administrator/components/Header/ModalEditProfile.vue';
 import Modal2FA from '@/views/administrator/components/Header/Modal2FA.vue';
 import { SettingStore } from '@/stores/settings';
-import { IconChevronDown, IconUserEdit, IconShieldLock } from '@tabler/icons-vue';
+import { IconChevronDown, IconUserEdit, IconShieldLock } from '@/components/Icons';
 
 const target = ref(null);
 const dropdownOpen = ref(false);
@@ -79,7 +79,7 @@ function showNotif(payload: { type: 'success' | 'error'; message: string }) {
         class="hidden sm:block text-slate-400 group-hover:text-blue-400 transition-all duration-300"
         :class="dropdownOpen ? 'rotate-180 text-blue-500' : ''"
         :size="15"
-        :stroke="2.5"
+        :stroke-width="2.5"
       />
     </button>
 
@@ -102,7 +102,7 @@ function showNotif(payload: { type: 'success' | 'error'; message: string }) {
             class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 hover:text-blue-600 transition-colors"
           >
             <div class="bg-blue-100 p-1.5 rounded-lg text-blue-600">
-              <IconUserEdit :size="18" :stroke="2" />
+              <IconUserEdit :size="18" :stroke-width="2" />
             </div>
             Edit Profile
           </button>
@@ -112,7 +112,7 @@ function showNotif(payload: { type: 'success' | 'error'; message: string }) {
             class="w-full flex items-center gap-3 px-4 py-2.5 mt-1 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 hover:text-emerald-600 transition-colors"
           >
             <div class="bg-emerald-100 p-1.5 rounded-lg text-emerald-600">
-              <IconShieldLock :size="18" :stroke="2" />
+              <IconShieldLock :size="18" :stroke-width="2" />
             </div>
             Keamanan Akun
           </button>

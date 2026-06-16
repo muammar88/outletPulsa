@@ -31,7 +31,7 @@
                 :key="t.name"
                 class="testimonial-card"
               >
-                <IconQuote class="testi-quote-icon" :stroke="1" />
+                <IconQuote class="testi-quote-icon" :stroke-width="1" />
                 <div class="flex items-center gap-4 mb-4">
                   <div class="testi-avatar">
                     {{ t.name.charAt(0) }}
@@ -72,7 +72,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { IconQuote, IconStarFilled } from '@tabler/icons-vue';
+import { IconQuote, IconStarFilled } from '@/components/Icons';
 
 const testimonials = [
   { name: 'Budi - Agen',     text: 'Aplikasinya stabil dan profitnya terasa setiap hari!' },

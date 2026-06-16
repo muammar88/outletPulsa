@@ -3,7 +3,7 @@ import { ref, defineEmits, watch } from 'vue'
 import LoadingSpinner from '@/components/Loading/LoadingSpinner.vue'
 import InputText from '@/components/Form/InputText.vue'
 import { get_2fa_status, setup_2fa, enable_2fa, disable_2fa } from '@/service/auth'
-import { IconShieldCheck, IconShieldX } from '@tabler/icons-vue'
+import { IconShieldCheck, IconShieldX } from '@/components/Icons';
 
 const props = defineProps<{
   formStatus: boolean

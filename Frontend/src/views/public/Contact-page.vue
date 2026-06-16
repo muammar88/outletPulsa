@@ -14,7 +14,7 @@
 
       <div class="relative z-10 max-w-3xl mx-auto">
         <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 border border-blue-200 text-blue-700 text-xs font-bold mb-5 shadow-sm">
-          <IconMessageCircle class="w-4 h-4" :stroke="2.5" />
+          <IconMessageCircle class="w-4 h-4" :stroke-width="2.5" />
           Hubungi Tim Kami
         </div>
 
@@ -40,7 +40,7 @@
             <div class="space-y-6 flex-grow">
               <div class="flex items-start gap-4">
                 <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center flex-shrink-0 border border-blue-100 text-blue-600">
-                  <IconMapPin class="w-6 h-6" :stroke="2" />
+                  <IconMapPin class="w-6 h-6" :stroke-width="2" />
                 </div>
                 <div>
                   <h4 class="font-bold text-gray-900 mb-1">Kantor Pusat</h4>
@@ -50,7 +50,7 @@
 
               <div class="flex items-start gap-4">
                 <div class="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center flex-shrink-0 border border-emerald-100 text-emerald-600">
-                  <IconBrandWhatsapp class="w-6 h-6" :stroke="2" />
+                  <IconBrandWhatsapp class="w-6 h-6" :stroke-width="2" />
                 </div>
                 <div>
                   <h4 class="font-bold text-gray-900 mb-1">WhatsApp / Telepon</h4>
@@ -60,7 +60,7 @@
 
               <div class="flex items-start gap-4">
                 <div class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center flex-shrink-0 border border-indigo-100 text-indigo-600">
-                  <IconMail class="w-6 h-6" :stroke="2" />
+                  <IconMail class="w-6 h-6" :stroke-width="2" />
                 </div>
                 <div>
                   <h4 class="font-bold text-gray-900 mb-1">Email Support</h4>
@@ -117,7 +117,7 @@
               </div>
 
               <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-[1.02] transition-all duration-300 flex items-center justify-center gap-2">
-                <IconSend class="w-5 h-5" :stroke="2.5" />
+                <IconSend class="w-5 h-5" :stroke-width="2.5" />
                 Kirim Pesan Sekarang
               </button>
             </form>
@@ -133,13 +133,11 @@
 </template>
 
 <script setup lang="ts">
-import {
-  IconMessageCircle,
+import { IconMessageCircle,
   IconMapPin,
   IconBrandWhatsapp,
   IconMail,
-  IconSend
-} from '@tabler/icons-vue';
+  IconSend } from '@/components/Icons';
 import Navbar from '@/views/public/components/Navbar.vue';
 import Footer from '@/views/public/components/Footer.vue';
 import SocialMediaLinks from '@/views/public/components/SocialMediaLinks.vue';

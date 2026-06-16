@@ -17,9 +17,9 @@ import Notification from '@/components/Modal/Notification.vue';
 import DangerButton from '@/components/Button/DangerButton.vue';
 import LightButton from '@/components/Button/LightButton.vue';
 // Icon
-import DeleteIcon from '@/components/Icons/DeleteIcon.vue';
-import EditIcon from '@/components/Icons/EditIcon.vue';
-import ListIcon from '@/components/Icons/ListIcon.vue';
+import IconDelete from '@/components/Icons/IconDelete.vue';
+import IconEdit from '@/components/Icons/IconEdit.vue';
+import IconList from '@/components/Icons/IconList.vue';
 import { daftarGrupService } from '@/service/administrator/daftarGrup';
 import { format } from 'date-fns';
 
@@ -226,13 +226,13 @@ onMounted(() => {
       <template #cell-action="{ row }">
         <div v-if="row.name !== 'Administrator'" class="flex justify-center gap-2">
           <LightButton @click="handleManagePermissions(row)" title="Kelola Hak Akses">
-            <ListIcon />
+            <IconList />
           </LightButton>
           <LightButton @click="handleEdit(row)" title="Edit Grup">
-            <EditIcon />
+            <IconEdit />
           </LightButton>
           <DangerButton @click="handleDelete(row)" title="Hapus Grup">
-            <DeleteIcon />
+            <IconDelete />
           </DangerButton>
         </div>
         <span v-else class="text-xs text-gray-400 italic">Sistem</span>

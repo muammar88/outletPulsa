@@ -44,7 +44,7 @@
         <!-- Icon -->
         <div class="flex items-start justify-between mb-4">
           <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" :style="{ background: stat.bgColor }">
-            <component :is="stat.icon" class="w-5 h-5" :style="{ color: stat.color }" :stroke="2" />
+            <component :is="stat.icon" class="w-5 h-5" :style="{ color: stat.color }" :stroke-width="2" />
           </div>
           <span
             class="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full"
@@ -158,7 +158,7 @@
             <div v-for="trx in recentTransactions" :key="trx.id" class="flex items-center justify-between px-6 py-3.5 hover:bg-slate-50/70 transition-colors duration-150">
               <div class="flex items-center gap-3.5">
                 <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" :class="trx.iconBg">
-                  <component :is="trx.icon" class="w-4 h-4" :class="trx.iconColor" :stroke="2" />
+                  <component :is="trx.icon" class="w-4 h-4" :class="trx.iconColor" :stroke-width="2" />
                 </div>
                 <div>
                   <p class="text-sm font-semibold text-slate-700">{{ trx.name }}</p>
@@ -251,8 +251,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { dashboardService } from '@/service/administrator/dashboard';
 import { useNotification } from '@/composables/useNotification';
-import {
-  IconCurrencyDollar,
+import { IconCurrencyDollar,
   IconUsers,
   IconReceipt,
   IconPackage,
@@ -261,8 +260,7 @@ import {
   IconDeviceMobile,
   IconWifi,
   IconServerCog,
-  IconRefresh,
-} from '@tabler/icons-vue';
+  IconRefresh, } from '@/components/Icons';
 
 const currentDate = computed(() => {
   return new Date().toLocaleDateString('id-ID', {

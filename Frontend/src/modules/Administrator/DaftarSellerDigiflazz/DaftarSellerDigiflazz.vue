@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IconList, IconLoader2 } from '@tabler/icons-vue';
+import { IconList, IconLoader2 } from '@/components/Icons';
 
 import { usePagination } from '@/composables/usePaginations';
 import { onMounted, ref } from 'vue';

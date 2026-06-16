@@ -7,7 +7,7 @@
         @click="scrollToTop"
         class="fixed bottom-24 right-6 z-50 w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30 hover:scale-110 hover:shadow-xl transition-all duration-300 scroll-top-btn"
       >
-        <IconChevronUp class="w-6 h-6" :stroke="2.5" />
+        <IconChevronUp class="w-6 h-6" :stroke-width="2.5" />
       </button>
     </transition>
 
@@ -18,14 +18,14 @@
       class="fixed bottom-6 right-6 z-50 w-14 h-14 flex items-center justify-center rounded-full bg-green-500 text-white shadow-lg shadow-green-500/30 hover:scale-110 hover:shadow-xl transition-all duration-300 wa-btn"
       title="Chat WhatsApp"
     >
-      <IconBrandWhatsapp class="w-7 h-7" :stroke="1.8" />
+      <IconBrandWhatsapp class="w-7 h-7" :stroke-width="1.8" />
     </a>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import { IconChevronUp, IconBrandWhatsapp } from '@tabler/icons-vue';
+import { IconChevronUp, IconBrandWhatsapp } from '@/components/Icons';
 
 const showScrollTop = ref(false);
 

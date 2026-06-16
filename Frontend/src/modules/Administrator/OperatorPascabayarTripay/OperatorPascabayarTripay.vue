@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IconListDetails, IconList } from '@tabler/icons-vue';
+import { IconListDetails, IconList } from '@/components/Icons';
 
 import { useConfirmation } from '@/composables/useConfirmation';
 import { useNotification } from '@/composables/useNotification';

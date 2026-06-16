@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IconRefresh } from '@tabler/icons-vue';
+import { IconRefresh } from '@/components/Icons';
 
 import { usePagination } from '@/composables/usePaginations';
 import { useNotification } from '@/composables/useNotification';

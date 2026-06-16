@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import * as Icons from '@tabler/icons-vue';
+import * as Icons from '@/components/Icons';
 import type { Navigation } from '@/types/navigation';
 import { computed, ref, watch } from 'vue';
 import { useTabStore } from '@/stores/useTabStore';
@@ -13,13 +13,7 @@ const tabStore = useTabStore();
 
 const getIcon = (iconName: string) => {
   if (!iconName) return null;
-  const pascalName =
-    'Icon' +
-    iconName
-      .split('-')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join('');
-  return (Icons as any)[pascalName] || Icons.IconQuestionMark;
+  return (Icons as any)[iconName] || Icons.IconInfoCircle;
 };
 
 const setActiveTab = (tabPath: string) => {

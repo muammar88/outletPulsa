@@ -44,12 +44,12 @@
               href="/registration"
               class="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-blue-600 font-bold text-lg shadow-xl btn-cta-white hover:scale-105 transition-all w-full sm:w-auto justify-center"
             >
-              <IconRocket class="w-6 h-6 text-blue-500" :stroke="2" />
+              <IconRocket class="w-6 h-6 text-blue-500" :stroke-width="2" />
               Buat Akun
             </a>
             <a href="#testimoni" class="inline-flex items-center gap-2 px-6 py-4 rounded-xl text-white font-medium hover:bg-white/10 transition-colors w-full sm:w-auto justify-center">
               Pelajari Lebih Lanjut
-              <IconArrowRight class="w-5 h-5" :stroke="2" />
+              <IconArrowRight class="w-5 h-5" :stroke-width="2" />
             </a>
           </div>
         </div>
@@ -95,7 +95,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue';
-import { IconRocket, IconArrowRight } from '@tabler/icons-vue';
+import { IconRocket, IconArrowRight } from '@/components/Icons';
 
 let revealObserver: IntersectionObserver;
 

@@ -14,7 +14,7 @@
           :style="{ '--delay': i * 100 + 'ms' }"
         >
           <div class="stat-icon">
-            <component :is="s.icon" class="w-8 h-8" :stroke="1.8" />
+            <component :is="s.icon" class="w-8 h-8" :stroke-width="1.8" />
           </div>
           <p class="text-3xl font-extrabold text-blue-600 stat-number">{{ statsStarted ? s.display : '0' }}</p>
           <p class="text-sm text-gray-500 mt-1">{{ s.label }}</p>
@@ -26,7 +26,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import { IconUsers, IconRefresh, IconRocket, IconMessageCircle } from '@tabler/icons-vue';
+import { IconUsers, IconRefresh, IconRocket, IconMessageCircle } from '@/components/Icons';
 
 const statsSection = ref<HTMLElement | null>(null);
 const statsStarted = ref(false);

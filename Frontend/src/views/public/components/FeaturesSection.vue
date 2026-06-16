@@ -18,7 +18,7 @@
           @mousemove="onCardMove($event)"
         >
           <div class="feature-icon-wrap">
-            <component :is="item.icon" class="w-8 h-8 text-blue-600 feature-icon" :stroke="1.8" />
+            <component :is="item.icon" class="w-8 h-8 text-blue-600 feature-icon" :stroke-width="1.8" />
           </div>
           <h3 class="font-bold text-lg text-gray-800 mt-4">{{ item.title }}</h3>
           <p class="text-gray-600 text-sm mt-2">{{ item.desc }}</p>
@@ -31,7 +31,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue';
-import { IconBolt, IconCoin, IconDeviceMobile } from '@tabler/icons-vue';
+import { IconBolt, IconCoin, IconDeviceMobile } from '@/components/Icons';
 
 const features = [
   { icon: IconBolt,         title: 'Transaksi Cepat',   desc: 'Proses hitungan detik dengan sistem stabil dan andal.' },

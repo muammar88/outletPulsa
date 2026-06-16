@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { IconListDetails, IconPlug, IconList, IconCheck, IconBan } from '@tabler/icons-vue';
+import { IconListDetails, IconPlug, IconList, IconCheck, IconBan } from '@/components/Icons';
 
 import { useConfirmation } from '@/composables/useConfirmation';
 import { useNotification } from '@/composables/useNotification';
 import { usePagination } from '@/composables/usePaginations';
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, shallowRef } from 'vue';
 
 // Components
 import ProdukPrabayarFormModal from './components/ProdukPrabayarFormModal.vue';
@@ -19,8 +19,8 @@ import DangerButton from '@/components/Button/DangerButton.vue';
 import LightButton from '@/components/Button/LightButton.vue';
 import BaseButton from '@/components/Button/BaseButton.vue';
 import ExpandableActionButton from '@/components/Button/ExpandableActionButton.vue';
-import DeleteIcon from '@/components/Icons/DeleteIcon.vue';
-import EditIcon from '@/components/Icons/EditIcon.vue';
+import IconDelete from '@/components/Icons/IconDelete.vue';
+import IconEdit from '@/components/Icons/IconEdit.vue';
 
 import { ProdukPrabayarService } from './services/ProdukPrabayarService';
 import type { Produk } from './types/ProdukPrabayar';
@@ -47,7 +47,7 @@ const tableColumns = [
   { key: 'action', label: 'Aksi', headerClass: 'text-center w-[15%]', cellClass: 'text-center' },
 ];
 
-const dataProduk = ref<Produk[]>([]);
+const dataProduk = shallowRef<Produk[]>([]);
 const isLoading = ref(false);
 const searchQuery = ref('');
 const statusFilter = ref('');
@@ -86,7 +86,6 @@ const { currentPage, totalPages, pages, totalRow, pageNow, perPage } = usePagina
   { perPage: 150, totalRow: 0 },
 );
 
-// Selection State
 const selectedProducts = ref<number[]>([]);
 const isBulkActionLoading = ref(false);
 
@@ -94,22 +93,20 @@ const isAllSelected = computed(() => {
   return dataProduk.value.length > 0 && selectedProducts.value.length === dataProduk.value.length;
 });
 
+const isSelectingAll = ref(false);
+
 const toggleSelectAll = (event: Event) => {
   const isChecked = (event.target as HTMLInputElement).checked;
-  if (isChecked) {
-    selectedProducts.value = dataProduk.value.map(p => p.id);
-  } else {
-    selectedProducts.value = [];
-  }
-};
-
-const toggleSelectProduct = (id: number) => {
-  const index = selectedProducts.value.indexOf(id);
-  if (index === -1) {
-    selectedProducts.value.push(id);
-  } else {
-    selectedProducts.value.splice(index, 1);
-  }
+  isSelectingAll.value = true;
+  
+  setTimeout(() => {
+    if (isChecked) {
+      selectedProducts.value = dataProduk.value.map(p => p.id);
+    } else {
+      selectedProducts.value = [];
+    }
+    isSelectingAll.value = false;
+  }, 50);
 };
 
 const fetchData = async (keyword?: string | Event) => {
@@ -411,8 +408,8 @@ onMounted(() => {
         <div class="flex items-center justify-center">
           <input 
             type="checkbox" 
-            :checked="selectedProducts.includes(row.id)"
-            @change="toggleSelectProduct(row.id)"
+            :value="row.id"
+            v-model="selectedProducts"
             class="w-4 h-4 text-[#0f2155] bg-gray-100 border-gray-300 rounded focus:ring-[#0f2155] focus:ring-2 cursor-pointer transition-all"
           >
         </div>
@@ -513,10 +510,10 @@ onMounted(() => {
             <IconListDetails class="w-4 h-4" />
           </LightButton>
           <LightButton @click="handleEdit(row)" title="Edit Produk" class="hover:bg-amber-50 hover:text-amber-600 hover:border-amber-200 transition-all">
-            <EditIcon />
+            <IconEdit />
           </LightButton>
           <DangerButton @click="handleDelete(row)" title="Hapus Produk" class="hover:shadow-md transition-all">
-            <DeleteIcon />
+            <IconDelete />
           </DangerButton>
         </div>
       </template>
@@ -585,5 +582,24 @@ onMounted(() => {
     @refresh="fetchData"
     @notify="(msg, type) => displayNotification(msg, type)"
   />
+
+  <!-- Loading Overlay for Select All -->
+  <transition name="fade">
+    <div v-if="isSelectingAll" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-900/40 backdrop-blur-sm">
+      <div class="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center max-w-sm mx-4 transform transition-all">
+        <div class="relative w-16 h-16 mb-4">
+          <svg class="animate-spin w-full h-full text-blue-600" viewBox="0 0 24 24" fill="none">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="w-2 h-2 bg-blue-600 rounded-full animate-ping"></div>
+          </div>
+        </div>
+        <h3 class="text-lg font-bold text-slate-800 mb-1">Memproses Pilihan</h3>
+        <p class="text-sm text-slate-500 text-center">Mohon tunggu sebentar, sistem sedang memproses pilihan Anda...</p>
+      </div>
+    </div>
+  </transition>
   </div>
 </template>

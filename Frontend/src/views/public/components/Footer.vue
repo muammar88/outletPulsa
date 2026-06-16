@@ -59,7 +59,7 @@
         </div>
         <div class="flex items-center gap-1.5 text-sm font-medium text-gray-600 bg-blue-50 px-4 py-2 rounded-full border border-blue-100 shadow-sm">
           Dibuat dengan
-          <IconHeart class="w-4 h-4 text-red-500 heart-beat" :stroke="2.5" fill="#ef4444" />
+          <IconHeart class="w-4 h-4 text-red-500 heart-beat" :stroke-width="2.5" fill="#ef4444" />
           di Indonesia
         </div>
       </div>
@@ -69,7 +69,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue';
-import { IconHeart } from '@tabler/icons-vue';
+import { IconHeart } from '@/components/Icons';
 import SocialMediaLinks from '@/views/public/components/SocialMediaLinks.vue';
 
 let revealObserver: IntersectionObserver;

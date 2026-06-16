@@ -16,8 +16,8 @@ import Notification from '@/components/Modal/Notification.vue';
 import DangerButton from '@/components/Button/DangerButton.vue';
 import LightButton from '@/components/Button/LightButton.vue';
 // Icon
-import DeleteIcon from '@/components/Icons/DeleteIcon.vue';
-import EditIcon from '@/components/Icons/EditIcon.vue';
+import IconDelete from '@/components/Icons/IconDelete.vue';
+import IconEdit from '@/components/Icons/IconEdit.vue';
 import { kategoriService, type Kategori } from '@/service/administrator/kategori';
 
 const {
@@ -199,10 +199,10 @@ onMounted(() => {
         <template #cell-action="{ row }">
           <div class="flex justify-center gap-2">
             <LightButton @click="handleEdit(row)" title="Edit Kategori">
-              <EditIcon></EditIcon>
+              <IconEdit></IconEdit>
             </LightButton>
             <DangerButton @click="handleDelete(row)" title="Hapus Kategori">
-              <DeleteIcon />
+              <IconDelete />
             </DangerButton>
           </div>
         </template>

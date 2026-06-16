@@ -47,7 +47,7 @@
             "
           >
             <span class="relative z-10 flex items-center gap-2">
-              <component :is="categoryIcons[c]" class="w-4 h-4" :stroke="2.5" />
+              <component :is="categoryIcons[c]" class="w-4 h-4" :stroke-width="2.5" />
               {{ c }}
             </span>
           </button>
@@ -107,7 +107,7 @@
                   <td class="px-6 py-5 whitespace-nowrap">
                     <div class="flex items-center gap-3">
                       <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center flex-shrink-0">
-                        <component :is="categoryIcons[activeCategory]" class="w-4 h-4 text-blue-600" :stroke="2.5" />
+                        <component :is="categoryIcons[activeCategory]" class="w-4 h-4 text-blue-600" :stroke-width="2.5" />
                       </div>
                       <span class="font-bold text-gray-800 group-hover:text-blue-700 transition-colors">{{ item.name }}</span>
                     </div>
@@ -131,7 +131,7 @@
                 <tr v-if="filteredPrices.length === 0">
                   <td colspan="3" class="text-center py-20">
                     <div class="flex flex-col items-center gap-3 text-gray-400">
-                      <IconInbox class="w-12 h-12 opacity-40" :stroke="1.5" />
+                      <IconInbox class="w-12 h-12 opacity-40" :stroke-width="1.5" />
                       <p class="font-semibold">Tidak ada data pada kategori ini</p>
                     </div>
                   </td>
@@ -147,7 +147,7 @@
               :disabled="currentPage === 1"
               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-200"
             >
-              <IconChevronLeft class="w-4 h-4" :stroke="2.5" />
+              <IconChevronLeft class="w-4 h-4" :stroke-width="2.5" />
               Sebelumnya
             </button>
 
@@ -173,7 +173,7 @@
               class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white hover:shadow-sm border border-transparent hover:border-gray-200"
             >
               Berikutnya
-              <IconChevronRight class="w-4 h-4" :stroke="2.5" />
+              <IconChevronRight class="w-4 h-4" :stroke-width="2.5" />
             </button>
           </div>
         </div>
@@ -188,7 +188,7 @@
             href="/registration"
             class="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-white text-blue-600 font-bold shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-300 whitespace-nowrap"
           >
-            <IconRocket class="w-5 h-5 text-blue-500" :stroke="2" />
+            <IconRocket class="w-5 h-5 text-blue-500" :stroke-width="2" />
             Daftar Sekarang
           </a>
         </div>
@@ -202,15 +202,13 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import {
-  IconDeviceMobile,
+import { IconDeviceMobile,
   IconWifi,
   IconCreditCard,
   IconChevronLeft,
   IconChevronRight,
   IconRocket,
-  IconInbox,
-} from '@tabler/icons-vue';
+  IconInbox, } from '@/components/Icons';
 import Navbar from '@/views/public/components/Navbar.vue';
 import Footer from '@/views/public/components/Footer.vue';
 

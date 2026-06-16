@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IconListDetails, IconSearch } from '@tabler/icons-vue';
+import { IconListDetails, IconSearch } from '@/components/Icons';
 
 import { usePagination } from '@/composables/usePaginations';
 import { useNotification } from '@/composables/useNotification';

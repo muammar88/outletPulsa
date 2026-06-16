@@ -5,7 +5,7 @@ export default async function tabSeed(prisma: PrismaClient) {
     data: [
       {
         name: 'Ringkasan', 
-        icon: 'chart-pie', 
+        icon: 'IconChartPie', 
         path: 'ringkasan', 
         desc: 'Ringkasan keseluruhan',
         created_at: new Date(),
@@ -13,7 +13,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Transaksi Pulsa', 
-        icon: 'history', 
+        icon: 'IconHistory', 
         path: 'transaksi_pulsa', 
         desc: 'Transaksi Pulsa member',  
         created_at: new Date(),
@@ -21,7 +21,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Daftar Member', 
-        icon: 'user', 
+        icon: 'IconUser', 
         path: 'daftar_member', 
         desc: 'Daftar membership aplikasi', 
         created_at: new Date(),
@@ -29,7 +29,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Produk Prabayar', 
-        icon: 'list-check', 
+        icon: 'IconListCheck', 
         path: 'produk_prabayar', 
         desc: 'Daftar produk prabayar aplikasi ', 
         created_at: new Date(),
@@ -37,7 +37,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Pengaturan Umum', 
-        icon: 'settings', 
+        icon: 'IconSettings', 
         path: 'pengaturan_umum', 
         desc: 'Daftar pengaturan aplikasi',
         created_at: new Date(),
@@ -45,7 +45,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Daftar Server', 
-        icon: 'server', 
+        icon: 'IconServer', 
         path: 'daftar_server', 
         desc: 'Daftar server pulsa',
         created_at: new Date(),
@@ -53,7 +53,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Daftar Agen', 
-        icon: 'users', 
+        icon: 'IconUsers', 
         path: 'daftar_agen', 
         desc: 'Daftar agen pulsa',
         created_at: new Date(),
@@ -61,7 +61,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Kategori', 
-        icon: 'category', 
+        icon: 'IconCategory', 
         path: 'kategori', 
         desc: 'Daftar kategori',
         created_at: new Date(),
@@ -69,7 +69,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Operator', 
-        icon: 'antenna',
+        icon: 'IconAntenna',
         path: 'operator',
         desc: 'Daftar operator',
         created_at: new Date(),
@@ -77,7 +77,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Deposit', 
-        icon: 'wallet',
+        icon: 'IconWallet',
         path: 'deposit',
         desc: 'Riwayat deposit member',
         created_at: new Date(),
@@ -85,7 +85,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Log System', 
-        icon: 'wallet',
+        icon: 'IconWallet',
         path: 'log',
         desc: 'Log System',
         created_at: new Date(),
@@ -93,7 +93,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Daftar Grup', 
-        icon: 'users',
+        icon: 'IconUsers',
         path: 'daftar_grup',
         desc: 'Daftar Grup',
         created_at: new Date(),
@@ -101,7 +101,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Daftar Pengguna', 
-        icon: 'user',
+        icon: 'IconUser',
         path: 'daftar_pengguna',
         desc: 'Daftar Pengguna',
         created_at: new Date(),
@@ -109,7 +109,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Daftar Produk Prabayar Tripay', 
-        icon: 'list-check',
+        icon: 'IconListCheck',
         path: 'daftar_produk_prabayar_tripay',
         desc: 'Daftar Produk Prabayar Tripay',
         created_at: new Date(),
@@ -117,7 +117,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Operator Prabayar Tripay', 
-        icon: 'list-check',
+        icon: 'IconListCheck',
         path: 'daftar_operator_prabayar_tripay',
         desc: 'Daftar Operator Prabayar Tripay',
         created_at: new Date(),
@@ -125,7 +125,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Kategori Prabayar Tripay', 
-        icon: 'list-check',
+        icon: 'IconListCheck',
         path: 'daftar_kategori_prabayar_tripay',
         desc: 'Daftar Kategori Prabayar Tripay',
         created_at: new Date(),
@@ -133,7 +133,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Daftar Produk Prabayar IAK', 
-        icon: 'user',
+        icon: 'IconUser',
         path: 'daftar_produk_prabayar_iak',
         desc: 'Daftar Produk Prabayar IAK',
         created_at: new Date(),
@@ -141,7 +141,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Daftar Operator IAK', 
-        icon: 'list-check',
+        icon: 'IconListCheck',
         path: 'daftar_operator_iak',
         desc: 'Daftar Operator IAK',
         created_at: new Date(),
@@ -149,7 +149,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Daftar Type IAK', 
-        icon: 'list-check',
+        icon: 'IconListCheck',
         path: 'daftar_type_iak',
         desc: 'Daftar Type IAK',
         created_at: new Date(),
@@ -157,7 +157,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Produk Pascabayar', 
-        icon: 'list-check', 
+        icon: 'IconListCheck', 
         path: 'produk_pascabayar', 
         desc: 'Daftar produk pascabayar aplikasi ', 
         created_at: new Date(),
@@ -165,7 +165,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
        { 
         name: 'Daftar Produk Pascabayar Tripay', 
-        icon: 'list-check',
+        icon: 'IconListCheck',
         path: 'daftar_produk_pascabayar_tripay',
         desc: 'Daftar Produk Pascabayar Tripay',
         created_at: new Date(),
@@ -173,7 +173,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
         { 
         name: 'Daftar Produk Pascabayar IAK', 
-        icon: 'list-check',
+        icon: 'IconListCheck',
         path: 'daftar_produk_pascabayar_iak',
         desc: 'Daftar Produk Pascabayar IAK',
         created_at: new Date(),
@@ -181,7 +181,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Kategori Pascabayar Tripay', 
-        icon: 'list-check',
+        icon: 'IconListCheck',
         path: 'daftar_kategori_pascabayar_tripay',
         desc: 'Daftar Kategori Pascabayar Tripay',
         created_at: new Date(),
@@ -189,7 +189,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Operator Pascabayar Tripay', 
-        icon: 'list-check',
+        icon: 'IconListCheck',
         path: 'daftar_operator_pascabayar_tripay',
         desc: 'Daftar Operator Pascabayar Tripay',
         created_at: new Date(),
@@ -197,7 +197,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Daftar Produk Digiflazz', 
-        icon: 'list-check',
+        icon: 'IconListCheck',
         path: 'daftar_produk_digiflazz',
         desc: 'Daftar Produk Digiflazz',
         created_at: new Date(),
@@ -205,7 +205,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Daftar Produk Seller Digiflazz', 
-        icon: 'list-check',
+        icon: 'IconListCheck',
         path: 'daftar_produk_seller_digiflazz',
         desc: 'Daftar Produk Seller Digiflazz',
         created_at: new Date(),
@@ -213,7 +213,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Daftar Seller Digiflazz', 
-        icon: 'users',
+        icon: 'IconUsers',
         path: 'daftar_seller_digiflazz',
         desc: 'Daftar Seller Digiflazz',
         created_at: new Date(),
@@ -221,7 +221,7 @@ export default async function tabSeed(prisma: PrismaClient) {
       },
       { 
         name: 'Riwayat Transfer Saldo', 
-        icon: 'users',
+        icon: 'IconUsers',
         path: 'riwayat_transfer_saldo',
         desc: 'Riwayat Transfer Saldo',
         created_at: new Date(),

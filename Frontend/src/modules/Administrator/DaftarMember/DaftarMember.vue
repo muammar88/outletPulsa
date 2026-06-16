@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IconCash } from '@tabler/icons-vue';
+import { IconCash } from '@/components/Icons';
 
 import { useConfirmation } from '@/composables/useConfirmation';
 import { useNotification } from '@/composables/useNotification';
@@ -20,9 +20,9 @@ import Notification from '@/components/Modal/Notification.vue';
 import DangerButton from '@/components/Button/DangerButton.vue';
 import LightButton from '@/components/Button/LightButton.vue';
 // Icon
-import DeleteIcon from '@/components/Icons/DeleteIcon.vue';
-import EditIcon from '@/components/Icons/EditIcon.vue';
-import TieIcon from '@/components/Icons/TieIcon.vue';
+import IconDelete from '@/components/Icons/IconDelete.vue';
+import IconEdit from '@/components/Icons/IconEdit.vue';
+import IconTie from '@/components/Icons/IconTie.vue';
 import { memberService, type Member } from '@/service/administrator/member';
 
 const {
@@ -276,13 +276,13 @@ onMounted(() => {
             ><IconCash class="w-4 h-4"></IconCash
           ></LightButton>
           <LightButton v-if="row.status === 'verfied'" @click="handleSetAgen(row)" title="Set Kode Agen"
-            ><TieIcon></TieIcon
+            ><IconTie></IconTie
           ></LightButton>
           <LightButton @click="handleEdit(row)" title="Edit Member"
-            ><EditIcon></EditIcon
+            ><IconEdit></IconEdit
           ></LightButton>
           <DangerButton @click="handleDelete(row)" title="Hapus Member"
-            ><DeleteIcon
+            ><IconDelete
           /></DangerButton>
         </div>
       </template>

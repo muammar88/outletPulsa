@@ -38,8 +38,8 @@
           class="p-2 rounded-md hover:bg-gray-100 hamburger-btn"
           :class="{ 'hamburger-open': mobileMenuOpen }"
         >
-          <IconX v-if="mobileMenuOpen" class="w-6 h-6 text-gray-700" :stroke="2" />
-          <IconMenu2 v-else class="w-6 h-6 text-gray-700" :stroke="2" />
+          <IconX v-if="mobileMenuOpen" class="w-6 h-6 text-gray-700" :stroke-width="2" />
+          <IconMenu2 v-else class="w-6 h-6 text-gray-700" :stroke-width="2" />
         </button>
       </div>
     </div>
@@ -66,7 +66,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue';
-import { IconMenu2, IconX } from '@tabler/icons-vue';
+import { IconMenu2, IconX } from '@/components/Icons';
 
 const mobileMenuOpen = ref(false);
 const scrolled = ref(false);

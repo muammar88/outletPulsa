@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IconListDetails, IconList } from '@tabler/icons-vue';
+import { IconListDetails, IconList } from '@/components/Icons';
 
 import { ref, onMounted, computed } from 'vue';
 
@@ -10,9 +10,9 @@ import { usePagination } from '@/composables/usePaginations';
 import BaseTable from '@/components/Table/BaseTable.vue';
 import Notification from '@/components/Modal/Notification.vue';
 import Confirmation from '@/components/Modal/Confirmation.vue';
-import DeleteIcon from '@/components/Icons/DeleteIcon.vue';
-import EditIcon from '@/components/Icons/EditIcon.vue';
-import PowerIcon from '@/components/Icons/PowerIcon.vue';
+import IconDelete from '@/components/Icons/IconDelete.vue';
+import IconEdit from '@/components/Icons/IconEdit.vue';
+import IconPower from '@/components/Icons/IconPower.vue';
 import DangerButton from '@/components/Button/DangerButton.vue';
 import LightButton from '@/components/Button/LightButton.vue';
 

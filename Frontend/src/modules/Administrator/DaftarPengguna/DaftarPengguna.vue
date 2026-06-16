@@ -16,8 +16,8 @@ import Notification from '@/components/Modal/Notification.vue';
 import DangerButton from '@/components/Button/DangerButton.vue';
 import LightButton from '@/components/Button/LightButton.vue';
 // Icon
-import DeleteIcon from '@/components/Icons/DeleteIcon.vue';
-import EditIcon from '@/components/Icons/EditIcon.vue';
+import IconDelete from '@/components/Icons/IconDelete.vue';
+import IconEdit from '@/components/Icons/IconEdit.vue';
 import { daftarPenggunaService } from '@/service/administrator/daftarPengguna';
 
 const {
@@ -213,10 +213,10 @@ onMounted(() => {
       <template #cell-action="{ row }">
         <div v-if="row.kode !== 'admin'" class="flex justify-center gap-2">
           <LightButton @click="handleEdit(row)" title="Edit Pengguna">
-            <EditIcon />
+            <IconEdit />
           </LightButton>
           <DangerButton @click="handleDelete(row)" title="Hapus Pengguna">
-            <DeleteIcon />
+            <IconDelete />
           </DangerButton>
         </div>
         <span v-else class="text-xs text-gray-400 italic">Sistem</span>

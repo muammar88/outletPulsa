@@ -4,7 +4,7 @@ import { useSidebarStore } from '@/stores/sidebar';
 import { SettingStore } from '@/stores/settings';
 import DropdownUser from './DropdownUser.vue';
 import { ref, watchEffect } from 'vue';
-import { IconMenu2, IconIndentDecrease, IconBell } from '@tabler/icons-vue';
+import { IconMenu2, IconIndentDecrease, IconBell } from '@/components/Icons';
 
 const { toggleSidebar } = useSidebarStore();
 const sidebarStore = useSidebarStore();
@@ -36,8 +36,8 @@ import { useHead } from '@vueuse/head';
           "
         >
           <div class="w-5 h-5 text-slate-600 flex items-center justify-center transition-transform duration-300">
-            <IconIndentDecrease v-if="sidebarStore.isSidebarOpen" class="w-5 h-5" :stroke="2" />
-            <IconMenu2 v-else class="w-5 h-5" :stroke="2" />
+            <IconIndentDecrease v-if="sidebarStore.isSidebarOpen" class="w-5 h-5" :stroke-width="2" />
+            <IconMenu2 v-else class="w-5 h-5" :stroke-width="2" />
           </div>
         </button>
       </div>
@@ -54,7 +54,7 @@ import { useHead } from '@vueuse/head';
       <div class="flex items-center gap-4 sm:gap-6">
         <!-- Notification Button -->
         <button class="relative flex items-center justify-center p-2 rounded-full text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors">
-          <IconBell :size="22" :stroke="2" />
+          <IconBell :size="22" :stroke-width="2" />
           <span class="absolute top-1 right-1.5 h-2.5 w-2.5 rounded-full bg-red-500 border-2 border-white"></span>
         </button>
 

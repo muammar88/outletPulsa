@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import BaseButton from '@/components/Button/BaseButton.vue';
 import ExpandableActionButton from '@/components/Button/ExpandableActionButton.vue';
+import { IconSearch, IconPlus } from '@/components/Icons';
 import Pagination from '@/components/Pagination/Pagination.vue';
 import SkeletonTable from '@/components/SkeletonTable/SkeletonTable.vue';
 import { computed, ref } from 'vue';
@@ -135,11 +136,7 @@ defineExpose({ resetSearch });
         <!-- Search -->
         <div v-if="showSearch" class="base-table-search group">
           <div class="base-table-search-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" class="w-4 h-4">
-              <path
-                d="M448 449L301.2 300.2c20-27.9 31.9-62.2 31.9-99.2 0-93.1-74.7-168.9-166.5-168.9-91.9-.1-166.6 75.7-166.6 168.8S74.7 369.8 166.5 369.8c39.8 0 76.3-14.2 105-37.9L417.5 480 448 449zM166.5 330.8c-70.6 0-128.1-58.3-128.1-129.9S95.9 71 166.5 71 294.6 129.3 294.6 200.9 237.2 330.8 166.5 330.8z"
-              />
-            </svg>
+            <IconSearch class="w-4 h-4" />
           </div>
           <input
             type="text"
@@ -166,16 +163,7 @@ defineExpose({ resetSearch });
             :title="addLabel"
           >
             <template #icon>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="h-5 w-5 transition-transform duration-300 group-hover:scale-110"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2.5"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
+              <IconPlus class="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
             </template>
           </ExpandableActionButton>
         </slot>

@@ -12,7 +12,7 @@ import Notification from '@/components/Modal/Notification.vue';
 import DangerButton from '@/components/Button/DangerButton.vue';
 import LightButton from '@/components/Button/LightButton.vue';
 // Icon
-import DeleteIcon from '@/components/Icons/DeleteIcon.vue';
+import IconDelete from '@/components/Icons/IconDelete.vue';
 import { depositService, type RiwayatSaldo } from '@/service/administrator/deposit';
 import DepositManualModal from './components/DepositManualModal.vue';
 
@@ -262,7 +262,7 @@ onMounted(() => {
       <template #cell-action="{ row }">
         <div class="flex justify-center gap-2">
           <DangerButton @click="handleDelete(row)" title="Hapus Riwayat"
-            ><DeleteIcon
+            ><IconDelete
           /></DangerButton>
         </div>
       </template>
