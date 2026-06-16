@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
 import * as crypto from 'crypto';
 
@@ -84,7 +84,7 @@ export class WebhookService {
     if (kodeVerifikasi !== expectedKey) {
       this.logger.warn(`[IAK WEBHOOK] Kode verifikasi tidak valid dari IP: ${ipAddress}`);
       await this.logWebhook('IAK', 'callback_prabayar', null, body, 'failed', 'Kode verifikasi tidak valid', ipAddress);
-      return { error: true, error_msg: 'Kode verifikasi tidak valid', message: 'Kode verifikasi tidak valid', data: {} } as any;
+      throw new HttpException({ error: true, error_msg: 'Kode verifikasi tidak valid', message: 'Kode verifikasi tidak valid', data: {} }, HttpStatus.UNAUTHORIZED);
     }
 
     console.log("------2");
@@ -100,7 +100,7 @@ export class WebhookService {
     if (!refId) {
       this.logger.warn(`[IAK WEBHOOK] ref_id kosong`);
       await this.logWebhook('IAK', 'callback_prabayar', null, body, 'failed', 'ref_id kosong', ipAddress);
-      return { error: true, error_msg: 'ref_id tidak ditemukan dalam payload', message: 'ref_id tidak ditemukan dalam payload', data: {} } as any;
+      throw new HttpException({ error: true, error_msg: 'ref_id tidak ditemukan dalam payload', message: 'ref_id tidak ditemukan dalam payload', data: {} }, HttpStatus.BAD_REQUEST);
     }
 
 
@@ -129,7 +129,7 @@ export class WebhookService {
     if (!transaction) {
       this.logger.warn(`[IAK WEBHOOK] Transaksi tidak ditemukan: ref_id=${refId}`);
       await this.logWebhook('IAK', 'callback_prabayar', refId, body, 'ignored', 'Transaksi tidak ditemukan', ipAddress);
-      return { error: true, error_msg: 'Ref Id Tidak Ditemukan', message: 'Ref Id Tidak Ditemukan', data: {} } as any;
+      throw new HttpException({ error: true, error_msg: 'Ref Id Tidak Ditemukan', message: 'Ref Id Tidak Ditemukan', data: {} }, HttpStatus.NOT_FOUND);
     }
 
     // STEP 4: Cek idempotency - jika transaksi sudah final (sukses/gagal), skip
@@ -160,7 +160,7 @@ export class WebhookService {
       const errorMsg = err instanceof Error ? err.message : 'Unknown error';
       this.logger.error(`[IAK WEBHOOK] Error memproses callback: ${errorMsg}`);
       await this.logWebhook('IAK', 'callback_prabayar', refId, body, 'error', errorMsg, ipAddress);
-      return { error: true, error_msg: 'Terjadi kesalahan saat memproses webhook' };
+      throw new HttpException({ error: true, error_msg: 'Terjadi kesalahan saat memproses webhook' }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     return { error: false, error_msg: 'Berhasil' };
@@ -190,7 +190,7 @@ export class WebhookService {
     if (callbackSecret !== expectedSecret) {
       this.logger.warn(`[TRIPAY WEBHOOK] Secret tidak valid dari IP: ${ipAddress}`);
       await this.logWebhook('TRIPAY', 'callback_prabayar', null, body, 'failed', 'Secret tidak valid', ipAddress);
-      return { error: true, error_msg: 'Kode secret tidak valid', message: 'Kode secret tidak valid', data: {} } as any;
+      throw new HttpException({ error: true, error_msg: 'Kode secret tidak valid', message: 'Kode secret tidak valid', data: {} }, HttpStatus.UNAUTHORIZED);
     }
 
     // STEP 2: Ambil item pertama dari array
@@ -199,7 +199,7 @@ export class WebhookService {
     if (!item) {
       this.logger.warn(`[TRIPAY WEBHOOK] Body kosong atau format tidak valid`);
       await this.logWebhook('TRIPAY', 'callback_prabayar', null, body, 'failed', 'Body kosong', ipAddress);
-      return { error: true, error_msg: 'Payload tidak valid' };
+      throw new HttpException({ error: true, error_msg: 'Payload tidak valid' }, HttpStatus.BAD_REQUEST);
     }
 
     const trxId = item.trxid;
@@ -221,7 +221,7 @@ export class WebhookService {
     if (!transaction) {
       this.logger.warn(`[TRIPAY WEBHOOK] Transaksi tidak ditemukan: trxid=${trxId}`);
       await this.logWebhook('TRIPAY', 'callback_prabayar', String(trxId), body, 'ignored', 'Transaksi tidak ditemukan', ipAddress);
-      return { error: true, error_msg: 'Kode ID tidak ditemukan', message: 'Kode ID tidak ditemukan', data: {} } as any;
+      throw new HttpException({ error: true, error_msg: 'Kode ID tidak ditemukan', message: 'Kode ID tidak ditemukan', data: {} }, HttpStatus.NOT_FOUND);
     }
 
     // STEP 4: Cek idempotency
@@ -249,7 +249,7 @@ export class WebhookService {
       const errorMsg = err instanceof Error ? err.message : 'Unknown error';
       this.logger.error(`[TRIPAY WEBHOOK] Error memproses callback: ${errorMsg}`);
       await this.logWebhook('TRIPAY', 'callback_prabayar', String(trxId), body, 'error', errorMsg, ipAddress);
-      return { error: true, error_msg: 'Terjadi kesalahan saat memproses webhook' };
+      throw new HttpException({ error: true, error_msg: 'Terjadi kesalahan saat memproses webhook' }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     return { error: false, error_msg: 'Berhasil' };
@@ -292,7 +292,7 @@ export class WebhookService {
       this.logger.warn(`[DIGIFLAZZ WEBHOOK] Expected: ${expectedSignature}`);
       this.logger.warn(`[DIGIFLAZZ WEBHOOK] Received: ${signature}`);
       await this.logWebhook('DIGIFLAZZ', 'callback', null, body, 'failed', 'Signature tidak valid', ipAddress);
-      return { error: true, error_msg: 'Signature tidak valid', message: 'Signature tidak valid', data: {} } as any;
+      throw new HttpException({ error: true, error_msg: 'Signature tidak valid', message: 'Signature tidak valid', data: {} }, HttpStatus.UNAUTHORIZED);
     }
 
     // STEP 2: Ambil data dari payload
@@ -300,7 +300,7 @@ export class WebhookService {
     if (!data || !data.ref_id) {
       this.logger.warn(`[DIGIFLAZZ WEBHOOK] Payload tidak valid atau ref_id kosong`);
       await this.logWebhook('DIGIFLAZZ', 'callback', null, body, 'failed', 'Payload tidak valid', ipAddress);
-      return { error: true, error_msg: 'Payload tidak valid' };
+      throw new HttpException({ error: true, error_msg: 'Payload tidak valid' }, HttpStatus.BAD_REQUEST);
     }
 
     const refId = data.ref_id;
@@ -323,7 +323,7 @@ export class WebhookService {
     if (!transaction) {
       this.logger.warn(`[DIGIFLAZZ WEBHOOK] Transaksi tidak ditemukan: ref_id=${refId}`);
       await this.logWebhook('DIGIFLAZZ', 'callback', refId, body, 'ignored', 'Transaksi tidak ditemukan', ipAddress);
-      return { error: true, error_msg: 'Transaksi tidak ditemukan', message: 'Transaksi tidak ditemukan', data: {} } as any;
+      throw new HttpException({ error: true, error_msg: 'Transaksi tidak ditemukan', message: 'Transaksi tidak ditemukan', data: {} }, HttpStatus.NOT_FOUND);
     }
 
     // STEP 4: Cek idempotency
@@ -374,7 +374,7 @@ export class WebhookService {
       const errorMsg = err instanceof Error ? err.message : 'Unknown error';
       this.logger.error(`[DIGIFLAZZ WEBHOOK] Error memproses callback: ${errorMsg}`);
       await this.logWebhook('DIGIFLAZZ', 'callback', refId, body, 'error', errorMsg, ipAddress);
-      return { error: true, error_msg: 'Terjadi kesalahan saat memproses webhook' };
+      throw new HttpException({ error: true, error_msg: 'Terjadi kesalahan saat memproses webhook' }, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     return { error: false, error_msg: 'Berhasil' };

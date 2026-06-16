@@ -1,4 +1,4 @@
-import { Controller, Post, Param, Body, Headers, Req, Logger } from '@nestjs/common';
+import { Controller, Post, Param, Body, Headers, Req, Logger, HttpCode, HttpStatus } from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
 import { WebhookService } from './webhook.service';
 import type { Request } from 'express';
@@ -42,6 +42,7 @@ export class WebhookController {
    * }
    */
   @Post('iak/:kode_verifikasi')
+  @HttpCode(HttpStatus.OK)
   async callbackIak(
     @Param('kode_verifikasi') kodeVerifikasi: string,
     @Body() body: any,
@@ -72,6 +73,7 @@ export class WebhookController {
    * ]
    */
   @Post('tripay')
+  @HttpCode(HttpStatus.OK)
   async callbackTripay(
     @Headers('x-callback-secret') callbackSecret: string,
     @Body() body: any,
@@ -105,6 +107,7 @@ export class WebhookController {
    * }
    */
   @Post('digiflazz')
+  @HttpCode(HttpStatus.OK)
   async callbackDigiflazz(
     @Headers('x-hub-signature') signature: string,
     @Body() body: any,
