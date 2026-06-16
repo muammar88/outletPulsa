@@ -228,6 +228,8 @@ model Transaction {
   ket                String?            @db.Text
   purchase_price     Int?
   selling_price      Int?
+  saldo_sebelum      Int?
+  saldo_sesudah      Int?
   kodeAgen           String?
   laba               Int?
   fee_agen           Int?
@@ -263,6 +265,8 @@ model TransactionPascabayar {
   tarif              String?
   daya               Int?
   total              Int?
+  saldo_sebelum      Int?
+  saldo_sesudah      Int?
   kodeAgen           String?
   laba               Int?
   fee_agen           Int?
