@@ -74,7 +74,7 @@ jobs:
             echo "✅ Deployment selesai dengan sukses!"
 
             # echo "📜 Run migration"
-            # docker exec -i outletpulsa_backend npx prisma migrate deploy
+            docker exec -i outletpulsa_backend npx prisma migrate deploy
 
             # echo "🌱 Generate Prisma Client"
-            # docker exec -i outletpulsa_backend npx prisma generate
+            docker exec -i outletpulsa_backend npx prisma generate
