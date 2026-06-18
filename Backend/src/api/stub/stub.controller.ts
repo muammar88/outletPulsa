@@ -88,19 +88,6 @@ export class StubController {
     return { error: false, error_msg: '', list: {} };
   }
 
-  /** POST /api/transaksi-prabayar */
-  @UseGuards(JwtApiGuard)
-  @Post('transaksi-prabayar')
-  prabayarTransaction(@Body() body: any) {
-    return { error: false, error_msg: '', kodeTransaksi: '' };
-  }
-
-  /** POST /api/transaksi-detail */
-  @UseGuards(JwtApiGuard)
-  @Post('transaksi-detail')
-  detailTransaksi(@Body() body: any) {
-    return { error: false, error_msg: '', data: {} };
-  }
 
   // ── TRANSAKSI PASCABAYAR ──────────────────────────
 

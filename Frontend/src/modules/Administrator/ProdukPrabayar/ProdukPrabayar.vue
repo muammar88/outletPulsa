@@ -477,6 +477,11 @@ onMounted(() => {
             <span class="text-[9px] uppercase font-bold text-gray-400 tracking-wider">Jual</span>
             <span class="text-[12px] text-emerald-600 font-extrabold">{{ formatCurrency((row.purchase_price || 0) + (row.markup || 0)) }}</span>
           </div>
+          <div class="mt-1">
+            <span class="px-1.5 py-0.5 text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-md shadow-sm">
+              Markup: {{ formatCurrency(row.markup || 0) }}
+            </span>
+          </div>
         </div>
       </template>
 

@@ -287,10 +287,16 @@ class _Detail_transaksiState extends State<Detail_transaksi> {
                         bgColor: Colors.white,
                         onPressed: () async {
                           loader.isLoad = true;
-                          await Provider.of<Detail_provider>(context, listen: false)
-                              .detailTransaksi(widget.kodeTrans);
-                          await Provider.of<Riwayat_prabayar_provider>(context, listen: false)
-                              .getRiwayatPrabayar();
+                          try {
+                            await Provider.of<Detail_provider>(context, listen: false)
+                                .detailTransaksi(widget.kodeTrans);
+                            await Provider.of<Riwayat_prabayar_provider>(context, listen: false)
+                                .getRiwayatPrabayar();
+                          } catch (e) {
+                            debugPrint('Error reload: $e');
+                          } finally {
+                            loader.isLoad = false;
+                          }
                         },
                       ),
                     

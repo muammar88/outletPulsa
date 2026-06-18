@@ -58,7 +58,7 @@ class ConfigApp {
 
   // constructor
   ConfigApp() {
-    _mainurl = "http://10.60.27.166:3005/api";
+    _mainurl = "http://10.94.252.166:3005/api";
     _login_url = '$_mainurl/auth/login';
     _check_login_url = '$_mainurl/auth/check-login';
     _beranda_url = '$_mainurl/beranda';

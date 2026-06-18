@@ -1,15 +1,13 @@
-import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Request, Query } from '@nestjs/common';
 import { JwtApiGuard } from '../guards/jwt-api.guard';
 import { TransaksiService } from './transaksi.service';
-import { TransaksiPrabayarService } from './transaksi-prabayar.service';
 import { CreateTransaksiPrabayarDto } from './dto/create-transaksi-prabayar.dto';
 
 @Controller('api')
 // @UseGuards(JwtApiGuard)
 export class TransaksiController {
   constructor(
-    private readonly transaksiService: TransaksiService,
-    private readonly transaksiPrabayarService: TransaksiPrabayarService
+    private readonly transaksiService: TransaksiService
   ) {}
 
   @Get('riwayat-prabayar')
@@ -23,6 +21,16 @@ export class TransaksiController {
   async createTransaksiPrabayar(@Body() body: CreateTransaksiPrabayarDto, @Request() req: any) {
     // TODO: Gunakan req.user.sub setelah auth aktif
     const memberId = 1;
-    return await this.transaksiPrabayarService.createTransaksi(memberId, body);
+    return await this.transaksiService.createTransaksiPrabayar(memberId, body);
+  }
+
+  @Post('transaksi-detail')
+  async getDetailTransaksiPrabayar(@Body('kode_transaksi') kodeTransaksi: string, @Request() req: any) {
+    if (!kodeTransaksi) {
+      return { error: true, error_msg: 'Parameter kode_transaksi wajib diisi' };
+    }
+    // TODO: Gunakan req.user.sub setelah auth aktif
+    const memberId = 1;
+    return await this.transaksiService.getDetailTransaksiPrabayar(memberId, kodeTransaksi);
   }
 }

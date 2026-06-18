@@ -78,7 +78,7 @@ class SQLHelper {
   Future<void> insertDataProfil(ModelSQL dataProfil) async {
     final db = await _databaseService.database;
     var data = await db.rawInsert(
-        'INSERT INTO DataProfil(id, kode, username, token) VALUES(?,?,?,?)',
+        'INSERT OR REPLACE INTO DataProfil(id, kode, username, token) VALUES(?,?,?,?)',
         [
           dataProfil.id,
           dataProfil.kode,
