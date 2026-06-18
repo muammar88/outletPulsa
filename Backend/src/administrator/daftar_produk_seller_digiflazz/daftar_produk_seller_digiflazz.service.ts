@@ -66,8 +66,8 @@ export class DaftarProdukSellerDigiflazzService {
     const username = process.env.DIGIFLAZZ_USERNAME || 'gapajaD7VQKo';
     const mode = process.env.DIGIFLAZZ_MODE || 'development';
     const apiKey = mode === 'production' 
-      ? process.env.DIGIFLAZZ_API_KEY_PROD || '39a2cc82-ffb3-5a56-9d99-59a9a49d99b3' 
-      : process.env.DIGIFLAZZ_API_KEY_DEV || 'dev-82309dd0-8684-11ee-bada-e3aa4ec369e9';
+      ? process.env.DIGIFLAZZ_PRODUCTION_KEY || '39a2cc82-ffb3-5a56-9d99-59a9a49d99b3' 
+      : process.env.DIGIFLAZZ_DEVELOPMENT_KEY || 'dev-82309dd0-8684-11ee-bada-e3aa4ec369e9';
     
     const baseUrl = 'https://api.digiflazz.com/v1/price-list';
 

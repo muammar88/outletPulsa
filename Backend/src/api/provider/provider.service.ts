@@ -116,11 +116,12 @@ export class ProviderService {
 
   async topUpDigiflazz(ref_id: string, customer_no: string, kode_produk: string): Promise<any> {
     const username = process.env.DIGIFLAZZ_USERNAME || '';
-    const apiKey = process.env.DIGIFLAZZ_KEY || '';
+    const apiKey = (process.env.DIGIFLAZZ_MODE === 'production' 
+      ? process.env.DIGIFLAZZ_PRODUCTION_KEY 
+      : process.env.DIGIFLAZZ_DEVELOPMENT_KEY) || '';
     const url = 'https://api.digiflazz.com/v1/transaction';
 
     const sign = this.md5(username + apiKey + ref_id);
-
     const body = {
       username: username,
       buyer_sku_code: kode_produk,
@@ -130,6 +131,18 @@ export class ProviderService {
       // testing: true // Optional for digiflazz dev
     };
 
+
+    console.log("Log Top Up DIGIFLAZZ------------------------");
+    
+    console.log(username);
+    console.log(process.env.DIGIFLAZZ_MODE);
+    console.log(apiKey);
+    console.log(ref_id);
+    console.log(body);
+    console.log("Log Top Up DIGIFLAZZ------------------------");
+
+    
+
     try {
       const response = await fetch(url, {
         method: 'POST',
@@ -138,6 +151,10 @@ export class ProviderService {
         },
         body: JSON.stringify(body),
       });
+
+      console.log("Log Top Up DIGIFLAZZ------------------------11111");
+      console.log(response);
+      console.log("Log Top Up DIGIFLAZZ------------------------11111");
 
       const data = await response.json();
       this.logger.log(`DIGIFLAZZ Response: ${JSON.stringify(data)}`);
@@ -224,7 +241,9 @@ export class ProviderService {
 
   async checkStatusDigiflazz(ref_id: string, customer_no: string, kode_produk: string): Promise<{ status: string; sn: string; raw: any }> {
     const username = process.env.DIGIFLAZZ_USERNAME || '';
-    const apiKey = process.env.DIGIFLAZZ_KEY || '';
+    const apiKey = (process.env.DIGIFLAZZ_MODE === 'production' 
+      ? process.env.DIGIFLAZZ_PRODUCTION_KEY 
+      : process.env.DIGIFLAZZ_DEVELOPMENT_KEY) || '';
     const url = 'https://api.digiflazz.com/v1/transaction';
 
     const sign = this.md5(username + apiKey + ref_id);

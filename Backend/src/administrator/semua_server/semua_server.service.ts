@@ -111,7 +111,9 @@ export class SemuaServerService {
       try {
         if (server.kode === 'DIGI') {
           const username = process.env.DIGIFLAZZ_USERNAME as string;
-          const apiKey = process.env.DIGIFLAZZ_KEY as string;
+          const apiKey = (process.env.DIGIFLAZZ_MODE === 'production' 
+            ? process.env.DIGIFLAZZ_PRODUCTION_KEY 
+            : process.env.DIGIFLAZZ_DEVELOPMENT_KEY) as string;
           const sign = crypto.createHash('md5').update(username + apiKey + 'depo').digest('hex');
           
           const response = await fetch('https://api.digiflazz.com/v1/cek-saldo', {
