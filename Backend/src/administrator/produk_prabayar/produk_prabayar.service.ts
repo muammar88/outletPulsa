@@ -35,7 +35,7 @@ export class ProdukPrabayarService {
       where.operatorId = operatorId;
     }
 
-    const [list, total] = await Promise.all([
+    const [list, total, summaryRaw] = await Promise.all([
       this.prisma.produk.findMany({
         where,
         skip,
@@ -50,7 +50,20 @@ export class ProdukPrabayarService {
         },
       }),
       this.prisma.produk.count({ where }),
+      this.prisma.produk.groupBy({
+        by: ['serverId'],
+        _count: {
+          id: true,
+        },
+      }),
     ]);
+
+    const summary = {
+      iak: summaryRaw.find(s => s.serverId === 1)?._count.id || 0,
+      tripay: summaryRaw.find(s => s.serverId === 2)?._count.id || 0,
+      digiflazz: summaryRaw.find(s => s.serverId === 3)?._count.id || 0,
+      unconnected: summaryRaw.find(s => s.serverId === null)?._count.id || 0,
+    };
 
     return {
       list,
@@ -58,6 +71,7 @@ export class ProdukPrabayarService {
       page,
       limit,
       totalPages: Math.ceil(total / limit),
+      summary,
     };
   }
 
