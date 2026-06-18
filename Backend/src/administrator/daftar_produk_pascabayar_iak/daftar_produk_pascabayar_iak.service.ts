@@ -76,9 +76,9 @@ export class DaftarProdukPascabayarIakService {
     }
     const username = String(rawUsername).padStart(12, '0');
     const mode = process.env.IAK_MODE || (process.env.NODE_ENV === 'production' ? 'production' : 'development');
-    const apiKey = process.env.IAK_KEY || (mode === 'production' 
-      ? '472643293c215b8ayS8p' 
-      : '8286432937d964cegRmg');
+    const apiKey = process.env.IAK_MODE  === 'production'
+      ? process.env.IAK_KEY_PRODUCTION 
+      : process.env.IAK_KEY_DEVELOPMENT;
     
     const baseUrl = mode === 'production'
       ? 'https://postpaid.iak.id/'
@@ -86,7 +86,7 @@ export class DaftarProdukPascabayarIakService {
 
     this.logger.log(`[IAK PASCABAYAR SYNC] Memulai sinkronisasi IAK. Mode: ${mode}, URL: ${baseUrl}`);
 
-    const sign = this.signMd5(username, apiKey, 'pl');
+    const sign = this.signMd5(username, apiKey!, 'pl');
     
     let pascabayarData: any[] = [];
     

@@ -133,7 +133,11 @@ export class SemuaServerService {
             rawUsername = Number(rawUsername).toString();
           }
           const username = String(rawUsername).padStart(12, '0');
-          const apiKey = process.env.IAK_KEY as string;
+          // const apiKey = process.env.IAK_KEY as string;
+
+          const apiKey = process.env.IAK_MODE  === 'production'
+      ? process.env.IAK_KEY_PRODUCTION 
+      : process.env.IAK_KEY_DEVELOPMENT;
           const sign = crypto.createHash('md5').update(username + apiKey + 'bl').digest('hex');
           
           const response = await fetch('https://prepaid.iak.id/api/check-balance', {
