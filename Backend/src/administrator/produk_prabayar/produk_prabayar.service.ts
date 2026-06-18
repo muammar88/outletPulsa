@@ -163,6 +163,8 @@ export class ProdukPrabayarService {
     let countNoConnection = 0;
     let countFailed = 0;
 
+    //purchase_price
+
     for (const p of produks) {
       try {
         const iakProducts = p.iakPrabayarProduks.filter(i => i.status === 'active' && i.price !== null && i.price !== undefined);
@@ -214,11 +216,12 @@ export class ProdukPrabayarService {
         }
 
         if (selectedServerId !== null) {
+          const finalPurchasePrice = cheapestPrice + (p.markup || 0);
           await this.prisma.produk.update({
             where: { id: p.id },
             data: {
               serverId: selectedServerId,
-              purchase_price: cheapestPrice,
+              purchase_price: finalPurchasePrice,
               status: 'active',
             },
           });
