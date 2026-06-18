@@ -22,7 +22,11 @@ export class TransaksiPascabayarController {
   @Post('pascabayar-inquiry')
   async inquiryPascabayar(@Request() req: any, @Body() body: any) {
     const memberId = req.user.sub;
-    const { product_code, nomor_tujuan } = body;
+    const { product_code } = body;
+    let { nomor_tujuan } = body;
+    if (nomor_tujuan) {
+      nomor_tujuan = nomor_tujuan.replace(/\s+/g, '');
+    }
     return await this.transaksiPascabayarService.inquiryPascabayar(memberId, product_code, nomor_tujuan);
   }
 

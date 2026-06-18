@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
 import { GetTripayProductDto } from './dto/get-tripay-product.dto';
+import { TripayService } from '../../providers/tripay.service';
 
 @Injectable()
 export class DaftarProdukPascabayarTripayService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private readonly tripayService: TripayService
+  ) {}
 
   async findAll(query: GetTripayProductDto, adminId: number) {
     const page = parseInt(query.page || '1');
@@ -194,116 +198,26 @@ export class DaftarProdukPascabayarTripayService {
     return updated;
   }
 
-  /**
-   * Fetch data dari Tripay API.
-   * Mengikuti pola cek_harga_TRI:
-   *   - Authorization: Bearer {apiKey}
-   *   - Cek json.success === true sebelum pakai data
-   *   - Log request/response seperti console.log pada referensi lama
-   */
-  private async fetchTripayData(url: string, apiKey: string): Promise<any[]> {
-    console.log('---------optionsGET----------TRIPAY');
-    console.log({ uri: url, method: 'GET', Authorization: `Bearer ${apiKey.substring(0, 8)}...` });
-    console.log('---------optionsGET----------TRIPAY');
-
-    let bodyText = '';
-    try {
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      });
-
-      bodyText = await response.text();
-
-      console.log('---------RESPONSE----------TRIPAY');
-      console.log(`URL: ${url} | Status: ${response.status}`);
-      console.log('---------RESPONSE----------TRIPAY');
-
-      const json = JSON.parse(bodyText);
-
-      // Ikuti pola cek_harga_TRI: cek json.success terlebih dahulu
-      if (json.success !== true) {
-        throw new Error(json.message || `API Tripay mengembalikan success=false dari ${url}`);
-      }
-
-      console.log('---------JSON DATA----------TRIPAY');
-      const data = json.data;
-      console.log(`Data count: ${Array.isArray(data) ? data.length : 'single object'}`);
-      console.log('---------JSON DATA----------TRIPAY');
-
-      if (!data) return [];
-      return Array.isArray(data) ? data : [data];
-    } catch (err: any) {
-      if (err.message && (
-        err.message.startsWith('API Tripay') ||
-        err.message.startsWith('Gagal')
-      )) throw err;
-      throw new Error(`Gagal parsing response dari ${url}: ${err.message}`);
-    }
-  }
-
   async syncProducts(adminId: number) {
-    const apiKey = process.env.TRIPAY_API_KEY;
-    const mode = process.env.TRIPAY_MODE || 'sandbox';
-
-    if (!apiKey) {
-      throw new Error('TRIPAY_API_KEY tidak ditemukan di environment variables.');
-    }
-
-    // Ikuti pola urlAct di referensi lama: base_url + path relatif
-    const baseUrl = mode === 'production'
-      ? 'https://tripay.id/api/v2/'
-      : 'https://tripay.id/api-sandbox/v2/';
-
-    const urlCat  = `${baseUrl}pembayaran/category`;
-    const urlOp   = `${baseUrl}pembayaran/operator`;
-    const urlProd = `${baseUrl}pembayaran/produk`;
-
-    // ==========================================
-    // PHASE 1 - FETCH API
-    // Mengikuti pola request di cek_harga_TRI: masing-masing endpoint
-    // diambil terpisah agar error mudah diidentifikasi
-    // ==========================================
-    // console.log('--- [TRIPAY SYNC] Fetching data dari Tripay API ---');
-    // console.log(`Mode: ${mode} | Base URL: ${baseUrl}`);
-
     let tripayCategories: any[] = [];
     let tripayOperators:  any[] = [];
     let tripayProducts:   any[] = [];
 
     try {
-      tripayCategories = await this.fetchTripayData(urlCat, apiKey);
-      // console.log(`[TRIPAY SYNC] Kategori berhasil diambil: ${tripayCategories.length} item`);
+      tripayCategories = await this.tripayService.getCategories('postpaid');
     } catch (error: any) {
-      // console.error('[TRIPAY SYNC] Error fetch kategori:', error.message);
       throw new Error(`Gagal mengambil data kategori dari Tripay: ${error.message}`);
     }
 
-    // console.log('|||||||');
-    // console.log(tripayCategories);
-    // console.log('|||||||');
-
     try {
-      tripayOperators = await this.fetchTripayData(urlOp, apiKey);
-      // console.log(`[TRIPAY SYNC] Operator berhasil diambil: ${tripayOperators.length} item`);
+      tripayOperators = await this.tripayService.getOperators('postpaid');
     } catch (error: any) {
-      // console.error('[TRIPAY SYNC] Error fetch operator:', error.message);
       throw new Error(`Gagal mengambil data operator dari Tripay: ${error.message}`);
     }
 
-    console.log('----');
-    console.log(tripayOperators);
-    console.log('----');
-
     try {
-      tripayProducts = await this.fetchTripayData(urlProd, apiKey);
-      //console.log(`[TRIPAY SYNC] Produk berhasil diambil: ${tripayProducts.length} item`);
+      tripayProducts = await this.tripayService.getPricelist('postpaid');
     } catch (error: any) {
-      // console.error('[TRIPAY SYNC] Error fetch produk:', error.message);
       throw new Error(`Gagal mengambil data produk dari Tripay: ${error.message}`);
     }
 
@@ -476,7 +390,7 @@ export class DaftarProdukPascabayarTripayService {
 
     return {
       success:    true,
-      mode,
+      mode:       'tripay-provider',
       categories: { inserted: catToInsert.length,  updated: catToUpdate.length },
       operators:  { inserted: opToInsert.length,   updated: opToUpdate.length },
       products:   { inserted: dataToInsert.length, updated: dataToUpdate.length },

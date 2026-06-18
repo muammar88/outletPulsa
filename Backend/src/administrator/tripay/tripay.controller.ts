@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Headers, Req, Query, UseGuards } from '@nestjs/common';
-import { TripayService } from './tripay.service';
+import { TripayService } from '../../providers/tripay.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import type { Request } from 'express';
 

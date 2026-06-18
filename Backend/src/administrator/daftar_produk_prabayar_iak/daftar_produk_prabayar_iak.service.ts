@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
 import { GetProdukIakDto } from './dto/get-produk-iak.dto';
-import * as crypto from 'crypto';
+import { IakService } from '../../providers/iak.service';
 
 @Injectable()
 export class DaftarProdukPrabayarIakService {
@@ -9,7 +9,10 @@ export class DaftarProdukPrabayarIakService {
   private isSyncing = false;
   private syncResult: any = null;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly iakService: IakService
+  ) {}
 
   getSyncStatus() {
     return {
@@ -77,10 +80,6 @@ export class DaftarProdukPrabayarIakService {
     };
   }
 
-  private signMd5(username: string, apiKey: string, suffix: string) {
-    return crypto.createHash('md5').update(username + apiKey + suffix).digest('hex');
-  }
-
   async syncProducts(adminId: number) {
     if (this.isSyncing) {
       throw new Error('Sinkronisasi IAK sedang berjalan');
@@ -90,44 +89,7 @@ export class DaftarProdukPrabayarIakService {
     this.syncResult = null;
 
     try {
-      let rawUsername = process.env.IAK_USERNAME || '085262802141';
-      if (String(rawUsername).includes('e+')) {
-        rawUsername = Number(rawUsername).toString();
-      }
-      const username = String(rawUsername).padStart(12, '0');
-      const mode = process.env.IAK_MODE || (process.env.NODE_ENV === 'production' ? 'production' : 'development');
-      // const apiKey = process.env.IAK_KEY || (mode === 'production' 
-      //   ? '472643293c215b8ayS8p' 
-      //   : '8286432937d964cegRmg');
-
-        const apiKey = process.env.IAK_MODE  === 'production'
-      ? process.env.IAK_KEY_PRODUCTION 
-      : process.env.IAK_KEY_DEVELOPMENT;
-
-        
-
-        console.log("API KEY");
-        console.log(apiKey);
-        console.log("API KEY");
-
-        console.log("USER NAME");
-        console.log(username);
-        console.log("USER NAME");
-
-       
-      
-      const baseUrl = mode === 'production'
-        ? 'https://prepaid.iak.id/'
-        : 'https://prepaid.iak.dev/';
-
-
-        console.log("BASE URL");
-        console.log(baseUrl);
-        console.log("BASE URL");
-
-      this.logger.log(`[IAK SYNC] Memulai sinkronisasi IAK. Mode: ${mode}, URL: ${baseUrl}`);
-
-      const sign = this.signMd5(username, apiKey || '', 'pl');
+      this.logger.log(`[IAK SYNC] Memulai sinkronisasi IAK.`);
     
     let json: any = { data: { pricelist: [] } };
     
@@ -147,21 +109,7 @@ export class DaftarProdukPrabayarIakService {
         const opName = op.name.toLowerCase();
 
         try {
-          const response = await fetch(`${baseUrl}api/pricelist/${typeName}/${opName}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            },
-            body: JSON.stringify({
-              username,
-              sign,
-              status: "all"
-            })
-          });
-
-          const bodyText = await response.text();
-          const opJson = JSON.parse(bodyText);
+          const opJson = await this.iakService.getPricelist('prepaid', typeName, opName);
 
           // Skip jika mendapat response error (contoh: rc '20' CODE NOT FOUND)
           if (opJson.data && opJson.data.rc && opJson.data.rc !== '00') {

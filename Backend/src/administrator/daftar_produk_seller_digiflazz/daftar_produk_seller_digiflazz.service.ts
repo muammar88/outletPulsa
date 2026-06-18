@@ -1,13 +1,16 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
 import { GetProdukSellerDigiflazzDto } from './dto/get-produk-seller-digiflazz.dto';
-import * as crypto from 'crypto';
+import { DigiflazzService } from '../../providers/digiflazz.service';
 
 @Injectable()
 export class DaftarProdukSellerDigiflazzService {
   private readonly logger = new Logger(DaftarProdukSellerDigiflazzService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly digiflazzService: DigiflazzService
+  ) {}
 
   async findAll(query: GetProdukSellerDigiflazzDto) {
     const page = parseInt(query.page || '1', 10);
@@ -58,50 +61,14 @@ export class DaftarProdukSellerDigiflazzService {
     });
   }
 
-  private signMd5(username: string, apiKey: string, suffix: string) {
-    return crypto.createHash('md5').update(username + apiKey + suffix).digest('hex');
-  }
-
   async syncProducts(adminId: number) {
-    const username = process.env.DIGIFLAZZ_USERNAME || 'gapajaD7VQKo';
-    const mode = process.env.DIGIFLAZZ_MODE || 'development';
-    const apiKey = mode === 'production' 
-      ? process.env.DIGIFLAZZ_PRODUCTION_KEY || '39a2cc82-ffb3-5a56-9d99-59a9a49d99b3' 
-      : process.env.DIGIFLAZZ_DEVELOPMENT_KEY || 'dev-82309dd0-8684-11ee-bada-e3aa4ec369e9';
-    
-    const baseUrl = 'https://api.digiflazz.com/v1/price-list';
-
-    this.logger.log(`[DIGIFLAZZ SYNC] Memulai sinkronisasi Digiflazz. Mode: ${mode}, URL: ${baseUrl}`);
-
-    const sign = this.signMd5(username, apiKey, 'pricelist');
+    this.logger.log(`[DIGIFLAZZ SYNC] Memulai sinkronisasi Digiflazz.`);
     
     let digiflazzData: any[] = [];
 
     try {
       this.logger.log(`[DIGIFLAZZ SYNC] Mengambil data pricelist dari server...`);
-
-      const response = await fetch(baseUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-          cmd: "prepaid",
-          username,
-          sign,
-        })
-      });
-
-      const bodyText = await response.text();
-      const opJson = JSON.parse(bodyText);
-
-      if (opJson.data && Array.isArray(opJson.data)) {
-        digiflazzData = opJson.data;
-      } else {
-        const digiflazzMessage = opJson.data?.message || opJson.message || JSON.stringify(opJson);
-        throw new BadRequestException(`Format response Digiflazz tidak valid. Pesan dari server: ${digiflazzMessage}`);
-      }
+      digiflazzData = await this.digiflazzService.getPricelist();
     } catch (err: any) {
       this.logger.error(`[DIGIFLAZZ SYNC] Gagal fetch ke Digiflazz: ${err.message}`);
       if (err instanceof BadRequestException) throw err;

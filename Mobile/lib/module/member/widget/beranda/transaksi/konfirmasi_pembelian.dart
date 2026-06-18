@@ -153,7 +153,7 @@ class _Konfirmasi_pembelianState extends State<Konfirmasi_pembelian> {
                                   listen: false);
 
                               var feedBack = await trans.prabayarTransaction(
-                                  widget.nomor_tujuan, widget.kode);
+                                  widget.nomor_tujuan.replaceAll(RegExp(r'\s+'), ''), widget.kode);
 
                               if (feedBack.error == false) {
                                 // feedBack.kodeTransaksi

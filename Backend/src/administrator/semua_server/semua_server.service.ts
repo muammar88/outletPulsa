@@ -3,10 +3,18 @@ import { PrismaService } from '../../prisma.service';
 import { CreateSemuaServerDto } from './dto/create-semua-server.dto';
 import { UpdateSemuaServerDto } from './dto/update-semua-server.dto';
 import { ServerStatus } from '@prisma/client';
+import { IakService } from '../../providers/iak.service';
+import { DigiflazzService } from '../../providers/digiflazz.service';
+import { TripayService } from '../../providers/tripay.service';
 
 @Injectable()
 export class SemuaServerService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private iakService: IakService,
+    private digiflazzService: DigiflazzService,
+    private tripayService: TripayService
+  ) {}
 
 
   async findAll(search: string = '', limit: number = 10, page: number = 1, status: string = '') {
@@ -110,69 +118,22 @@ export class SemuaServerService {
 
       try {
         if (server.kode === 'DIGI') {
-          const username = process.env.DIGIFLAZZ_USERNAME as string;
-          const apiKey = (process.env.DIGIFLAZZ_MODE === 'production' 
-            ? process.env.DIGIFLAZZ_PRODUCTION_KEY 
-            : process.env.DIGIFLAZZ_DEVELOPMENT_KEY) as string;
-          const sign = crypto.createHash('md5').update(username + apiKey + 'depo').digest('hex');
-          
-          const response = await fetch('https://api.digiflazz.com/v1/cek-saldo', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({ cmd: 'deposit', username, sign })
-          });
-          const json = await response.json();
-          if (json.data && json.data.deposit !== undefined) {
-            balance = json.data.deposit;
-            isSuccess = true;
-          } else {
-            errorMsg = 'Data saldo Digiflazz tidak valid';
-          }
+          const res = await this.digiflazzService.checkBalance();
+          balance = res.balance;
+          isSuccess = res.isSuccess;
+          if (!isSuccess) errorMsg = res.errorMsg;
         } 
         else if (server.kode === 'IAK') {
-          let rawUsername = process.env.IAK_USERNAME || '';
-          if (String(rawUsername).includes('e+')) {
-            rawUsername = Number(rawUsername).toString();
-          }
-          const username = String(rawUsername).padStart(12, '0');
-          // const apiKey = process.env.IAK_KEY as string;
-
-          const apiKey = process.env.IAK_MODE  === 'production'
-      ? process.env.IAK_KEY_PRODUCTION 
-      : process.env.IAK_KEY_DEVELOPMENT;
-          const sign = crypto.createHash('md5').update(username + apiKey + 'bl').digest('hex');
-          
-          const response = await fetch('https://prepaid.iak.id/api/check-balance', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body: JSON.stringify({ username, sign })
-          });
-          const json = await response.json();
-          if (json.data && json.data.balance !== undefined) {
-            balance = json.data.balance;
-            isSuccess = true;
-          } else {
-            errorMsg = 'Data saldo IAK tidak valid';
-          }
+          const res = await this.iakService.checkBalance();
+          balance = res.balance;
+          isSuccess = res.isSuccess;
+          if (!isSuccess) errorMsg = res.errorMsg;
         }
         else if (server.kode === 'TRI') {
-          const apiKey = process.env.TRIPAY_KEY as string;
-          
-          const response = await fetch('https://tripay.id/api/v2/ceksaldo', {
-            method: 'GET',
-            headers: { 
-              'Authorization': `Bearer ${apiKey}`,
-              'Content-Type': 'application/json', 
-              'Accept': 'application/json' 
-            }
-          });
-          const json = await response.json();
-          if (json.success && json.data !== undefined) {
-            balance = json.data;
-            isSuccess = true;
-          } else {
-            errorMsg = 'Data saldo Tripay tidak valid';
-          }
+          const res = await this.tripayService.checkBalance();
+          balance = res.balance;
+          isSuccess = res.isSuccess;
+          if (!isSuccess) errorMsg = res.errorMsg;
         } else {
           isSuccess = true;
           balance = 0;

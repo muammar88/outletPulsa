@@ -19,6 +19,9 @@ export class TransaksiController {
 
   @Post('transaksi-prabayar')
   async createTransaksiPrabayar(@Body() body: CreateTransaksiPrabayarDto, @Request() req: any) {
+    if (body.nomor_tujuan) {
+      body.nomor_tujuan = body.nomor_tujuan.replace(/\s+/g, '');
+    }
     // TODO: Gunakan req.user.sub setelah auth aktif
     const memberId = 1;
     return await this.transaksiService.createTransaksiPrabayar(memberId, body);

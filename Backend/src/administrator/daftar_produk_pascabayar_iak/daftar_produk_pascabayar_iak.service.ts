@@ -1,13 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
 import { GetProdukIakDto } from './dto/get-produk-iak.dto';
-import * as crypto from 'crypto';
+import { IakService } from '../../providers/iak.service';
 
 @Injectable()
 export class DaftarProdukPascabayarIakService {
   private readonly logger = new Logger(DaftarProdukPascabayarIakService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly iakService: IakService
+  ) {}
 
   async findAll(query: GetProdukIakDto) {
     const page = parseInt(query.page || '1', 10);
@@ -65,28 +68,8 @@ export class DaftarProdukPascabayarIakService {
     });
   }
 
-  private signMd5(username: string, apiKey: string, suffix: string) {
-    return crypto.createHash('md5').update(username + apiKey + suffix).digest('hex');
-  }
-
   async syncProducts(adminId: number) {
-    let rawUsername = process.env.IAK_USERNAME || '085262802141';
-    if (String(rawUsername).includes('e+')) {
-      rawUsername = Number(rawUsername).toString();
-    }
-    const username = String(rawUsername).padStart(12, '0');
-    const mode = process.env.IAK_MODE || (process.env.NODE_ENV === 'production' ? 'production' : 'development');
-    const apiKey = process.env.IAK_MODE  === 'production'
-      ? process.env.IAK_KEY_PRODUCTION 
-      : process.env.IAK_KEY_DEVELOPMENT;
-    
-    const baseUrl = mode === 'production'
-      ? 'https://postpaid.iak.id/'
-      : 'https://testpostpaid.mobilepulsa.net/';
-
-    this.logger.log(`[IAK PASCABAYAR SYNC] Memulai sinkronisasi IAK. Mode: ${mode}, URL: ${baseUrl}`);
-
-    const sign = this.signMd5(username, apiKey!, 'pl');
+    this.logger.log(`[IAK PASCABAYAR SYNC] Memulai sinkronisasi IAK Pascabayar.`);
     
     let pascabayarData: any[] = [];
     
@@ -105,21 +88,7 @@ export class DaftarProdukPascabayarIakService {
       
       try {
         // 3. Lakukan request ke endpoint dengan type
-        const response = await fetch(`${baseUrl}api/v1/bill/check/${type}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({
-            commands: "pricelist-pasca",
-            username,
-            sign,
-            status: "all"
-          })
-        });
-
-        const opJson = await response.json();
+        const opJson = await this.iakService.getPricelist('postpaid', type);
 
         // 4 & 5 & 6. Ambil data, tambahkan type, dan masukkan ke pascabayarData
         if (opJson.data && Array.isArray(opJson.data.pasca)) {

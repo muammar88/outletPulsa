@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
 import { CreateTransaksiPrabayarDto } from './dto/create-transaksi-prabayar.dto';
-import { ProviderService } from '../provider/provider.service';
+import { IakService } from '../../providers/iak.service';
+import { DigiflazzService } from '../../providers/digiflazz.service';
+import { TripayService } from '../../providers/tripay.service';
 
 @Injectable()
 export class TransaksiService {
@@ -9,7 +11,9 @@ export class TransaksiService {
 
   constructor(
     private prisma: PrismaService,
-    private providerService: ProviderService
+    private iakService: IakService,
+    private digiflazzService: DigiflazzService,
+    private tripayService: TripayService
   ) {}
 
   async getRiwayatPrabayar(userId: number) {
@@ -241,20 +245,20 @@ export class TransaksiService {
 
       if (produk.server?.kode === 'IAK') {
         console.log("---------IAK--------7");
-        providerResponse = await this.providerService.topUpIak(kodeTransaksi, dto.nomor_tujuan, providerProductCode);
+        providerResponse = await this.iakService.topUp(kodeTransaksi, dto.nomor_tujuan, providerProductCode);
         console.log("---------IAK--------7");
         console.log(providerResponse);
         console.log("---------IAK--------7");
       } else if (produk.server?.kode === 'TRI') {
         console.log("---------TRI--------8");
         const isPln = dto.kode_produk.toUpperCase().includes('PLN') || providerProductCode.toUpperCase().includes('PLN'); // Atur cara cek PLN sesuai struktur data yang fix
-        providerResponse = await this.providerService.topUpTripay(kodeTransaksi, dto.nomor_tujuan, providerProductCode, isPln);
+        providerResponse = await this.tripayService.topUp(kodeTransaksi, dto.nomor_tujuan, providerProductCode, isPln);
         console.log("---------TRI--------8");
         console.log(providerResponse);
         console.log("---------TRI--------8");
       } else if (produk.server?.kode === 'DIGI') {
         console.log("---------DIGI--------9");
-        providerResponse = await this.providerService.topUpDigiflazz(kodeTransaksi, dto.nomor_tujuan, providerProductCode);
+        providerResponse = await this.digiflazzService.topUp(kodeTransaksi, dto.nomor_tujuan, providerProductCode);
         console.log("---------DIGI--------9");
         console.log(providerResponse);
         console.log("---------DIGI--------9");
@@ -317,14 +321,14 @@ export class TransaksiService {
         let checkRes: { status: string; sn: string; raw: any } | null = null;
         
         if (trx.server?.kode === 'IAK') {
-           checkRes = await this.providerService.checkStatusIak(trx.kode || '');
+           checkRes = await this.iakService.checkStatus(trx.kode || '');
         } else if (trx.server?.kode === 'TRI') {
-           checkRes = await this.providerService.checkStatusTripay(trx.trx_id?.toString() || '', trx.kode || '');
+           checkRes = await this.tripayService.checkStatus(trx.trx_id?.toString() || '', trx.kode || '');
         } else if (trx.server?.kode === 'DIGI') {
            let providerProductCode = '';
            const digiMapping = await this.prisma.digiflazzProduct.findFirst({ where: { produkId: trx.produkId } });
            if (digiMapping) providerProductCode = digiMapping.selectedSellerBuyerSkuKode || '';
-           checkRes = await this.providerService.checkStatusDigiflazz(trx.kode || '', trx.nomorTujuan || '', providerProductCode);
+           checkRes = await this.digiflazzService.checkStatus(trx.kode || '', trx.nomorTujuan || '', providerProductCode);
         }
 
         if (checkRes && checkRes.status !== 'proses') {
