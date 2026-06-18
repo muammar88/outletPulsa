@@ -231,6 +231,8 @@ CREATE TABLE "Transaction" (
     "ket" TEXT,
     "purchase_price" INTEGER,
     "selling_price" INTEGER,
+    "saldo_sebelum" INTEGER,
+    "saldo_sesudah" INTEGER,
     "kodeAgen" TEXT,
     "laba" INTEGER,
     "fee_agen" INTEGER,
@@ -264,6 +266,8 @@ CREATE TABLE "TransactionPascabayar" (
     "tarif" TEXT,
     "daya" INTEGER,
     "total" INTEGER,
+    "saldo_sebelum" INTEGER,
+    "saldo_sesudah" INTEGER,
     "kodeAgen" TEXT,
     "laba" INTEGER,
     "fee_agen" INTEGER,
@@ -799,6 +803,21 @@ CREATE TABLE "TripayPascabayarProduk" (
     CONSTRAINT "TripayPascabayarProduk_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "WebhookLog" (
+    "id" SERIAL NOT NULL,
+    "provider" TEXT NOT NULL,
+    "event" TEXT,
+    "transactionRef" TEXT,
+    "payload" TEXT,
+    "status" TEXT,
+    "message" TEXT,
+    "ipAddress" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "WebhookLog_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_uuid_key" ON "User"("uuid");
 
@@ -996,3 +1015,4 @@ ALTER TABLE "TripayPascabayarProduk" ADD CONSTRAINT "TripayPascabayarProduk_oper
 
 -- AddForeignKey
 ALTER TABLE "TripayPascabayarProduk" ADD CONSTRAINT "TripayPascabayarProduk_produkId_fkey" FOREIGN KEY ("produkId") REFERENCES "ProdukPascabayar"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
