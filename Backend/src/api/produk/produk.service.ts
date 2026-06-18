@@ -9,7 +9,7 @@ export class ProdukService {
   async getDaftarProduk(query: GetProdukDto) {
     const { search, kategori, operator, page = 1, limit = 20 } = query;
 
-    const skip = (page - 1) * limit;
+    // const skip = (page - 1) * limit;
 
     const where: any = {
       status: 'active',
@@ -38,8 +38,8 @@ export class ProdukService {
         this.prisma.produk.count({ where }),
         this.prisma.produk.findMany({
           where,
-          skip,
-          take: limit,
+          // skip,
+          // take: limit,
           include: {
             operator: {
               include: {
