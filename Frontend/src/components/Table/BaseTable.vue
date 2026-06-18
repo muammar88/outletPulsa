@@ -171,10 +171,10 @@ defineExpose({ resetSearch });
     </div>
 
     <!-- Table -->
-    <div class="overflow-x-auto">
-      <SkeletonTable v-if="loading" :columns="totalColumns" :rows="5" />
+    <div class="overflow-x-auto relative">
+      <SkeletonTable v-if="loading && data.length === 0" :columns="totalColumns" :rows="5" />
 
-      <table v-else class="base-table">
+      <table v-else class="base-table transition-opacity duration-200" :class="{ 'opacity-60 pointer-events-none': loading }">
         <thead>
           <tr>
             <th v-if="showNumbering" class="w-16 text-center">No</th>
