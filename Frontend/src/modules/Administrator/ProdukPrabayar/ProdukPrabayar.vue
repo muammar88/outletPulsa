@@ -10,6 +10,7 @@ import { onMounted, ref, computed, shallowRef } from 'vue';
 import ProdukPrabayarFormModal from './components/ProdukPrabayarFormModal.vue';
 import ProdukPrabayarDetailModal from './components/ProdukPrabayarDetailModal.vue';
 import ProdukPrabayarPilihServerModal from './components/ProdukPrabayarPilihServerModal.vue';
+import ProdukPrabayarMarkupModal from './components/ProdukPrabayarMarkupModal.vue';
 import BaseTable from '@/components/Table/BaseTable.vue';
 import Confirmation from '@/components/Modal/Confirmation.vue';
 import Notification from '@/components/Modal/Notification.vue';
@@ -38,13 +39,13 @@ const { showConfirmDialog, confirmTitle, confirmMessage, displayConfirmation, co
   useConfirmation();
 
 const tableColumns = [
-  { key: 'checkbox', label: '', headerClass: 'w-10 text-center', cellClass: 'text-center' },
+  { key: 'checkbox', label: '', headerClass: 'w-[5%] text-center', cellClass: 'text-center' },
   { key: 'kode', label: 'Kode', headerClass: 'text-left w-[15%] pl-4', cellClass: 'text-left pl-4' },
   { key: 'name', label: 'Nama Produk', headerClass: 'text-left w-[20%]', cellClass: 'text-left' },
   { key: 'server', label: 'Server', headerClass: 'text-left w-[15%]', cellClass: 'text-left' },
   { key: 'harga', label: 'Harga (Beli / Jual)', headerClass: 'text-right w-[15%]', cellClass: 'text-right' },
   { key: 'status', label: 'Status', headerClass: 'text-center w-[10%]', cellClass: 'text-center' },
-  { key: 'action', label: 'Aksi', headerClass: 'text-center w-[15%]', cellClass: 'text-center' },
+  { key: 'action', label: 'Aksi', headerClass: 'text-center w-[20%]', cellClass: 'text-center' },
 ];
 
 const dataProduk = shallowRef<Produk[]>([]);
@@ -87,6 +88,9 @@ const showDetailModal = ref(false);
 
 // Pilih Server State
 const showServerModal = ref(false);
+
+// Markup State
+const showMarkupModal = ref(false);
 
 const { currentPage, totalPages, pages, totalRow, pageNow, perPage } = usePagination(
   () => fetchData(),
@@ -191,6 +195,11 @@ const handleDetail = (row: Produk) => {
 const handlePilihServer = (row: Produk) => {
   selectedProduk.value = { ...row };
   showServerModal.value = true;
+};
+
+const handleEditMarkup = (row: Produk) => {
+  selectedProduk.value = { ...row };
+  showMarkupModal.value = true;
 };
 
 const handleDelete = (row: Produk) => {
@@ -538,6 +547,9 @@ onMounted(() => {
 
       <template #cell-action="{ row }">
         <div class="flex justify-center gap-2 items-center transition-opacity duration-200">
+          <LightButton @click="handleEditMarkup(row)" title="Edit Markup" class="hover:bg-purple-50 hover:text-purple-600 hover:border-purple-200 transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </LightButton>
           <LightButton @click="handlePilihServer(row)" title="Pilih Server Aktif" class="hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all">
             <IconPlug class="w-4 h-4" />
           </LightButton>
@@ -614,6 +626,14 @@ onMounted(() => {
     :show="showServerModal"
     :produk="selectedProduk"
     @close="showServerModal = false; selectedProduk = null;"
+    @refresh="fetchData"
+    @notify="(msg, type) => displayNotification(msg, type)"
+  />
+
+  <ProdukPrabayarMarkupModal
+    :show="showMarkupModal"
+    :produk="selectedProduk"
+    @close="showMarkupModal = false; selectedProduk = null;"
     @refresh="fetchData"
     @notify="(msg, type) => displayNotification(msg, type)"
   />
