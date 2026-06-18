@@ -50,10 +50,12 @@ export class TripayService {
       });
       const json = await response.json();
       
-      if (json.success && json.data && json.data.saldo !== undefined) {
-        return { balance: json.data.saldo, isSuccess: true, errorMsg: '' };
+      if (json.success && json.data !== undefined) {
+        // Response Tripay: { success: true, message: '...', data: 875 }
+        const balanceVal = typeof json.data === 'number' ? json.data : (json.data.saldo || 0);
+        return { balance: balanceVal, isSuccess: true, errorMsg: '' };
       }
-      return { balance: 0, isSuccess: false, errorMsg: 'Data saldo Tripay tidak valid' };
+      return { balance: 0, isSuccess: false, errorMsg: json.message || 'Data saldo Tripay tidak valid' };
     } catch (error: any) {
       this.logger.error('TRIPAY CheckBalance Error', error);
       return { balance: 0, isSuccess: false, errorMsg: error.message };
