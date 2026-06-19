@@ -194,37 +194,57 @@ class _BoxKategori extends StatelessWidget {
   final ConfigApp config;
   final Transaction_provider trans;
 
+  // Gradient palettes for accent color per card (cycles through)
+  static const List<List<Color>> _gradients = [
+    [Color(0xFF6C63FF), Color(0xFF8B5CF6)],
+    [Color(0xFF0EA5E9), Color(0xFF2563EB)],
+    [Color(0xFF10B981), Color(0xFF059669)],
+    [Color(0xFFF59E0B), Color(0xFFD97706)],
+    [Color(0xFFEF4444), Color(0xFFDC2626)],
+    [Color(0xFF8B5CF6), Color(0xFFEC4899)],
+    [Color(0xFF14B8A6), Color(0xFF0D9488)],
+    [Color(0xFFF97316), Color(0xFFEA580C)],
+  ];
+
   @override
   Widget build(BuildContext context) {
     int staggerIndex = index > 15 ? 15 : index;
     final item = trans.list_kategori![index.toString()];
+    final gradient = _gradients[index % _gradients.length];
 
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0.0, end: 1.0),
-      duration: Duration(milliseconds: 300 + (staggerIndex * 50)),
+      duration: Duration(milliseconds: 250 + (staggerIndex * 40)),
       curve: Curves.easeOutQuart,
       builder: (context, value, child) {
         return Transform.translate(
-          offset: Offset(0, 30 * (1 - value)),
+          offset: Offset(0, 24 * (1 - value)),
           child: Opacity(opacity: value, child: child),
         );
       },
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 16,
-              offset: const Offset(0, 4),
+              color: gradient[0].withOpacity(0.12),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
+            ),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(18),
+            splashColor: gradient[0].withOpacity(0.08),
+            highlightColor: gradient[0].withOpacity(0.04),
             onTap: () {
               Navigator.push(
                 context,
@@ -240,19 +260,29 @@ class _BoxKategori extends StatelessWidget {
               );
             },
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(14),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Leading: Logo / Icon
+                  // Leading: Gradient icon container
                   Container(
-                    width: 52,
-                    height: 52,
+                    width: 58,
+                    height: 58,
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF8F9FA),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.grey.shade200),
+                      gradient: LinearGradient(
+                        colors: [
+                          gradient[0].withOpacity(0.12),
+                          gradient[1].withOpacity(0.06),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: gradient[0].withOpacity(0.15),
+                        width: 1,
+                      ),
                     ),
                     child: Image.asset(
                       'assets/img/' +
@@ -263,12 +293,12 @@ class _BoxKategori extends StatelessWidget {
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) => Icon(
                         TablerIcons.category,
-                        color: Colors.grey.shade400,
-                        size: 24,
+                        color: gradient[0],
+                        size: 26,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 14),
 
                   // Content
                   Expanded(
@@ -280,45 +310,63 @@ class _BoxKategori extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.poppins(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF1A1A2E),
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF0F172A),
+                            height: 1.2,
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF8F9FA),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey.shade200),
-                          ),
-                          child: Text(
-                            item['kode'],
-                            style: GoogleFonts.poppins(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey.shade600,
+                        const SizedBox(height: 5),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    gradient[0].withOpacity(0.12),
+                                    gradient[1].withOpacity(0.08),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                item['kode'],
+                                style: GoogleFonts.poppins(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w600,
+                                  color: gradient[0],
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ],
                     ),
                   ),
 
-                  // Chevron
+                  // Arrow with solid sapphire blue
                   const SizedBox(width: 8),
                   Container(
-                    padding: const EdgeInsets.all(8),
+                    width: 34,
+                    height: 34,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0F1F6E).withOpacity(0.06),
+                      color: const Color(0xFF0F1F6E), // Sapphire Blue
                       borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF0F1F6E).withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
                     ),
                     child: const Icon(
                       TablerIcons.chevron_right,
-                      color: Color(0xFF0F1F6E),
-                      size: 18,
+                      color: Colors.white,
+                      size: 17,
                     ),
                   ),
                 ],
