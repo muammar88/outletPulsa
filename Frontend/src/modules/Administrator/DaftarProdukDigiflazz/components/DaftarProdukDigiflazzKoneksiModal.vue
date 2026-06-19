@@ -2,8 +2,6 @@
 import { ref, watch } from 'vue';
 import BaseFormModal from '@/components/Modal/Form.vue';
 import InputText from '@/components/Form/InputText.vue';
-import Notification from '@/components/Modal/Notification.vue';
-import { useNotification } from '@/composables/useNotification';
 import { daftarProdukDigiflazzService } from '@/service/administrator/daftarProdukDigiflazz';
 
 const props = defineProps({
@@ -15,14 +13,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'saved']);
-
-const {
-  showNotification,
-  notificationType,
-  notificationMessage,
-  displayNotification,
-  hideNotification,
-} = useNotification();
 
 const isLoadingOperators = ref(false);
 const isLoadingProducts = ref(false);
@@ -119,8 +109,7 @@ watch(
       if (searchOperatorTimeout) clearTimeout(searchOperatorTimeout);
       if (searchProductTimeout) clearTimeout(searchProductTimeout);
     }
-  },
-  { immediate: true }
+  }
 );
 
 const handleSave = async () => {
@@ -130,10 +119,9 @@ const handleSave = async () => {
   try {
     await daftarProdukDigiflazzService.connectProduct(props.produk.id, selectedInternalProduct.value);
     emit('saved');
-  } catch (error: any) {
+  } catch (error) {
     console.error('Gagal menyimpan koneksi', error);
-    const errMessage = error.response?.data?.message || 'Gagal menyimpan koneksi';
-    displayNotification(Array.isArray(errMessage) ? errMessage[0] : errMessage, 'error');
+    // Ideally emit an error to be handled by parent
   } finally {
     isSaving.value = false;
   }
@@ -319,12 +307,4 @@ const handleSave = async () => {
 
     </div>
   </BaseFormModal>
-
-  <!-- Notification Modal -->
-  <Notification
-    :show-notification="showNotification"
-    :notification-type="notificationType"
-    :notification-message-html="notificationMessage"
-    @close="hideNotification"
-  />
 </template>

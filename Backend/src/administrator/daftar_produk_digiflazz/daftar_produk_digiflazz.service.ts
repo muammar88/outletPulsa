@@ -169,35 +169,86 @@ export class DaftarProdukDigiflazzService {
     };
   }
 
-  async getInternalOperators(search?: string) {
+  async getInternalOperators(search: string = '') {
     const where: any = {};
-    if (search) {
-      where.name = { contains: search, mode: 'insensitive' };
-    }
-    return this.prisma.operator.findMany({
-      where,
-      orderBy: { name: 'asc' },
-    });
-  }
-
-  async getInternalProducts(operatorId: number, search?: string) {
-    const where: any = { operatorId };
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
-        { kode: { contains: search, mode: 'insensitive' } },
+        { kode: { contains: search, mode: 'insensitive' } }
       ];
     }
-    return this.prisma.produk.findMany({
+    
+    const operators = await this.prisma.operator.findMany({
+      where: {
+        ...where,
+      },
+      select: {
+        id: true,
+        kode: true,
+        name: true,
+      },
+      orderBy: { name: 'asc' },
+      take: 50,
+    });
+
+    return operators.map(op => ({
+      ...op,
+      name: op.kode ? `${op.name} (${op.kode})` : op.name,
+    }));
+  }
+
+  async getInternalProducts(operatorId: number, search: string = '') {
+    const where: any = { 
+      operatorId,
+      digiflazzProducts: {
+        none: {}
+      }
+    };
+    if (search) {
+      where.OR = [
+        { kode: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+    
+    const products = await this.prisma.produk.findMany({
       where,
+      select: {
+        id: true,
+        kode: true,
+        name: true,
+        purchase_price: true,
+        markup: true,
+        operator: {
+          select: { name: true }
+        }
+      },
+      take: 50,
       orderBy: { purchase_price: 'asc' },
     });
+
+    return products.map(p => ({
+      ...p,
+      kode: p.operator?.name ? `${p.operator.name} - ${p.kode}` : p.kode,
+    }));
   }
 
   async connectProduct(id: number, produkId: number) {
+    const digiflazzProd = await this.prisma.digiflazzProduct.findUnique({ where: { id } });
+    if (!digiflazzProd) throw new Error('Produk Digiflazz tidak ditemukan');
+
+    const internalProd = await this.prisma.produk.findUnique({ where: { id: produkId } });
+    if (!internalProd) throw new Error('Produk Internal tidak ditemukan');
+
     return this.prisma.digiflazzProduct.update({
       where: { id },
       data: { produkId },
+      include: {
+        category: true,
+        brand: true,
+        type: true,
+        produk: true
+      }
     });
   }
 
