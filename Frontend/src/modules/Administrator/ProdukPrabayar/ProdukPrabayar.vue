@@ -606,6 +606,7 @@ onMounted(() => {
     :mode="formMode"
     :initial-data="selectedProduk"
     :loading="isSubmitting"
+    :operators="listOperator"
     @close="
       showFormModal = false;
       fetchData();

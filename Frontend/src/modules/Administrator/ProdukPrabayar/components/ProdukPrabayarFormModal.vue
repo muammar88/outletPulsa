@@ -14,6 +14,7 @@ const props = defineProps<{
   mode: 'add' | 'edit';
   initialData: Produk | null;
   loading: boolean;
+  operators: any[];
 }>();
 
 const emit = defineEmits<{
@@ -36,11 +37,50 @@ const defaultForm = (): Partial<Produk> => ({
   name: '',
   purchase_price: 0,
   markup: 0,
+  operatorId: '' as any,
   status: 'active',
 });
 
 const form = ref<Partial<Produk>>(defaultForm());
 
+import { computed, ref, watch } from 'vue';
+const selectedKategori = ref('');
+
+const kategoriOptions = computed(() => {
+  const kats = new Set<string>();
+  props.operators.forEach(op => {
+    kats.add(op.kategori?.name || 'Lainnya');
+  });
+  const arr = Array.from(kats).sort();
+  return [
+    { id: '', name: '-- Pilih Kategori --' },
+    ...arr.map(k => ({ id: k, name: k }))
+  ];
+});
+
+const operatorOptions = computed(() => {
+  let filtered = props.operators;
+  if (selectedKategori.value) {
+    filtered = filtered.filter(op => (op.kategori?.name || 'Lainnya') === selectedKategori.value);
+  }
+  return [
+    { id: '', name: '-- Pilih Operator --' },
+    ...filtered.map(op => ({
+      id: op.id,
+      name: op.kode ? `${op.name} (${op.kode})` : op.name
+    }))
+  ];
+});
+
+watch(selectedKategori, (newVal, oldVal) => {
+  if (oldVal !== '' && !isLoading.value && form.value.operatorId) {
+    // Only reset if the newly selected category doesn't contain the currently selected operator
+    const currentOp = props.operators.find(o => o.id === form.value.operatorId);
+    if (!currentOp || (currentOp.kategori?.name || 'Lainnya') !== newVal) {
+      form.value.operatorId = '';
+    }
+  }
+});
 
 const statusOptions = [
   { id: 'active', name: 'Aktif' },
@@ -50,6 +90,7 @@ const statusOptions = [
 const resetForm = () => {
   form.value = defaultForm();
   errors.value = {};
+  selectedKategori.value = '';
 };
 
 const loadFormData = async () => {
@@ -64,9 +105,18 @@ const loadFormData = async () => {
         purchase_price: data.purchase_price || 0,
         markup: data.markup || 0,
         status: data.status || 'active',
-        operatorId: data.operatorId,
+        operatorId: data.operatorId || '',
         serverId: data.serverId,
       };
+      
+      if (data.operatorId) {
+        const op = props.operators.find(o => o.id === data.operatorId);
+        if (op) {
+          selectedKategori.value = op.kategori?.name || 'Lainnya';
+        }
+      } else {
+        selectedKategori.value = '';
+      }
     } catch (error) {
       console.error('Gagal mengambil detail produk:', error);
       form.value = { ...defaultForm(), ...props.initialData };
@@ -97,6 +147,10 @@ const validateForm = () => {
     errors.value.kode = 'Kode produk tidak boleh kosong.';
     isValid = false;
   }
+  if (!form.value.operatorId) {
+    errors.value.operatorId = 'Operator harus dipilih.';
+    isValid = false;
+  }
   if (!form.value.name?.trim()) {
     errors.value.name = 'Nama produk tidak boleh kosong.';
     isValid = false;
@@ -117,6 +171,9 @@ const handleSubmit = async () => {
   if (!validateForm()) return;
 
   const payload = { ...form.value };
+  if (payload.operatorId) {
+    payload.operatorId = Number(payload.operatorId);
+  }
 
   try {
     if (props.mode === 'add') {
@@ -152,6 +209,21 @@ const handleSubmit = async () => {
     </div>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <SelectField
+        v-model="selectedKategori"
+        id="kategori"
+        label="Pilih Kategori"
+        :options="kategoriOptions"
+        :error="errors?.kategori"
+      />
+      <SelectField
+        v-model="form.operatorId"
+        id="operatorId"
+        label="Pilih Operator"
+        :options="operatorOptions"
+        :error="errors?.operatorId"
+        required
+      />
       <InputText
         v-model="form.kode"
         id="kode"
