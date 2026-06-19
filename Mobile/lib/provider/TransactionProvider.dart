@@ -50,8 +50,6 @@ class Transaction_provider with ChangeNotifier {
     String? search,
     String? kategori,
     String? operator,
-    int page = 1,
-    int limit = 20,
   }) async {
     _error = null;
     _errorMsg = null;
@@ -63,8 +61,6 @@ class Transaction_provider with ChangeNotifier {
       search: search,
       kategori: kategori,
       operator: operator,
-      page: page,
-      limit: limit,
     )
         .then((Model_list_produk e) async {
       print("11111********______________");

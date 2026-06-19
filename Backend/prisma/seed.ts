@@ -7,6 +7,7 @@ import userSeed from './seeds/user.seed';
 import memberSeed from './seeds/member.seed';
 import kategoriSeed from './seeds/kategori.seed';
 import operatorSeed from './seeds/operator.seed';
+import prefixSeed from './seeds/prefix.seed';
 import serverSeed from './seeds/server.seed';
 import produkSeed from './seeds/produk.seed';
 import produkPascabayarSeed from './seeds/produk_pascabayar.seed';
@@ -42,6 +43,9 @@ async function main() {
   
   console.log('Seeding Operator...');
   await operatorSeed(prisma);
+  
+  console.log('Seeding Prefix...');
+  await prefixSeed(prisma);
   
   console.log('Seeding Server...');
   await serverSeed(prisma);

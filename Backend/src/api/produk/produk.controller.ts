@@ -19,4 +19,9 @@ export class ProdukController {
     const mergedQuery = { ...query, ...body };
     return await this.produkService.getDaftarProduk(mergedQuery);
   }
+
+  @Post('get-prefix')
+  async getPrefix(@Body() body: any) {
+    return await this.produkService.getPrefix(body);
+  }
 }

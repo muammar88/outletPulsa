@@ -77,16 +77,12 @@ class Rest_transaction {
     String? search,
     String? kategori,
     String? operator,
-    int page = 1,
-    int limit = 20,
   }) async {
     final headers = await ApiHeaders.getHeaders();
     final queryParams = {
       if (search != null) 'search': search,
       if (kategori != null) 'kategori': kategori,
       if (operator != null) 'operator': operator,
-      'page': page.toString(),
-      'limit': limit.toString(),
     };
     Uri url =
         Uri.parse(_getDaftarProduk_url!).replace(queryParameters: queryParams);

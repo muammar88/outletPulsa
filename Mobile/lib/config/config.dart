@@ -64,7 +64,7 @@ class ConfigApp {
     _check_login_url = '$_mainurl/auth/check-login';
     _beranda_url = '$_mainurl/beranda';
     _info_deposit_url = '$_mainurl/deposit-info';
-    _getPrefix_url = '$_mainurl/get-prefix';
+    _getPrefix_url = '$_mainurl/daftar-produk/get-prefix';
     _getDaftarProduk_url = '$_mainurl/daftar-produk';
     _getDaftarProdukData_url = '$_mainurl/daftar-produk-data';
     _getDaftarOperator_url = '$_mainurl/daftar-operator';

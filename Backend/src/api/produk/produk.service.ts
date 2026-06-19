@@ -192,4 +192,55 @@ export class ProdukService {
       };
     }
   }
+
+  async getPrefix(body: any) {
+    const { nomor_tujuan, kode } = body;
+
+    if (!nomor_tujuan) {
+      return { error: true, error_msg: 'Nomor Whatsapp Tidak Boleh Kosong' };
+    }
+    if (!kode) {
+      return { error: true, error_msg: 'Kode Tidak Boleh Kosong' };
+    }
+
+    try {
+      const kategori = await this.prisma.kategori.findFirst({
+        where: { kode: kode }
+      });
+
+      if (!kategori) {
+        return { error: true, error_msg: 'Kode Kategori Tidak Ditemukan.' };
+      }
+
+      const needPrefix = ["PIU", "PD", "PT", "PTP", "PI"];
+      if (needPrefix.includes(kode)) {
+        const prefix = nomor_tujuan.substring(0, 4);
+        
+        const validPrefix = await this.prisma.prefix.findFirst({
+          where: {
+            prefix: prefix,
+            operator: {
+              kategori: {
+                kode: kode
+              }
+            }
+          }
+        });
+
+        if (!validPrefix) {
+          return { error: true, error_msg: 'Format Nomor Tujuan Tidak Sesuai.' };
+        }
+      }
+
+      return {
+        error: false,
+        error_msg: "Berhasil ditemukan"
+      };
+    } catch (error) {
+      return {
+        error: true,
+        error_msg: 'Terjadi kesalahan pada server'
+      };
+    }
+  }
 }
