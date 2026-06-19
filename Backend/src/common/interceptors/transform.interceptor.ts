@@ -13,9 +13,9 @@ export class TransformInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       map((res) => {
-        // default
         let message = 'Success';
         let data: any = null;
+        let errorStatus: any = '';
 
         // kalau return object custom
         if (res && typeof res === 'object') {
@@ -23,6 +23,9 @@ export class TransformInterceptor implements NestInterceptor {
           // jika respons punya format legacy, kita konversi juga
           if (res.error_msg) {
              message = res.error_msg;
+          }
+          if (res.error !== undefined) {
+             errorStatus = res.error;
           }
           data = res.data !== undefined ? res.data : res;
           
@@ -41,7 +44,7 @@ export class TransformInterceptor implements NestInterceptor {
         }
 
         return {
-          error: '',
+          error: errorStatus,
           message,
           data: data !== null ? data : {},
         };
