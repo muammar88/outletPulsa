@@ -218,7 +218,7 @@ class _Input_ppobState extends State<Input_ppob> {
                                         builder: (context) => Daftar_produk(
                                           nomor_tujuan: nomor_tujuan!,
                                           label: widget.label,
-                                          path: widget.path,
+                                          path: trans.operatorCode ?? widget.path,
                                           title: widget.title,
                                           tipe: widget.tipe,
                                           prefix: true,

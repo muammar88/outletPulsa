@@ -11,6 +11,7 @@ import 'package:outletpulsa/models/model_void.dart';
 import 'package:outletpulsa/sql/SQLHelper.dart';
 import 'package:outletpulsa/utils/network_util.dart';
 import 'api_headers.dart';
+import 'package:outletpulsa/models/model_prefix.dart';
 
 class Rest_transaction {
   String? _getPrefix_url;
@@ -44,14 +45,14 @@ class Rest_transaction {
   final NetworkUtil _netUtil = NetworkUtil();
   final db = SQLHelper();
 
-  Future<Model_void> getPrefix(String nomorTujuan, String kodeKategori) async {
+  Future<Model_prefix> getPrefix(String nomorTujuan, String kodeKategori) async {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_getPrefix_url!);
     return _netUtil
         .post(url, headers,
             jsonEncode({"nomor_tujuan": nomorTujuan, "kode": kodeKategori}))
         .then((dynamic res) async {
-      return new Model_void.map(res);
+      return new Model_prefix.map(res);
     });
   }
 

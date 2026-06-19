@@ -9,8 +9,6 @@ export class ProdukService {
   async getDaftarProduk(query: GetProdukDto) {
     const { search, kategori, operator, page = 1, limit = 20 } = query;
 
-    // const skip = (page - 1) * limit;
-
     const where: any = {
       status: 'active',
     };
@@ -21,6 +19,7 @@ export class ProdukService {
         { kode: { contains: search } },
       ];
     }
+
     if (operator) {
       where.operator = {
         kode: operator
@@ -32,8 +31,6 @@ export class ProdukService {
         this.prisma.produk.count({ where }),
         this.prisma.produk.findMany({
           where,
-          // skip,
-          // take: limit,
           include: {
             operator: {
               include: {
@@ -228,12 +225,23 @@ export class ProdukService {
                 kode: kode
               }
             }
+          },
+          include: {
+            operator: true
           }
         });
 
         if (!validPrefix) {
           return { error: true, message: 'Format Nomor Tujuan Tidak Sesuai.', data: {} };
         }
+
+        return {
+          error: false,
+          message: "Berhasil ditemukan",
+          data: {
+            operator: validPrefix.operator?.kode
+          }
+        };
       }
 
       return {

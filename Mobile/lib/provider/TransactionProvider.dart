@@ -6,6 +6,7 @@ import '../models/model_list_kategori.dart';
 import '../models/model_list_operator.dart';
 import '../models/model_list_produk.dart';
 import '../models/model_transaction.dart';
+import '../models/model_prefix.dart';
 
 class Transaction_provider with ChangeNotifier {
   bool? _error;
@@ -21,13 +22,16 @@ class Transaction_provider with ChangeNotifier {
   Map<String, dynamic>? get list_kategori => _list_kategori;
   Map<String, dynamic>? get list_kategori_pascabayar =>
       _list_kategori_pascabayar;
+  String? _operatorCode;
+  String? get operatorCode => _operatorCode;
 
   Future<void> getPrefix(String nomorTujuan, String kode) async {
     await Rest_transaction()
         .getPrefix(nomorTujuan, kode)
-        .then((Model_void e) async {
+        .then((Model_prefix e) async {
       _error = e.error;
       _errorMsg = e.errorMsg;
+      _operatorCode = e.operatorCode;
       notifyListeners();
     });
   }
