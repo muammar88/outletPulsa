@@ -53,10 +53,6 @@ export default defineConfig(({ mode }) => ({
           if (id.includes('node_modules/@fortawesome')) {
             return 'fontawesome';
           }
-          // Flowbite
-          if (id.includes('node_modules/flowbite')) {
-            return 'flowbite';
-          }
           // Alertify
           if (id.includes('node_modules/alertifyjs')) {
             return 'alertify';

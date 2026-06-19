@@ -6,7 +6,6 @@ import './assets/css_home_pages/input-login.css';
 import './assets/css_home_pages/input.css';
 import './assets/css_home_pages/login.css';
 
-import 'flowbite';
 
 // Vue Core
 import rupiahPlugin from '@/plugins/rupiahPlugin';
