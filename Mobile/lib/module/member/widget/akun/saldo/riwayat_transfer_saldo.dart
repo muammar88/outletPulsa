@@ -40,7 +40,7 @@ class _Riwayat_transfer_saldoState extends State<Riwayat_transfer_saldo> {
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF1F2AAA), Color(0xFF3A47C5)],
+              colors: [Color(0xFF0F1F6E), Color(0xFF1A3DB5)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),

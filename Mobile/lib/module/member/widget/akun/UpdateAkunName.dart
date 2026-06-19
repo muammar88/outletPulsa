@@ -32,42 +32,98 @@ class _Update_akun_nameState extends State<Update_akun_name> {
     super.dispose();
   }
 
+  static const Color _kPrimary = Color(0xFF0F1F6E);
+  static const Color _kPrimaryLight = Color(0xFF1A3DB5);
+
+  Widget _buildBrandPanel({bool compact = false}) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [_kPrimary, _kPrimaryLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Stack(
+          children: [
+            Positioned(top: -50, right: -50, child: _Circle(size: 200, opacity: 0.05)),
+            Positioned(top: 50, right: 50, child: _Circle(size: 90, opacity: 0.06)),
+            Positioned(bottom: -40, left: -40, child: _Circle(size: 130, opacity: 0.04)),
+
+            Positioned(
+              top: compact ? 0 : 16,
+              left: compact ? 0 : 16,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  margin: compact ? const EdgeInsets.all(16) : EdgeInsets.zero,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(TablerIcons.arrow_left, color: Colors.white, size: 20),
+                ),
+              ),
+            ),
+
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 32, vertical: compact ? 32 : 0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 16),
+                    Text(
+                      'Update Nama Akun',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.outfit(
+                        fontSize: compact ? 26 : 36,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        height: 1.2,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Ubah nama pengguna akun Anda di sini',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: compact ? 13 : 15,
+                        color: Colors.white.withOpacity(0.85),
+                        height: 1.5,
+                      ),
+                    ),
+                    if (compact) const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
-      appBar: AppBar(
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF1F2AAA), Color(0xFF3A47C5)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(TablerIcons.arrow_left, color: Colors.white),
-        ),
-        centerTitle: true,
-        title: Text(
-          'Update Nama Akun',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-      ),
       body: Form(
         key: _formKey,
-        child: ListView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.all(20),
+        child: Column(
           children: [
-            const SizedBox(height: 10),
+            _buildBrandPanel(compact: true),
+            Expanded(
+              child: ListView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.all(20),
+                children: [
+                  const SizedBox(height: 10),
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -89,11 +145,11 @@ class _Update_akun_nameState extends State<Update_akun_name> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1F2AAA).withOpacity(0.1),
+                          color: const Color(0xFF0F1F6E).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Icon(TablerIcons.user_edit,
-                            color: Color(0xFF1F2AAA), size: 20),
+                            color: Color(0xFF0F1F6E), size: 20),
                       ),
                       const SizedBox(width: 12),
                       Text(
@@ -141,7 +197,7 @@ class _Update_akun_nameState extends State<Update_akun_name> {
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide: const BorderSide(
-                          color: Color(0xFF1F2AAA),
+                          color: Color(0xFF0F1F6E),
                           width: 1.5,
                         ),
                       ),
@@ -235,14 +291,14 @@ class _Update_akun_nameState extends State<Update_akun_name> {
                             gradient: LinearGradient(
                               colors: provider.isLoading 
                                 ? [Colors.grey, Colors.grey.shade400]
-                                : [const Color(0xFF1F2AAA), const Color(0xFF3A47C5)],
+                                : [const Color(0xFF0F1F6E), const Color(0xFF1A3DB5)],
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                             ),
                             borderRadius: BorderRadius.circular(14),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF1F2AAA).withOpacity(0.3),
+                                color: const Color(0xFF0F1F6E).withOpacity(0.3),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),
@@ -282,8 +338,30 @@ class _Update_akun_nameState extends State<Update_akun_name> {
                 ],
               ),
             ),
+                ],
+              ),
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _Circle extends StatelessWidget {
+  final double size;
+  final double opacity;
+
+  const _Circle({required this.size, required this.opacity});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withOpacity(opacity),
       ),
     );
   }

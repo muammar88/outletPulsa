@@ -24,7 +24,7 @@ class _Ketentuan_dan_kebijakanState extends State<Ketentuan_dan_kebijakan> {
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF1F2AAA), Color(0xFF3A47C5)],
+              colors: [Color(0xFF0F1F6E), Color(0xFF1A3DB5)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -53,14 +53,14 @@ class _Ketentuan_dan_kebijakanState extends State<Ketentuan_dan_kebijakan> {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF1F2AAA), Color(0xFF3A47C5)],
+                colors: [Color(0xFF0F1F6E), Color(0xFF1A3DB5)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF1F2AAA).withOpacity(0.3),
+                  color: const Color(0xFF0F1F6E).withOpacity(0.3),
                   blurRadius: 16,
                   offset: const Offset(0, 6),
                 ),
@@ -132,7 +132,7 @@ class _Ketentuan_dan_kebijakanState extends State<Ketentuan_dan_kebijakan> {
                     style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w700,
                         fontStyle: FontStyle.italic,
-                        color: const Color(0xFF1F2AAA)),
+                        color: const Color(0xFF0F1F6E)),
                   ),
                   const TextSpan(
                     text: 'untuk Member ',
@@ -142,7 +142,7 @@ class _Ketentuan_dan_kebijakanState extends State<Ketentuan_dan_kebijakan> {
                     style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w700,
                         fontStyle: FontStyle.italic,
-                        color: const Color(0xFF1F2AAA)),
+                        color: const Color(0xFF0F1F6E)),
                   ),
                   const TextSpan(
                     text:
@@ -184,7 +184,7 @@ class _Ketentuan_dan_kebijakanState extends State<Ketentuan_dan_kebijakan> {
                     style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w700,
                         fontStyle: FontStyle.italic,
-                        color: const Color(0xFF1F2AAA)),
+                        color: const Color(0xFF0F1F6E)),
                   ),
                   const TextSpan(
                     text:
@@ -195,7 +195,7 @@ class _Ketentuan_dan_kebijakanState extends State<Ketentuan_dan_kebijakan> {
                     style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w700,
                         fontStyle: FontStyle.italic,
-                        color: const Color(0xFF1F2AAA)),
+                        color: const Color(0xFF0F1F6E)),
                   ),
                   const TextSpan(
                     text:
@@ -246,7 +246,7 @@ class _Ketentuan_dan_kebijakanState extends State<Ketentuan_dan_kebijakan> {
                     text: 'Riwayat Pembayaran Fee Agen',
                     style: GoogleFonts.poppins(
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1F2AAA)),
+                        color: const Color(0xFF0F1F6E)),
                   ),
                   const TextSpan(
                     text:
@@ -267,14 +267,14 @@ class _Ketentuan_dan_kebijakanState extends State<Ketentuan_dan_kebijakan> {
               padding: const EdgeInsets.symmetric(vertical: 15),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF1F2AAA), Color(0xFF3A47C5)],
+                  colors: [Color(0xFF0F1F6E), Color(0xFF1A3DB5)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(14),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF1F2AAA).withOpacity(0.35),
+                    color: const Color(0xFF0F1F6E).withOpacity(0.35),
                     blurRadius: 12,
                     offset: const Offset(0, 5),
                   ),
@@ -340,7 +340,7 @@ class _SectionCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
             decoration: BoxDecoration(
-              color: const Color(0xFF1F2AAA).withOpacity(0.05),
+              color: const Color(0xFF0F1F6E).withOpacity(0.05),
               borderRadius:
                   const BorderRadius.vertical(top: Radius.circular(14)),
             ),
@@ -350,10 +350,10 @@ class _SectionCard extends StatelessWidget {
                   width: 34,
                   height: 34,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1F2AAA).withOpacity(0.1),
+                    color: const Color(0xFF0F1F6E).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(icon, color: const Color(0xFF1F2AAA), size: 18),
+                  child: Icon(icon, color: const Color(0xFF0F1F6E), size: 18),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
@@ -362,7 +362,7 @@ class _SectionCard extends StatelessWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: const Color(0xFF1F2AAA),
+                      color: const Color(0xFF0F1F6E),
                     ),
                   ),
                 ),
@@ -370,7 +370,7 @@ class _SectionCard extends StatelessWidget {
                   width: 24,
                   height: 24,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1F2AAA).withOpacity(0.1),
+                    color: const Color(0xFF0F1F6E).withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Center(
@@ -379,7 +379,7 @@ class _SectionCard extends StatelessWidget {
                       style: GoogleFonts.poppins(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1F2AAA),
+                        color: const Color(0xFF0F1F6E),
                       ),
                     ),
                   ),

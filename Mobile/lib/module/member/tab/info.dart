@@ -44,7 +44,7 @@ class _Info_tabState extends State<Info_tab>
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF1F2AAA), Color(0xFF3A47C5)],
+              colors: [Color(0xFF0F1F6E), Color(0xFF1A3DB5)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -75,7 +75,7 @@ class _Info_tabState extends State<Info_tab>
               ),
               indicatorSize: TabBarIndicatorSize.tab,
               dividerColor: Colors.transparent,
-              labelColor: const Color(0xFF1F2AAA),
+              labelColor: const Color(0xFF0F1F6E),
               unselectedLabelColor: Colors.white.withOpacity(0.85),
               labelStyle: GoogleFonts.poppins(
                   fontSize: 12, fontWeight: FontWeight.w600),
@@ -266,12 +266,12 @@ class BoxInfo extends StatelessWidget {
           border: Border.all(
             color: isRead
                 ? Colors.grey.shade200
-                : const Color(0xFF1F2AAA).withOpacity(0.1),
+                : const Color(0xFF0F1F6E).withOpacity(0.1),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF1F2AAA).withOpacity(0.04),
+              color: const Color(0xFF0F1F6E).withOpacity(0.04),
               blurRadius: 24,
               offset: const Offset(0, 8),
             ),
@@ -287,12 +287,12 @@ class BoxInfo extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isRead
                     ? Colors.grey.shade50
-                    : const Color(0xFF1F2AAA).withOpacity(0.06),
+                    : const Color(0xFF0F1F6E).withOpacity(0.06),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 isRead ? TablerIcons.mail_opened : TablerIcons.bell,
-                color: isRead ? Colors.grey.shade400 : const Color(0xFF1F2AAA),
+                color: isRead ? Colors.grey.shade400 : const Color(0xFF0F1F6E),
                 size: 24,
               ),
             ),
@@ -353,7 +353,7 @@ class BoxInfo extends StatelessWidget {
                           fontWeight: FontWeight.w500,
                           color: isRead
                               ? Colors.grey.shade400
-                              : const Color(0xFF1F2AAA),
+                              : const Color(0xFF0F1F6E),
                         ),
                       ),
                       const SizedBox(width: 4),
@@ -362,7 +362,7 @@ class BoxInfo extends StatelessWidget {
                         size: 16,
                         color: isRead
                             ? Colors.grey.shade400
-                            : const Color(0xFF1F2AAA),
+                            : const Color(0xFF0F1F6E),
                       ),
                     ],
                   ),

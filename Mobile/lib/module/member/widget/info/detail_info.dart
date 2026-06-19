@@ -42,14 +42,14 @@ class _Detail_infoState extends State<Detail_info> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1F2AAA),
+      backgroundColor: const Color(0xFF0F1F6E),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF1F2AAA), Color(0xFF3A47C5)],
+              colors: [Color(0xFF0F1F6E), Color(0xFF1A3DB5)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -78,7 +78,7 @@ class _Detail_infoState extends State<Detail_info> {
             width: double.infinity,
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF1F2AAA), Color(0xFF3A47C5)],
+                colors: [Color(0xFF0F1F6E), Color(0xFF1A3DB5)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),

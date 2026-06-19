@@ -21,12 +21,37 @@ class Form_input_deposit extends StatefulWidget {
   State<Form_input_deposit> createState() => _Form_input_depositState();
 }
 
-class _Form_input_depositState extends State<Form_input_deposit> {
+class _Form_input_depositState extends State<Form_input_deposit> with SingleTickerProviderStateMixin {
   final config = ConfigApp();
   final List<String> defaultBank = ['0:Bank Belum Didefinisi'];
   bool loadData = false;
   String? selectedBank;
   var nominalController = TextEditingController();
+
+  static const double _kWideBreakpoint = 700.0;
+  static const Color _kPrimary = Color(0xFF0F1F6E);
+  static const Color _kPrimaryLight = Color(0xFF1A3DB5);
+
+  late AnimationController _animController;
+  late Animation<double> _fadeAnim;
+  late Animation<Offset> _slideAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _animController, curve: Curves.easeOut),
+    );
+    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
+        .animate(
+      CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
+    );
+    _animController.forward();
+  }
 
   @override
   void didChangeDependencies() async {
@@ -42,280 +67,31 @@ class _Form_input_depositState extends State<Form_input_deposit> {
   @override
   void dispose() {
     nominalController.dispose();
+    _animController.dispose();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final listInfoDeposit = Provider.of<Info_add_deposit_provider>(context);
-    
-    return Scaffold(
-      backgroundColor: const Color(0xFFF0F2F8),
-      appBar: AppBar(
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF1F2AAA), Color(0xFF3A47C5)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(TablerIcons.arrow_left, color: Colors.white),
-        ),
-        centerTitle: true,
-        title: Text(
-          'Tambah Saldo Deposit',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-        ),
-      ),
-      body: Consumer<Load_provider>(
-        builder: (context, loader, child) => Stack(
+  void _showSnackBar(String message, {required bool isSuccess}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor:
+            isSuccess ? const Color(0xFF2E7D32) : const Color(0xFFD32F2F),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        content: Row(
           children: [
-            ListView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-              children: [
-                // Info Banner
-                if (listInfoDeposit.pesan != null && listInfoDeposit.pesan!.isNotEmpty)
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 20),
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE3F2FD),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFF90CAF9).withOpacity(0.5)),
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(TablerIcons.info_circle, color: Color(0xFF1976D2), size: 24),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Catatan Deposit',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w700,
-                                  color: const Color(0xFF1976D2),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                listInfoDeposit.pesan!,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
-                                  color: const Color(0xFF1A1A2E).withOpacity(0.8),
-                                  height: 1.4,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                // Main Form Card
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 16,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Nominal Input
-                      Row(
-                        children: [
-                          Icon(TablerIcons.cash, color: const Color(0xFF1A1A2E).withOpacity(0.6), size: 18),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Nominal Deposit',
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF1A1A2E),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        controller: nominalController,
-                        keyboardType: TextInputType.number,
-                        enableSuggestions: false,
-                        autocorrect: false,
-                        inputFormatters: [
-                          CurrencyTextInputFormatter.currency(
-                            locale: 'id',
-                            decimalDigits: 0,
-                            symbol: 'Rp ',
-                          )
-                        ],
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1A1A2E),
-                        ),
-                        decoration: InputDecoration(
-                          hintText: "Contoh: Rp 50.000",
-                          hintStyle: GoogleFonts.poppins(
-                            fontSize: 13,
-                            color: Colors.grey[400],
-                            fontWeight: FontWeight.w400,
-                          ),
-                          filled: true,
-                          fillColor: const Color(0xFFF8F9FA),
-                          contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF1F2AAA), width: 1.5),
-                          ),
-                          prefixIcon: Icon(TablerIcons.wallet, color: Colors.grey[400], size: 20),
-                        ),
-                      ),
-                      
-                      const SizedBox(height: 24),
-                      
-                      // Bank Dropdown
-                      Row(
-                        children: [
-                          Icon(TablerIcons.building_bank, color: const Color(0xFF1A1A2E).withOpacity(0.6), size: 18),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Bank Tujuan Transfer',
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: const Color(0xFF1A1A2E),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      DropdownButtonFormField2<String>(
-                        isExpanded: true,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: const Color(0xFFF8F9FA),
-                          contentPadding: const EdgeInsets.symmetric(vertical: 16.0),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(color: Color(0xFF1F2AAA), width: 1.5),
-                          ),
-                        ),
-                        hint: Text(
-                          'Pilih Bank Tujuan Transfer',
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            color: Colors.grey[400],
-                          ),
-                        ),
-                        iconStyleData: IconStyleData(
-                          icon: Icon(TablerIcons.chevron_down, color: Colors.grey[500]),
-                          iconSize: 20,
-                        ),
-                        dropdownStyleData: DropdownStyleData(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            color: Colors.white,
-                          ),
-                          elevation: 4,
-                        ),
-                        items: (listInfoDeposit.list_select_bank ?? defaultBank)
-                            .map((item) => DropdownMenuItem<String>(
-                                  value: item.split(':')[0],
-                                  child: Text(
-                                    'Bank ${item.split(':')[1]}',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                      color: const Color(0xFF1A1A2E),
-                                    ),
-                                  ),
-                                ))
-                            .toList(),
-                        value: selectedBank,
-                        onChanged: (value) {
-                          setState(() {
-                            selectedBank = value;
-                          });
-                        },
-                      ),
-                      
-                      const SizedBox(height: 32),
-                      
-                      // Submit Button
-                      GestureDetector(
-                        onTap: () => _submitForm(loader),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF1F2AAA), Color(0xFF3A47C5)],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                            ),
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFF1F2AAA).withOpacity(0.3),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(TablerIcons.receipt, size: 20, color: Colors.white),
-                              const SizedBox(width: 8),
-                              Text(
-                                "Ambil Tiket Deposit",
-                                style: GoogleFonts.poppins(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            Icon(
+              isSuccess ? TablerIcons.circle_check : TablerIcons.alert_circle,
+              color: Colors.white,
+              size: 18,
             ),
-            if (loader.isLoad == true) const CircularProgressWidget() else const SizedBox(),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(message,
+                  style:
+                      GoogleFonts.poppins(fontSize: 13, color: Colors.white)),
+            ),
           ],
         ),
       ),
@@ -360,19 +136,476 @@ class _Form_input_depositState extends State<Form_input_deposit> {
     }
   }
 
-  void _showSnackBar(String message, {required bool isSuccess}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: isSuccess ? const Color(0xFF2E7D32) : const Color(0xFFD32F2F),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        content: Text(
-          message,
-          style: GoogleFonts.poppins(
-            fontSize: 13,
-            color: Colors.white,
-          ),
+  Widget _buildBrandPanel({bool compact = false}) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [_kPrimary, _kPrimaryLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Stack(
+          children: [
+            Positioned(
+                top: -50, right: -50, child: _Circle(size: 200, opacity: 0.05)),
+            Positioned(
+                top: 50, right: 50, child: _Circle(size: 90, opacity: 0.06)),
+            Positioned(
+                bottom: -40, left: -40, child: _Circle(size: 130, opacity: 0.04)),
+
+            Positioned(
+              top: compact ? 0 : 16,
+              left: compact ? 0 : 16,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  margin: compact ? const EdgeInsets.all(16) : EdgeInsets.zero,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(TablerIcons.arrow_left,
+                      color: Colors.white, size: 20),
+                ),
+              ),
+            ),
+
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                    horizontal: 32, vertical: compact ? 48 : 0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color: Colors.white.withOpacity(0.2), width: 1.5),
+                      ),
+                      child: const Icon(TablerIcons.wallet,
+                          size: 40, color: Colors.white),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Tambah Saldo\nDeposit',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.outfit(
+                        fontSize: compact ? 28 : 36,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        height: 1.2,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Pilih nominal dan bank tujuan untuk menambahkan saldo Anda',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: compact ? 13 : 15,
+                        color: Colors.white.withOpacity(0.85),
+                        height: 1.5,
+                      ),
+                    ),
+                    if (compact) const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFormCard(Load_provider loader, {bool isWide = false}) {
+    final listInfoDeposit = Provider.of<Info_add_deposit_provider>(context);
+    
+    return Container(
+      padding: EdgeInsets.all(isWide ? 40 : 24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: isWide
+            ? [
+                BoxShadow(
+                  color: _kPrimary.withOpacity(0.08),
+                  blurRadius: 40,
+                  offset: const Offset(0, 15),
+                )
+              ]
+            : null,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (listInfoDeposit.pesan != null && listInfoDeposit.pesan!.isNotEmpty)
+            Container(
+              margin: const EdgeInsets.only(bottom: 24),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE3F2FD),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFF90CAF9).withOpacity(0.5)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(TablerIcons.info_circle, color: Color(0xFF1976D2), size: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Catatan Deposit',
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF1976D2),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          listInfoDeposit.pesan!,
+                          style: GoogleFonts.poppins(
+                            fontSize: 13,
+                            color: const Color(0xFF1A1A2E).withOpacity(0.8),
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          Row(
+            children: [
+              Icon(TablerIcons.cash, color: _kPrimary.withOpacity(0.7), size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Nominal Deposit',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: _kPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: nominalController,
+            keyboardType: TextInputType.number,
+            enableSuggestions: false,
+            autocorrect: false,
+            inputFormatters: [
+              CurrencyTextInputFormatter.currency(
+                locale: 'id',
+                decimalDigits: 0,
+                symbol: 'Rp ',
+              )
+            ],
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF1A1A2E),
+            ),
+            decoration: InputDecoration(
+              hintText: "Contoh: Rp 50.000",
+              hintStyle: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.grey[400],
+                fontWeight: FontWeight.w400,
+              ),
+              filled: true,
+              fillColor: const Color(0xFFF8F9FA),
+              contentPadding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 20.0),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: _kPrimary, width: 2),
+              ),
+              prefixIcon: Padding(
+                padding: const EdgeInsets.only(left: 16, right: 12),
+                child: Icon(TablerIcons.wallet, color: Colors.grey[400], size: 22),
+              ),
+              prefixIconConstraints: const BoxConstraints(minWidth: 40),
+            ),
+          ),
+          
+          const SizedBox(height: 24),
+          
+          Row(
+            children: [
+              Icon(TablerIcons.building_bank, color: _kPrimary.withOpacity(0.7), size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Bank Tujuan Transfer',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: _kPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          DropdownButtonFormField2<String>(
+            isExpanded: true,
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: const Color(0xFFF8F9FA),
+              contentPadding: const EdgeInsets.symmetric(vertical: 18.0),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: _kPrimary, width: 2),
+              ),
+            ),
+            hint: Text(
+              'Pilih Bank Tujuan Transfer',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.grey[400],
+              ),
+            ),
+            iconStyleData: IconStyleData(
+              icon: Padding(
+                padding: const EdgeInsets.only(right: 16.0),
+                child: Icon(TablerIcons.chevron_down, color: Colors.grey[500]),
+              ),
+              iconSize: 22,
+            ),
+            dropdownStyleData: DropdownStyleData(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                color: Colors.white,
+              ),
+              elevation: 4,
+            ),
+            items: (Provider.of<Info_add_deposit_provider>(context).list_select_bank ?? defaultBank)
+                .map((item) => DropdownMenuItem<String>(
+                      value: item.split(':')[0],
+                      child: Text(
+                        'Bank ${item.split(':')[1]}',
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                          color: const Color(0xFF1A1A2E),
+                        ),
+                      ),
+                    ))
+                .toList(),
+            value: selectedBank,
+            onChanged: (value) {
+              setState(() {
+                selectedBank = value;
+              });
+            },
+          ),
+          
+          const SizedBox(height: 36),
+          
+          GestureDetector(
+            onTap: loader.isLoad == true ? null : () => _submitForm(loader),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: loader.isLoad == true
+                      ? [Colors.grey.shade400, Colors.grey.shade500]
+                      : [_kPrimary, _kPrimaryLight],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: loader.isLoad == true
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: _kPrimary.withOpacity(0.3),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (loader.isLoad == true)
+                    const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2.5,
+                      ),
+                    )
+                  else
+                    const Icon(TablerIcons.receipt, size: 22, color: Colors.white),
+                  const SizedBox(width: 10),
+                  Text(
+                    loader.isLoad == true ? "Memproses..." : "Ambil Tiket Deposit",
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF0F2F8),
+      body: Consumer<Load_provider>(
+        builder: (context, loader, child) {
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              bool isWide = constraints.maxWidth >= _kWideBreakpoint;
+
+              if (isWide) {
+                return Row(
+                  children: [
+                    Expanded(
+                      flex: 5,
+                      child: _buildBrandPanel(),
+                    ),
+                    Expanded(
+                      flex: 6,
+                      child: Container(
+                        color: Colors.white,
+                        child: SafeArea(
+                          child: Center(
+                            child: SingleChildScrollView(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 48, vertical: 32),
+                              physics: const BouncingScrollPhysics(),
+                              child: FadeTransition(
+                                opacity: _fadeAnim,
+                                child: SlideTransition(
+                                  position: _slideAnim,
+                                  child: _buildFormCard(loader, isWide: true),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
+
+              return SafeArea(
+                top: false,
+                child: LayoutBuilder(
+                  builder: (context, safeConstraints) {
+                    return SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: safeConstraints.maxHeight,
+                        ),
+                        child: IntrinsicHeight(
+                          child: FadeTransition(
+                            opacity: _fadeAnim,
+                            child: SlideTransition(
+                              position: _slideAnim,
+                              child: Column(
+                                children: [
+                                  _buildBrandPanel(compact: true),
+                                  Expanded(
+                                    child: Container(
+                                      width: double.infinity,
+                                      color: const Color(0xFFF0F2F8),
+                                      child: Column(
+                                        children: [
+                                          Transform.translate(
+                                            offset: const Offset(0, -30),
+                                            child: Padding(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 20),
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius: BorderRadius.circular(28),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: _kPrimary
+                                                          .withOpacity(0.08),
+                                                      blurRadius: 30,
+                                                      offset: const Offset(0, 10),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: _buildFormCard(loader),
+                                              ),
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _Circle extends StatelessWidget {
+  final double size;
+  final double opacity;
+
+  const _Circle({required this.size, required this.opacity});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withOpacity(opacity),
       ),
     );
   }

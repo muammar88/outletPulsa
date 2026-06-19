@@ -41,7 +41,7 @@ class _Daftar_reseller_agenState extends State<Daftar_reseller_agen> {
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF1F2AAA), Color(0xFF3A47C5)],
+              colors: [Color(0xFF0F1F6E), Color(0xFF1A3DB5)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -127,12 +127,12 @@ class BoxListReseller extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFF1F2AAA).withOpacity(0.1),
+              color: const Color(0xFF0F1F6E).withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(
               TablerIcons.users,
-              color: Color(0xFF1F2AAA),
+              color: Color(0xFF0F1F6E),
               size: 24,
             ),
           ),
@@ -162,7 +162,7 @@ class BoxListReseller extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1F2AAA).withOpacity(0.1),
+                        color: const Color(0xFF0F1F6E).withOpacity(0.1),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -170,7 +170,7 @@ class BoxListReseller extends StatelessWidget {
                         style: GoogleFonts.poppins(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1F2AAA),
+                          color: const Color(0xFF0F1F6E),
                         ),
                       ),
                     ),

@@ -7,37 +7,40 @@ class AllBoxLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          height: 20,
-        ),
-        LoadingBox(),
-        SizedBox(
-          height: 10,
-        ),
-        LoadingBox(),
-        SizedBox(
-          height: 10,
-        ),
-        LoadingBox(),
-        SizedBox(
-          height: 10,
-        ),
-        LoadingBox(),
-        SizedBox(
-          height: 10,
-        ),
-        LoadingBox(),
-        SizedBox(
-          height: 10,
-        ),
-        LoadingBox(),
-        SizedBox(
-          height: 10,
-        ),
-        LoadingBox()
-      ],
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 20,
+          ),
+          LoadingBox(),
+          SizedBox(
+            height: 10,
+          ),
+          LoadingBox(),
+          SizedBox(
+            height: 10,
+          ),
+          LoadingBox(),
+          SizedBox(
+            height: 10,
+          ),
+          LoadingBox(),
+          SizedBox(
+            height: 10,
+          ),
+          LoadingBox(),
+          SizedBox(
+            height: 10,
+          ),
+          LoadingBox(),
+          SizedBox(
+            height: 10,
+          ),
+          LoadingBox()
+        ],
+      ),
     );
   }
 }

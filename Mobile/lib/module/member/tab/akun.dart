@@ -34,7 +34,7 @@ class _Akun_tabState extends State<Akun_tab> {
         flexibleSpace: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF1F2AAA), Color(0xFF3A47C5)],
+              colors: [Color(0xFF0F1F6E), Color(0xFF1A3DB5)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -60,14 +60,14 @@ class _Akun_tabState extends State<Akun_tab> {
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF1F2AAA), Color(0xFF3A47C5)],
+                  colors: [Color(0xFF0F1F6E), Color(0xFF1A3DB5)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(18),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF1F2AAA).withOpacity(0.3),
+                    color: const Color(0xFF0F1F6E).withOpacity(0.3),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
@@ -138,7 +138,7 @@ class _Akun_tabState extends State<Akun_tab> {
               children: [
                 _MenuItem(
                   icon: TablerIcons.user,
-                  iconColor: const Color(0xFF1F2AAA),
+                  iconColor: const Color(0xFF0F1F6E),
                   label: 'Nama Pengguna',
                   value: dataBeranda.name ?? '-',
                   showArrow: true,

@@ -36,7 +36,7 @@ class _LoadingDialogContent extends StatelessWidget {
         // Lingkaran Berputar (Animasi bergaya iOS / Cupertino)
         child: const CupertinoActivityIndicator(
           radius: 40,
-          color: Color(0xFF1F2AAA), // Warna Navy khas OutletPulsa
+          color: Color(0xFF0F1F6E), // Warna Navy khas OutletPulsa
         ),
       ),
     );

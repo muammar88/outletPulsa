@@ -54,7 +54,7 @@ class _Home_pageState extends State<Home_page> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF1F2AAA).withOpacity(0.1)
+              ? const Color(0xFF0F1F6E).withOpacity(0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(24),
         ),
@@ -65,7 +65,7 @@ class _Home_pageState extends State<Home_page> {
               icon,
               size: 24,
               color:
-                  isSelected ? const Color(0xFF1F2AAA) : Colors.grey.shade400,
+                  isSelected ? const Color(0xFF0F1F6E) : Colors.grey.shade400,
             ),
             AnimatedSize(
               duration: const Duration(milliseconds: 300),
@@ -78,7 +78,7 @@ class _Home_pageState extends State<Home_page> {
                         style: GoogleFonts.poppins(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1F2AAA),
+                          color: const Color(0xFF0F1F6E),
                         ),
                       ),
                     )
@@ -93,21 +93,6 @@ class _Home_pageState extends State<Home_page> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF1F2AAA), Color(0xFF3A47C5)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-        ),
-        centerTitle: false,
-        title: TitleAppBar(),
-      ),
       bottomNavigationBar: Container(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).padding.bottom + 8,

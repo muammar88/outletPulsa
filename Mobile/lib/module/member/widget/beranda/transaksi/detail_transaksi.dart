@@ -52,6 +52,127 @@ class _Detail_transaksiState extends State<Detail_transaksi> {
     }
   }
 
+  static const Color _kPrimary = Color(0xFF0F1F6E);
+  static const Color _kPrimaryLight = Color(0xFF1A3DB5);
+
+  Widget _buildBrandPanel(Detail_provider detail, String s, {bool compact = false}) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [_kPrimary, _kPrimaryLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Stack(
+          children: [
+            Positioned(top: -50, right: -50, child: _Circle(size: 200, opacity: 0.05)),
+            Positioned(top: 50, right: 50, child: _Circle(size: 90, opacity: 0.06)),
+            Positioned(bottom: -40, left: -40, child: _Circle(size: 130, opacity: 0.04)),
+
+            Positioned(
+              top: compact ? 0 : 16,
+              left: compact ? 0 : 16,
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).popUntil((route) => route.isFirst),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  margin: compact ? const EdgeInsets.all(16) : EdgeInsets.zero,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(TablerIcons.arrow_left, color: Colors.white, size: 20),
+                ),
+              ),
+            ),
+
+            if (s == 'sukses' || s == 'berhasil')
+              Positioned(
+                top: compact ? 0 : 16,
+                right: compact ? 0 : 16,
+                child: GestureDetector(
+                  onTap: () async {
+                    await Clipboard.setData(ClipboardData(text: detail.message ?? ''));
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: const Color(0xFF1A1A2E),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          content: Row(
+                            children: [
+                              const Icon(Icons.check_circle_outline, color: Colors.greenAccent),
+                              const SizedBox(width: 10),
+                              Text(
+                                'Pesan disalin ke clipboard',
+                                style: GoogleFonts.poppins(fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    margin: compact ? const EdgeInsets.all(16) : EdgeInsets.zero,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      detail.type == 'prabayar' ? TablerIcons.copy : TablerIcons.share,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 32, vertical: compact ? 32 : 0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 16),
+                    Text(
+                      detail.type == 'pascabayar' ? 'Detail Transaksi Pascabayar' : 'Detail Transaksi Prabayar',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.outfit(
+                        fontSize: compact ? 22 : 32,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        height: 1.2,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Rincian lengkap dari transaksi Anda',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: compact ? 13 : 15,
+                        color: Colors.white.withOpacity(0.85),
+                        height: 1.5,
+                      ),
+                    ),
+                    if (compact) const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final detail = Provider.of<Detail_provider>(context);
@@ -77,68 +198,22 @@ class _Detail_transaksiState extends State<Detail_transaksi> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6F9),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1A1A2E)),
-        ),
-        title: Text(
-          'Detail Transaksi Prabayar',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF1A1A2E),
-          ),
-        ),
-        actions: [
-          if (s == 'sukses' || s == 'berhasil')
-            IconButton(
-              icon: Icon(
-                detail.type == 'prabayar' ? TablerIcons.copy : TablerIcons.share,
-                size: 22,
-                color: const Color(0xFF1A1A2E),
-              ),
-              onPressed: () async {
-                await Clipboard.setData(ClipboardData(text: detail.message ?? ''));
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      backgroundColor: const Color(0xFF1A1A2E),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      content: Row(
-                        children: [
-                          const Icon(Icons.check_circle_outline, color: Colors.greenAccent),
-                          const SizedBox(width: 10),
-                          Text(
-                            'Pesan disalin ke clipboard',
-                            style: GoogleFonts.poppins(fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-              },
-            ),
-          const SizedBox(width: 8)
-        ],
-      ),
       body: Consumer<Load_provider>(
-        builder: (context, loader, child) => Stack(
+        builder: (context, loader, child) => Column(
           children: [
-            if (!loadData)
-              const Center(child: CircularProgressIndicator())
-            else
-              SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                child: Column(
-                  children: [
-                    // Card Utama
+            _buildBrandPanel(detail, s, compact: true),
+            Expanded(
+              child: Stack(
+                children: [
+                  if (!loadData)
+                    const Center(child: CircularProgressIndicator())
+                  else
+                    SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      child: Column(
+                        children: [
+                          // Card Utama
                     Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
@@ -146,7 +221,7 @@ class _Detail_transaksiState extends State<Detail_transaksi> {
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF1F2AAA).withOpacity(0.04),
+                            color: const Color(0xFF0F1F6E).withOpacity(0.04),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
@@ -335,6 +410,9 @@ class _Detail_transaksiState extends State<Detail_transaksi> {
             
             if (loader.isLoad == true)
               const CircularProgressWidget(),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -472,6 +550,25 @@ class _Detail_transaksiState extends State<Detail_transaksi> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _Circle extends StatelessWidget {
+  final double size;
+  final double opacity;
+
+  const _Circle({required this.size, required this.opacity});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withOpacity(opacity),
+      ),
     );
   }
 }

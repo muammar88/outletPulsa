@@ -113,7 +113,7 @@ class _Detail_depositState extends State<Detail_deposit> {
                           borderRadius: BorderRadius.circular(24),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF1F2AAA).withOpacity(0.04),
+                              color: const Color(0xFF0F1F6E).withOpacity(0.04),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
                             ),

@@ -98,23 +98,25 @@ class ConfigApp {
     _daftarRiwayatPembayaran_url = '$_mainurl/agen-riwayat-pembayaran';
 
     // Background COLOR
-    _background_color = Color(0xFF1F2AAA);
-    _background_light_color = Color.fromARGB(255, 255, 255, 255);
-    _background_tab = Colors.blueGrey[50];
-    _background_smooth_navy = Color(0xFF1F2AAA).withOpacity(0.96);
+    _background_color = const Color(0xFF0F1F6E);           // Royal Sapphire deep
+    _background_light_color = const Color(0xFFFFFFFF);
+    _background_tab = const Color(0xFFF0F2F8);             // cool grey-blue tint
+    _background_smooth_navy = const Color(0xFF0F1F6E);     // same deep sapphire
+
     // Text Color
-    _text_dark_color = Color.fromARGB(255, 65, 65, 65);
-    _text_navy_color = Color(0xFF1F2AAA);
+    _text_dark_color = const Color(0xFF1A1A2E);            // very dark blue-black
+    _text_navy_color = const Color(0xFF0F1F6E);            // Royal Sapphire
     _text_light_color = Colors.white;
-    _text_grey_color = Color(0xFF84A7A1);
+    _text_grey_color = const Color(0xFF8898AA);            // cool blue-grey
+
     // input field color
     _input_light_color = Colors.white;
-    _input_grey_color = Color.fromARGB(255, 236, 236, 236);
+    _input_grey_color = const Color(0xFFECEFF8);           // icy blue tint
 
     // button color
-    _btn_primary_color = Color(0xFF3365F9);
+    _btn_primary_color = const Color(0xFF1A3DB5);          // Royal Sapphire mid
 
-    _color_shadow = Colors.grey.withOpacity(0.5);
+    _color_shadow = const Color(0xFF0F1F6E).withOpacity(0.15);
   }
 
   String? get mainUrl => _mainurl;

@@ -84,13 +84,6 @@ class _Home_pageState extends State<Home_page> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: cnf.background_color,
-        elevation: 0,
-        centerTitle: false,
-        title: TitleAppBar(),
-      ),
       bottomNavigationBar: Container(
         color: cnf.background_tab,
         padding: EdgeInsets.symmetric(horizontal: 20),
