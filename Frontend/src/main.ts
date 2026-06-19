@@ -24,8 +24,8 @@ import Aura from '@primeuix/themes/aura';
 import 'primeicons/primeicons.css';
 import PrimeVue from 'primevue/config';
 
-// Chart
-import VueApexCharts from 'vue3-apexcharts';
+// Chart (not currently used - kept for future)
+// import VueApexCharts from 'vue3-apexcharts';
 
 // FontAwesome Setup
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -352,6 +352,6 @@ router.beforeEach((to, from, next) => {
 
 // Register FontAwesome Component
 app.component('font-awesome-icon', FontAwesomeIcon);
-app.config.globalProperties.$alertify = alertify;
+// app.config.globalProperties.$alertify = alertify; // alertify removed, use useNotification composable instead
 // Mount ke DOM
 app.mount('#app');
