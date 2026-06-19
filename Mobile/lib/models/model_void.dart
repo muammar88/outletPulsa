@@ -10,7 +10,7 @@ class Model_void {
   Model_void.map(dynamic obj) {
     if (obj['error'] != null && obj['error'] != '') {
       _error = obj['error'] == true || obj['error'] == 'true';
-      _errorMsg = obj['error_msg'] ?? obj['message'];
+      _errorMsg = obj['message'] ?? obj['error_msg'];
     } else {
       _error = obj['data'] == null || (obj['data'] is Map && obj['data'].isEmpty);
       _errorMsg = obj['message'] ?? obj['error_msg'];

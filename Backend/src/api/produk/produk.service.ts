@@ -197,10 +197,10 @@ export class ProdukService {
     const { nomor_tujuan, kode } = body;
 
     if (!nomor_tujuan) {
-      return { error: true, error_msg: 'Nomor Whatsapp Tidak Boleh Kosong' };
+      return { error: true, message: 'Nomor Whatsapp Tidak Boleh Kosong', data: {} };
     }
     if (!kode) {
-      return { error: true, error_msg: 'Kode Tidak Boleh Kosong' };
+      return { error: true, message: 'Kode Tidak Boleh Kosong', data: {} };
     }
 
     try {
@@ -209,7 +209,7 @@ export class ProdukService {
       });
 
       if (!kategori) {
-        return { error: true, error_msg: 'Kode Kategori Tidak Ditemukan.' };
+        return { error: true, message: 'Kode Kategori Tidak Ditemukan.', data: {} };
       }
 
       const needPrefix = ["PIU", "PD", "PT", "PTP", "PI"];
@@ -228,18 +228,20 @@ export class ProdukService {
         });
 
         if (!validPrefix) {
-          return { error: true, error_msg: 'Format Nomor Tujuan Tidak Sesuai.' };
+          return { error: true, message: 'Format Nomor Tujuan Tidak Sesuai.', data: {} };
         }
       }
 
       return {
         error: false,
-        error_msg: "Berhasil ditemukan"
+        message: "Berhasil ditemukan",
+        data: {}
       };
     } catch (error) {
       return {
         error: true,
-        error_msg: 'Terjadi kesalahan pada server'
+        message: 'Terjadi kesalahan pada server',
+        data: {}
       };
     }
   }
