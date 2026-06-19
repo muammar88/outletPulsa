@@ -21,17 +21,11 @@ export class ProdukService {
         { kode: { contains: search } },
       ];
     }
-    
     if (operator) {
       where.operator = {
-        ...where.operator,
-        OR: [{ name: { contains: operator } }, { kode: { contains: operator } }],
+        kode: operator
       };
     }
-    
-    console.log("______________________");
-    console.log(where);
-    console.log("______________________");
 
     try {
       const [total, produks] = await Promise.all([
@@ -60,6 +54,16 @@ export class ProdukService {
       console.log(total);
       console.log(produks);
       console.log("__________________-");
+
+      if (produks.length === 0) {
+        return {
+          error: true,
+          message: 'Operator tidak ditemukan atau tidak memiliki produk',
+          data: {
+            list_produk: {}
+          }
+        };
+      }
 
       const list_produk: any = {};
       produks.forEach((item, index) => {

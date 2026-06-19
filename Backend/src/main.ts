@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, BadRequestException } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { AuthModule } from './api/auth/auth.module';
@@ -32,6 +32,10 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
     transform: true,
+    exceptionFactory: (errors) => {
+      const messages = errors.map(error => Object.values(error.constraints || {}).join(', ')).join('; ');
+      return new BadRequestException({ error: true, message: messages, data: {} });
+    }
   }));
   
   app.useGlobalInterceptors(new TransformInterceptor());
