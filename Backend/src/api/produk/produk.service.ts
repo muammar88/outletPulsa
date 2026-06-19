@@ -50,6 +50,12 @@ export class ProdukService {
         }),
       ]);
 
+      produks.sort((a, b) => {
+        const hargaA = (a.purchase_price || 0) + (a.markup || 0);
+        const hargaB = (b.purchase_price || 0) + (b.markup || 0);
+        return hargaA - hargaB;
+      });
+
       console.log("__________________");
       console.log(total);
       console.log(produks);
