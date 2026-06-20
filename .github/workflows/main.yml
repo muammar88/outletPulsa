@@ -54,7 +54,7 @@ jobs:
             cd /home/outletpulsa/outletpulsa
 
             echo "🛑 1. Menghentikan seluruh container..."
-            docker-compose down
+            docker compose down
 
             echo "🗑️ 2. Menghapus image outletpulsa-frontend..."
             docker rmi muammar88/outletpulsa-frontend:1.0.0 || true
