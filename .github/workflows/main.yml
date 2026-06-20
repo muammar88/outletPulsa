@@ -51,10 +51,10 @@ jobs:
             set -e # Menghentikan script jika ada perintah penting yang gagal
 
             echo "📁 Pindah ke direktori project..."
-            cd /home/vmmachine2/outletpulsa
+            cd /home/outletpulsa/outletpulsa
 
             echo "🛑 1. Menghentikan seluruh container..."
-            docker-compose down
+            docker compose down
 
             echo "🗑️ 2. Menghapus image outletpulsa-frontend..."
             docker rmi muammar88/outletpulsa-frontend:1.0.0 || true
@@ -69,7 +69,7 @@ jobs:
 
 
             echo "🚀 6. Menjalankan seluruh service..."
-            docker-compose up -d
+            docker compose up -d
 
             echo "✅ Deployment selesai dengan sukses!"
 
