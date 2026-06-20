@@ -145,7 +145,7 @@ onMounted(() => {
                   v-model="formData.logo"
                   type="url"
                   class="block w-full rounded-xl border-gray-200 shadow-sm focus:border-[#0f2155] focus:ring focus:ring-[#0f2155]/10 sm:text-sm transition-all bg-gray-50/50 hover:bg-white px-4 py-3"
-                  placeholder="https://example.com/logo.png"
+                  placeholder="https://example.com/logo.webp"
                 />
               </div>
             </div>

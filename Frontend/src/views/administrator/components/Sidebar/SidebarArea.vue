@@ -131,7 +131,7 @@ onMounted(() => {
     <div class="relative z-10 flex items-center justify-between px-6 pt-5 pb-4 border-b border-white/5 bg-white/5 backdrop-blur-sm">
       <router-link to="/" class="flex items-center gap-3.5 w-full">
         <div class="relative w-10 h-10 rounded-xl flex-shrink-0 bg-white flex items-center justify-center shadow-[0_0_15px_rgba(255,255,255,0.5)] border border-white/10 transition-all duration-300" :class="!sidebarStore.isSidebarOpen ? 'mx-auto' : ''">
-          <img src="/logo.png" alt="Logo" class="w-8 h-8 object-contain" />
+          <img src="/logo.webp" alt="Logo" class="w-8 h-8 object-contain" />
           <!-- Small glow inside -->
           <div class="absolute inset-0 bg-white/20 rounded-xl rounded-b-none opacity-50 h-1/2"></div>
         </div>

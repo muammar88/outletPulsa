@@ -8,7 +8,7 @@
         <!-- Logo -->
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 flex items-center justify-center">
-            <img src="/logo.png" alt="Logo" class="w-full h-full object-contain drop-shadow" />
+            <img src="/logo.webp" alt="Logo" class="w-full h-full object-contain drop-shadow" />
           </div>
           <div>
             <span class="block text-[15px] font-extrabold text-slate-800 leading-tight">Outlet Pulsa</span>

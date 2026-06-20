@@ -2,7 +2,7 @@
   <transition name="fade">
     <div v-if="show" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white gap-4">
       <!-- Logo -->
-      <img src="/logo.png" alt="Logo" class="w-14 h-14 object-contain" />
+      <img src="/logo.webp" alt="Logo" class="w-14 h-14 object-contain" />
 
       <!-- Spinner -->
       <div class="w-6 h-6 rounded-full border-2 border-slate-200 border-t-blue-500 animate-spin"></div>

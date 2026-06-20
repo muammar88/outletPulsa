@@ -4,7 +4,7 @@
     <header class="bg-green-700 text-white sticky top-0 z-50 shadow-md">
       <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <!-- <img src="/logo.png" alt="Logo" class="h-10 w-auto" /> -->
+          <!-- <img src="/logo.webp" alt="Logo" class="h-10 w-auto" /> -->
           <div class="text-lg font-bold">APLIKASI MUSTAHIK & MUZAKKI</div>
         </div>
         <div class="flex items-center gap-3">
@@ -13,7 +13,7 @@
             <div class="text-xs">As Administrator</div>
           </div>
           <!-- <img
-            src="/avatar.png"
+            src="/avatar.webp"
             alt="avatar"
             class="h-10 w-10 rounded-full border-2 border-white"
           /> -->

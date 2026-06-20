@@ -10,7 +10,7 @@
       <div class="space-y-4 reveal" data-reveal>
         <a href="/" class="flex items-center gap-3 font-extrabold text-gray-800">
           <div class="w-10 h-10 flex items-center justify-center">
-            <img src="/logo.png" alt="Outlet Pulsa Logo" class="w-full h-full object-contain" />
+            <img src="/logo.webp" alt="Outlet Pulsa Logo" class="w-full h-full object-contain" />
           </div>
           <span class="text-xl tracking-tight">Outlet Pulsa</span>
         </a>

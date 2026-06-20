@@ -19,7 +19,7 @@
         <div class="text-center space-y-3">
           <div class="flex justify-center">
             <div class="w-16 h-16 flex items-center justify-center">
-              <img src="/logo.png" alt="Logo" class="w-full h-full object-contain drop-shadow-lg" />
+              <img src="/logo.webp" alt="Logo" class="w-full h-full object-contain drop-shadow-lg" />
             </div>
           </div>
           <h1 class="text-2xl font-bold text-gray-800">Daftar Member Baru</h1>

@@ -23,7 +23,7 @@
         <!-- Brand -->
         <div class="flex items-center gap-3 mb-10">
           <div class="w-12 h-12 rounded-2xl bg-white flex items-center justify-center shadow-lg shadow-blue-500/30 logo-pulse p-1">
-            <img src="/logo.png" alt="Logo" class="w-full h-full object-contain drop-shadow-md" />
+            <img src="/logo.webp" alt="Logo" class="w-full h-full object-contain drop-shadow-md" />
           </div>
           <div>
             <p class="text-white/50 text-xs font-semibold uppercase tracking-widest">Administrator</p>

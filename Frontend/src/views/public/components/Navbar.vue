@@ -7,7 +7,7 @@
       <!-- Logo -->
       <a href="/" class="flex items-center gap-2 font-extrabold text-gray-800">
         <div class="w-9 h-9 flex items-center justify-center">
-          <img src="/logo.png" alt="Logo" class="w-full h-full object-contain drop-shadow" />
+          <img src="/logo.webp" alt="Logo" class="w-full h-full object-contain drop-shadow" />
         </div>
         <span class="logo-text">Outlet Pulsa</span>
       </a>

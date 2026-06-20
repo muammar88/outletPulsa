@@ -18,7 +18,7 @@
         <!-- Logo -->
         <div class="flex flex-col items-center mb-6">
           <div class="w-14 h-14 flex items-center justify-center">
-            <img src="/logo.png" alt="Logo" class="w-full h-full object-contain drop-shadow-lg" />
+            <img src="/logo.webp" alt="Logo" class="w-full h-full object-contain drop-shadow-lg" />
           </div>
           <h1 class="mt-4 text-2xl font-bold text-gray-800">Login Member</h1>
           <p class="text-sm text-gray-500 text-center">

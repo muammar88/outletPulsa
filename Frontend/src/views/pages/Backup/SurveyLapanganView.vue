@@ -534,7 +534,7 @@ watch(
         <div class="text-center space-y-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <img :src="'/images/logo.png'" alt="Logo" class="h-14" />
+              <img :src="'/images/logo.webp'" alt="Logo" class="h-14" />
             </div>
             <div class="text-right">
               <p class="text-sm text-gray-600 font-bold">

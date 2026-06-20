@@ -8,7 +8,7 @@ const logoUrl = ref<string | null>(null);
 const getLogo = async () => {
   try {
     const res = await logo();
-    // asumsikan response { data: { value: 'uploads/logo.png' } }
+    // asumsikan response { data: { value: 'uploads/logo.webp' } }
     logoUrl.value = res;
   } catch (err) {
     console.error('Gagal ambil logo:', err);

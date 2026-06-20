@@ -66,7 +66,7 @@ function showNotif(payload: { type: 'success' | 'error'; message: string }) {
       <div class="relative">
         <div class="absolute -inset-0.5 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 opacity-70 group-hover:opacity-100 transition-opacity duration-200"></div>
         <div class="relative h-8 w-8 rounded-full overflow-hidden border-2 border-white shadow-sm">
-          <img src="@/assets/images/user/avatar.png" alt="User" class="w-full h-full object-cover" />
+          <img src="@/assets/images/user/avatar.webp" alt="User" class="w-full h-full object-cover" />
         </div>
       </div>
       <!-- Name & Role -->

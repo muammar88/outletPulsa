@@ -66,7 +66,7 @@
               <div class="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50 rounded-3xl pointer-events-none"></div>
               
               <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-white/90 to-white/60 flex items-center justify-center shadow-lg mb-6 mx-auto md:mx-0">
-                <img src="/logo.png" alt="Outlet Pulsa Logo" class="w-10 h-10 object-contain cta-icon-pulse" />
+                <img src="/logo.webp" alt="Outlet Pulsa Logo" class="w-10 h-10 object-contain cta-icon-pulse" />
               </div>
               
               <h3 class="text-2xl font-bold text-white mb-2 text-center md:text-left">Gabung 10K+ Mitra</h3>
