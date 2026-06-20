@@ -164,13 +164,21 @@ export class ProdukPrabayarService {
   }
 
   async syncTermurah() {
-    const produks = await this.prisma.produk.findMany({
-      include: {
-        iakPrabayarProduks: true,
-        tripayPrabayarProduks: true,
-        digiflazzProducts: true,
-      },
-    });
+    const [produks, activeServers] = await Promise.all([
+      this.prisma.produk.findMany({
+        include: {
+          iakPrabayarProduks: true,
+          tripayPrabayarProduks: true,
+          digiflazzProducts: true,
+        },
+      }),
+      this.prisma.server.findMany({
+        where: { status: 'active' },
+        select: { id: true },
+      })
+    ]);
+
+    const activeServerIds = activeServers.map(s => s.id);
 
     let countSuccess = 0;
     let countDeactivated = 0;
@@ -181,9 +189,13 @@ export class ProdukPrabayarService {
 
     for (const p of produks) {
       try {
-        const iakProducts = p.iakPrabayarProduks.filter(i => i.status === 'active' && i.price !== null && i.price !== undefined);
-        const tripayProducts = p.tripayPrabayarProduks.filter(t => t.status?.toLowerCase() === 'active' && t.price !== null && t.price !== undefined);
-        const digiProducts = p.digiflazzProducts.filter(d => d.status === 'active' && d.selectedSellerPrice !== null && d.selectedSellerPrice !== undefined);
+        const isIakActive = activeServerIds.includes(1);
+        const isTripayActive = activeServerIds.includes(2);
+        const isDigiflazzActive = activeServerIds.includes(3);
+
+        const iakProducts = isIakActive ? p.iakPrabayarProduks.filter(i => i.status === 'active' && i.price !== null && i.price !== undefined) : [];
+        const tripayProducts = isTripayActive ? p.tripayPrabayarProduks.filter(t => t.status?.toLowerCase() === 'active' && t.price !== null && t.price !== undefined) : [];
+        const digiProducts = isDigiflazzActive ? p.digiflazzProducts.filter(d => d.status === 'active' && d.selectedSellerPrice !== null && d.selectedSellerPrice !== undefined) : [];
 
         if (iakProducts.length === 0 && tripayProducts.length === 0 && digiProducts.length === 0) {
           // No connection or all inactive

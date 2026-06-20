@@ -30,7 +30,8 @@ class Input_ppob extends StatefulWidget {
   State<Input_ppob> createState() => _Input_ppobState();
 }
 
-class _Input_ppobState extends State<Input_ppob> with SingleTickerProviderStateMixin {
+class _Input_ppobState extends State<Input_ppob>
+    with SingleTickerProviderStateMixin {
   final config = ConfigApp();
   final _formKey = GlobalKey<FormState>();
   String? nomor_tujuan;
@@ -53,8 +54,8 @@ class _Input_ppobState extends State<Input_ppob> with SingleTickerProviderStateM
     _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeOut),
     );
-    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
-        .animate(
+    _slideAnim =
+        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
     );
     _animController.forward();
@@ -96,7 +97,7 @@ class _Input_ppobState extends State<Input_ppob> with SingleTickerProviderStateM
   Future<void> _submitForm(Load_provider loader) async {
     bool isPrabayar = widget.tipe == 'prabayar';
     String inputLabel = isPrabayar ? 'Nomor Tujuan' : 'ID Pelanggan';
-    
+
     var err = false;
     var err_msg = '';
 
@@ -125,7 +126,7 @@ class _Input_ppobState extends State<Input_ppob> with SingleTickerProviderStateM
       } else {
         final trans = Provider.of<Transaction_provider>(context, listen: false);
         await trans.getPrefix(nomor_tujuan!, widget.path);
-        
+
         if (trans.error == false) {
           loader.isLoad = false;
           if (widget.path == 'PD' || widget.path == 'PTP') {
@@ -159,7 +160,8 @@ class _Input_ppobState extends State<Input_ppob> with SingleTickerProviderStateM
           }
         } else {
           loader.isLoad = false;
-          _showSnackBar(trans.errorMsg ?? 'Terjadi kesalahan', isSuccess: false);
+          _showSnackBar(trans.errorMsg ?? 'Terjadi kesalahan',
+              isSuccess: false);
         }
       }
     } else {
@@ -182,7 +184,7 @@ class _Input_ppobState extends State<Input_ppob> with SingleTickerProviderStateM
         return TablerIcons.message;
       case 'PI':
         return TablerIcons.world;
-      case 'TL':
+      case 'TLOF':
         return TablerIcons.bolt;
       case 'UD':
         return TablerIcons.wallet;
@@ -198,7 +200,7 @@ class _Input_ppobState extends State<Input_ppob> with SingleTickerProviderStateM
   Widget _buildBrandPanel({bool compact = false}) {
     bool isPrabayar = widget.tipe == 'prabayar';
     IconData headerIcon = _getCategoryIcon(widget.path);
-    
+
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -211,10 +213,14 @@ class _Input_ppobState extends State<Input_ppob> with SingleTickerProviderStateM
         bottom: false,
         child: Stack(
           children: [
-            Positioned(top: -50, right: -50, child: _Circle(size: 200, opacity: 0.05)),
-            Positioned(top: 50, right: 50, child: _Circle(size: 90, opacity: 0.06)),
-            Positioned(bottom: -40, left: -40, child: _Circle(size: 130, opacity: 0.04)),
-
+            Positioned(
+                top: -50, right: -50, child: _Circle(size: 200, opacity: 0.05)),
+            Positioned(
+                top: 50, right: 50, child: _Circle(size: 90, opacity: 0.06)),
+            Positioned(
+                bottom: -40,
+                left: -40,
+                child: _Circle(size: 130, opacity: 0.04)),
             Positioned(
               top: compact ? 0 : 16,
               left: compact ? 0 : 16,
@@ -228,14 +234,15 @@ class _Input_ppobState extends State<Input_ppob> with SingleTickerProviderStateM
                     color: Colors.white.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(TablerIcons.arrow_left, color: Colors.white, size: 20),
+                  child: const Icon(TablerIcons.arrow_left,
+                      color: Colors.white, size: 20),
                 ),
               ),
             ),
-
             Center(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 32, vertical: compact ? 48 : 0),
+                padding: EdgeInsets.symmetric(
+                    horizontal: 32, vertical: compact ? 48 : 0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -244,7 +251,8 @@ class _Input_ppobState extends State<Input_ppob> with SingleTickerProviderStateM
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.5),
+                        border: Border.all(
+                            color: Colors.white.withOpacity(0.2), width: 1.5),
                       ),
                       child: Icon(headerIcon, size: 40, color: Colors.white),
                     ),
@@ -262,7 +270,7 @@ class _Input_ppobState extends State<Input_ppob> with SingleTickerProviderStateM
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      isPrabayar 
+                      isPrabayar
                           ? 'Masukkan nomor tujuan untuk melanjutkan transaksi'
                           : 'Masukkan ID pelanggan untuk melanjutkan transaksi',
                       textAlign: TextAlign.center,
@@ -287,7 +295,7 @@ class _Input_ppobState extends State<Input_ppob> with SingleTickerProviderStateM
     bool isPrabayar = widget.tipe == 'prabayar';
     String inputLabel = isPrabayar ? 'Nomor Tujuan' : 'ID Pelanggan';
     IconData inputIcon = _getCategoryIcon(widget.path);
-    
+
     return Form(
       key: _formKey,
       child: Container(
@@ -335,7 +343,8 @@ class _Input_ppobState extends State<Input_ppob> with SingleTickerProviderStateM
                 color: const Color(0xFF1A1A2E),
               ),
               decoration: InputDecoration(
-                hintText: isPrabayar ? "Contoh: 08123456789" : "Contoh: 1234567890",
+                hintText:
+                    isPrabayar ? "Contoh: 08123456789" : "Contoh: 1234567890",
                 hintStyle: GoogleFonts.poppins(
                   fontSize: 14,
                   color: Colors.grey[400],
@@ -343,10 +352,12 @@ class _Input_ppobState extends State<Input_ppob> with SingleTickerProviderStateM
                 ),
                 filled: true,
                 fillColor: const Color(0xFFF8F9FA),
-                contentPadding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 20.0),
+                contentPadding: const EdgeInsets.symmetric(
+                    vertical: 18.0, horizontal: 20.0),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
+                  borderSide:
+                      BorderSide(color: Colors.grey.shade200, width: 1.5),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
@@ -363,9 +374,7 @@ class _Input_ppobState extends State<Input_ppob> with SingleTickerProviderStateM
                 prefixIconConstraints: const BoxConstraints(minWidth: 40),
               ),
             ),
-            
             const SizedBox(height: 36),
-            
             GestureDetector(
               onTap: loader.isLoad == true ? null : () => _submitForm(loader),
               child: Container(
@@ -403,7 +412,8 @@ class _Input_ppobState extends State<Input_ppob> with SingleTickerProviderStateM
                         ),
                       )
                     else
-                      const Icon(TablerIcons.arrow_right, size: 22, color: Colors.white),
+                      const Icon(TablerIcons.arrow_right,
+                          size: 22, color: Colors.white),
                     const SizedBox(width: 10),
                     Text(
                       loader.isLoad == true ? "Memproses..." : "Lanjutkan",
@@ -445,7 +455,8 @@ class _Input_ppobState extends State<Input_ppob> with SingleTickerProviderStateM
                         child: SafeArea(
                           child: Center(
                             child: SingleChildScrollView(
-                              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 48, vertical: 32),
                               physics: const BouncingScrollPhysics(),
                               child: FadeTransition(
                                 opacity: _fadeAnim,
@@ -470,7 +481,8 @@ class _Input_ppobState extends State<Input_ppob> with SingleTickerProviderStateM
                     return SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
                       child: ConstrainedBox(
-                        constraints: BoxConstraints(minHeight: safeConstraints.maxHeight),
+                        constraints: BoxConstraints(
+                            minHeight: safeConstraints.maxHeight),
                         child: IntrinsicHeight(
                           child: FadeTransition(
                             opacity: _fadeAnim,
@@ -488,16 +500,21 @@ class _Input_ppobState extends State<Input_ppob> with SingleTickerProviderStateM
                                           Transform.translate(
                                             offset: const Offset(0, -30),
                                             child: Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 20),
                                               child: Container(
                                                 decoration: BoxDecoration(
                                                   color: Colors.white,
-                                                  borderRadius: BorderRadius.circular(28),
+                                                  borderRadius:
+                                                      BorderRadius.circular(28),
                                                   boxShadow: [
                                                     BoxShadow(
-                                                      color: _kPrimary.withOpacity(0.08),
+                                                      color: _kPrimary
+                                                          .withOpacity(0.08),
                                                       blurRadius: 30,
-                                                      offset: const Offset(0, 10),
+                                                      offset:
+                                                          const Offset(0, 10),
                                                     ),
                                                   ],
                                                 ),

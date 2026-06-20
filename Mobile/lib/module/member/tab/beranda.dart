@@ -163,43 +163,45 @@ class _Beranda_tabState extends State<Beranda_tab> {
                 parent: AlwaysScrollableScrollPhysics()),
             slivers: [
               // ── Header Gradient ──
-            SliverToBoxAdapter(
-              child: _HeaderCard(config: widget.config, loader: loader),
-            ),
-
-            // ── Body Padding ──
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  const SizedBox(height: 24),
-                  // Prabayar Section
-                  _SectionHeader(title: 'Prabayar', icon: TablerIcons.device_sim),
-                  const SizedBox(height: 14),
-                  _MenuGrid(
-                    config: widget.config,
-                    loader: loader,
-                    items: _prabayarItems,
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // Pascabayar Section
-                  _SectionHeader(title: 'Pascabayar', icon: TablerIcons.receipt),
-                  const SizedBox(height: 14),
-                  _MenuGrid(
-                    config: widget.config,
-                    loader: loader,
-                    items: _pascabayarItems,
-                  ),
-
-                  const SizedBox(height: 100),
-                ]),
+              SliverToBoxAdapter(
+                child: _HeaderCard(config: widget.config, loader: loader),
               ),
-            ),
-          ],
-        ),
-      ), // close RefreshIndicator
+
+              // ── Body Padding ──
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    const SizedBox(height: 24),
+                    // Prabayar Section
+                    _SectionHeader(
+                        title: 'Prabayar', icon: TablerIcons.device_sim),
+                    const SizedBox(height: 14),
+                    _MenuGrid(
+                      config: widget.config,
+                      loader: loader,
+                      items: _prabayarItems,
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Pascabayar Section
+                    _SectionHeader(
+                        title: 'Pascabayar', icon: TablerIcons.receipt),
+                    const SizedBox(height: 14),
+                    _MenuGrid(
+                      config: widget.config,
+                      loader: loader,
+                      items: _pascabayarItems,
+                    ),
+
+                    const SizedBox(height: 100),
+                  ]),
+                ),
+              ),
+            ],
+          ),
+        ), // close RefreshIndicator
       ), // close Container
     ); // close Consumer
   }
@@ -225,26 +227,111 @@ class _MenuItemData {
 }
 
 const _prabayarItems = [
-  _MenuItemData(label: 'Pulsa\nReguler', title: 'Pulsa Reguler', path: 'PIU', icon: TablerIcons.device_mobile, tipe: 'prabayar'),
-  _MenuItemData(label: 'Pulsa\nTransfer', title: 'Pulsa Transfer', path: 'PT', icon: TablerIcons.arrows_exchange, tipe: 'prabayar'),
-  _MenuItemData(label: 'Paket\nData', title: 'Paket Data', path: 'PD', icon: TablerIcons.wifi, tipe: 'prabayar'),
-  _MenuItemData(label: 'Paket\nTelpon', title: 'Paket Telpon', path: 'PTP', icon: TablerIcons.phone_call, tipe: 'prabayar'),
-  _MenuItemData(label: 'Paket\nSMS', title: 'Paket SMS', path: 'PS', icon: TablerIcons.message, tipe: 'prabayar'),
-  _MenuItemData(label: 'Pulsa\nInternasl', title: 'Pulsa International', path: 'PI', icon: TablerIcons.world, tipe: 'prabayar'),
-  _MenuItemData(label: 'Token\nListrik', title: 'Token Listrik', path: 'TL', icon: TablerIcons.bolt, tipe: 'prabayar'),
-  _MenuItemData(label: 'Uang\nDigital', title: 'Uang Digital', path: 'UD', icon: TablerIcons.wallet, tipe: 'prabayar'),
-  _MenuItemData(label: 'Wifi ID', title: 'Wifi ID', path: 'WIFI', icon: TablerIcons.router, tipe: 'prabayar'),
-  _MenuItemData(label: 'E-Toll', title: 'E-Toll', path: 'ET', icon: TablerIcons.car, tipe: 'prabayar'),
+  _MenuItemData(
+      label: 'Pulsa\nReguler',
+      title: 'Pulsa Reguler',
+      path: 'PIU',
+      icon: TablerIcons.device_mobile,
+      tipe: 'prabayar'),
+  _MenuItemData(
+      label: 'Pulsa\nTransfer',
+      title: 'Pulsa Transfer',
+      path: 'PT',
+      icon: TablerIcons.arrows_exchange,
+      tipe: 'prabayar'),
+  _MenuItemData(
+      label: 'Paket\nData',
+      title: 'Paket Data',
+      path: 'PD',
+      icon: TablerIcons.wifi,
+      tipe: 'prabayar'),
+  _MenuItemData(
+      label: 'Paket\nTelpon',
+      title: 'Paket Telpon',
+      path: 'PTP',
+      icon: TablerIcons.phone_call,
+      tipe: 'prabayar'),
+  _MenuItemData(
+      label: 'Paket\nSMS',
+      title: 'Paket SMS',
+      path: 'PS',
+      icon: TablerIcons.message,
+      tipe: 'prabayar'),
+  _MenuItemData(
+      label: 'Pulsa\nInternasl',
+      title: 'Pulsa International',
+      path: 'PI',
+      icon: TablerIcons.world,
+      tipe: 'prabayar'),
+  _MenuItemData(
+      label: 'Token\nListrik',
+      title: 'Token Listrik',
+      path: 'TLOF',
+      icon: TablerIcons.bolt,
+      tipe: 'prabayar'),
+  _MenuItemData(
+      label: 'Uang\nDigital',
+      title: 'Uang Digital',
+      path: 'UD',
+      icon: TablerIcons.wallet,
+      tipe: 'prabayar'),
+  _MenuItemData(
+      label: 'Wifi ID',
+      title: 'Wifi ID',
+      path: 'WIFI',
+      icon: TablerIcons.router,
+      tipe: 'prabayar'),
+  _MenuItemData(
+      label: 'E-Toll',
+      title: 'E-Toll',
+      path: 'ET',
+      icon: TablerIcons.car,
+      tipe: 'prabayar'),
 ];
 
 const _pascabayarItems = [
-  _MenuItemData(label: 'PLN\nPascabayar', title: 'PLN Pascabayar', path: 'PLNPASCABAYAR', icon: TablerIcons.bolt, tipe: 'pascabayar'),
-  _MenuItemData(label: 'Telkom', title: 'Telkom', path: 'TELKOM', icon: TablerIcons.phone, tipe: 'pascabayar'),
-  _MenuItemData(label: 'PDAM', title: 'PDAM', path: 'PDAM', icon: TablerIcons.droplet, tipe: 'pascabayar'),
-  _MenuItemData(label: 'BPJS', title: 'BPJS', path: 'BPJS', icon: TablerIcons.heartbeat, tipe: 'pascabayar'),
-  _MenuItemData(label: 'TV\nPascabayar', title: 'TV Pascabayar', path: 'TVK', icon: TablerIcons.device_tv, tipe: 'pascabayar'),
-  _MenuItemData(label: 'PGN', title: 'PGN', path: 'PGN', icon: TablerIcons.flame, tipe: 'pascabayar'),
-  _MenuItemData(label: 'Internet', title: 'Internet', path: 'INT', icon: TablerIcons.globe, tipe: 'pascabayar'),
+  _MenuItemData(
+      label: 'PLN\nPascabayar',
+      title: 'PLN Pascabayar',
+      path: 'PLNPASCABAYAR',
+      icon: TablerIcons.bolt,
+      tipe: 'pascabayar'),
+  _MenuItemData(
+      label: 'Telkom',
+      title: 'Telkom',
+      path: 'TELKOM',
+      icon: TablerIcons.phone,
+      tipe: 'pascabayar'),
+  _MenuItemData(
+      label: 'PDAM',
+      title: 'PDAM',
+      path: 'PDAM',
+      icon: TablerIcons.droplet,
+      tipe: 'pascabayar'),
+  _MenuItemData(
+      label: 'BPJS',
+      title: 'BPJS',
+      path: 'BPJS',
+      icon: TablerIcons.heartbeat,
+      tipe: 'pascabayar'),
+  _MenuItemData(
+      label: 'TV\nPascabayar',
+      title: 'TV Pascabayar',
+      path: 'TVK',
+      icon: TablerIcons.device_tv,
+      tipe: 'pascabayar'),
+  _MenuItemData(
+      label: 'PGN',
+      title: 'PGN',
+      path: 'PGN',
+      icon: TablerIcons.flame,
+      tipe: 'pascabayar'),
+  _MenuItemData(
+      label: 'Internet',
+      title: 'Internet',
+      path: 'INT',
+      icon: TablerIcons.globe,
+      tipe: 'pascabayar'),
 ];
 
 // ─────────────────────────────────────────────
@@ -340,9 +427,11 @@ class _HeaderCard extends StatelessWidget {
                     // Tombol Refresh
                     InkWell(
                       onTap: () async {
-                        final l = Provider.of<Load_provider>(context, listen: false);
+                        final l =
+                            Provider.of<Load_provider>(context, listen: false);
                         l.isLoad = true;
-                        await Provider.of<Beranda_provider>(context, listen: false)
+                        await Provider.of<Beranda_provider>(context,
+                                listen: false)
                             .get_data_beranda();
                         l.isLoad = false;
                       },
@@ -490,12 +579,10 @@ class _IsiSaldoButton extends StatelessWidget {
               ? null
               : () => Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (_) => Form_input_deposit()),
+                    MaterialPageRoute(builder: (_) => Form_input_deposit()),
                   ),
           child: Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               gradient: isDisabled
                   ? null
@@ -529,9 +616,7 @@ class _IsiSaldoButton extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: isDisabled
-                        ? Colors.grey.shade400
-                        : Colors.white,
+                    color: isDisabled ? Colors.grey.shade400 : Colors.white,
                   ),
                 ),
               ],
@@ -632,7 +717,7 @@ class _BoxProduk extends StatelessWidget {
 
   void _navigate(BuildContext context) {
     if (item.tipe == 'prabayar') {
-      final directInput = ['PIU', 'PT', 'PD', 'PTP', 'PS', 'TL'];
+      final directInput = ['PIU', 'PT', 'PD', 'PTP', 'PS', 'TLOF'];
       if (directInput.contains(item.path)) {
         Navigator.push(
           context,
@@ -642,7 +727,7 @@ class _BoxProduk extends StatelessWidget {
               title: item.title,
               path: item.path,
               tipe: item.tipe,
-              checkPrefix: true,
+              checkPrefix: (item.path == 'TLOF' ? false : true),
             ),
           ),
         );
@@ -744,7 +829,8 @@ class _BoxProduk extends StatelessWidget {
 // Shimmer / Skeleton Box
 // ─────────────────────────────────────────────
 class _ShimmerBox extends StatefulWidget {
-  const _ShimmerBox({required this.width, required this.height, this.radius = 6});
+  const _ShimmerBox(
+      {required this.width, required this.height, this.radius = 6});
   final double width;
   final double height;
   final double radius;
