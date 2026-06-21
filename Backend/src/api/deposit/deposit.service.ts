@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
+import { DepositSaldoDto } from './dto/deposit-saldo.dto';
 
 @Injectable()
 export class DepositService {
@@ -121,6 +122,119 @@ export class DepositService {
         error: true,
         error_msg: 'Gagal mengambil informasi konfirmasi deposit',
         data: {},
+      };
+    }
+  }
+
+  // --- Helper Functions untuk Generate Code ---
+  private randomString(length: number, chars: string): string {
+    let result = '';
+    for (let i = length; i > 0; --i) {
+      result += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return result;
+  }
+
+  private async newCodeBiaya(): Promise<number> {
+    let rand = 0;
+    let condition = true;
+
+    while (condition) {
+      rand = parseInt(this.randomString(3, '123456789'), 10);
+      const check = await this.prisma.requestDeposit.findFirst({
+        where: { nominalTambahan: rand },
+      });
+      if (!check) condition = false;
+    }
+    return rand;
+  }
+
+  private async newCodeTransDeposit(): Promise<string> {
+    let rand = '';
+    let condition = true;
+
+    while (condition) {
+      rand = this.randomString(6, '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ');
+      const check = await this.prisma.requestDeposit.findFirst({
+        where: { kode: rand },
+      });
+      if (!check) condition = false;
+    }
+    return rand;
+  }
+
+  // --- Main Logic depositSaldo ---
+  async depositSaldo(memberId: number, body: DepositSaldoDto) {
+    if (!memberId) {
+      return {
+        error: true,
+        error_msg: 'Id Member Tidak Ditemukan.',
+      };
+    }
+
+    try {
+      // 1. Cek apakah ada deposit proses
+      const total = await this.prisma.requestDeposit.count({
+        where: {
+          riwayatTransaksi: {
+            memberId: memberId,
+          },
+          status: 'proses',
+        },
+      });
+
+      if (total > 0) {
+        return {
+          error: true,
+          error_msg: 'Masih terdapat request yang belum diproses.',
+        };
+      }
+
+      // 2. Bersihkan nominal jika berupa string (contoh: "Rp 1.000.000")
+      let rawNominal = typeof body.nominal === 'string' ? body.nominal.replace(/[^0-9]/g, '') : body.nominal.toString();
+      const nominal = parseInt(rawNominal, 10);
+      const bankId = parseInt(body.bank_tujuan_transfer.toString(), 10);
+
+      // 3. Generate random code
+      const randCode = await this.newCodeBiaya();
+      const kodeTrans = await this.newCodeTransDeposit();
+      const myDate = new Date();
+
+      // 4. Transaction database (Prisma)
+      await this.prisma.$transaction(async (tx) => {
+        const iRiwayat = await tx.riwayatTransaksi.create({
+          data: {
+            memberId: memberId,
+            tipeTransaksi: 'deposit',
+            createdAt: myDate,
+            updatedAt: myDate,
+          },
+        });
+
+        await tx.requestDeposit.create({
+          data: {
+            kode: kodeTrans,
+            riwayatTransaksiId: iRiwayat.id,
+            nominal: nominal,
+            nominalTambahan: randCode,
+            status: 'proses',
+            bankTransferId: bankId,
+            waktuRequest: myDate,
+            statusKirim: 'belum_kirim',
+            createdAt: myDate,
+            updatedAt: myDate,
+          },
+        });
+      });
+
+      return {
+        error: false,
+        error_msg: 'Tiket Deposit Saldo Berhasil Digenerated',
+      };
+    } catch (error) {
+      return {
+        error: true,
+        error_msg: 'Proses ambil tiket deposit saldo gagal dilakukan.',
       };
     }
   }

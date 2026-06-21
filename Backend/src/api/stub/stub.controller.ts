@@ -23,12 +23,7 @@ export class StubController {
 
   // ── DEPOSIT ───────────────────────────────────────
 
-  /** POST /api/deposit-saldo */
-  @UseGuards(JwtApiGuard)
-  @Post('deposit-saldo')
-  depositSaldo(@Body() body: any) {
-    return { error: false, error_msg: '' };
-  }
+
 
 
 

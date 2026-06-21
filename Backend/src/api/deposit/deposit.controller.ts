@@ -1,10 +1,18 @@
-import { Controller, Get, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, UseGuards, Request, Body } from '@nestjs/common';
 import { JwtApiGuard } from '../guards/jwt-api.guard';
 import { DepositService } from './deposit.service';
+import { DepositSaldoDto } from './dto/deposit-saldo.dto';
 
 @Controller('api')
 export class DepositController {
   constructor(private readonly depositService: DepositService) {}
+
+  @UseGuards(JwtApiGuard)
+  @Post('deposit-saldo')
+  async depositSaldo(@Request() req: any, @Body() body: DepositSaldoDto) {
+    const memberId = req.user?.memberId;
+    return this.depositService.depositSaldo(memberId, body);
+  }
 
   @UseGuards(JwtApiGuard)
   @Get('deposit-info')
