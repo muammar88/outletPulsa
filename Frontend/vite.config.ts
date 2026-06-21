@@ -25,6 +25,15 @@ export default defineConfig(({ mode }) => ({
     host: '0.0.0.0',
     port: 5173,
   },
+  optimizeDeps: {
+    include: [
+      '@fortawesome/fontawesome-svg-core',
+      '@fortawesome/free-solid-svg-icons',
+      '@fortawesome/free-regular-svg-icons',
+      '@fortawesome/free-brands-svg-icons',
+      '@fortawesome/vue-fontawesome'
+    ],
+  },
   build: {
     // Target modern browsers only - smaller output
     target: 'es2020',

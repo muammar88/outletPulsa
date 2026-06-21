@@ -8,7 +8,7 @@ const router = createRouter({
     {
       path: '/',
       name: 'landing-page',
-      component: () => import('@/views/Resolver.vue'),
+      component: () => import('@/views/public/Main-page.vue'),
       meta: {
         title: 'Aplikasi Outlet Pulsa || Home',
         description:
@@ -20,7 +20,7 @@ const router = createRouter({
     {
       path: '/login',
       name: 'member-login-page',
-      component: () => import('@/views/Resolver.vue'),
+      component: () => import('@/views/member/Login-page.vue'),
       meta: {
         title: 'Login Member Area || Aplikasi Outlet Pulsa',
         description:
@@ -32,7 +32,7 @@ const router = createRouter({
     {
       path: '/registration',
       name: 'member-registration-page',
-      component: () => import('@/views/Resolver.vue'),
+      component: () => import('@/views/member/Registration-page.vue'),
       meta: {
         title: 'Registration Area || Aplikasi Outlet Pulsa',
         description:
@@ -44,7 +44,7 @@ const router = createRouter({
     {
       path: '/member',
       name: 'member-page',
-      component: () => import('@/views/Resolver.vue'),
+      component: () => import('@/views/member/Main-page.vue'),
       meta: {
         title: 'Member Area || Aplikasi Outlet Pulsa',
         description:
@@ -56,7 +56,7 @@ const router = createRouter({
     {
       path: '/price',
       name: 'price-page',
-      component: () => import('@/views/Resolver.vue'),
+      component: () => import('@/views/public/Price-page.vue'),
       meta: {
         title: 'Daftar Harga Area || Aplikasi Outlet Pulsa',
         description:
@@ -68,7 +68,7 @@ const router = createRouter({
     {
       path: '/contact',
       name: 'contact-page',
-      component: () => import('@/views/Resolver.vue'),
+      component: () => import('@/views/public/Contact-page.vue'),
       meta: {
         title: 'Kontak Kami || Aplikasi Outlet Pulsa',
         description: 'Hubungi kami untuk pertanyaan, kerja sama, atau bantuan layanan Outlet Pulsa.',
@@ -79,7 +79,7 @@ const router = createRouter({
     {
       path: '/login-backbone',
       name: 'login-backbone',
-      component: () => import('@/views/Resolver.vue'),
+      component: () => import('@/views/administrator/Login-page.vue'),
       meta: {
         title: 'Login Area || Aplikasi Outlet Pulsa',
         description:
@@ -91,7 +91,7 @@ const router = createRouter({
     {
       path: '/backbone',
       name: 'backbone-page',
-      component: () => import('@/views/Resolver.vue'),
+      component: () => import('@/views/administrator/Main-page.vue'),
       meta: {
         title: 'Backbone Area || Aplikasi Outlet Pulsa',
         description:
