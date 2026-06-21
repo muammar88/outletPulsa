@@ -10,7 +10,7 @@ export class DepositController {
   @UseGuards(JwtApiGuard)
   @Post('deposit-saldo')
   async depositSaldo(@Request() req: any, @Body() body: DepositSaldoDto) {
-    const memberId = req.user?.sub;
+    const memberId = req.user?.id;
 
     console.log('_____________________');
     console.log(req.user);
@@ -23,14 +23,14 @@ export class DepositController {
   @UseGuards(JwtApiGuard)
   @Get('deposit-info')
   async infoDeposit(@Request() req: any) {
-    const memberId = req.user?.sub;
+    const memberId = req.user?.id;
     return this.depositService.getDepositInfo(memberId);
   }
 
   @UseGuards(JwtApiGuard)
   @Get('deposit-info-konfirmasi')
   async infoKonfirmasiDeposit(@Request() req: any) {
-    const memberId = req.user?.sub;
+    const memberId = req.user?.id;
     return this.depositService.getDepositInfoKonfirmasi(memberId);
   }
 }
