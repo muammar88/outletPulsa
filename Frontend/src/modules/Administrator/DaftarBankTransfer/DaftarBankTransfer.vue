@@ -5,7 +5,7 @@ import { usePagination } from '@/composables/usePaginations';
 import { onMounted, ref } from 'vue';
 
 // Modal Page
-import BankFormModal from './components/BankFormModal.vue';
+import BankTransferFormModal from './components/BankTransferFormModal.vue';
 
 // Table
 import BaseTable from '@/components/Table/BaseTable.vue';
@@ -18,10 +18,9 @@ import LightButton from '@/components/Button/LightButton.vue';
 // Icon
 import IconDelete from '@/components/Icons/IconDelete.vue';
 import IconEdit from '@/components/Icons/IconEdit.vue';
-import { bankService, type Bank } from '@/service/administrator/bank';
+import { bankTransferOutletService, type BankTransferOutlet } from '@/service/administrator/bank-transfer-outlet';
 
-const { showConfirmDialog, confirmTitle, confirmMessage, displayConfirmation, confirm, cancel } =
-  useConfirmation();
+const { showConfirmDialog, confirmTitle, confirmMessage, displayConfirmation, confirm, cancel } = useConfirmation();
 
 const confirmButtonText = ref('Ya, Lanjutkan');
 const confirmButtonClass = ref('bg-rose-600 hover:bg-rose-700 shadow-[0_0_15px_rgba(225,29,72,0.5)]');
@@ -36,16 +35,22 @@ const {
 
 const tableColumns = [
   {
-    key: 'kode',
-    label: 'Kode',
-    headerClass: 'text-left w-[15%] pl-4',
-    cellClass: 'text-left pl-4 font-mono font-bold tracking-wide text-slate-700',
+    key: 'bank',
+    label: 'Bank',
+    headerClass: 'text-left w-[25%]',
+    cellClass: 'text-left',
   },
   {
-    key: 'nama',
-    label: 'Nama Bank',
-    headerClass: 'text-left w-[65%]',
+    key: 'accountName',
+    label: 'Nama Rekening',
+    headerClass: 'text-left w-[30%]',
     cellClass: 'text-left font-bold text-gray-800',
+  },
+  {
+    key: 'accountNumber',
+    label: 'Nomor Rekening',
+    headerClass: 'text-left w-[25%]',
+    cellClass: 'text-left text-gray-700 font-mono tracking-wider',
   },
   {
     key: 'action',
@@ -58,18 +63,17 @@ const tableColumns = [
 const searchQuery = ref('');
 
 const { currentPage, totalPages, pages, totalRow, pageNow, perPage } = usePagination(
-  () => fetchBanks(),
+  () => fetchBankTransfers(),
   { perPage: 10, totalRow: 0 },
 );
 
-const banks = ref<Bank[]>([]);
+const bankTransfers = ref<BankTransferOutlet[]>([]);
 const isLoading = ref(false);
-
 const isModalOpen = ref(false);
 const modalMode = ref<'add' | 'edit'>('add');
-const selectedBank = ref<Bank | null>(null);
+const selectedOutlet = ref<BankTransferOutlet | null>(null);
 
-const fetchBanks = async (keyword?: string | Event) => {
+const fetchBankTransfers = async (keyword?: string | Event) => {
   if (typeof keyword === 'string') {
     searchQuery.value = keyword;
     currentPage.value = 1;
@@ -77,15 +81,15 @@ const fetchBanks = async (keyword?: string | Event) => {
 
   isLoading.value = true;
   try {
-    const response = await bankService.getAll(
+    const response = await bankTransferOutletService.getAll(
       searchQuery.value,
       perPage.value,
       currentPage.value
     );
-    banks.value = response.data.data.list;
+    bankTransfers.value = response.data.data.list;
     totalRow.value = response.data.data.total;
   } catch (error) {
-    displayNotification('Gagal mengambil data bank.', 'error' );
+    displayNotification('Gagal mengambil data daftar bank transfer.', 'error');
   } finally {
     isLoading.value = false;
   }
@@ -101,48 +105,48 @@ const paginationProps = ref({
 
 const openAddModal = () => {
   modalMode.value = 'add';
-  selectedBank.value = null;
+  selectedOutlet.value = null;
   isModalOpen.value = true;
 };
 
-const openEditModal = (bank: Bank) => {
+const openEditModal = (outlet: BankTransferOutlet) => {
   modalMode.value = 'edit';
-  selectedBank.value = bank;
+  selectedOutlet.value = { ...outlet };
   isModalOpen.value = true;
 };
 
 const closeModal = () => {
   isModalOpen.value = false;
-  selectedBank.value = null;
+  selectedOutlet.value = null;
 };
 
 const onFormSubmit = () => {
   displayNotification(
     modalMode.value === 'add'
-      ? 'Bank berhasil ditambahkan'
-      : 'Bank berhasil diperbarui',
-      'success'
+      ? 'Bank transfer berhasil ditambahkan'
+      : 'Bank transfer berhasil diperbarui',
+    'success'
   );
-  fetchBanks();
+  fetchBankTransfers();
 };
 
-const handleDelete = (bank: Bank) => {
+const handleDelete = (outlet: BankTransferOutlet) => {
   confirmButtonText.value = 'Hapus';
   confirmButtonClass.value = 'bg-rose-600 hover:bg-rose-700 shadow-[0_0_15px_rgba(225,29,72,0.5)]';
   displayConfirmation(
-    'Hapus Bank',
-    `Apakah Anda yakin ingin menghapus bank "${bank.nama}"? Aksi ini tidak dapat dibatalkan.`,
+    'Hapus Rekening',
+    `Apakah Anda yakin ingin menghapus rekening "${outlet.accountName} - ${outlet.accountNumber}"? Aksi ini tidak dapat dibatalkan.`,
     async () => {
       try {
-        await bankService.delete(bank.id!);
-        displayNotification('Bank berhasil dihapus', 'success');
-        if (banks.value.length === 1 && currentPage.value > 1) {
+        await bankTransferOutletService.delete(outlet.id!);
+        displayNotification('Rekening berhasil dihapus', 'success');
+        if (bankTransfers.value.length === 1 && currentPage.value > 1) {
           currentPage.value--;
         }
-        fetchBanks();
+        fetchBankTransfers();
       } catch (error: any) {
         displayNotification(
-          error.response?.data?.message || 'Gagal menghapus bank',
+          error.response?.data?.message || 'Gagal menghapus rekening',
           'error'
         );
       }
@@ -151,7 +155,7 @@ const handleDelete = (bank: Bank) => {
 };
 
 onMounted(() => {
-  fetchBanks();
+  fetchBankTransfers();
 });
 </script>
 
@@ -161,40 +165,45 @@ onMounted(() => {
       <div class="mb-10 flex items-center justify-between">
         <div>
           <h1 class="text-3xl font-black text-[#0f2155] dark:text-white mb-2 uppercase tracking-tight font-semibold">
-            Daftar Bank
+            Daftar Bank Transfer
           </h1>
           <p class="text-xs text-gray-400 font-medium uppercase tracking-[0.2em]">
-            Manajemen Data Bank
+            Manajemen Data Bank Transfer
           </p>
         </div>
       </div>
 
       <BaseTable
         :columns="tableColumns"
-        :data="banks"
+        :data="bankTransfers"
         :loading="isLoading"
         :pagination="paginationProps"
-        search-placeholder="Cari berdasarkan kode atau nama..."
-        add-label="Tambah Bank"
-        @search="fetchBanks"
+        search-placeholder="Cari berdasarkan nama/nomor rekening atau bank..."
+        add-label="Tambah Rekening"
+        @search="fetchBankTransfers"
         @add="openAddModal"
         @page-change="pageNow"
         :showNumbering="false"
         :showActions="false"
       >
-        <template #cell-kode="{ row }">
-          <span class="font-semibold text-slate-700">{{ row.kode }}</span>
-        </template>
-
-        <template #cell-nama="{ row }">
+        <template #cell-bank="{ row }">
           <div class="flex items-center gap-3">
-            <img v-if="row.image" :src="row.image" alt="Bank Logo" class="w-8 h-8 object-contain rounded-full bg-white border border-gray-100 shadow-sm p-0.5" @error="row.image = null" />
+            <img v-if="row.bank?.image" :src="row.bank.image" alt="Bank Logo" class="h-8 object-contain rounded-sm bg-white border border-gray-100 shadow-sm p-1" @error="row.bank.image = null" />
             <div v-else class="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 border border-blue-100 shadow-sm">
-              <span class="font-bold text-xs uppercase">{{ row.nama?.charAt(0) || 'B' }}</span>
+              <span class="font-bold text-xs uppercase">{{ row.bank?.nama?.charAt(0) || 'B' }}</span>
             </div>
-            <span class="font-bold text-gray-800">{{ row.nama }}</span>
+            <span class="font-medium text-gray-700">{{ row.bank?.nama || 'Bank Tidak Diketahui' }}</span>
           </div>
         </template>
+
+        <template #cell-accountName="{ row }">
+          <span class="font-bold text-gray-800">{{ row.accountName }}</span>
+        </template>
+        
+        <template #cell-accountNumber="{ row }">
+          <span class="font-mono bg-gray-50 px-2 py-1 rounded text-gray-700 border border-gray-100">{{ row.accountNumber }}</span>
+        </template>
+
         <template #cell-action="{ row }">
           <div class="flex justify-center gap-2">
             <LightButton @click="openEditModal(row)" title="Edit">
@@ -209,10 +218,10 @@ onMounted(() => {
     </div>
 
     <!-- Modals & Notifications -->
-    <BankFormModal
+    <BankTransferFormModal
       :show="isModalOpen"
       :mode="modalMode"
-      :initial-data="selectedBank"
+      :initial-data="selectedOutlet"
       :loading="false"
       @close="closeModal"
       @submit="onFormSubmit"

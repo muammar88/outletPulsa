@@ -29,5 +29,7 @@ export const tabComponents: Record<string, any> = {
   daftar_produk_seller_digiflazz: defineAsyncComponent(() => import('@/modules/Administrator/DaftarProdukSellerDigiflazz/DaftarProdukSellerDigiflazz.vue')),
   daftar_produk_digiflazz: defineAsyncComponent(() => import('@/modules/Administrator/DaftarProdukDigiflazz/DaftarProdukDigiflazz.vue')),
   riwayat_transfer_saldo: defineAsyncComponent(() => import('@/modules/Administrator/RiwayatTransferSaldo/RiwayatTransferSaldo.vue')),
+  daftar_bank: defineAsyncComponent(() => import('@/modules/Administrator/DaftarBank/DaftarBank.vue')),
+  daftar_bank_transfer: defineAsyncComponent(() => import('@/modules/Administrator/DaftarBankTransfer/DaftarBankTransfer.vue')),
   notFound: defineAsyncComponent(() => import('@/views/errors/NotFoundView.vue')),
 };

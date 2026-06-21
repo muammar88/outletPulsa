@@ -15,6 +15,7 @@
       :readonly="readonly"
       :disabled="disabled"
       :required="required"
+      :maxlength="maxlength"
       :class="[
         'w-full px-4 py-2 rounded-lg border text-gray-700 shadow-sm',
         'transition-all duration-200 ease-in-out placeholder-gray-400',
@@ -56,6 +57,7 @@ const props = defineProps({
   readonly: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
   showZero: { type: Boolean, default: false },
+  maxlength: { type: [Number, String], default: undefined },
 });
 
 // computed untuk kontrol tampilan nol

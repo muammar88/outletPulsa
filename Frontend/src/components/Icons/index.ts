@@ -1,4 +1,5 @@
 export { default as IconAlertCircle } from './IconAlertCircle.vue';
+export { default as IconBuildingBank } from './IconBuildingBank.vue';
 export { default as IconAntenna } from './IconAntenna.vue';
 export { default as IconArrowLeft } from './IconArrowLeft.vue';
 export { default as IconArrowRight } from './IconArrowRight.vue';

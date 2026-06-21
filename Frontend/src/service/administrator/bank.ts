@@ -24,11 +24,11 @@ export const bankService = {
     return await api.get(`/administrator/bank/${id}`);
   },
 
-  create: async (data: Bank) => {
+  create: async (data: Bank | FormData) => {
     return await api.post(`/administrator/bank`, data);
   },
 
-  update: async (id: number, data: Partial<Bank>) => {
+  update: async (id: number, data: Partial<Bank> | FormData) => {
     return await api.put(`/administrator/bank/${id}`, data);
   },
 
