@@ -1,7 +1,7 @@
-import 'package:outletpulsa/config/config.dart';
+import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/models/model_list.dart';
-import 'package:outletpulsa/sql/SQLHelper.dart';
-import 'package:outletpulsa/utils/network_util.dart';
+import 'package:outletpulsa/core/storage/SQLHelper.dart';
+import 'package:outletpulsa/core/utils/network_util.dart';
 import 'api_headers.dart';
 
 class Rest_riwayat {

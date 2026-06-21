@@ -3,11 +3,11 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:provider/provider.dart';
-import '../../../../../config/config.dart';
-import '../../../../../provider/BerandaProvider.dart';
-import '../../../../../provider/TransferSaldoProvider.dart';
-import '../../../../../provider/loadProvider.dart';
-import '../../../../../widget/CircularProgressWidget.dart';
+import 'package:outletpulsa/core/constants/config.dart';
+import 'package:outletpulsa/shared/providers/BerandaProvider.dart';
+import 'package:outletpulsa/shared/providers/TransferSaldoProvider.dart';
+import 'package:outletpulsa/shared/providers/loadProvider.dart';
+import 'package:outletpulsa/shared/widgets/CircularProgressWidget.dart';
 import 'package:flutter/services.dart';
 
 class Form_transfer_saldo extends StatefulWidget {

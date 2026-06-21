@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../../config/config.dart';
+import 'package:outletpulsa/core/constants/config.dart';
 
 class Detail_tiket_deposit extends StatefulWidget {
   const Detail_tiket_deposit({super.key});

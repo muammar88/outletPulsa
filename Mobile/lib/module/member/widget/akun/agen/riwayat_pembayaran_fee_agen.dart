@@ -3,10 +3,10 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../../config/config.dart';
-import '../../../../../provider/AgenProvider.dart';
-import '../../../../../widget/NotFound.dart';
-import '../../../../../widget/allBoxLoading.dart';
+import 'package:outletpulsa/core/constants/config.dart';
+import 'package:outletpulsa/shared/providers/AgenProvider.dart';
+import 'package:outletpulsa/shared/widgets/NotFound.dart';
+import 'package:outletpulsa/shared/widgets/allBoxLoading.dart';
 
 class Riwayat_pembayaran_fee_agen extends StatefulWidget {
   const Riwayat_pembayaran_fee_agen({super.key});

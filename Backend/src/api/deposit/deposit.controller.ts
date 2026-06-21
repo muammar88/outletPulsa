@@ -12,4 +12,11 @@ export class DepositController {
     const memberId = req.user?.memberId;
     return this.depositService.getDepositInfo(memberId);
   }
+
+  @UseGuards(JwtApiGuard)
+  @Get('deposit-info-konfirmasi')
+  async infoKonfirmasiDeposit(@Request() req: any) {
+    const memberId = req.user?.memberId;
+    return this.depositService.getDepositInfoKonfirmasi(memberId);
+  }
 }

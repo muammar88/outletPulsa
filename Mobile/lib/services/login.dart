@@ -1,8 +1,8 @@
-import 'package:outletpulsa/config/config.dart';
-import 'package:outletpulsa/helper/database_helper.dart';
+import 'package:outletpulsa/core/constants/config.dart';
+import 'package:outletpulsa/core/helper/database_helper.dart';
 import 'package:outletpulsa/models/model_login.dart';
 import 'package:outletpulsa/models/model_void.dart';
-import 'package:outletpulsa/utils/network_util.dart';
+import 'package:outletpulsa/core/utils/network_util.dart';
 import 'dart:convert';
 
 class Rest_login {

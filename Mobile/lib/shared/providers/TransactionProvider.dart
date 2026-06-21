@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:outletpulsa/services/transaction.dart';
 import 'package:outletpulsa/models/model_void.dart';
-import '../models/model_inquiry_pascabayar.dart';
-import '../models/model_list_kategori.dart';
-import '../models/model_list_operator.dart';
-import '../models/model_list_produk.dart';
-import '../models/model_transaction.dart';
-import '../models/model_prefix.dart';
+import 'package:outletpulsa/models/model_inquiry_pascabayar.dart';
+import 'package:outletpulsa/models/model_list_kategori.dart';
+import 'package:outletpulsa/models/model_list_operator.dart';
+import 'package:outletpulsa/models/model_list_produk.dart';
+import 'package:outletpulsa/models/model_transaction.dart';
+import 'package:outletpulsa/models/model_prefix.dart';
 
 class Transaction_provider with ChangeNotifier {
   bool? _error;

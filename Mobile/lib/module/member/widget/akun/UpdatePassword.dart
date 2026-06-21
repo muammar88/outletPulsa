@@ -3,9 +3,9 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../../config/config.dart';
-import '../../../../../provider/BerandaProvider.dart';
-import '../../../../../provider/UpdateAkunProvider.dart';
+import 'package:outletpulsa/core/constants/config.dart';
+import 'package:outletpulsa/shared/providers/BerandaProvider.dart';
+import 'package:outletpulsa/shared/providers/UpdateAkunProvider.dart';
 
 class Update_password extends StatefulWidget {
   const Update_password({super.key});

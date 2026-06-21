@@ -1,4 +1,4 @@
-import 'package:outletpulsa/sql/SQLHelper.dart';
+import 'package:outletpulsa/core/storage/SQLHelper.dart';
 
 class ApiHeaders {
   static final SQLHelper _db = SQLHelper();

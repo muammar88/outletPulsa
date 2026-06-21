@@ -30,12 +30,7 @@ export class StubController {
     return { error: false, error_msg: '' };
   }
 
-  /** GET /api/deposit-info-konfirmasi */
-  @UseGuards(JwtApiGuard)
-  @Get('deposit-info-konfirmasi')
-  infoKonfirmasiDeposit() {
-    return { error: false, error_msg: '', list: {}, data: {} };
-  }
+
 
   /** GET /api/deposit-delete-konfirmasi */
   @UseGuards(JwtApiGuard)

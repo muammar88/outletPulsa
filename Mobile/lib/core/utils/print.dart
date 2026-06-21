@@ -8,12 +8,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:outletpulsa/config/config.dart';
+import 'package:outletpulsa/core/constants/config.dart';
 
 // import 'package:esc_pos_bluetooth/esc_pos_bluetooth.dart';
 import 'package:bluetooth_print/bluetooth_print.dart';
 
-import '../provider/DetailProvider.dart';
+import 'package:outletpulsa/shared/providers/DetailProvider.dart';
 
 class Print extends StatefulWidget {
   const Print({super.key, required this.message, required this.kodeTrans});

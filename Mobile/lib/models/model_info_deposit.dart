@@ -1,9 +1,9 @@
 class Model_info_deposit {
   bool? _error;
   String? _errorMsg;
-  Map<String, dynamic>? _list_tiket;
+  List<dynamic>? _list_tiket;
   Map<String, dynamic>? _list_bank;
-  Map<String, dynamic>? _list_select_bank;
+  List<dynamic>? _list_select_bank;
   String? _pesan;
 
   Model_info_deposit(this._error, this._errorMsg);
@@ -11,9 +11,9 @@ class Model_info_deposit {
   bool? get error => _error;
   String? get errorMsg => _errorMsg;
 
-  Map<String, dynamic>? get list_tiket => _list_tiket;
+  List<dynamic>? get list_tiket => _list_tiket;
   Map<String, dynamic>? get list_bank => _list_bank;
-  Map<String, dynamic>? get list_select_bank => _list_select_bank;
+  List<dynamic>? get list_select_bank => _list_select_bank;
   String? get pesan => _pesan;
 
   Model_info_deposit.map(Map<String, dynamic> obj) {

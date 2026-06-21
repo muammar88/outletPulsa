@@ -3,14 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:outletpulsa/utils/print_pascabayar.dart';
+import 'package:outletpulsa/core/utils/print_pascabayar.dart';
 import 'package:provider/provider.dart';
-import '../../../../../config/config.dart';
-import '../../../../../provider/BerandaProvider.dart';
-import '../../../../../provider/DetailPascabayarProvider.dart';
-import '../../../../../provider/RiwayatPascabayarProvider.dart';
-import '../../../../../provider/loadProvider.dart';
-import '../../../../../widget/CircularProgressWidget.dart';
+import 'package:outletpulsa/core/constants/config.dart';
+import 'package:outletpulsa/shared/providers/BerandaProvider.dart';
+import 'package:outletpulsa/shared/providers/DetailPascabayarProvider.dart';
+import 'package:outletpulsa/shared/providers/RiwayatPascabayarProvider.dart';
+import 'package:outletpulsa/shared/providers/loadProvider.dart';
+import 'package:outletpulsa/shared/widgets/CircularProgressWidget.dart';
 
 class Detail_transaksi_pascabayar extends StatefulWidget {
   Detail_transaksi_pascabayar({super.key, required this.kodeTrans});

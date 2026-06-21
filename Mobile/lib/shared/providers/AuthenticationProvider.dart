@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../services/login.dart';
-import '../models/model_login.dart';
-import '../models/model_void.dart';
-import '../sql/ModelSQL.dart';
-import '../sql/SQLHelper.dart';
+import 'package:outletpulsa/services/login.dart';
+import 'package:outletpulsa/models/model_login.dart';
+import 'package:outletpulsa/models/model_void.dart';
+import 'package:outletpulsa/core/storage/ModelSQL.dart';
+import 'package:outletpulsa/core/storage/SQLHelper.dart';
 
 class Authentication_provider with ChangeNotifier {
   bool _isLogin = false;

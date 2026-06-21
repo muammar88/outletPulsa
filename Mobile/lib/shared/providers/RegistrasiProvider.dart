@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/registrasi.dart';
-import '../models/model_void.dart';
+import 'package:outletpulsa/services/registrasi.dart';
+import 'package:outletpulsa/models/model_void.dart';
 
 class Registrasi_provider with ChangeNotifier {
   Future<Model_void> getOTP(String nomor_whatsapp) async {

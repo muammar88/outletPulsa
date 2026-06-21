@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:outletpulsa/config/config.dart';
+import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/models/model_detail_transaksi.dart';
 import 'package:outletpulsa/models/model_detail_transaksi_pascabayar.dart';
 import 'package:outletpulsa/models/model_inquiry_pascabayar.dart';
@@ -8,8 +8,8 @@ import 'package:outletpulsa/models/model_list_operator.dart';
 import 'package:outletpulsa/models/model_list_produk.dart';
 import 'package:outletpulsa/models/model_transaction.dart';
 import 'package:outletpulsa/models/model_void.dart';
-import 'package:outletpulsa/sql/SQLHelper.dart';
-import 'package:outletpulsa/utils/network_util.dart';
+import 'package:outletpulsa/core/storage/SQLHelper.dart';
+import 'package:outletpulsa/core/utils/network_util.dart';
 import 'api_headers.dart';
 import 'package:outletpulsa/models/model_prefix.dart';
 

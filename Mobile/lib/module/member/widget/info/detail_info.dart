@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../../../../config/config.dart';
-import '../../../../provider/InfoBelumBacaProvider.dart';
-import '../../../../provider/UpdateStatusBacaProvider.dart';
+import 'package:outletpulsa/core/constants/config.dart';
+import 'package:outletpulsa/shared/providers/InfoBelumBacaProvider.dart';
+import 'package:outletpulsa/shared/providers/UpdateStatusBacaProvider.dart';
 
 class Detail_info extends StatefulWidget {
   const Detail_info({

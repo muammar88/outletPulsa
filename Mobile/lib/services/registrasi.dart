@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:outletpulsa/config/config.dart';
+import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/models/model_void.dart';
-import 'package:outletpulsa/utils/network_util.dart';
+import 'package:outletpulsa/core/utils/network_util.dart';
 
 class Rest_registrasi {
   String? _get_otp_url;

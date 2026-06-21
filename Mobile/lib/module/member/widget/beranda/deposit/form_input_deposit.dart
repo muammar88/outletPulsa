@@ -4,15 +4,37 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:outletpulsa/provider/AuthenticationProvider.dart';
-import 'package:outletpulsa/provider/InfoAddDepositProvider.dart';
+import 'package:outletpulsa/shared/providers/AuthenticationProvider.dart';
+import 'package:outletpulsa/shared/providers/InfoAddDepositProvider.dart';
 import 'package:provider/provider.dart';
-import '../../../../../config/config.dart';
-import '../../../../../provider/BerandaProvider.dart';
-import '../../../../../provider/DepositProvider.dart';
-import '../../../../../provider/loadProvider.dart';
-import '../../../../../widget/CircularProgressWidget.dart';
+import 'package:outletpulsa/core/constants/config.dart';
+import 'package:outletpulsa/shared/providers/BerandaProvider.dart';
+import 'package:outletpulsa/shared/providers/DepositProvider.dart';
+import 'package:outletpulsa/shared/providers/loadProvider.dart';
+import 'package:outletpulsa/shared/widgets/CircularProgressWidget.dart';
+import 'package:intl/intl.dart';
 import 'konfirmasi_deposit_saldo.dart';
+
+class NumericTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) {
+      return newValue.copyWith(text: '');
+    }
+    
+    final digitsOnly = newValue.text.replaceAll(RegExp(r'[^\d]'), '');
+    if (digitsOnly.isEmpty) return newValue.copyWith(text: '');
+
+    final intValue = int.parse(digitsOnly);
+    final formatter = NumberFormat.currency(locale: 'id', symbol: '', decimalDigits: 0);
+    String newText = formatter.format(intValue).trim();
+
+    return TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newText.length),
+    );
+  }
+}
 
 class Form_input_deposit extends StatefulWidget {
   const Form_input_deposit({super.key});
@@ -27,6 +49,8 @@ class _Form_input_depositState extends State<Form_input_deposit> with SingleTick
   bool loadData = false;
   String? selectedBank;
   var nominalController = TextEditingController();
+
+  final NumericTextFormatter _numericFormatter = NumericTextFormatter();
 
   static const double _kWideBreakpoint = 700.0;
   static const Color _kPrimary = Color(0xFF0F1F6E);
@@ -115,7 +139,8 @@ class _Form_input_depositState extends State<Form_input_deposit> with SingleTick
       loader.isLoad = true;
       final deposit = Provider.of<Deposit_provider>(context, listen: false);
       
-      var feedBack = await deposit.depositSaldo(nominalController.text, selectedBank!);
+      var cleanNominal = nominalController.text.replaceAll(RegExp(r'[^\d]'), '');
+      var feedBack = await deposit.depositSaldo(cleanNominal, selectedBank!);
       
       loader.isLoad = false;
       
@@ -310,11 +335,7 @@ class _Form_input_depositState extends State<Form_input_deposit> with SingleTick
             enableSuggestions: false,
             autocorrect: false,
             inputFormatters: [
-              CurrencyTextInputFormatter.currency(
-                locale: 'id',
-                decimalDigits: 0,
-                symbol: 'Rp ',
-              )
+              _numericFormatter
             ],
             style: GoogleFonts.poppins(
               fontSize: 16,
@@ -338,6 +359,12 @@ class _Form_input_depositState extends State<Form_input_deposit> with SingleTick
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: const BorderSide(color: _kPrimary, width: 2),
+              ),
+              prefixText: 'Rp ',
+              prefixStyle: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF1A1A2E),
               ),
               prefixIcon: Padding(
                 padding: const EdgeInsets.only(left: 16, right: 12),

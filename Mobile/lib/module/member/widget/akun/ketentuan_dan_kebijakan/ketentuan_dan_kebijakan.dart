@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../../../../../config/config.dart';
+import 'package:outletpulsa/core/constants/config.dart';
 
 class Ketentuan_dan_kebijakan extends StatefulWidget {
   const Ketentuan_dan_kebijakan({super.key});

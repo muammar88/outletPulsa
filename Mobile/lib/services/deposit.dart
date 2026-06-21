@@ -1,11 +1,11 @@
 import 'dart:convert';
-import 'package:outletpulsa/config/config.dart';
+import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/models/model_detail_deposit.dart';
 import 'package:outletpulsa/models/model_info_deposit.dart';
 import 'package:outletpulsa/models/model_konfirmasi_deposit.dart';
 import 'package:outletpulsa/models/model_void.dart';
-import 'package:outletpulsa/sql/SQLHelper.dart';
-import '../utils/network_util.dart';
+import 'package:outletpulsa/core/storage/SQLHelper.dart';
+import 'package:outletpulsa/core/utils/network_util.dart';
 import 'api_headers.dart';
 
 class Rest_deposit {

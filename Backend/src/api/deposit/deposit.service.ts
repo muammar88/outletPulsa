@@ -67,4 +67,61 @@ export class DepositService {
       };
     }
   }
+
+  async getDepositInfoKonfirmasi(memberId: number) {
+    try {
+      const deposit = await this.prisma.requestDeposit.findFirst({
+        where: {
+          riwayatTransaksi: {
+            memberId: memberId,
+          },
+          status: 'proses',
+        },
+        orderBy: {
+          id: 'desc',
+        },
+        include: {
+          bankTransferOutlet: {
+            include: {
+              bank: true,
+            },
+          },
+        },
+      });
+
+      if (!deposit) {
+        return {
+          error: false,
+          message: 'Success',
+          data: {},
+        };
+      }
+
+      const totalNominal = (deposit.nominal || 0) + (deposit.nominalTambahan || 0);
+
+      return {
+        error: false,
+        message: 'Success',
+        data: {
+          list: {
+            kode: deposit.kode || '-',
+            nominal: totalNominal.toString(),
+            bank_tujuan_transfer: deposit.bankTransferOutlet?.bank?.nama || '-',
+            nomor_rekening_akun: deposit.bankTransferOutlet?.accountNumber || '-',
+            nama_akun: deposit.bankTransferOutlet?.accountName || '-',
+            status_deposit: deposit.status || '-',
+            status_kirim: deposit.statusKirim || '-',
+            alasan_penolakan: deposit.alasanPenolakan || '-',
+            waktu_kirim: deposit.waktuKirim ? deposit.waktuKirim.toISOString() : '-',
+          },
+        },
+      };
+    } catch (error) {
+      return {
+        error: true,
+        error_msg: 'Gagal mengambil informasi konfirmasi deposit',
+        data: {},
+      };
+    }
+  }
 }

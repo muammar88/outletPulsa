@@ -7,9 +7,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:outletpulsa/config/config.dart';
+import 'package:outletpulsa/core/constants/config.dart';
 import 'package:bluetooth_print/bluetooth_print.dart';
-import 'package:outletpulsa/provider/DetailPascabayarProvider.dart';
+import 'package:outletpulsa/shared/providers/DetailPascabayarProvider.dart';
 
 class PrintPascabayar extends StatefulWidget {
   const PrintPascabayar({super.key, required this.kodeTrans});

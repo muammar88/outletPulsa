@@ -3,31 +3,53 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
-import '../../../../../config/config.dart';
-import '../../../../../provider/BerandaProvider.dart';
-import '../../../../../provider/KonfirmasiProvider.dart';
-import '../../../../../provider/loadProvider.dart';
-import '../../../../../widget/CircularProgressWidget.dart';
+import 'package:outletpulsa/core/constants/config.dart';
+import 'package:outletpulsa/shared/providers/BerandaProvider.dart';
+import 'package:outletpulsa/shared/providers/KonfirmasiProvider.dart';
+import 'package:outletpulsa/shared/providers/loadProvider.dart';
+import 'package:outletpulsa/shared/widgets/CircularProgressWidget.dart';
 
 class Konfirmasi_deposit_saldo extends StatefulWidget {
   const Konfirmasi_deposit_saldo({super.key});
 
   @override
-  State<Konfirmasi_deposit_saldo> createState() =>
-      _Konfirmasi_deposit_saldoState();
+  State<Konfirmasi_deposit_saldo> createState() => _Konfirmasi_deposit_saldoState();
 }
 
-class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
+class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> with SingleTickerProviderStateMixin {
   final config = ConfigApp();
 
   bool loadData = false;
   bool update = false;
 
+  static const double _kWideBreakpoint = 700.0;
+  static const Color _kPrimary = Color(0xFF0F1F6E);
+  static const Color _kPrimaryLight = Color(0xFF1A3DB5);
+
+  late AnimationController _animController;
+  late Animation<double> _fadeAnim;
+  late Animation<Offset> _slideAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _animController, curve: Curves.easeOut),
+    );
+    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+      CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
+    );
+    _animController.forward();
+  }
+
   @override
   void didChangeDependencies() async {
     if (loadData == false) {
-      await Provider.of<Konfirmasi_provider>(context, listen: false)
-          .getInfoKonfirmasi();
+      await Provider.of<Konfirmasi_provider>(context, listen: false).getInfoKonfirmasi();
       loadData = true;
       update = true;
     }
@@ -37,84 +59,84 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
     super.didChangeDependencies();
   }
 
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
+
+  void _showSnackBar(String message, {required bool isSuccess}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: isSuccess ? const Color(0xFF2E7D32) : const Color(0xFFD32F2F),
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        content: Row(
+          children: [
+            Icon(
+              isSuccess ? TablerIcons.circle_check : TablerIcons.alert_circle,
+              color: Colors.white,
+              size: 18,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(message, style: GoogleFonts.poppins(fontSize: 13, color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _peringatanBatalkanDeposit() async {
-    var loader = await Provider.of<Load_provider>(context, listen: false);
+    var loader = Provider.of<Load_provider>(context, listen: false);
     return showDialog<void>(
       context: context,
-      barrierDismissible: false, // user must tap button!
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Peringatan',
-              style: GoogleFonts.poppins(
-                  textStyle: Theme.of(context).textTheme.headlineMedium,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: config.text_dark_color)),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('Apakah anda ingin membatalkan permintaan deposit?.',
-                    style: GoogleFonts.poppins(
-                        textStyle: Theme.of(context).textTheme.headlineMedium,
-                        fontSize: 15,
-                        color: config.text_dark_color)),
-              ],
-            ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              const Icon(TablerIcons.alert_triangle, color: Color(0xFFD32F2F), size: 28),
+              const SizedBox(width: 10),
+              Text('Batalkan',
+                  style: GoogleFonts.poppins(
+                      fontSize: 20, fontWeight: FontWeight.bold, color: const Color(0xFFD32F2F))),
+            ],
           ),
+          content: Text('Apakah anda yakin ingin membatalkan permintaan deposit ini?',
+              style: GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF1A1A2E), height: 1.5)),
           actions: <Widget>[
             TextButton(
-              child: Text('Tidak',
+              child: Text('TIDAK',
                   style: GoogleFonts.poppins(
-                      textStyle: Theme.of(context).textTheme.headlineMedium,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: config.text_dark_color)),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+                      fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey.shade600)),
+              onPressed: () => Navigator.of(context).pop(),
             ),
-            TextButton(
-              child: Text('Iya',
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD32F2F),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                elevation: 0,
+              ),
+              child: Text('YA, BATALKAN',
                   style: GoogleFonts.poppins(
-                      textStyle: Theme.of(context).textTheme.headlineMedium,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: config.text_dark_color)),
+                      fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
               onPressed: () async {
+                Navigator.of(context).pop();
                 loader.isLoad = true;
-                final konf =
-                    Provider.of<Konfirmasi_provider>(context, listen: false);
-                // delete process
-                // konf.deleteKonfirmasi();
-                // konfirmasi process
+                final konf = Provider.of<Konfirmasi_provider>(context, listen: false);
                 var deletes = await konf.deleteKonfirmasi();
-                // filter error
                 if (deletes.error == false) {
                   loader.isLoad = false;
-                  // get data beranda
-                  Provider.of<Beranda_provider>(context, listen: false)
-                      .get_data_beranda();
-                  // back to beranda page
+                  Provider.of<Beranda_provider>(context, listen: false).get_data_beranda();
                   Navigator.of(context).popUntil((route) => route.isFirst);
-                  // show alert
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      backgroundColor: Colors.teal,
-                      behavior: SnackBarBehavior.floating,
-                      content: Text(konf.errorMsg!,
-                          style: GoogleFonts.poppins(
-                              textStyle: Theme.of(context).textTheme.headlineMedium,
-                              fontSize: 12,
-                              color: config.text_light_color))));
+                  _showSnackBar(konf.errorMsg ?? 'Deposit berhasil dibatalkan', isSuccess: true);
                 } else {
                   loader.isLoad = false;
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      backgroundColor: const Color.fromARGB(255, 163, 57, 49),
-                      behavior: SnackBarBehavior.floating,
-                      content: Text(konf.errorMsg!,
-                          style: GoogleFonts.poppins(
-                              textStyle: Theme.of(context).textTheme.headlineMedium,
-                              fontSize: 12,
-                              color: config.text_light_color))));
+                  _showSnackBar(konf.errorMsg ?? 'Gagal membatalkan deposit', isSuccess: false);
                 }
               },
             ),
@@ -125,82 +147,54 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
   }
 
   Future<void> _peringatanKonfirmasiDeposit() async {
-    var loader = await Provider.of<Load_provider>(context, listen: false);
+    var loader = Provider.of<Load_provider>(context, listen: false);
     return showDialog<void>(
       context: context,
-      barrierDismissible: false, // user must tap button!
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Peringatan',
-              style: GoogleFonts.poppins(
-                  textStyle: Theme.of(context).textTheme.headlineMedium,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: config.text_dark_color)),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(
-                    'Apakah anda yakin sudah mengirimkan biaya sesuai dengan nomor rekening dan nominal transfer?.',
-                    style: GoogleFonts.poppins(
-                        textStyle: Theme.of(context).textTheme.headlineMedium,
-                        fontSize: 15,
-                        color: config.text_dark_color)),
-              ],
-            ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              const Icon(TablerIcons.info_circle, color: _kPrimary, size: 28),
+              const SizedBox(width: 10),
+              Text('Konfirmasi',
+                  style: GoogleFonts.poppins(
+                      fontSize: 20, fontWeight: FontWeight.bold, color: _kPrimary)),
+            ],
           ),
+          content: Text(
+              'Apakah anda yakin sudah mengirimkan dana sesuai dengan nomor rekening dan nominal transfer?',
+              style: GoogleFonts.poppins(fontSize: 14, color: const Color(0xFF1A1A2E), height: 1.5)),
           actions: <Widget>[
             TextButton(
-              child: Text('Tidak',
+              child: Text('BELUM',
                   style: GoogleFonts.poppins(
-                      textStyle: Theme.of(context).textTheme.headlineMedium,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: config.text_dark_color)),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+                      fontSize: 14, fontWeight: FontWeight.bold, color: Colors.grey.shade600)),
+              onPressed: () => Navigator.of(context).pop(),
             ),
-            TextButton(
-              child: Text('Iya',
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _kPrimary,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                elevation: 0,
+              ),
+              child: Text('YA, SUDAH',
                   style: GoogleFonts.poppins(
-                      textStyle: Theme.of(context).textTheme.headlineMedium,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: config.text_dark_color)),
+                      fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white)),
               onPressed: () async {
+                Navigator.of(context).pop();
                 loader.isLoad = true;
-                final konf =
-                    Provider.of<Konfirmasi_provider>(context, listen: false);
-                // konfirmasi process
+                final konf = Provider.of<Konfirmasi_provider>(context, listen: false);
                 var konfirmasi = await konf.konfirmasiDeposit();
-                // filter error
                 if (konfirmasi.error == false) {
                   loader.isLoad = false;
-                  // get data beranda
-                  Provider.of<Beranda_provider>(context, listen: false)
-                      .get_data_beranda();
-                  // back to beranda page
+                  Provider.of<Beranda_provider>(context, listen: false).get_data_beranda();
                   Navigator.of(context).popUntil((route) => route.isFirst);
-                  // show alert
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      backgroundColor: Colors.teal,
-                      behavior: SnackBarBehavior.floating,
-                      content: Text(konf.errorMsg!,
-                          style: GoogleFonts.poppins(
-                              textStyle: Theme.of(context).textTheme.headlineMedium,
-                              fontSize: 12,
-                              color: config.text_light_color))));
+                  _showSnackBar(konf.errorMsg ?? 'Konfirmasi berhasil dikirim', isSuccess: true);
                 } else {
                   loader.isLoad = false;
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      backgroundColor: const Color.fromARGB(255, 163, 57, 49),
-                      behavior: SnackBarBehavior.floating,
-                      content: Text(konf.errorMsg!,
-                          style: GoogleFonts.poppins(
-                              textStyle: Theme.of(context).textTheme.headlineMedium,
-                              fontSize: 12,
-                              color: config.text_light_color))));
+                  _showSnackBar(konf.errorMsg ?? 'Gagal mengirim konfirmasi', isSuccess: false);
                 }
               },
             ),
@@ -210,436 +204,501 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> {
     );
   }
 
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(color: _kPrimary.withOpacity(0.1), blurRadius: 30, offset: const Offset(0, 10))
+              ],
+            ),
+            child: const Icon(TablerIcons.receipt_off, size: 60, color: Color(0xFF8898AA)),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Tidak Ada Deposit',
+            style: GoogleFonts.outfit(
+              fontSize: 24,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF1A1A2E),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Saat ini tidak ada permintaan deposit\nyang menunggu konfirmasi pembayaran.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: const Color(0xFF8898AA),
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 32),
+          ElevatedButton.icon(
+            icon: const Icon(TablerIcons.arrow_left, size: 18, color: Colors.white),
+            label: Text('Kembali ke Beranda',
+                style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _kPrimary,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBrandPanel({bool compact = false}) {
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [_kPrimary, _kPrimaryLight],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Stack(
+          children: [
+            Positioned(top: -50, right: -50, child: _Circle(size: 200, opacity: 0.05)),
+            Positioned(top: 50, right: 50, child: _Circle(size: 90, opacity: 0.06)),
+            Positioned(bottom: -40, left: -40, child: _Circle(size: 130, opacity: 0.04)),
+            Positioned(
+              top: compact ? 0 : 16,
+              left: compact ? 0 : 16,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  margin: compact ? const EdgeInsets.all(16) : EdgeInsets.zero,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(TablerIcons.arrow_left, color: Colors.white, size: 20),
+                ),
+              ),
+            ),
+            Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 32, vertical: compact ? 40 : 0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1.5),
+                      ),
+                      child: const Icon(TablerIcons.receipt_2, size: 40, color: Colors.white),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(
+                      'Detail\nPembayaran',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.outfit(
+                        fontSize: compact ? 28 : 36,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        height: 1.2,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Selesaikan pembayaran agar saldo otomatis bertambah',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.poppins(
+                        fontSize: compact ? 13 : 15,
+                        color: Colors.white.withOpacity(0.85),
+                        height: 1.5,
+                      ),
+                    ),
+                    if (compact) const SizedBox(height: 30),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, {bool isStatus = false, Color? statusColor, bool isCopy = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF8898AA),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 3,
+            child: isStatus
+                ? Align(
+                    alignment: Alignment.centerRight,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: statusColor?.withOpacity(0.1) ?? Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: statusColor?.withOpacity(0.3) ?? Colors.grey.shade300),
+                      ),
+                      child: Text(
+                        value,
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: statusColor ?? Colors.grey.shade700,
+                        ),
+                      ),
+                    ),
+                  )
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          value,
+                          textAlign: TextAlign.right,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF1A1A2E),
+                          ),
+                        ),
+                      ),
+                      if (isCopy) ...[
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () async {
+                            await Clipboard.setData(ClipboardData(text: value));
+                            _showSnackBar('Berhasil disalin: $value', isSuccess: true);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF0F2F8),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Icon(TablerIcons.copy, size: 16, color: _kPrimary),
+                          ),
+                        ),
+                      ]
+                    ],
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContentCard(Konfirmasi_provider info, Load_provider loader, {bool isWide = false}) {
+    Color statusDepColor = info.status_deposit == 'proses'
+        ? const Color(0xFFF59E0B)
+        : info.status_deposit == 'gagal'
+            ? const Color(0xFFDC2626)
+            : const Color(0xFF10B981);
+            
+    Color statusKirimColor = info.status_kirim == 'belum_kirim'
+        ? const Color(0xFFDC2626)
+        : const Color(0xFF10B981);
+
+    return Container(
+      padding: EdgeInsets.all(isWide ? 40 : 24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: isWide
+            ? [BoxShadow(color: _kPrimary.withOpacity(0.08), blurRadius: 40, offset: const Offset(0, 15))]
+            : null,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFFBEB),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFFDE68A)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(TablerIcons.info_square_rounded, color: Color(0xFFD97706), size: 24),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Silahkan lakukan transfer sesuai dengan Nominal Deposit ke Rekening Tujuan.\n\nTransaksi diproses jam 09.00 - 21.00 WIB. Kesalahan transfer di luar tanggung jawab kami.',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: const Color(0xFF92400E),
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Informasi Transaksi',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF1A1A2E),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8F9FA),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Column(
+              children: [
+                _buildDetailRow('Kode Tiket', info.kode ?? '-'),
+                Divider(color: Colors.grey.shade200, height: 1),
+                _buildDetailRow('Nominal', 'Rp ${info.nominal ?? '-'}', isCopy: true),
+                Divider(color: Colors.grey.shade200, height: 1),
+                _buildDetailRow('Bank Tujuan', info.bank_tujuan_transfer ?? '-'),
+                Divider(color: Colors.grey.shade200, height: 1),
+                _buildDetailRow('No. Rekening', info.nomor_rekening_akun ?? '-', isCopy: true),
+                Divider(color: Colors.grey.shade200, height: 1),
+                _buildDetailRow('Nama Pemilik', info.nama_akun ?? '-'),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
+            'Status',
+            style: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF1A1A2E),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8F9FA),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Column(
+              children: [
+                _buildDetailRow('Status Deposit', info.status_deposit?.toUpperCase() ?? '-', isStatus: true, statusColor: statusDepColor),
+                Divider(color: Colors.grey.shade200, height: 1),
+                _buildDetailRow('Status Kirim', info.status_kirim?.replaceAll('_', ' ').toUpperCase() ?? '-', isStatus: true, statusColor: statusKirimColor),
+              ],
+            ),
+          ),
+          const SizedBox(height: 36),
+          Column(
+            children: [
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: loader.isLoad == true ? null : _peringatanKonfirmasiDeposit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _kPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: loader.isLoad == true ? 0 : 4,
+                    shadowColor: _kPrimary.withOpacity(0.4),
+                  ),
+                  child: loader.isLoad == true
+                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                      : Text(
+                          "SAYA SUDAH TRANSFER",
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: loader.isLoad == true ? null : _peringatanBatalkanDeposit,
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    side: const BorderSide(color: Color(0xFFD32F2F), width: 1.5),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  ),
+                  child: Text(
+                    "BATALKAN DEPOSIT",
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFFD32F2F),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final info_konfirmasi = Provider.of<Konfirmasi_provider>(context);
+    final isError = info_konfirmasi.error == true || info_konfirmasi.kode == null;
+
     return Scaffold(
-        // appBar: AppBar(
-        //   leading: GestureDetector(
-        //     child: Icon(
-        //       Icons.arrow_back,
-        //       color: config.text_light_color,
-        //     ),
-        //     onTap: () {
-        //       Navigator.of(context).popUntil((route) => route.isFirst);
-        //     },
-        //   ),
-        //   backgroundColor: config.background_smooth_navy,
-        //   elevation: 0,
-        //   centerTitle: true,
-        //   title: Text(
-        //     'Konfirmasi Pembayaran',
-        //     style: GoogleFonts.poppins(
-        //         textStyle: Theme.of(context).textTheme.headlineMedium,
-        //         fontSize: 16,
-        //         fontWeight: FontWeight.bold,
-        //         color: config.text_light_color),
-        //   ),
-        // ),
-        backgroundColor: Colors.grey[200],
-        body: Consumer<Load_provider>(
-          builder: (context, loader, child) => Stack(
-            children: [
-              Container(
-                height: 200,
-                color: config.background_color,
-              ),
-              Container(
-                  padding: EdgeInsets.only(
-                    left: 30,
-                    right: 30,
-                  ),
-                  child: ListView(children: [
-                    SizedBox(
-                      height: 20,
-                    ),
-                    Row(children: [
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: InkWell(
-                            onTap: () {
-                              Navigator.of(context).pop();
-                              // Navigator.of(context)
-                              //     .popUntil((route) => route.isFirst);
-                            },
-                            child: Icon(
-                              Icons.arrow_back,
-                              color: Colors.white,
+      backgroundColor: const Color(0xFFF0F2F8),
+      body: Consumer<Load_provider>(
+        builder: (context, loader, child) {
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              bool isWide = constraints.maxWidth >= _kWideBreakpoint;
+
+              if (isWide) {
+                return Row(
+                  children: [
+                    Expanded(flex: 5, child: _buildBrandPanel()),
+                    Expanded(
+                      flex: 6,
+                      child: Container(
+                        color: Colors.white,
+                        child: SafeArea(
+                          child: Center(
+                            child: SingleChildScrollView(
+                              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 32),
+                              physics: const BouncingScrollPhysics(),
+                              child: FadeTransition(
+                                opacity: _fadeAnim,
+                                child: SlideTransition(
+                                  position: _slideAnim,
+                                  child: isError ? _buildEmptyState() : _buildContentCard(info_konfirmasi, loader, isWide: true),
+                                ),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                      // Expanded(
-                      //   child: detail.status == 'SUKSES'
-                      //       ? Align(
-                      //           alignment: Alignment.centerRight,
-                      //           child: IconButton(
-                      //               icon: Icon(
-                      //                 detail.type == 'prabayar'
-                      //                     ? TablerIcons.copy
-                      //                     : TablerIcons.share,
-                      //                 size: 20,
-                      //                 color: Colors.white,
-                      //               ),
-                      //               onPressed: () async {
-                      //                 await Clipboard.setData(
-                      //                     ClipboardData(text: detail.message!));
+                    ),
+                  ],
+                );
+              }
 
-                      //                 ScaffoldMessenger.of(context)
-                      //                     .showSnackBar(SnackBar(
-                      //                         backgroundColor: Colors.teal,
-                      //                         behavior:
-                      //                             SnackBarBehavior.floating,
-                      //                         content: Text(
-                      //                             'Pesan Berhasil Di Copy Di Clipboard',
-                      //                             style: GoogleFonts.poppins(
-                      //                                 textStyle:
-                      //                                     Theme.of(context)
-                      //                                         .textTheme
-                      //                                         .headlineMedium,
-                      //                                 fontSize: 12,
-                      //                                 color: config
-                      //                                     .text_light_color))));
-                      //               }),
-                      //         )
-                      //       : SizedBox(),
-                      // )
-                    ]),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    Container(
-                      child: Image.asset(
-                        'assets/img/top.png',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    Container(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 0, horizontal: 10),
-                      constraints: BoxConstraints(
-                          minHeight: 180,
-                          minWidth: double.infinity,
-                          maxHeight: double.infinity),
-                      decoration: BoxDecoration(
-                        color: config.text_light_color,
-                        // borderRadius: BorderRadius.circular(10)
-                      ),
-                      child: Column(
-                        children: [
-                          BoxDetail(
-                            config: config,
-                            label: 'Kode Transaksi',
-                            colors: config.text_dark_color,
-                            bold: true,
-                            value: info_konfirmasi.kode ?? '-',
-                            btnCopy: false,
-                          ),
-                          // Divider(),
-                          BoxDetail(
-                            config: config,
-                            label: 'Nominal Deposit',
-                            colors: config.text_dark_color,
-                            bold: true,
-                            value: info_konfirmasi.nominal ?? '-',
-                            btnCopy: false,
-                          ),
-                          //Divider(),
-                          BoxDetail(
-                            config: config,
-                            label: 'Bank Tujuan Transfer',
-                            colors: config.text_dark_color,
-                            bold: true,
-                            value: info_konfirmasi.bank_tujuan_transfer ?? '-',
-                            btnCopy: false,
-                          ),
-                          // Divider(),
-                          BoxDetail(
-                            config: config,
-                            label: 'Nomor Rekening Tujuan Transfer',
-                            colors: config.text_dark_color,
-                            bold: true,
-                            value: info_konfirmasi.nomor_rekening_akun ?? '-',
-                            btnCopy: true,
-                          ),
-                          // Divider(),
-                          BoxDetail(
-                            config: config,
-                            label: 'Nama Akun Tujuan Transfer',
-                            colors: config.text_dark_color,
-                            bold: true,
-                            value: info_konfirmasi.nama_akun ?? '-',
-                            btnCopy: false,
-                          ),
-                          // Divider(),
-                          BoxDetail(
-                            config: config,
-                            label: 'Status Deposit',
-                            colors: info_konfirmasi.status_deposit == 'proses'
-                                ? Color.fromARGB(255, 241, 219, 13)
-                                : info_konfirmasi.status_deposit == 'gagal'
-                                    ? Color.fromARGB(255, 245, 88, 88)
-                                    : Color.fromARGB(255, 82, 226, 45),
-                            bold: true,
-                            value: info_konfirmasi.status_deposit == 'proses'
-                                ? 'PROSES'
-                                : info_konfirmasi.status_deposit == 'gagal'
-                                    ? 'GAGAL'
-                                    : 'SUKSES',
-                            btnCopy: false,
-                          ),
-                          // Divider(),
-                          BoxDetail(
-                            config: config,
-                            label: 'Status Kirim',
-                            colors:
-                                info_konfirmasi.status_kirim == 'belum_kirim'
-                                    ? Color.fromARGB(255, 245, 88, 88)
-                                    : Color.fromARGB(255, 82, 226, 45),
-                            bold: true,
-                            value: info_konfirmasi.status_kirim == 'belum_kirim'
-                                ? 'BELUM KIRIM'
-                                : 'SUDAH KIRIM',
-                            btnCopy: false,
-                          ),
-                          // Divider(),
-                          BoxDetailText(
-                            config: config,
-                            title: 'Catatan',
-                            text:
-                                'Silahkan lakukan pengiriman ke bank dengan nomor rekening dan nominal deposit sesuai dengan nomor rekening dan nominal deposit diatas.\n\nTransaksi deposit hanya diproses dari jam 09.00 sampai Jam 21.00.\n\nSetiap kesalah transfer diluar tanggung jawab kami.',
-                          ),
-                          // Divider(),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      child: Image.asset(
-                        'assets/img/bottom-simple.png',
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                              onPressed: () async {
-                                _peringatanBatalkanDeposit();
-                              },
-                              child: Text(
-                                "Batalkan Permintaan Deposit",
-                                style: GoogleFonts.poppins(
-                                    textStyle:
-                                        Theme.of(context).textTheme.headlineMedium,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: config.text_light_color),
+              return SafeArea(
+                top: false,
+                child: LayoutBuilder(
+                  builder: (context, safeConstraints) {
+                    return SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(minHeight: safeConstraints.maxHeight),
+                        child: IntrinsicHeight(
+                          child: FadeTransition(
+                            opacity: _fadeAnim,
+                            child: SlideTransition(
+                              position: _slideAnim,
+                              child: Column(
+                                children: [
+                                  _buildBrandPanel(compact: true),
+                                  Expanded(
+                                    child: Container(
+                                      width: double.infinity,
+                                      color: const Color(0xFFF0F2F8),
+                                      child: isError
+                                          ? _buildEmptyState()
+                                          : Column(
+                                              children: [
+                                                Transform.translate(
+                                                  offset: const Offset(0, -30),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                                                    child: Container(
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white,
+                                                        borderRadius: BorderRadius.circular(28),
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            color: _kPrimary.withOpacity(0.08),
+                                                            blurRadius: 30,
+                                                            offset: const Offset(0, 10),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                      child: _buildContentCard(info_konfirmasi, loader),
+                                                    ),
+                                                  ),
+                                                ),
+                                                const Spacer(),
+                                              ],
+                                            ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              style: ButtonStyle(
-                                shape: MaterialStateProperty.all<
-                                        RoundedRectangleBorder>(
-                                    RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5.0),
-                                )),
-                                backgroundColor:
-                                    MaterialStateProperty.all(Colors.red),
-                                padding: MaterialStateProperty.all(
-                                    EdgeInsets.only(
-                                        top: 17,
-                                        bottom: 16,
-                                        left: 20,
-                                        right: 20)),
-                              )),
+                            ),
+                          ),
                         ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                              onPressed: () async {
-                                _peringatanKonfirmasiDeposit();
-                              },
-                              child: Text(
-                                "Konfirmasi Pembayaran",
-                                style: GoogleFonts.poppins(
-                                    textStyle:
-                                        Theme.of(context).textTheme.headlineMedium,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: config.text_light_color),
-                              ),
-                              style: ButtonStyle(
-                                shape: MaterialStateProperty.all<
-                                        RoundedRectangleBorder>(
-                                    RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5.0),
-                                )),
-                                backgroundColor: MaterialStateProperty.all(
-                                    config.btn_primary_color),
-                                padding: MaterialStateProperty.all(
-                                    EdgeInsets.only(
-                                        top: 17,
-                                        bottom: 16,
-                                        left: 20,
-                                        right: 20)),
-                              )),
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 60,
-                    )
-                  ])),
-              loader.isLoad == true ? CircularProgressWidget() : SizedBox(),
-            ],
-          ),
-        ));
-  }
-}
-
-class BoxDetail extends StatelessWidget {
-  const BoxDetail(
-      {super.key,
-      required this.config,
-      required this.label,
-      required this.colors,
-      required this.bold,
-      required this.value,
-      required this.btnCopy});
-
-  final ConfigApp config;
-  final String label;
-  final String value;
-  final bool bold;
-  final Color colors;
-  final bool btnCopy;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-      child: Row(
-        children: [
-          Expanded(
-              child: Text(
-            label,
-            style: GoogleFonts.poppins(
-                textStyle: Theme.of(context).textTheme.headlineMedium,
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: config.text_dark_color),
-          )),
-          Expanded(
-              child: Text(
-            value,
-            textAlign: TextAlign.end,
-            style: GoogleFonts.poppins(
-                textStyle: Theme.of(context).textTheme.headlineMedium,
-                fontSize: 13,
-                fontWeight: bold == true ? FontWeight.bold : FontWeight.normal,
-                color: colors),
-          )),
-          btnCopy == true
-              ? Container(
-                  width: 40,
-                  margin: EdgeInsets.only(left: 10),
-                  child: ElevatedButton(
-                      onPressed: () async {
-                        await Clipboard.setData(ClipboardData(text: value));
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            backgroundColor: Colors.teal,
-                            behavior: SnackBarBehavior.floating,
-                            content: Text(
-                                'Nomor Rekening Berhasil Di Copy Di Clipboard',
-                                style: GoogleFonts.poppins(
-                                    textStyle:
-                                        Theme.of(context).textTheme.headlineMedium,
-                                    fontSize: 12,
-                                    color: config.text_light_color))));
-                      },
-                      child: Icon(
-                        TablerIcons.copy,
-                        size: 15,
-                        color: config.text_dark_color,
                       ),
-                      style: ButtonStyle(
-                        shape:
-                            MaterialStateProperty.all<RoundedRectangleBorder>(
-                                RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5.0),
-                        )),
-                        backgroundColor:
-                            MaterialStateProperty.all(Colors.white),
-                        padding: MaterialStateProperty.all(EdgeInsets.only(
-                            top: 0, bottom: 0, left: 0, right: 0)),
-                      )),
-                )
-              : SizedBox()
-        ],
+                    );
+                  },
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
 }
 
-class BoxDetailText extends StatelessWidget {
-  const BoxDetailText(
-      {super.key,
-      required this.config,
-      required this.text,
-      required this.title});
+class _Circle extends StatelessWidget {
+  final double size;
+  final double opacity;
 
-  final ConfigApp config;
-  final String text;
-  final String title;
+  const _Circle({required this.size, required this.opacity});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(
-                  child: Text(
-                title,
-                textAlign: TextAlign.start,
-                style: GoogleFonts.poppins(
-                    textStyle: Theme.of(context).textTheme.headlineMedium,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: config.text_dark_color),
-              ))
-            ],
-          ),
-          SizedBox(
-            height: 10,
-          ),
-          Row(
-            children: [
-              Expanded(
-                  child: Text(
-                text,
-                textAlign: TextAlign.justify,
-                style: GoogleFonts.poppins(
-                    textStyle: Theme.of(context).textTheme.headlineMedium,
-                    fontSize: 12,
-                    // fontWeight: FontWeight.bold,
-                    color: config.text_dark_color),
-              ))
-            ],
-          ),
-        ],
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withOpacity(opacity),
       ),
     );
   }
 }
-

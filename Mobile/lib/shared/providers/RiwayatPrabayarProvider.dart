@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/riwayat.dart';
-import '../models/model_list.dart';
+import 'package:outletpulsa/services/riwayat.dart';
+import 'package:outletpulsa/models/model_list.dart';
 
 class Riwayat_prabayar_provider with ChangeNotifier {
   bool? _error;

@@ -3,12 +3,12 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import '../../../config/config.dart';
-import '../../../provider/InfoBelumBacaProvider.dart';
-import '../../../provider/InfoSudahBacaProvider.dart';
-import '../../../widget/allBoxLoading.dart';
-import '../../../widget/NotFound.dart';
-import '../widget/info/detail_info.dart';
+import 'package:outletpulsa/core/constants/config.dart';
+import 'package:outletpulsa/shared/providers/InfoBelumBacaProvider.dart';
+import 'package:outletpulsa/shared/providers/InfoSudahBacaProvider.dart';
+import 'package:outletpulsa/shared/widgets/allBoxLoading.dart';
+import 'package:outletpulsa/shared/widgets/NotFound.dart';
+import 'package:outletpulsa/module/member/widget/info/detail_info.dart';
 
 class Info_tab extends StatefulWidget {
   const Info_tab({super.key});

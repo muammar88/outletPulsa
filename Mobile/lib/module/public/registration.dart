@@ -4,10 +4,10 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import 'package:outletpulsa/config/config.dart';
-import 'package:outletpulsa/provider/RegistrasiProvider.dart';
-import 'package:outletpulsa/provider/loadProvider.dart';
-import 'package:outletpulsa/widget/CircularProgressWidget.dart';
+import 'package:outletpulsa/core/constants/config.dart';
+import 'package:outletpulsa/shared/providers/RegistrasiProvider.dart';
+import 'package:outletpulsa/shared/providers/loadProvider.dart';
+import 'package:outletpulsa/shared/widgets/CircularProgressWidget.dart';
 import 'package:outletpulsa/module/public/login.dart'; // import for AuthInput
 
 const _kPrimary = Color(0xFF0F1F6E);

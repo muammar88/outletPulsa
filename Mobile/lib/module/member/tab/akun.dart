@@ -4,15 +4,15 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:outletpulsa/module/member/widget/akun/agen/daftar_reseller_agen.dart';
 import 'package:provider/provider.dart';
 
-import '../../../config/config.dart';
-import '../../../provider/AuthenticationProvider.dart';
-import '../../../provider/BerandaProvider.dart';
-import '../widget/akun/saldo/riwayat_transfer_saldo.dart';
-import '../widget/akun/UpdateAkunName.dart';
-import '../widget/akun/saldo/form_transfer_saldo.dart';
-import '../widget/akun/UpdatePassword.dart';
-import '../widget/akun/ketentuan_dan_kebijakan/ketentuan_dan_kebijakan.dart';
-import '../widget/akun/agen/riwayat_pembayaran_fee_agen.dart';
+import 'package:outletpulsa/core/constants/config.dart';
+import 'package:outletpulsa/shared/providers/AuthenticationProvider.dart';
+import 'package:outletpulsa/shared/providers/BerandaProvider.dart';
+import 'package:outletpulsa/module/member/widget/akun/saldo/riwayat_transfer_saldo.dart';
+import 'package:outletpulsa/module/member/widget/akun/UpdateAkunName.dart';
+import 'package:outletpulsa/module/member/widget/akun/saldo/form_transfer_saldo.dart';
+import 'package:outletpulsa/module/member/widget/akun/UpdatePassword.dart';
+import 'package:outletpulsa/module/member/widget/akun/ketentuan_dan_kebijakan/ketentuan_dan_kebijakan.dart';
+import 'package:outletpulsa/module/member/widget/akun/agen/riwayat_pembayaran_fee_agen.dart';
 
 class Akun_tab extends StatefulWidget {
   const Akun_tab({super.key});

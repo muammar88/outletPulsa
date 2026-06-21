@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../../../config/config.dart';
-import '../../../provider/BerandaProvider.dart';
-import '../../../provider/RiwayatDepositProvider.dart';
-import '../../../provider/RiwayatPrabayarProvider.dart';
-import '../../../provider/RiwayatPascabayarProvider.dart';
-import '../../../widget/NotFound.dart';
-import '../../../widget/ErrorStateWidget.dart';
-import '../widget/beranda/transaksi/detail_deposit.dart';
-import '../widget/beranda/transaksi/detail_transaksi.dart';
-import '../widget/beranda/transaksi/detail_transaksi_pascabayar.dart';
+import 'package:outletpulsa/core/constants/config.dart';
+import 'package:outletpulsa/shared/providers/BerandaProvider.dart';
+import 'package:outletpulsa/shared/providers/RiwayatDepositProvider.dart';
+import 'package:outletpulsa/shared/providers/RiwayatPrabayarProvider.dart';
+import 'package:outletpulsa/shared/providers/RiwayatPascabayarProvider.dart';
+import 'package:outletpulsa/shared/widgets/NotFound.dart';
+import 'package:outletpulsa/shared/widgets/ErrorStateWidget.dart';
+import 'package:outletpulsa/module/member/widget/beranda/transaksi/detail_deposit.dart';
+import 'package:outletpulsa/module/member/widget/beranda/transaksi/detail_transaksi.dart';
+import 'package:outletpulsa/module/member/widget/beranda/transaksi/detail_transaksi_pascabayar.dart';
 
 class Riwayat_tab extends StatefulWidget {
   const Riwayat_tab({super.key});

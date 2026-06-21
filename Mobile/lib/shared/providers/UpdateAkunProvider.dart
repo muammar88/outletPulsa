@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:outletpulsa/models/model_void.dart';
-import '../services/akun.dart';
+import 'package:outletpulsa/services/akun.dart';
 
 class Update_akun_provider with ChangeNotifier {
   bool? _error;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/beranda.dart';
-import '../models/model_beranda.dart';
+import 'package:outletpulsa/services/beranda.dart';
+import 'package:outletpulsa/models/model_beranda.dart';
 
 class Beranda_provider with ChangeNotifier {
   bool isLogin = false;

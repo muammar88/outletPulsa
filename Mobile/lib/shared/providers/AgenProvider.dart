@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../services/agen.dart';
-import '../services/deposit.dart';
-import '../models/model_agen.dart';
-import '../models/model_detail_deposit.dart';
-import '../models/model_list_produk.dart';
-import '../models/model_void.dart';
+import 'package:outletpulsa/services/agen.dart';
+import 'package:outletpulsa/services/deposit.dart';
+import 'package:outletpulsa/models/model_agen.dart';
+import 'package:outletpulsa/models/model_detail_deposit.dart';
+import 'package:outletpulsa/models/model_list_produk.dart';
+import 'package:outletpulsa/models/model_void.dart';
 
 class Agen_provider with ChangeNotifier {
   bool? _error;

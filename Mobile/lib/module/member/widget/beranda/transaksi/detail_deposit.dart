@@ -5,8 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../../config/config.dart';
-import '../../../../../provider/DepositProvider.dart';
+import 'package:outletpulsa/core/constants/config.dart';
+import 'package:outletpulsa/shared/providers/DepositProvider.dart';
 
 class Detail_deposit extends StatefulWidget {
   Detail_deposit({super.key, required this.status, required this.id});

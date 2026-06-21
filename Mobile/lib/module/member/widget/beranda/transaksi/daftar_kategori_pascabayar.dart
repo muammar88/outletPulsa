@@ -4,11 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:outletpulsa/module/member/widget/beranda/transaksi/input_ppob_pascabayar.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../../config/config.dart';
-import '../../../../../provider/TransactionProvider.dart';
-import '../../../../../widget/skeletonWidget.dart';
-import '../../../../../widget/NotFound.dart';
-import '../../../../../widget/ErrorStateWidget.dart';
+import 'package:outletpulsa/core/constants/config.dart';
+import 'package:outletpulsa/shared/providers/TransactionProvider.dart';
+import 'package:outletpulsa/shared/widgets/skeletonWidget.dart';
+import 'package:outletpulsa/shared/widgets/NotFound.dart';
+import 'package:outletpulsa/shared/widgets/ErrorStateWidget.dart';
 
 class Daftar_kategori_pascabayar extends StatefulWidget {
   const Daftar_kategori_pascabayar(

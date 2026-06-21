@@ -3,9 +3,9 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../../config/config.dart';
-import '../../../../../provider/RiwayatTransferProvider.dart';
-import '../../../../../widget/NotFound.dart';
+import 'package:outletpulsa/core/constants/config.dart';
+import 'package:outletpulsa/shared/providers/RiwayatTransferProvider.dart';
+import 'package:outletpulsa/shared/widgets/NotFound.dart';
 
 class Riwayat_transfer_saldo extends StatefulWidget {
   const Riwayat_transfer_saldo({super.key});

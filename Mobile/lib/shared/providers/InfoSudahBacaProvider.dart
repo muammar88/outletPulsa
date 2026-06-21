@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../services/info.dart';
-import '../models/model_list.dart';
+import 'package:outletpulsa/services/info.dart';
+import 'package:outletpulsa/models/model_list.dart';
 
 class Info_sudah_baca_provider with ChangeNotifier {
   bool? _error;

@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import '../../../config/config.dart';
-import '../../../provider/BerandaProvider.dart';
-import '../../../provider/loadProvider.dart';
-import '../widget/beranda/deposit/form_input_deposit.dart';
-import '../widget/beranda/transaksi/daftar_kategori.dart';
-import '../widget/beranda/transaksi/daftar_kategori_pascabayar.dart';
-import '../widget/beranda/transaksi/input_ppob.dart';
+import 'package:outletpulsa/core/constants/config.dart';
+import 'package:outletpulsa/shared/providers/BerandaProvider.dart';
+import 'package:outletpulsa/shared/providers/loadProvider.dart';
+import 'package:outletpulsa/module/member/widget/beranda/deposit/form_input_deposit.dart';
+import 'package:outletpulsa/module/member/widget/beranda/transaksi/daftar_kategori.dart';
+import 'package:outletpulsa/module/member/widget/beranda/transaksi/daftar_kategori_pascabayar.dart';
+import 'package:outletpulsa/module/member/widget/beranda/transaksi/input_ppob.dart';
 
 // ─────────────────────────────────────────────
 // Constant Colors
