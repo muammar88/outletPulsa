@@ -37,9 +37,10 @@ export class ProdukService {
           where,
           skip,
           take: limitNum,
-          orderBy: {
-            purchase_price: 'asc', // Pengurutan harga dipindah ke level DB
-          },
+          orderBy: [
+            { purchase_price: 'asc' },
+            { id: 'asc' } // Pengurutan sekunder untuk menjamin determinisme paginasi
+          ],
           include: {
             operator: {
               include: {
@@ -55,10 +56,20 @@ export class ProdukService {
       console.log(produks);
       console.log("__________________-");
 
-      if (produks.length === 0) {
+      if (produks.length === 0 && pageNum === 1) {
         return {
           error: true,
           message: 'Operator tidak ditemukan atau tidak memiliki produk',
+          data: {
+            list_produk: {}
+          }
+        };
+      }
+
+      if (produks.length === 0 && pageNum > 1) {
+        return {
+          error: false,
+          message: 'Tidak ada data produk tambahan',
           data: {
             list_produk: {}
           }

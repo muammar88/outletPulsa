@@ -28,6 +28,7 @@ class Transaction_provider with ChangeNotifier {
   int _currentPage = 1;
   bool _hasNextPage = true;
   bool _isLoadingNextPage = false;
+  final int _limit = 20;
   
   int get currentPage => _currentPage;
   bool get hasNextPage => _hasNextPage;
@@ -85,7 +86,7 @@ class Transaction_provider with ChangeNotifier {
       kategori: kategori,
       operator: operator,
       page: _currentPage,
-      limit: 20,
+      limit: _limit,
     )
         .then((Model_list_produk e) async {
       
@@ -96,12 +97,12 @@ class Transaction_provider with ChangeNotifier {
           _list_produk![(currentLength + i).toString()] = value;
           i++;
         });
-        if (e.list_produk!.isEmpty || e.list_produk!.length < 20) {
+        if (e.list_produk!.isEmpty || e.list_produk!.length < _limit) {
           _hasNextPage = false;
         }
       } else {
         _list_produk = e.list_produk;
-        if (e.list_produk == null || e.list_produk!.isEmpty || e.list_produk!.length < 20) {
+        if (e.list_produk == null || e.list_produk!.isEmpty || e.list_produk!.length < _limit) {
           _hasNextPage = false;
         }
       }
