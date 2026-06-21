@@ -27,7 +27,7 @@ async function bootstrap() {
     'http://localhost:5173', // Web Frontend lokal (Vite)
     'http://localhost:3000', // Swagger lokal
     // Tambahkan domain production web Anda di sini nantinya:
-    // 'https://outletpulsa.com', 
+    'https://outletpulsa.com', 
     // 'https://admin.outletpulsa.com'
   ];
 
