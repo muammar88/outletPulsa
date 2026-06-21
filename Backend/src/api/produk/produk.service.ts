@@ -26,11 +26,20 @@ export class ProdukService {
       };
     }
 
+    const limitNum = Number(limit) || 20;
+    const pageNum = Number(page) || 1;
+    const skip = (pageNum - 1) * limitNum;
+
     try {
       const [total, produks] = await Promise.all([
         this.prisma.produk.count({ where }),
         this.prisma.produk.findMany({
           where,
+          skip,
+          take: limitNum,
+          orderBy: {
+            purchase_price: 'asc', // Pengurutan harga dipindah ke level DB
+          },
           include: {
             operator: {
               include: {
@@ -40,12 +49,6 @@ export class ProdukService {
           },
         }),
       ]);
-
-      produks.sort((a, b) => {
-        const hargaA = (a.purchase_price || 0) + (a.markup || 0);
-        const hargaB = (b.purchase_price || 0) + (b.markup || 0);
-        return hargaA - hargaB;
-      });
 
       console.log("__________________");
       console.log(total);

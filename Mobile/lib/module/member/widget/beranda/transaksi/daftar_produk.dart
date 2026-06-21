@@ -33,6 +33,28 @@ class Daftar_produk extends StatefulWidget {
 class _Daftar_produkState extends State<Daftar_produk> {
   final config = ConfigApp();
   bool loadData = false;
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      final trans = Provider.of<Transaction_provider>(context, listen: false);
+      if (trans.hasNextPage && !trans.isLoadingNextPage) {
+        trans.getDaftarProduk(operator: widget.path, isLoadMore: true);
+      }
+    }
+  }
 
   static const Color _kPrimary = Color(0xFF0F1F6E);
   static const Color _kPrimaryLight = Color(0xFF1A3DB5);
@@ -154,11 +176,24 @@ class _Daftar_produkState extends State<Daftar_produk> {
                         ? NotfoundWidget(
                             config: config, label: "Daftar Produk Kosong")
                         : ListView.builder(
+                            controller: _scrollController,
                             physics: const BouncingScrollPhysics(),
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 20, vertical: 20),
-                            itemCount: trans.list_produk!.length,
+                            itemCount: trans.list_produk!.length + (trans.isLoadingNextPage ? 1 : 0),
                             itemBuilder: (BuildContext context, int index) {
+                              if (index == trans.list_produk!.length) {
+                                return const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 20.0),
+                                  child: Center(
+                                    child: SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(strokeWidth: 2.5),
+                                    ),
+                                  ),
+                                );
+                              }
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 12.0),
                                 child: BoxListProduk(

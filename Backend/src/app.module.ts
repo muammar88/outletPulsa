@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { AdministratorModule } from './administrator/administrator.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -22,8 +24,18 @@ import { WebhookModule } from './api/webhook/webhook.module';
 import { ProvidersModule } from './providers/providers.module';
 
 @Module({
-  imports: [ProvidersModule, AdministratorModule, AuthModule, BerandaModule, RiwayatModule, StubModule, InfoModule, AkunModule, ProdukModule, TransaksiModule, TransaksiPascabayarModule, WebhookModule, DepositModule],
+  imports: [
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 100,
+    }]),
+    ProvidersModule, AdministratorModule, AuthModule, BerandaModule, RiwayatModule, StubModule, InfoModule, AkunModule, ProdukModule, TransaksiModule, TransaksiPascabayarModule, WebhookModule, DepositModule],
   controllers: [AppController, MemberController, ApiController],
-  providers: [AppService, MemberService, ApiService],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+    AppService, MemberService, ApiService],
 })
 export class AppModule {}

@@ -15,17 +15,37 @@ import { WebhookModule } from './api/webhook/webhook.module';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     rawBody: true,
   });
 
+  // Daftar domain web yang diizinkan mengakses API ini
+  const allowedOrigins = [
+    'http://localhost:5173', // Web Frontend lokal (Vite)
+    'http://localhost:3000', // Swagger lokal
+    // Tambahkan domain production web Anda di sini nantinya:
+    // 'https://outletpulsa.com', 
+    // 'https://admin.outletpulsa.com'
+  ];
+
   app.enableCors({
-    origin: true, // Mengizinkan semua origin (Frontend & Mobile)
+    origin: (origin, callback) => {
+      // Jika 'origin' adalah undefined, berarti request datang dari aplikasi Mobile (Flutter), Postman, atau server-to-server.
+      // Jika origin ada, pastikan ia terdaftar di allowedOrigins (Web Browser).
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Akses diblokir oleh kebijakan CORS'));
+      }
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true, // Mengizinkan pengiriman cookie/token kredensial
   });
+
+  app.use(helmet());
 
   app.use(cookieParser());
   

@@ -80,6 +80,9 @@ model Member {
   promos                  Promo[]
   riwayatSaldos           RiwayatSaldo[]
   activityLogs            ActivityLog[]
+
+  @@index([whatsappnumber])
+  @@index([kode])
 }
 
 enum MemberStatus {
@@ -186,6 +189,10 @@ model Produk {
   tripayPrabayarProduks TripayPrabayarProduk[]
   digiflazzProducts     DigiflazzProduct[]
   transactions          Transaction[]
+
+  @@index([kode])
+  @@index([status])
+  @@index([operatorId])
 }
 
 enum ProdukType {
@@ -244,6 +251,9 @@ model Transaction {
   server                Server?                @relation(fields: [serverId], references: [id])
   riwayatTransaksi      RiwayatTransaksi?      @relation(fields: [riwayatTransaksiId], references: [id])
   digiflazzTransactions DigiflazzTransaction[]
+
+  @@index([riwayatTransaksiId])
+  @@index([status])
 }
 
 model TransactionPascabayar {

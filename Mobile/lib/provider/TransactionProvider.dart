@@ -25,6 +25,14 @@ class Transaction_provider with ChangeNotifier {
   String? _operatorCode;
   String? get operatorCode => _operatorCode;
 
+  int _currentPage = 1;
+  bool _hasNextPage = true;
+  bool _isLoadingNextPage = false;
+  
+  int get currentPage => _currentPage;
+  bool get hasNextPage => _hasNextPage;
+  bool get isLoadingNextPage => _isLoadingNextPage;
+
   Future<void> getPrefix(String nomorTujuan, String kode) async {
     await Rest_transaction()
         .getPrefix(nomorTujuan, kode)
@@ -54,35 +62,66 @@ class Transaction_provider with ChangeNotifier {
     String? search,
     String? kategori,
     String? operator,
+    bool isLoadMore = false,
   }) async {
-    _error = null;
-    _errorMsg = null;
-    _list_produk = null;
-    Future.microtask(() => notifyListeners());
+    if (isLoadMore) {
+      if (!_hasNextPage || _isLoadingNextPage) return;
+      _isLoadingNextPage = true;
+      _currentPage++;
+      notifyListeners();
+    } else {
+      _currentPage = 1;
+      _hasNextPage = true;
+      _isLoadingNextPage = false;
+      _error = null;
+      _errorMsg = null;
+      _list_produk = null;
+      Future.microtask(() => notifyListeners());
+    }
 
     await Rest_transaction()
         .getDaftarProduk(
       search: search,
       kategori: kategori,
       operator: operator,
+      page: _currentPage,
+      limit: 20,
     )
         .then((Model_list_produk e) async {
-      print("11111********______________");
-      print(e);
-      print("11111********______________");
+      
+      if (isLoadMore && _list_produk != null && e.list_produk != null) {
+        int currentLength = _list_produk!.length;
+        int i = 0;
+        e.list_produk!.forEach((key, value) {
+          _list_produk![(currentLength + i).toString()] = value;
+          i++;
+        });
+        if (e.list_produk!.isEmpty || e.list_produk!.length < 20) {
+          _hasNextPage = false;
+        }
+      } else {
+        _list_produk = e.list_produk;
+        if (e.list_produk == null || e.list_produk!.isEmpty || e.list_produk!.length < 20) {
+          _hasNextPage = false;
+        }
+      }
 
-      _list_produk = e.list_produk;
+      if (isLoadMore) {
+        _isLoadingNextPage = false;
+      }
+      
       _error = e.error;
       _errorMsg = e.errorMsg;
 
       notifyListeners();
     }).catchError((e) {
-      print("22222********______________");
-      print(e);
-      print("22222********______________");
-
-      _error = true;
-      _errorMsg = e.toString().replaceAll('Exception: ', '');
+      if (isLoadMore) {
+        _isLoadingNextPage = false;
+        _currentPage--; // Revert page
+      } else {
+        _error = true;
+        _errorMsg = e.toString().replaceAll('Exception: ', '');
+      }
       notifyListeners();
     });
   }
