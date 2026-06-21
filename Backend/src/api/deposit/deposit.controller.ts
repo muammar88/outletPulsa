@@ -11,6 +11,12 @@ export class DepositController {
   @Post('deposit-saldo')
   async depositSaldo(@Request() req: any, @Body() body: DepositSaldoDto) {
     const memberId = req.user?.sub;
+
+    console.log('_____________________');
+    console.log(req.user);
+    console.log(memberId);
+    console.log('_____________________');
+    
     return this.depositService.depositSaldo(memberId, body);
   }
 

@@ -180,13 +180,15 @@ class _Sub_riwayat_depositState extends State<Sub_riwayat_deposit> {
 
   @override
   void didChangeDependencies() async {
-    if (loadData == false) {
-      await Provider.of<Riwayat_deposit_provider>(context).getRiwayatDeposit();
-      await Provider.of<Beranda_provider>(context, listen: false)
-          .get_data_beranda();
-      loadData = true;
-    }
     super.didChangeDependencies();
+    if (loadData == false) {
+      loadData = true;
+      final riwayat = Provider.of<Riwayat_deposit_provider>(context, listen: false);
+      final beranda = Provider.of<Beranda_provider>(context, listen: false);
+      await riwayat.getRiwayatDeposit();
+      if (!mounted) return;
+      await beranda.get_data_beranda();
+    }
   }
 
   @override
@@ -418,12 +420,12 @@ class _Sub_riwayat_pascabayarState extends State<Sub_riwayat_pascabayar> {
 
   @override
   void didChangeDependencies() async {
-    if (loadData == false) {
-      await Provider.of<Riwayat_pascabayar_provider>(context)
-          .getRiwayatPascabayar();
-      loadData = true;
-    }
     super.didChangeDependencies();
+    if (loadData == false) {
+      loadData = true;
+      final riwayat = Provider.of<Riwayat_pascabayar_provider>(context, listen: false);
+      await riwayat.getRiwayatPascabayar();
+    }
   }
 
   @override
@@ -689,12 +691,12 @@ class _Sub_riwayat_prabayarState extends State<Sub_riwayat_prabayar> {
 
   @override
   void didChangeDependencies() async {
-    if (loadData == false) {
-      await Provider.of<Riwayat_prabayar_provider>(context)
-          .getRiwayatPrabayar();
-      loadData = true;
-    }
     super.didChangeDependencies();
+    if (loadData == false) {
+      loadData = true;
+      final riwayat = Provider.of<Riwayat_prabayar_provider>(context, listen: false);
+      await riwayat.getRiwayatPrabayar();
+    }
   }
 
   @override
