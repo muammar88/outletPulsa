@@ -1,5 +1,5 @@
 import { IsOptional, IsString, IsEnum } from 'class-validator';
-import { RiwayatSaldoStatus } from '@prisma/client';
+import { TransactionStatus } from '@prisma/client';
 
 export class GetDepositDto {
   @IsOptional()
@@ -15,6 +15,6 @@ export class GetDepositDto {
   limit?: string;
 
   @IsOptional()
-  @IsEnum(RiwayatSaldoStatus)
-  kategori?: RiwayatSaldoStatus;
+  @IsEnum(TransactionStatus)
+  kategori?: TransactionStatus;
 }

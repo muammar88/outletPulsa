@@ -21,8 +21,8 @@ export class DepositService {
     if (search) {
       where.OR = [
         { kode: { contains: search, mode: 'insensitive' } },
-        { ket: { contains: search, mode: 'insensitive' } },
-        { member: { fullname: { contains: search, mode: 'insensitive' } } },
+        { alasanPenolakan: { contains: search, mode: 'insensitive' } },
+        { riwayatTransaksi: { member: { fullname: { contains: search, mode: 'insensitive' } } } },
       ];
     }
 
@@ -30,18 +30,51 @@ export class DepositService {
       where.status = kategori;
     }
 
-    const [list, total] = await Promise.all([
-      this.prisma.riwayatSaldo.findMany({
+    const [deposits, total] = await Promise.all([
+      this.prisma.requestDeposit.findMany({
         where,
         skip,
         take: limit,
-        orderBy: { created_at: 'desc' },
+        orderBy: { createdAt: 'desc' },
         include: {
-          member: true,
+          riwayatTransaksi: {
+            include: {
+              member: true,
+            },
+          },
+          bankTransferOutlet: {
+            include: {
+              bank: true,
+            },
+          },
         },
       }),
-      this.prisma.riwayatSaldo.count({ where }),
+      this.prisma.requestDeposit.count({ where }),
     ]);
+
+    const list = deposits.map((deposit) => {
+      const nominalVal = (deposit.nominal || 0) + (deposit.nominalTambahan || 0);
+      
+      return {
+        id: deposit.id,
+        kode: deposit.kode,
+        nominal: nominalVal,
+        kategori: deposit.status,
+        saldo_sebelumnya: 0,
+        saldo_setelahnya: 0,
+        ket: deposit.alasanPenolakan 
+               ? `Ditolak: ${deposit.alasanPenolakan}` 
+               : (deposit.bankTransferOutlet?.bank?.nama ? `Bank: ${deposit.bankTransferOutlet.bank.nama}` : `Deposit ${deposit.status}`),
+        created_at: deposit.createdAt,
+        member: deposit.riwayatTransaksi?.member || null,
+        // Extra detail fields
+        status_kirim: deposit.statusKirim,
+        waktu_request: deposit.waktuRequest,
+        bank_tujuan_transfer: deposit.bankTransferOutlet?.bank?.nama || '-',
+        nomor_rekening_akun: deposit.bankTransferOutlet?.accountNumber || '-',
+        nama_akun: deposit.bankTransferOutlet?.accountName || '-',
+      };
+    });
 
     return {
       list,
