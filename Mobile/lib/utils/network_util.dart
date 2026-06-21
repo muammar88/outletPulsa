@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 
 class NetworkUtil {
   // Singleton pattern
@@ -13,7 +14,7 @@ class NetworkUtil {
   static const int TIMEOUT_SECONDS = 30;
 
   dynamic _handleError(dynamic error) {
-    print('NETWORK ERROR: $error');
+    debugPrint('❌ NETWORK ERROR: $error');
     String msg = "Terjadi kesalahan pada layanan, silakan coba beberapa saat lagi.";
     if (error is SocketException) {
       msg = "Server sedang tidak dapat diakses atau koneksi internet Anda terputus.";
@@ -36,7 +37,7 @@ class NetworkUtil {
   dynamic _processResponse(http.Response response, Uri url) {
     final String res = response.body;
     final int statusCode = response.statusCode;
-    print('RESPONSE [$statusCode] $url => $res');
+    debugPrint('📥 RESPONSE [$statusCode] $url\nData: $res\n==============================');
     
     if (statusCode < 200 || statusCode >= 400) {
       String errMsg = "Terjadi kesalahan (status: $statusCode).";
@@ -68,10 +69,7 @@ class NetworkUtil {
   }
 
   Future<dynamic> get(Uri url, headers) async {
-    print('==============================');
-    print('API GET URL: $url');
-    print('HEADERS: $headers');
-    print('==============================');
+    debugPrint('==============================\n⬆️ API GET URL: $url\nHEADERS: $headers\n==============================');
     try {
       final response = await http
           .get(url, headers: headers)
@@ -87,11 +85,7 @@ class NetworkUtil {
     headers,
     body,
   ) async {
-    print('==============================');
-    print('API POST URL: $url');
-    print('HEADERS: $headers');
-    print('BODY: $body');
-    print('==============================');
+    debugPrint('==============================\n⬆️ API POST URL: $url\nHEADERS: $headers\nBODY: $body\n==============================');
     try {
       final response = await http
           .post(url, headers: headers, body: body)
@@ -106,8 +100,7 @@ class NetworkUtil {
     Uri url,
     body,
   ) async {
-    print('POST_LOGIN HIT: $url');
-    print('BODY: $body');
+    debugPrint('==============================\n⬆️ POST_LOGIN HIT: $url\nBODY: $body\n==============================');
     try {
       final response = await http
           .post(url, body: body)

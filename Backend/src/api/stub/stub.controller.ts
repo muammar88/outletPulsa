@@ -22,19 +22,6 @@ export class StubController {
   }
 
   // ── DEPOSIT ───────────────────────────────────────
-  /** GET /api/deposit-info */
-  @UseGuards(JwtApiGuard)
-  @Get('deposit-info')
-  infoDeposit() {
-    return {
-      error: false,
-      error_msg: '',
-      list_tiket: {},
-      list_bank: {},
-      list_select_bank: {},
-      pesan: '',
-    };
-  }
 
   /** POST /api/deposit-saldo */
   @UseGuards(JwtApiGuard)

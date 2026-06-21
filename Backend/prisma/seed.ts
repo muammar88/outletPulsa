@@ -19,6 +19,7 @@ import depositSeed from './seeds/deposit.seed';
 import iakPrabayarSeed from './seeds/iak_prabayar.seed';
 import iakPascabayarSeed from './seeds/iak_pascabayar.seed';
 import webhookDummySeed from './seeds/webhook_dummy.seed';
+import bankSeed from './seeds/bank.seed';
 const prisma = new PrismaClient();
 
 async function main() {
@@ -80,6 +81,8 @@ async function main() {
 
   console.log('Seeding Webhook Dummy Transactions...');
   await webhookDummySeed(prisma);
+
+  await bankSeed(prisma);
 
   console.log('Seeding completed successfully.');
 }

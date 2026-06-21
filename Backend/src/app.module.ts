@@ -16,12 +16,13 @@ import { ProdukModule } from './api/produk/produk.module';
 import { TransaksiModule } from './api/transaksi/transaksi.module';
 
 import { TransaksiPascabayarModule } from './api/transaksi_pascabayar/transaksi-pascabayar.module';
+import { DepositModule } from './api/deposit/deposit.module';
 
 import { WebhookModule } from './api/webhook/webhook.module';
 import { ProvidersModule } from './providers/providers.module';
 
 @Module({
-  imports: [ProvidersModule, AdministratorModule, AuthModule, BerandaModule, RiwayatModule, StubModule, InfoModule, AkunModule, ProdukModule, TransaksiModule, TransaksiPascabayarModule, WebhookModule],
+  imports: [ProvidersModule, AdministratorModule, AuthModule, BerandaModule, RiwayatModule, StubModule, InfoModule, AkunModule, ProdukModule, TransaksiModule, TransaksiPascabayarModule, WebhookModule, DepositModule],
   controllers: [AppController, MemberController, ApiController],
   providers: [AppService, MemberService, ApiService],
 })

@@ -92,10 +92,17 @@ class _Beranda_tabState extends State<Beranda_tab> {
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    TablerIcons.apps,
-                    size: 34,
-                    color: _kPrimary,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Image.asset(
+                      'assets/img/logo-cycle.png',
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        TablerIcons.apps,
+                        size: 34,
+                        color: _kPrimary,
+                      ),
+                    ),
                   ),
                 ),
                 // Elegant thin spinner around the outer circle

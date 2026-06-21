@@ -78,3 +78,6 @@ jobs:
 
             # echo "🌱 Generate Prisma Client"
             docker exec -i outletpulsa_backend npx prisma generate
+
+            echo "🏦 Run Bank Seed (Aman untuk data yang sudah ada)"
+            docker exec -i outletpulsa_backend npx ts-node prisma/seed-bank-only.ts
