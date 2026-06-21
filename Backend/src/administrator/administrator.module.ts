@@ -23,6 +23,7 @@ import { KategoriPrabayarTripayModule } from './kategori_prabayar_tripay/kategor
 import { OperatorPrabayarTripayModule } from './operator_prabayar_tripay/operator_prabayar_tripay.module';
 import { KategoriPascabayarTripayModule } from './kategori_pascabayar_tripay/kategori_pascabayar_tripay.module';
 import { OperatorPascabayarTripayModule } from './operator_pascabayar_tripay/operator_pascabayar_tripay.module';
+import { BankModule } from './bank/bank.module';
 import { DaftarTypeIakModule } from './daftar_type_iak/daftar_type_iak.module';
 import { DaftarOperatorIakModule } from './daftar_operator_iak/daftar_operator_iak.module';
 import { DaftarProdukPrabayarIakModule } from './daftar_produk_prabayar_iak/daftar_produk_prabayar_iak.module';
@@ -36,7 +37,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { RiwayatTransferSaldoModule } from './riwayat_transfer_saldo/riwayat_transfer_saldo.module';
 
 @Module({
-  imports: [AuthModule, MenuModule, DaftarMemberModule, DaftarAgenModule, TransaksiPulsaModule, ProdukPrabayarModule, ProdukPascabayarModule, SemuaServerModule, PengaturanUmumModule, KategoriModule, OperatorModule, DepositModule, LogModule, DaftarGrupModule, DaftarPenggunaModule, TripayModule, DaftarProdukPrabayarTripayModule, DaftarProdukPascabayarTripayModule, KategoriPrabayarTripayModule, OperatorPrabayarTripayModule, KategoriPascabayarTripayModule, OperatorPascabayarTripayModule, DaftarTypeIakModule, DaftarOperatorIakModule, DaftarProdukPrabayarIakModule, DaftarProdukPascabayarIakModule, DaftarSellerDigiflazzModule, DaftarProdukSellerDigiflazzModule, DaftarProdukDigiflazzModule, DashboardModule, RiwayatTransferSaldoModule],
+  imports: [AuthModule, MenuModule, DaftarMemberModule, DaftarAgenModule, TransaksiPulsaModule, ProdukPrabayarModule, ProdukPascabayarModule, SemuaServerModule, PengaturanUmumModule, KategoriModule, OperatorModule, DepositModule, LogModule, DaftarGrupModule, DaftarPenggunaModule, TripayModule, DaftarProdukPrabayarTripayModule, DaftarProdukPascabayarTripayModule, KategoriPrabayarTripayModule, OperatorPrabayarTripayModule, KategoriPascabayarTripayModule, OperatorPascabayarTripayModule, DaftarTypeIakModule, DaftarOperatorIakModule, DaftarProdukPrabayarIakModule, DaftarProdukPascabayarIakModule, DaftarSellerDigiflazzModule, DaftarProdukSellerDigiflazzModule, DaftarProdukDigiflazzModule, DashboardModule, RiwayatTransferSaldoModule, BankModule],
   controllers: [AdministratorController],
   providers: [AdministratorService],
 })

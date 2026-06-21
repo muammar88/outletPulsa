@@ -52,6 +52,21 @@ export class DepositController {
     };
   }
 
+  @Put(':id/status')
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() dto: import('./dto/update-deposit-status.dto').UpdateDepositStatusDto,
+    @Req() req: any
+  ) {
+    const adminId = req.user.id;
+    const data = await this.depositService.updateStatus(+id, dto, adminId);
+    return {
+      message: 'Status deposit berhasil diperbarui',
+      error: null,
+      data,
+    };
+  }
+
   @Put(':id')
   async update(@Param('id') id: string, @Body() updateDepositDto: UpdateDepositDto) {
     const data = await this.depositService.update(+id, updateDepositDto);

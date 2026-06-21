@@ -17,21 +17,18 @@ export default async function depositSeed(prisma: PrismaClient) {
   // Array of deposits to seed
   const deposits = [
     {
-      kode: 'DEP-002',
       nominal: 100000,
       nominalTambahan: 45,
       status: TransactionStatus.proses,
       statusKirim: StatusKirim.belum_kirim,
     },
     {
-      kode: 'DEP-003',
       nominal: 200000,
       nominalTambahan: 12,
       status: TransactionStatus.sukses,
       statusKirim: StatusKirim.sudah_kirim,
     },
     {
-      kode: 'DEP-004',
       nominal: 50000,
       nominalTambahan: 88,
       status: TransactionStatus.gagal,
@@ -48,9 +45,11 @@ export default async function depositSeed(prisma: PrismaClient) {
       },
     });
 
+    const uniqueKode = `DEP-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+
     await prisma.requestDeposit.create({
       data: {
-        kode: dep.kode,
+        kode: uniqueKode,
         riwayatTransaksiId: riwayatDeposit.id,
         nominal: dep.nominal,
         nominalTambahan: dep.nominalTambahan,

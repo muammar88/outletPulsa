@@ -11,12 +11,16 @@ import Confirmation from '@/components/Modal/Confirmation.vue';
 import Notification from '@/components/Modal/Notification.vue';
 import DangerButton from '@/components/Button/DangerButton.vue';
 import LightButton from '@/components/Button/LightButton.vue';
+import ButtonGreen from '@/components/Button/ButtonGreen.vue';
 // Icon
 import IconDelete from '@/components/Icons/IconDelete.vue';
 import { depositService, type RiwayatSaldo } from '@/service/administrator/deposit';
 import DepositManualModal from './components/DepositManualModal.vue';
+import RejectModal from './components/RejectModal.vue';
 
 const showDepositModal = ref(false);
+const showRejectModal = ref(false);
+const activeRejectId = ref<number | null>(null);
 
 const {
   showNotification,
@@ -28,52 +32,57 @@ const {
 
 const { showConfirmDialog, confirmTitle, confirmMessage, displayConfirmation, confirm, cancel } =
   useConfirmation();
-
-// Definisi Kolom Tabel
 const tableColumns = [
   {
     key: 'kode',
     label: 'Kode Trx',
-    headerClass: 'text-left w-[15%] pl-4',
+    headerClass: 'text-left w-[12%] pl-4',
     cellClass: 'text-left pl-4',
   },
   {
     key: 'member',
     label: 'Member',
-    headerClass: 'text-left w-[20%]',
+    headerClass: 'text-left w-[13%]',
     cellClass: 'text-left',
+  },
+  {
+    key: 'saldo_sebelumnya',
+    label: 'Saldo Awal',
+    headerClass: 'text-right w-[11%] pr-4',
+    cellClass: 'text-right pr-4 text-gray-500 font-semibold',
   },
   {
     key: 'nominal',
     label: 'Nominal',
-    headerClass: 'text-right w-[15%] pr-4',
+    headerClass: 'text-right w-[11%] pr-4',
     cellClass: 'text-right pr-4',
   },
   {
     key: 'saldo_setelahnya',
     label: 'Saldo Akhir',
-    headerClass: 'text-right w-[15%] pr-4',
+    headerClass: 'text-right w-[11%] pr-4',
     cellClass: 'text-right pr-4 text-emerald-600 font-semibold',
   },
   {
-    key: 'kategori',
-    label: 'Kategori',
-    headerClass: 'text-center w-[15%]',
+    key: 'status',
+    label: 'Status',
+    headerClass: 'text-center w-[12%]',
     cellClass: 'text-center',
   },
   {
     key: 'ket',
     label: 'Keterangan',
-    headerClass: 'text-left w-[20%]',
+    headerClass: 'text-left w-[15%]',
     cellClass: 'text-left',
   },
   {
     key: 'action',
     label: 'Aksi',
-    headerClass: 'text-center w-[10%]',
+    headerClass: 'text-center w-[15%]',
     cellClass: 'text-center',
   },
 ];
+
 
 const dataDeposit = ref<RiwayatSaldo[]>([]);
 const isLoading = ref(false);
@@ -155,12 +164,53 @@ const handleDelete = (row: RiwayatSaldo) => {
   );
 };
 
+const handleApprove = (row: RiwayatSaldo) => {
+  confirmButtonText.value = 'Approve';
+  confirmButtonClass.value = 'bg-emerald-600 hover:bg-emerald-700 shadow-[0_0_15px_rgba(5,150,105,0.5)]';
+  displayConfirmation(
+    'Konfirmasi Approve Deposit',
+    `Apakah Anda yakin ingin menyetujui deposit <strong>${row.kode}</strong> dengan nominal <strong>${formatCurrency(row.nominal)}</strong>?`,
+    async () => {
+      try {
+        await depositService.updateStatus(row.id!, { status: 'sukses' });
+        displayNotification('Deposit berhasil disetujui. Saldo member telah ditambahkan.', 'success');
+        fetchData();
+      } catch (error: any) {
+        displayNotification(error.response?.data?.message || 'Gagal menyetujui deposit', 'error');
+      }
+    },
+  );
+};
+
+const handleReject = (row: RiwayatSaldo) => {
+  activeRejectId.value = row.id!;
+  showRejectModal.value = true;
+};
+
+const submitReject = async (alasan: string) => {
+  if (!activeRejectId.value) return;
+  
+  try {
+    await depositService.updateStatus(activeRejectId.value, { status: 'gagal', alasanPenolakan: alasan });
+    displayNotification('Deposit berhasil ditolak', 'success');
+    showRejectModal.value = false;
+    activeRejectId.value = null;
+    fetchData();
+  } catch (error: any) {
+    displayNotification(error.response?.data?.message || 'Gagal menolak deposit', 'error');
+  }
+};
+
 const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(value);
 };
 
 const formatKategori = (status: string) => {
   const map: Record<string, string> = {
+    proses: 'Proses',
+    sukses: 'Sukses',
+    gagal: 'Gagal',
+    expired: 'Expired',
     pembelian_pulsa: 'Pembelian Pulsa',
     deposit: 'Deposit',
     transfer_pulsa: 'Transfer Pulsa',
@@ -171,6 +221,13 @@ const formatKategori = (status: string) => {
 
 const badgeClass = (status: string) => {
   switch (status) {
+    case 'sukses':
+      return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+    case 'proses':
+      return 'bg-blue-100 text-blue-700 border-blue-200';
+    case 'gagal':
+    case 'expired':
+      return 'bg-rose-100 text-rose-700 border-rose-200';
     case 'deposit':
       return 'bg-emerald-100 text-emerald-700 border-emerald-200';
     case 'pencairan_fee_agen':
@@ -244,11 +301,15 @@ onMounted(() => {
         <span class="font-medium text-slate-800">{{ formatCurrency(row.nominal) }}</span>
       </template>
 
+      <template #cell-saldo_sebelumnya="{ row }">
+        <span class="">{{ formatCurrency(row.saldo_sebelumnya) }}</span>
+      </template>
+
       <template #cell-saldo_setelahnya="{ row }">
         <span class="">{{ formatCurrency(row.saldo_setelahnya) }}</span>
       </template>
 
-      <template #cell-kategori="{ row }">
+      <template #cell-status="{ row }">
         <span class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md border" :class="badgeClass(row.status)">
           {{ formatKategori(row.status) }}
         </span>
@@ -258,12 +319,23 @@ onMounted(() => {
         <span class="text-xs text-gray-500 line-clamp-2" :title="row.ket">{{ row.ket || '-' }}</span>
       </template>
 
-      <!-- Kolom Action -->
       <template #cell-action="{ row }">
         <div class="flex justify-center gap-2">
-          <DangerButton @click="handleDelete(row)" title="Hapus Riwayat"
-            ><IconDelete
-          /></DangerButton>
+          <template v-if="row.status === 'proses'">
+            <LightButton @click="handleApprove(row)" title="Approve Deposit" class="!text-emerald-600 hover:!bg-emerald-50">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </LightButton>
+            <LightButton @click="handleReject(row)" title="Tolak Deposit" class="!text-rose-600 hover:!bg-rose-50">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </LightButton>
+          </template>
+          <DangerButton @click="handleDelete(row)" title="Hapus Riwayat">
+            <IconDelete />
+          </DangerButton>
         </div>
       </template>
     </BaseTable>
@@ -297,6 +369,12 @@ onMounted(() => {
         {{ confirmButtonText }}
       </button>
     </Confirmation>
+
+    <RejectModal
+      :show="showRejectModal"
+      @close="showRejectModal = false"
+      @submit="submitReject"
+    />
 
     <!-- Deposit Manual Modal -->
     <DepositManualModal

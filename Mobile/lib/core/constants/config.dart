@@ -58,8 +58,8 @@ class ConfigApp {
 
   // constructor
   ConfigApp() {
-    // _mainurl = "http://10.94.252.166:3005/api";
-    _mainurl = "https://api.outletpulsa.com/api";
+    _mainurl = "http://10.94.252.166:3005/api";
+    //_mainurl = "https://api.outletpulsa.com/api";
     _login_url = '$_mainurl/auth/login';
     _check_login_url = '$_mainurl/auth/check-login';
     _beranda_url = '$_mainurl/beranda';
@@ -98,23 +98,23 @@ class ConfigApp {
     _daftarRiwayatPembayaran_url = '$_mainurl/agen-riwayat-pembayaran';
 
     // Background COLOR
-    _background_color = const Color(0xFF0F1F6E);           // Royal Sapphire deep
+    _background_color = const Color(0xFF0F1F6E); // Royal Sapphire deep
     _background_light_color = const Color(0xFFFFFFFF);
-    _background_tab = const Color(0xFFF0F2F8);             // cool grey-blue tint
-    _background_smooth_navy = const Color(0xFF0F1F6E);     // same deep sapphire
+    _background_tab = const Color(0xFFF0F2F8); // cool grey-blue tint
+    _background_smooth_navy = const Color(0xFF0F1F6E); // same deep sapphire
 
     // Text Color
-    _text_dark_color = const Color(0xFF1A1A2E);            // very dark blue-black
-    _text_navy_color = const Color(0xFF0F1F6E);            // Royal Sapphire
+    _text_dark_color = const Color(0xFF1A1A2E); // very dark blue-black
+    _text_navy_color = const Color(0xFF0F1F6E); // Royal Sapphire
     _text_light_color = Colors.white;
-    _text_grey_color = const Color(0xFF8898AA);            // cool blue-grey
+    _text_grey_color = const Color(0xFF8898AA); // cool blue-grey
 
     // input field color
     _input_light_color = Colors.white;
-    _input_grey_color = const Color(0xFFECEFF8);           // icy blue tint
+    _input_grey_color = const Color(0xFFECEFF8); // icy blue tint
 
     // button color
-    _btn_primary_color = const Color(0xFF1A3DB5);          // Royal Sapphire mid
+    _btn_primary_color = const Color(0xFF1A3DB5); // Royal Sapphire mid
 
     _color_shadow = const Color(0xFF0F1F6E).withOpacity(0.15);
   }

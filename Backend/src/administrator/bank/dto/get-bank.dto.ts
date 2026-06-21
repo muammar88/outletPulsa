@@ -1,10 +1,6 @@
 import { IsOptional, IsString } from 'class-validator';
 
-export class GetDepositDto {
-  @IsOptional()
-  @IsString()
-  search?: string;
-
+export class GetBankDto {
   @IsOptional()
   @IsString()
   page?: string;
@@ -15,5 +11,5 @@ export class GetDepositDto {
 
   @IsOptional()
   @IsString()
-  kategori?: string;
+  search?: string;
 }

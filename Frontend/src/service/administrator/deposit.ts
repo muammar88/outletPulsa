@@ -39,6 +39,10 @@ export const depositService = {
     return await api.put(`/administrator/deposit/${id}`, data);
   },
 
+  updateStatus: async (id: number, data: { status: string; alasanPenolakan?: string }) => {
+    return await api.put(`/administrator/deposit/${id}/status`, data);
+  },
+
   delete: async (id: number) => {
     return await api.delete(`/administrator/deposit/${id}`);
   },
