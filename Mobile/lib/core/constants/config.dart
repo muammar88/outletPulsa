@@ -79,7 +79,7 @@ class ConfigApp {
     _updateStatusBaca_url = '$_mainurl/info/update-status-baca';
     _updateNamaAkun_url = '$_mainurl/akun/akun-update-nama';
     _updatePasswordAkun_url = '$_mainurl/akun/akun-update-password';
-    _transferSaldo_url = '$_mainurl/transfer-saldo';
+    _transferSaldo_url = '$_mainurl/akun/transfer-saldo';
     _deposit_saldo_url = '$_mainurl/deposit-saldo';
     _info_konfirmasi_deposit_url = '$_mainurl/deposit-info-konfirmasi';
     _delete_konfirmasi_deposit_url = '$_mainurl/deposit-delete-konfirmasi';

@@ -9,9 +9,9 @@ class Transfer_saldo_provider with ChangeNotifier {
   bool? get error => _error;
   String? get errorMsg => _errorMsg;
 
-  Future<void> transferSaldo(String nomor_tujuan, String nominal) async {
+  Future<void> transferSaldo(String nomor_tujuan, String nominal, String password) async {
     await Rest_akun()
-        .transferSaldo(nomor_tujuan, nominal)
+        .transferSaldo(nomor_tujuan, nominal, password)
         .then((Model_void e) async {
       _error = e.error;
       _errorMsg = e.errorMsg;

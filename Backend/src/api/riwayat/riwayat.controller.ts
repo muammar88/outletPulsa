@@ -29,8 +29,10 @@ export class RiwayatController {
   // ── Riwayat Transfer Saldo ────────────────────────
   @UseGuards(JwtApiGuard)
   @Get('riwayat-transfer-saldo')
-  getRiwayatTransferSaldo() {
-    return { error: false, error_msg: '', list: {} };
+  getRiwayatTransferSaldo(@Request() req, @Query('page') page?: string, @Query('limit') limit?: string) {
+    const pageNumber = page ? parseInt(page, 10) : 1;
+    const limitNumber = limit ? parseInt(limit, 10) : 20;
+    return this.riwayatService.getRiwayatTransferSaldo(req.user.kode, pageNumber, limitNumber);
   }
 
   // ── Info Belum Baca ───────────────────────────────

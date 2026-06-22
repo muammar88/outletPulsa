@@ -59,12 +59,12 @@ class Rest_akun {
     });
   }
 
-  Future<Model_void> transferSaldo(nomor_tujuan, nominal) async {
+  Future<Model_void> transferSaldo(nomor_tujuan, nominal, password) async {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_transferSaldo_url!);
     return _netUtil
         .post(url, headers,
-            jsonEncode({"nomor_tujuan": nomor_tujuan, "nominal": nominal}))
+            jsonEncode({"nomor_tujuan": nomor_tujuan, "nominal": nominal, "password": password}))
         .then((dynamic res) async {
       return new Model_void.map(res);
     });

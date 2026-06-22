@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:currency_text_input_formatter/currency_text_input_formatter.dart';
 import 'package:provider/provider.dart';
 import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/shared/providers/BerandaProvider.dart';
@@ -9,6 +8,28 @@ import 'package:outletpulsa/shared/providers/TransferSaldoProvider.dart';
 import 'package:outletpulsa/shared/providers/loadProvider.dart';
 import 'package:outletpulsa/shared/widgets/CircularProgressWidget.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+
+class NumericTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    if (newValue.text.isEmpty) {
+      return newValue.copyWith(text: '');
+    }
+    
+    final digitsOnly = newValue.text.replaceAll(RegExp(r'[^\d]'), '');
+    if (digitsOnly.isEmpty) return newValue.copyWith(text: '');
+
+    final intValue = int.parse(digitsOnly);
+    final formatter = NumberFormat.currency(locale: 'id', symbol: '', decimalDigits: 0);
+    String newText = formatter.format(intValue).trim();
+
+    return TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: newText.length),
+    );
+  }
+}
 
 class Form_transfer_saldo extends StatefulWidget {
   Form_transfer_saldo({super.key});
@@ -22,11 +43,14 @@ class _Form_transfer_saldoState extends State<Form_transfer_saldo> {
   final _formKey = GlobalKey<FormState>();
   var nomorTujuanController = TextEditingController();
   var nominalTransferController = TextEditingController();
+  var passwordController = TextEditingController();
+  bool isPasswordVisible = false;
 
   @override
   void dispose() {
     nomorTujuanController.dispose();
     nominalTransferController.dispose();
+    passwordController.dispose();
     super.dispose();
   }
 
@@ -162,13 +186,16 @@ class _Form_transfer_saldoState extends State<Form_transfer_saldo> {
                           icon: TablerIcons.cash,
                           keyboardType: TextInputType.number,
                           inputFormatters: [
-                            CurrencyTextInputFormatter.currency(
-                              locale: 'id',
-                              decimalDigits: 0,
-                              symbol: 'Rp ',
-                            )
+                            NumericTextFormatter()
                           ],
                         ),
+                        
+                        const SizedBox(height: 24),
+                        
+                        // --- Password ---
+                        _buildInputLabel('Kata Sandi', TablerIcons.lock),
+                        const SizedBox(height: 10),
+                        _buildPasswordField(),
                         
                         const SizedBox(height: 32),
                         
@@ -290,6 +317,55 @@ class _Form_transfer_saldoState extends State<Form_transfer_saldo> {
     );
   }
 
+  Widget _buildPasswordField() {
+    return TextFormField(
+      controller: passwordController,
+      onSaved: (val) {
+        setState(() {
+          passwordController.text = val.toString();
+        });
+      },
+      obscureText: !isPasswordVisible,
+      style: GoogleFonts.poppins(
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
+        color: const Color(0xFF1A1A2E),
+      ),
+      decoration: InputDecoration(
+        hintText: 'Masukkan kata sandi Anda',
+        hintStyle: GoogleFonts.poppins(
+          fontSize: 13,
+          color: Colors.grey[400],
+        ),
+        floatingLabelBehavior: FloatingLabelBehavior.never,
+        filled: true,
+        fillColor: const Color(0xFFF8F9FA),
+        contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 16.0),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF0F1F6E), width: 1.5),
+        ),
+        prefixIcon: Icon(TablerIcons.lock, color: Colors.grey[400], size: 20),
+        suffixIcon: IconButton(
+          icon: Icon(
+            isPasswordVisible ? TablerIcons.eye_off : TablerIcons.eye,
+            color: Colors.grey[400],
+            size: 20,
+          ),
+          onPressed: () {
+            setState(() {
+              isPasswordVisible = !isPasswordVisible;
+            });
+          },
+        ),
+      ),
+    );
+  }
+
   Future<void> _submitTransfer(Load_provider loader) async {
     _formKey.currentState!.save();
 
@@ -302,6 +378,9 @@ class _Form_transfer_saldoState extends State<Form_transfer_saldo> {
     } else if (nominalTransferController.text.isEmpty) {
       errMsg = 'Nominal transfer wajib diisi';
       err = true;
+    } else if (passwordController.text.isEmpty) {
+      errMsg = 'Kata sandi wajib diisi';
+      err = true;
     }
 
     if (!err) {
@@ -311,6 +390,7 @@ class _Form_transfer_saldoState extends State<Form_transfer_saldo> {
       await transfer.transferSaldo(
         nomorTujuanController.text,
         nominalTransferController.text,
+        passwordController.text,
       );
 
       if (transfer.error != null) {

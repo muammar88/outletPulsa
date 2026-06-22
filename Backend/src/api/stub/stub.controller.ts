@@ -12,15 +12,6 @@ import { JwtService } from '@nestjs/jwt';
 export class StubController {
   constructor(private readonly jwtService: JwtService) {}
 
-  // ── AKUN ─────────────────────────────────────────
-
-  /** POST /api/transfer-saldo */
-  @UseGuards(JwtApiGuard)
-  @Post('transfer-saldo')
-  transferSaldo(@Body() body: any) {
-    return { error: false, error_msg: '' };
-  }
-
   // ── DEPOSIT ───────────────────────────────────────
 
 

@@ -9,7 +9,7 @@ async function main() {
   const regex = /\((\d+),\s*(\d+),\s*'([^']+)'/g;
   let match;
   
-  const prefixes = [];
+  const prefixes: any[] = [];
   while ((match = regex.exec(sqlContent)) !== null) {
     const id = parseInt(match[1]);
     const operatorId = parseInt(match[2]);

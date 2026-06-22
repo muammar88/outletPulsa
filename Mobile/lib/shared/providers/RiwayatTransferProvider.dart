@@ -9,6 +9,11 @@ class Riwayat_transfer_saldo_provider with ChangeNotifier {
   bool? get error => _error;
   String? get errorMsg => _errorMsg;
   Map<String, dynamic>? get list => _list;
+  
+  set list(Map<String, dynamic>? value) {
+    _list = value;
+    notifyListeners();
+  }
 
   Future<void> getRiwayatTransferSaldo() async {
     await Rest_riwayat().getRiwayatTransferSaldo().then((Model_list e) async {

@@ -124,44 +124,37 @@ class _StatusBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final s = status.toLowerCase();
     Color bg;
+    Color borderColor;
     Color textColor;
-    IconData icon;
 
     if (s == 'gagal' || s == 'failed') {
-      bg = const Color(0xFFFFEBEE);
-      textColor = const Color(0xFFD32F2F);
-      icon = Icons.cancel_rounded;
+      bg = Colors.red.withOpacity(0.1);
+      borderColor = Colors.red.withOpacity(0.4);
+      textColor = Colors.red[700]!;
     } else if (s == 'proses' || s == 'pending') {
-      bg = const Color(0xFFFFF8E1);
-      textColor = const Color(0xFFF57F17);
-      icon = Icons.hourglass_top_rounded;
+      bg = Colors.orange.withOpacity(0.1);
+      borderColor = Colors.orange.withOpacity(0.4);
+      textColor = Colors.orange[800]!;
     } else {
-      bg = const Color(0xFFE8F5E9);
-      textColor = const Color(0xFF2E7D32);
-      icon = Icons.check_circle_rounded;
+      bg = Colors.green.withOpacity(0.1);
+      borderColor = Colors.green.withOpacity(0.4);
+      textColor = Colors.green[700]!;
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor, width: 1),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 10, color: textColor),
-          const SizedBox(width: 4),
-          Text(
-            status.toUpperCase(),
-            style: GoogleFonts.poppins(
-              fontSize: 9,
-              fontWeight: FontWeight.w700,
-              color: textColor,
-              letterSpacing: 0.5,
-            ),
-          ),
-        ],
+      child: Text(
+        status.toUpperCase(),
+        style: GoogleFonts.poppins(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: textColor,
+        ),
       ),
     );
   }
@@ -368,116 +361,151 @@ class BoxListDeposit extends StatelessWidget {
   Widget build(BuildContext context) {
     final formattedDate = _formatDate(tanggal);
     final formattedSaldo = _formatCurrency(saldo);
+    int staggerIndex = index > 15 ? 15 : index;
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => Detail_deposit(status: status, id: id)),
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.0, end: 1.0),
+      duration: Duration(milliseconds: 300 + (staggerIndex * 50)),
+      curve: Curves.easeOutQuart,
+      builder: (context, value, child) {
+        return Transform.translate(
+          offset: Offset(0, 30 * (1 - value)),
+          child: Opacity(
+            opacity: value,
+            child: child,
+          ),
         );
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 6),
+        margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFF0F2F8), width: 1),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF0F1F6E).withOpacity(0.04),
-              blurRadius: 12,
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 16,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(14.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => Detail_deposit(status: status, id: id)),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // Leading Icon
                   Container(
-                    width: 40,
-                    height: 40,
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color(0xFF0F1F6E).withOpacity(0.1),
-                          const Color(0xFF1A3DB5).withOpacity(0.03),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(10),
+                      color: const Color(0xFF0F1F6E).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: const Icon(
                       Icons.account_balance_wallet_rounded,
                       color: Color(0xFF0F1F6E),
-                      size: 20,
+                      size: 24,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 16),
+                  
+                  // Content Details
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          formattedSaldo,
-                          style: GoogleFonts.outfit(
+                          kode,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
                             fontSize: 15,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF0F1F6E),
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF1A1A2E),
                           ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
                         Text(
-                          kode,
+                          'Deposit Saldo',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF8898AA),
+                            fontSize: 13,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8F9FA),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.shade200),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.tag_rounded, size: 12, color: Colors.grey.shade600),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  'ID#$id',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                  _StatusBadge(status: status),
-                ],
-              ),
-              const SizedBox(height: 12),
-              const Divider(height: 1, color: Color(0xFFF0F2F8), thickness: 1),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
+                  
+                  // Trailing 
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      const Icon(
-                        Icons.access_time_rounded,
-                        size: 14,
-                        color: Color(0xFF9CA3AF),
+                      Text(
+                        formattedSaldo,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF0F1F6E),
+                        ),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(height: 10),
+                      _StatusBadge(status: status),
+                      const SizedBox(height: 6),
                       Text(
                         formattedDate,
                         style: GoogleFonts.poppins(
-                          fontSize: 11,
-                          color: const Color(0xFF8898AA),
-                          fontWeight: FontWeight.w500,
+                          fontSize: 10,
+                          color: Colors.grey[400],
                         ),
                       ),
                     ],
                   ),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    size: 16,
-                    color: Color(0xFF9CA3AF),
-                  )
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -611,132 +639,142 @@ class BoxListRiwayatPascabayar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final formattedDate = _formatDate(transaction_date);
+    int staggerIndex = index > 15 ? 15 : index;
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  Detail_transaksi_pascabayar(kodeTrans: kode_transaksi)),
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.0, end: 1.0),
+      duration: Duration(milliseconds: 300 + (staggerIndex * 50)),
+      curve: Curves.easeOutQuart,
+      builder: (context, value, child) {
+        return Transform.translate(
+          offset: Offset(0, 30 * (1 - value)),
+          child: Opacity(
+            opacity: value,
+            child: child,
+          ),
         );
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 6),
+        margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFF0F2F8), width: 1),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF0F1F6E).withOpacity(0.04),
-              blurRadius: 12,
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 16,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(14.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        Detail_transaksi_pascabayar(kodeTrans: kode_transaksi)),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // Leading Icon
                   Container(
-                    width: 40,
-                    height: 40,
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color(0xFF0F1F6E).withOpacity(0.1),
-                          const Color(0xFF1A3DB5).withOpacity(0.03),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(10),
+                      color: const Color(0xFF0F1F6E).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: const Icon(
                       Icons.receipt_long_rounded,
                       color: Color(0xFF0F1F6E),
-                      size: 20,
+                      size: 24,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 16),
+                  
+                  // Content Details
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           nama_produk,
-                          style: GoogleFonts.outfit(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF0F1F6E),
-                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF1A1A2E),
+                          ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
                         Text(
                           nomor_tujuan,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF8898AA),
+                            fontSize: 13,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8F9FA),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.shade200),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.tag_rounded, size: 12, color: Colors.grey.shade600),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  'ID#$kode_transaksi',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                  _StatusBadge(status: status),
-                ],
-              ),
-              const SizedBox(height: 12),
-              const Divider(height: 1, color: Color(0xFFF0F2F8), thickness: 1),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
+                  
+                  // Trailing 
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
-                        Icons.access_time_rounded,
-                        size: 14,
-                        color: Color(0xFF9CA3AF),
-                      ),
-                      const SizedBox(width: 4),
+                      _StatusBadge(status: status),
+                      const SizedBox(height: 6),
                       Text(
                         formattedDate,
                         style: GoogleFonts.poppins(
-                          fontSize: 11,
-                          color: const Color(0xFF8898AA),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        'ID#$kode_transaksi',
-                        style: GoogleFonts.poppins(
                           fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF0F1F6E),
+                          color: Colors.grey[400],
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.chevron_right_rounded,
-                        size: 16,
-                        color: Color(0xFF9CA3AF),
                       ),
                     ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -871,132 +909,152 @@ class BoxListRiwayat extends StatelessWidget {
   Widget build(BuildContext context) {
     final formattedDate = _formatDate(waktu);
     final formattedHarga = _formatCurrency(harga);
+    int staggerIndex = index > 15 ? 15 : index;
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  Detail_transaksi(kodeTrans: kode_transaksi!)),
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 0.0, end: 1.0),
+      duration: Duration(milliseconds: 300 + (staggerIndex * 50)),
+      curve: Curves.easeOutQuart,
+      builder: (context, value, child) {
+        return Transform.translate(
+          offset: Offset(0, 30 * (1 - value)),
+          child: Opacity(
+            opacity: value,
+            child: child,
+          ),
         );
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 6),
+        margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFF0F2F8), width: 1),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF0F1F6E).withOpacity(0.04),
-              blurRadius: 12,
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 16,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(14.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(16),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        Detail_transaksi(kodeTrans: kode_transaksi!)),
+              );
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // Leading Icon
                   Container(
-                    width: 40,
-                    height: 40,
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color(0xFF0F1F6E).withOpacity(0.1),
-                          const Color(0xFF1A3DB5).withOpacity(0.03),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(10),
+                      color: const Color(0xFF0F1F6E).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: const Icon(
                       Icons.phone_android_rounded,
                       color: Color(0xFF0F1F6E),
-                      size: 20,
+                      size: 24,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 16),
+                  
+                  // Content Details
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           name,
-                          style: GoogleFonts.outfit(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF0F1F6E),
-                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF1A1A2E),
+                          ),
                         ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 4),
                         Text(
                           nomor_tujuan,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF8898AA),
+                            fontSize: 13,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8F9FA),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey.shade200),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.tag_rounded, size: 12, color: Colors.grey.shade600),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  'ID#${kode_transaksi ?? "-"}',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                  _StatusBadge(status: status),
-                ],
-              ),
-              const SizedBox(height: 12),
-              const Divider(height: 1, color: Color(0xFFF0F2F8), thickness: 1),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.access_time_rounded,
-                        size: 14,
-                        color: Color(0xFF9CA3AF),
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        formattedDate,
-                        style: GoogleFonts.poppins(
-                          fontSize: 11,
-                          color: const Color(0xFF8898AA),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
+                  
+                  // Trailing 
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
                         formattedHarga,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
-                          fontSize: 12,
+                          fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: const Color(0xFF0F1F6E),
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.chevron_right_rounded,
-                        size: 16,
-                        color: Color(0xFF9CA3AF),
+                      const SizedBox(height: 10),
+                      _StatusBadge(status: status),
+                      const SizedBox(height: 6),
+                      Text(
+                        formattedDate,
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          color: Colors.grey[400],
+                        ),
                       ),
                     ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),

@@ -133,4 +133,71 @@ export class RiwayatService {
       }
     };
   }
+
+  async getRiwayatTransferSaldo(memberKode: string, page: number = 1, limit: number = 20) {
+    const member = await this.prisma.member.findFirst({
+      where: { kode: memberKode },
+      select: { id: true },
+    });
+
+    if (!member) {
+      return {
+        error: false,
+        message: 'Member tidak valid',
+        list: []
+      };
+    }
+
+    const skip = (page - 1) * limit;
+
+    const [total, riwayatList] = await Promise.all([
+      this.prisma.riwayatSaldo.count({
+        where: { member_id: member.id, status: 'transfer_pulsa' },
+      }),
+      this.prisma.riwayatSaldo.findMany({
+        where: { member_id: member.id, status: 'transfer_pulsa' },
+        orderBy: { created_at: 'desc' },
+        skip,
+        take: limit,
+      }),
+    ]);
+
+    const mappedList = riwayatList.map((riwayat) => {
+      // Extract name and phone number from ket: "Transfer saldo ke John Doe (0852...)"
+      const regex = /(?:ke|dari)\s+(.*?)\s+\(([^)]+)\)/i;
+      const match = riwayat.ket?.match(regex);
+      const nama = match ? match[1].trim() : '-';
+      const noHp = match ? match[2].trim() : '-';
+      
+      const isMasuk = riwayat.ket?.toLowerCase().includes('terima');
+      
+      // Formatting Rp
+      const formatter = new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+      });
+
+      return {
+        id: riwayat.id,
+        tipeTransaksi: isMasuk ? 'Terima Saldo' : 'Transfer Keluar',
+        updatedAt: riwayat.created_at.toISOString().split('T')[0],
+        biaya: formatter.format(riwayat.nominal),
+        nowhatsapp: noHp,
+        namaTarget: nama,
+      };
+    });
+
+    return {
+      error: false,
+      message: 'Success',
+      list: mappedList,
+      pagination: {
+        page,
+        limit,
+        total_data: total,
+        total_page: Math.ceil(total / limit),
+      },
+    };
+  }
 }
