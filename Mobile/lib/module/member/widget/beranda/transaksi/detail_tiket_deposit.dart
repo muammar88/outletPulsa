@@ -157,7 +157,7 @@ class _Detail_tiket_depositState extends State<Detail_tiket_deposit> with Single
     );
   }
 
-  Widget _buildDetailRow(String label, String value, {bool isStatus = false, Color? statusColor, bool isCopy = false}) {
+  Widget _buildDetailRow(String label, String value, {bool isStatus = false, Color? statusColor, bool isCopy = false, String? rawCopyValue}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Row(
@@ -215,8 +215,9 @@ class _Detail_tiket_depositState extends State<Detail_tiket_deposit> with Single
                         const SizedBox(width: 8),
                         GestureDetector(
                           onTap: () async {
-                            await Clipboard.setData(ClipboardData(text: value));
-                            _showSnackBar('Berhasil disalin: $value', isSuccess: true);
+                            final textToCopy = rawCopyValue ?? value;
+                            await Clipboard.setData(ClipboardData(text: textToCopy));
+                            _showSnackBar('Berhasil disalin: $textToCopy', isSuccess: true);
                           },
                           child: Container(
                             padding: const EdgeInsets.all(6),
@@ -260,7 +261,7 @@ class _Detail_tiket_depositState extends State<Detail_tiket_deposit> with Single
               children: [
                 _buildDetailRow('Kode Transaksi', '#123123', isCopy: true),
                 Divider(color: Colors.grey.shade200, height: 1),
-                _buildDetailRow('Nominal Deposit', 'Rp 200.334', isCopy: true),
+                _buildDetailRow('Nominal Deposit', 'Rp 200.334', isCopy: true, rawCopyValue: '200334'),
                 Divider(color: Colors.grey.shade200, height: 1),
                 _buildDetailRow('Bank Tujuan', 'Bank BSI'),
                 Divider(color: Colors.grey.shade200, height: 1),

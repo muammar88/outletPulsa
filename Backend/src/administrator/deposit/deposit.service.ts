@@ -57,7 +57,7 @@ export class DepositService {
             }
           },
           riwayatSaldos: {
-            orderBy: { createdAt: 'desc' }
+            orderBy: { created_at: 'desc' }
           }
         },
       }),
@@ -68,7 +68,7 @@ export class DepositService {
     console.log('riwayatTransaksiList : ', riwayatTransaksiList);
     console.log('+++++++++');
 
-    const reversedList = [...riwayatTransaksiList].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    const reversedList = riwayatTransaksiList.slice().sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     const processEstimates = new Map<number, { sebelum: number, sesudah: number }>();
     const estimatedBalances = new Map<number, number>();
 

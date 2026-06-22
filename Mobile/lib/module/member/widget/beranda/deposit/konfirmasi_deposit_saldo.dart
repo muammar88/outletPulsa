@@ -277,7 +277,7 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> wit
               top: compact ? 0 : 16,
               left: compact ? 0 : 16,
               child: GestureDetector(
-                onTap: () => Navigator.pop(context),
+                onTap: () => Navigator.of(context).popUntil((route) => route.isFirst),
                 child: Container(
                   width: 40,
                   height: 40,
@@ -557,7 +557,27 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> wit
                                 opacity: _fadeAnim,
                                 child: SlideTransition(
                                   position: _slideAnim,
-                                  child: isError ? _buildEmptyState() : _buildContentCard(info_konfirmasi, loader, isWide: true),
+                                  child: isError ? _buildEmptyState() : Column(
+                                    children: [
+                                      _buildContentCard(info_konfirmasi, loader, isWide: true),
+                                      const SizedBox(height: 32),
+                                      SizedBox(
+                                        width: double.infinity,
+                                        child: ElevatedButton.icon(
+                                          icon: const Icon(TablerIcons.arrow_left, size: 18, color: Colors.white),
+                                          label: Text('Kembali ke Beranda',
+                                              style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: _kPrimary,
+                                            padding: const EdgeInsets.symmetric(vertical: 16),
+                                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                            elevation: 0,
+                                          ),
+                                          onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -597,19 +617,39 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> wit
                                                   offset: const Offset(0, -30),
                                                   child: Padding(
                                                     padding: const EdgeInsets.symmetric(horizontal: 20),
-                                                    child: Container(
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.white,
-                                                        borderRadius: BorderRadius.circular(28),
-                                                        boxShadow: [
-                                                          BoxShadow(
-                                                            color: _kPrimary.withOpacity(0.08),
-                                                            blurRadius: 30,
-                                                            offset: const Offset(0, 10),
+                                                    child: Column(
+                                                      children: [
+                                                        Container(
+                                                          decoration: BoxDecoration(
+                                                            color: Colors.white,
+                                                            borderRadius: BorderRadius.circular(28),
+                                                            boxShadow: [
+                                                              BoxShadow(
+                                                                color: _kPrimary.withOpacity(0.08),
+                                                                blurRadius: 30,
+                                                                offset: const Offset(0, 10),
+                                                              ),
+                                                            ],
                                                           ),
-                                                        ],
-                                                      ),
-                                                      child: _buildContentCard(info_konfirmasi, loader),
+                                                          child: _buildContentCard(info_konfirmasi, loader),
+                                                        ),
+                                                        const SizedBox(height: 24),
+                                                        SizedBox(
+                                                          width: double.infinity,
+                                                          child: ElevatedButton.icon(
+                                                            icon: const Icon(TablerIcons.arrow_left, size: 18, color: Colors.white),
+                                                            label: Text('Kembali ke Beranda',
+                                                                style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
+                                                            style: ElevatedButton.styleFrom(
+                                                              backgroundColor: _kPrimary,
+                                                              padding: const EdgeInsets.symmetric(vertical: 16),
+                                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                                              elevation: 0,
+                                                            ),
+                                                            onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
+                                                          ),
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
                                                 ),

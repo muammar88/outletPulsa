@@ -383,7 +383,7 @@ class _Detail_transaksi_pascabayarState extends State<Detail_transaksi_pascabaya
                   _buildDetailRow('Nama Pelanggan', detail.namaPelanggan!),
                 ],
                 Divider(color: Colors.grey.shade200, height: 1),
-                _buildDetailRow('Kode Produk', detail.productName ?? '-'),
+                _buildDetailRow('Kode Produk', detail.productName ?? '-', isCopy: true),
                 Divider(color: Colors.grey.shade200, height: 1),
                 _buildDetailRow('Tagihan', _formatCurrency(detail.price ?? '0')),
                 Divider(color: Colors.grey.shade200, height: 1),

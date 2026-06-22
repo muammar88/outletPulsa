@@ -41,6 +41,10 @@ class _Home_pageState extends State<Home_page> {
     setState(() {
       _currentIndex = index;
     });
+    // Otomatis refresh data beranda saat tab Beranda diklik
+    if (index == 0) {
+      Provider.of<Beranda_provider>(context, listen: false).get_data_beranda();
+    }
   }
 
   Widget _buildNavItem(int index, IconData icon, String label) {

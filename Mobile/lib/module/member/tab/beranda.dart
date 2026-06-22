@@ -584,7 +584,11 @@ class _IsiSaldoButton extends StatelessWidget {
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => Form_input_deposit()),
-          ),
+          ).then((_) {
+            if (context.mounted) {
+              Provider.of<Beranda_provider>(context, listen: false).get_data_beranda();
+            }
+          }),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
@@ -729,7 +733,11 @@ class _BoxProduk extends StatelessWidget {
               checkPrefix: (item.path == 'TLOF' ? false : true),
             ),
           ),
-        );
+        ).then((_) {
+          if (context.mounted) {
+            Provider.of<Beranda_provider>(context, listen: false).get_data_beranda();
+          }
+        });
       } else {
         Navigator.push(
           context,
@@ -741,7 +749,11 @@ class _BoxProduk extends StatelessWidget {
               tipe: item.tipe,
             ),
           ),
-        );
+        ).then((_) {
+          if (context.mounted) {
+            Provider.of<Beranda_provider>(context, listen: false).get_data_beranda();
+          }
+        });
       }
     } else {
       Navigator.push(
@@ -754,7 +766,11 @@ class _BoxProduk extends StatelessWidget {
             tipe: item.tipe,
           ),
         ),
-      );
+      ).then((_) {
+        if (context.mounted) {
+          Provider.of<Beranda_provider>(context, listen: false).get_data_beranda();
+        }
+      });
     }
   }
 
