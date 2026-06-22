@@ -2,7 +2,7 @@
 import { useConfirmation } from '@/composables/useConfirmation';
 import { useNotification } from '@/composables/useNotification';
 import { usePagination } from '@/composables/usePaginations';
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
 
 // Table
 import BaseTable from '@/components/Table/BaseTable.vue';
@@ -96,13 +96,15 @@ const { currentPage, totalPages, pages, totalRow, pageNow, perPage } = usePagina
   { perPage: 10, totalRow: 0 },
 );
 
-const fetchData = async (keyword?: string | Event) => {
+const fetchData = async (keyword?: string | Event, isBackground = false) => {
   if (typeof keyword === 'string') {
     searchQuery.value = keyword;
     currentPage.value = 1;
   }
 
-  isLoading.value = true;
+  if (!isBackground) {
+    isLoading.value = true;
+  }
   try {
     const response = await depositService.getAll(
       searchQuery.value,
@@ -115,7 +117,9 @@ const fetchData = async (keyword?: string | Event) => {
   } catch (error) {
     console.error('Gagal mengambil data deposit:', error);
   } finally {
-    isLoading.value = false;
+    if (!isBackground) {
+      isLoading.value = false;
+    }
   }
 };
 
@@ -241,8 +245,40 @@ const badgeClass = (status: string) => {
   }
 };
 
+let refreshInterval: ReturnType<typeof setInterval> | null = null;
+
+const startAutoRefresh = () => {
+  if (!refreshInterval) {
+    refreshInterval = setInterval(() => {
+      fetchData(undefined, true);
+    }, 5000);
+  }
+};
+
+const stopAutoRefresh = () => {
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
+    refreshInterval = null;
+  }
+};
+
+const handleVisibilityChange = () => {
+  if (document.hidden) {
+    stopAutoRefresh();
+  } else {
+    startAutoRefresh();
+  }
+};
+
 onMounted(() => {
   fetchData();
+  startAutoRefresh();
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+});
+
+onUnmounted(() => {
+  stopAutoRefresh();
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
 });
 </script>
 

@@ -580,42 +580,34 @@ class _IsiSaldoButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<Beranda_provider>(
       builder: (context, data, _) {
-        final isDisabled = data.status_deposit == true;
         return GestureDetector(
-          onTap: isDisabled
-              ? null
-              : () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => Form_input_deposit()),
-                  ),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => Form_input_deposit()),
+          ),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              gradient: isDisabled
-                  ? null
-                  : const LinearGradient(
-                      colors: [_kPrimary, _kPrimaryLight],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-              color: isDisabled ? Colors.grey.shade100 : null,
+              gradient: const LinearGradient(
+                colors: [_kPrimary, _kPrimaryLight],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               borderRadius: BorderRadius.circular(14),
-              boxShadow: isDisabled
-                  ? []
-                  : [
-                      BoxShadow(
-                        color: _kPrimary.withOpacity(0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+              boxShadow: [
+                BoxShadow(
+                  color: _kPrimary.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Column(
               children: [
-                Icon(
+                const Icon(
                   TablerIcons.circle_plus,
                   size: 22,
-                  color: isDisabled ? Colors.grey.shade400 : Colors.white,
+                  color: Colors.white,
                 ),
                 const SizedBox(height: 6),
                 Text(
@@ -623,7 +615,7 @@ class _IsiSaldoButton extends StatelessWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: isDisabled ? Colors.grey.shade400 : Colors.white,
+                    color: Colors.white,
                   ),
                 ),
               ],

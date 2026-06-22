@@ -49,13 +49,16 @@ export class DepositService {
         include: {
           member: true,
           requestDeposits: {
+            orderBy: { createdAt: 'desc' },
             include: {
               bankTransferOutlet: {
                 include: { bank: true }
               }
             }
           },
-          riwayatSaldos: true
+          riwayatSaldos: {
+            orderBy: { createdAt: 'desc' }
+          }
         },
       }),
       this.prisma.riwayatTransaksi.count({ where }),
@@ -64,6 +67,27 @@ export class DepositService {
     console.log('+++++++++');
     console.log('riwayatTransaksiList : ', riwayatTransaksiList);
     console.log('+++++++++');
+
+    const reversedList = [...riwayatTransaksiList].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    const processEstimates = new Map<number, { sebelum: number, sesudah: number }>();
+    const estimatedBalances = new Map<number, number>();
+
+    for (const riwayat of reversedList) {
+      const deposit = riwayat.requestDeposits?.[0];
+      if (deposit && deposit.status === 'proses') {
+        const memberId = riwayat.member?.id;
+        if (memberId) {
+          let currentSaldo = estimatedBalances.get(memberId) ?? riwayat.member?.saldo ?? 0;
+          const nominalVal = (deposit.nominal || 0) + (deposit.nominalTambahan || 0);
+          
+          const saldoSebelum = currentSaldo;
+          const saldoSesudah = currentSaldo + nominalVal;
+          
+          processEstimates.set(riwayat.id, { sebelum: saldoSebelum, sesudah: saldoSesudah });
+          estimatedBalances.set(memberId, saldoSesudah);
+        }
+      }
+    }
 
     const list = riwayatTransaksiList.map((riwayat) => {
       const deposit = riwayat.requestDeposits?.[0];
@@ -79,6 +103,8 @@ export class DepositService {
           kategori: manualDeposit.status,
           saldo_sebelumnya: manualDeposit.saldo_sebelumnya,
           saldo_setelahnya: manualDeposit.saldo_setelahnya,
+          saldo_sebelum: manualDeposit.saldo_sebelumnya,
+          saldo_sesudah: manualDeposit.saldo_setelahnya,
           ket: manualDeposit.ket || 'Deposit Manual',
           created_at: riwayat.createdAt,
           member: riwayat.member || null,
@@ -92,14 +118,33 @@ export class DepositService {
 
       const nominalVal = deposit ? ((deposit.nominal || 0) + (deposit.nominalTambahan || 0)) : 0;
       
+      let saldoSebelum = 0;
+      let saldoSesudah = 0;
+
+      if (deposit?.status === 'proses') {
+        const est = processEstimates.get(riwayat.id);
+        if (est) {
+          saldoSebelum = est.sebelum;
+          saldoSesudah = est.sesudah;
+        }
+      } else {
+        const riwayatSaldoTerkait = riwayat.riwayatSaldos?.[0];
+        if (riwayatSaldoTerkait) {
+          saldoSebelum = riwayatSaldoTerkait.saldo_sebelumnya;
+          saldoSesudah = riwayatSaldoTerkait.saldo_setelahnya;
+        }
+      }
+      
       return {
         id: riwayat.id,
         kode: deposit?.kode || '-',
         nominal: nominalVal,
         kategori: deposit?.status || 'proses',
         status: deposit?.status || 'proses',
-        saldo_sebelumnya: 0,
-        saldo_setelahnya: 0,
+        saldo_sebelumnya: saldoSebelum,
+        saldo_setelahnya: saldoSesudah,
+        saldo_sebelum: saldoSebelum,
+        saldo_sesudah: saldoSesudah,
         ket: deposit?.alasanPenolakan 
                ? `Ditolak: ${deposit.alasanPenolakan}` 
                : (deposit?.bankTransferOutlet?.bank?.nama ? `Bank: ${deposit.bankTransferOutlet.bank.nama}` : `Deposit ${deposit?.status || 'proses'}`),

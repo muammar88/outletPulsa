@@ -141,22 +141,23 @@ class _StatusBadge extends StatelessWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: textColor),
+          Icon(icon, size: 10, color: textColor),
           const SizedBox(width: 4),
           Text(
             status.toUpperCase(),
             style: GoogleFonts.poppins(
-              fontSize: 10,
+              fontSize: 9,
               fontWeight: FontWeight.w700,
               color: textColor,
+              letterSpacing: 0.5,
             ),
           ),
         ],
@@ -297,29 +298,29 @@ class BoxListDeposit extends StatelessWidget {
         );
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
+        margin: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFF0F2F8), width: 1.5),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFF0F2F8), width: 1),
           boxShadow: [
             BoxShadow(
               color: const Color(0xFF0F1F6E).withOpacity(0.04),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(14.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -329,15 +330,15 @@ class BoxListDeposit extends StatelessWidget {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
                       Icons.account_balance_wallet_rounded,
                       color: Color(0xFF0F1F6E),
-                      size: 24,
+                      size: 20,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -345,19 +346,18 @@ class BoxListDeposit extends StatelessWidget {
                         Text(
                           formattedSaldo,
                           style: GoogleFonts.outfit(
-                            fontSize: 18,
+                            fontSize: 15,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFF0F1F6E),
-                            letterSpacing: 0.3,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
                         Text(
                           kode,
                           style: GoogleFonts.poppins(
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xFF6B7280),
+                            color: const Color(0xFF8898AA),
                           ),
                         ),
                       ],
@@ -366,9 +366,9 @@ class BoxListDeposit extends StatelessWidget {
                   _StatusBadge(status: status),
                 ],
               ),
-              const SizedBox(height: 16),
-              const Divider(height: 1, color: Color(0xFFF0F2F8), thickness: 1.5),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
+              const Divider(height: 1, color: Color(0xFFF0F2F8), thickness: 1),
+              const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -379,20 +379,20 @@ class BoxListDeposit extends StatelessWidget {
                         size: 14,
                         color: Color(0xFF9CA3AF),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 4),
                       Text(
                         formattedDate,
                         style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: const Color(0xFF6B7280),
-                          fontWeight: FontWeight.w400,
+                          fontSize: 11,
+                          color: const Color(0xFF8898AA),
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
                   const Icon(
                     Icons.chevron_right_rounded,
-                    size: 18,
+                    size: 16,
                     color: Color(0xFF9CA3AF),
                   )
                 ],
@@ -531,17 +531,6 @@ class BoxListRiwayatPascabayar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final formattedDate = _formatDate(transaction_date);
-    final formattedKomisi = _formatCurrency(komisi);
-
-    final s = status.toLowerCase();
-    Color statusColor;
-    if (s == 'gagal' || s == 'failed') {
-      statusColor = const Color(0xFFE53935);
-    } else if (s == 'proses' || s == 'pending') {
-      statusColor = const Color(0xFFF9A825);
-    } else {
-      statusColor = const Color(0xFF43A047);
-    }
 
     return GestureDetector(
       onTap: () {
@@ -553,29 +542,29 @@ class BoxListRiwayatPascabayar extends StatelessWidget {
         );
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
+        margin: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFF0F2F8), width: 1.5),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFF0F2F8), width: 1),
           boxShadow: [
             BoxShadow(
               color: const Color(0xFF0F1F6E).withOpacity(0.04),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(14.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -585,15 +574,15 @@ class BoxListRiwayatPascabayar extends StatelessWidget {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
                       Icons.receipt_long_rounded,
                       color: Color(0xFF0F1F6E),
-                      size: 24,
+                      size: 20,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -601,21 +590,20 @@ class BoxListRiwayatPascabayar extends StatelessWidget {
                         Text(
                           nama_produk,
                           style: GoogleFonts.outfit(
-                            fontSize: 16,
+                            fontSize: 14,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFF0F1F6E),
-                            letterSpacing: 0.3,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
                         Text(
                           nomor_tujuan,
                           style: GoogleFonts.poppins(
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xFF6B7280),
+                            color: const Color(0xFF8898AA),
                           ),
                         ),
                       ],
@@ -624,9 +612,9 @@ class BoxListRiwayatPascabayar extends StatelessWidget {
                   _StatusBadge(status: status),
                 ],
               ),
-              const SizedBox(height: 16),
-              const Divider(height: 1, color: Color(0xFFF0F2F8), thickness: 1.5),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
+              const Divider(height: 1, color: Color(0xFFF0F2F8), thickness: 1),
+              const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -637,13 +625,13 @@ class BoxListRiwayatPascabayar extends StatelessWidget {
                         size: 14,
                         color: Color(0xFF9CA3AF),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 4),
                       Text(
                         formattedDate,
                         style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: const Color(0xFF6B7280),
-                          fontWeight: FontWeight.w400,
+                          fontSize: 11,
+                          color: const Color(0xFF8898AA),
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -653,15 +641,15 @@ class BoxListRiwayatPascabayar extends StatelessWidget {
                       Text(
                         'ID#$kode_transaksi',
                         style: GoogleFonts.poppins(
-                          fontSize: 11,
+                          fontSize: 10,
                           fontWeight: FontWeight.w600,
                           color: const Color(0xFF0F1F6E),
                         ),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 4),
                       const Icon(
                         Icons.chevron_right_rounded,
-                        size: 18,
+                        size: 16,
                         color: Color(0xFF9CA3AF),
                       ),
                     ],
@@ -804,16 +792,6 @@ class BoxListRiwayat extends StatelessWidget {
     final formattedDate = _formatDate(waktu);
     final formattedHarga = _formatCurrency(harga);
 
-    final s = status.toLowerCase();
-    Color statusColor;
-    if (s == 'gagal' || s == 'failed') {
-      statusColor = const Color(0xFFE53935);
-    } else if (s == 'proses' || s == 'pending') {
-      statusColor = const Color(0xFFF9A825);
-    } else {
-      statusColor = const Color(0xFF43A047);
-    }
-
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -824,29 +802,29 @@ class BoxListRiwayat extends StatelessWidget {
         );
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
+        margin: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFF0F2F8), width: 1.5),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFF0F2F8), width: 1),
           boxShadow: [
             BoxShadow(
               color: const Color(0xFF0F1F6E).withOpacity(0.04),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
+          padding: const EdgeInsets.all(14.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -856,15 +834,15 @@ class BoxListRiwayat extends StatelessWidget {
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Icon(
                       Icons.phone_android_rounded,
                       color: Color(0xFF0F1F6E),
-                      size: 24,
+                      size: 20,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -872,21 +850,20 @@ class BoxListRiwayat extends StatelessWidget {
                         Text(
                           name,
                           style: GoogleFonts.outfit(
-                            fontSize: 16,
+                            fontSize: 14,
                             fontWeight: FontWeight.w700,
                             color: const Color(0xFF0F1F6E),
-                            letterSpacing: 0.3,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2),
                         Text(
                           nomor_tujuan,
                           style: GoogleFonts.poppins(
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: FontWeight.w500,
-                            color: const Color(0xFF6B7280),
+                            color: const Color(0xFF8898AA),
                           ),
                         ),
                       ],
@@ -895,9 +872,9 @@ class BoxListRiwayat extends StatelessWidget {
                   _StatusBadge(status: status),
                 ],
               ),
-              const SizedBox(height: 16),
-              const Divider(height: 1, color: Color(0xFFF0F2F8), thickness: 1.5),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
+              const Divider(height: 1, color: Color(0xFFF0F2F8), thickness: 1),
+              const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -908,13 +885,13 @@ class BoxListRiwayat extends StatelessWidget {
                         size: 14,
                         color: Color(0xFF9CA3AF),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 4),
                       Text(
                         formattedDate,
                         style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          color: const Color(0xFF6B7280),
-                          fontWeight: FontWeight.w400,
+                          fontSize: 11,
+                          color: const Color(0xFF8898AA),
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -924,15 +901,15 @@ class BoxListRiwayat extends StatelessWidget {
                       Text(
                         formattedHarga,
                         style: GoogleFonts.poppins(
-                          fontSize: 13,
+                          fontSize: 12,
                           fontWeight: FontWeight.w700,
                           color: const Color(0xFF0F1F6E),
                         ),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 4),
                       const Icon(
                         Icons.chevron_right_rounded,
-                        size: 18,
+                        size: 16,
                         color: Color(0xFF9CA3AF),
                       ),
                     ],

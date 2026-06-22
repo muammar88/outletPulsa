@@ -174,21 +174,21 @@ export class DepositService {
 
     try {
       // 1. Cek apakah ada deposit proses
-      const total = await this.prisma.requestDeposit.count({
-        where: {
-          riwayatTransaksi: {
-            memberId: memberId,
-          },
-          status: 'proses',
-        },
-      });
+      // const total = await this.prisma.requestDeposit.count({
+      //   where: {
+      //     riwayatTransaksi: {
+      //       memberId: memberId,
+      //     },
+      //     status: 'proses',
+      //   },
+      // });
 
-      if (total > 0) {
-        return {
-          error: true,
-          error_msg: 'Masih terdapat request yang belum diproses.',
-        };
-      }
+      // if (total > 0) {
+      //   return {
+      //     error: true,
+      //     error_msg: 'Masih terdapat request yang belum diproses.',
+      //   };
+      // }
 
       // 2. Bersihkan nominal jika berupa string (contoh: "Rp 1.000.000")
       let rawNominal = typeof body.nominal === 'string' ? body.nominal.replace(/[^0-9]/g, '') : body.nominal.toString();

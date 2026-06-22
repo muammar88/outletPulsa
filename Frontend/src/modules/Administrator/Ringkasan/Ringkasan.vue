@@ -248,7 +248,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { dashboardService } from '@/service/administrator/dashboard';
 import { useNotification } from '@/composables/useNotification';
 import { IconCurrencyDollar,
@@ -292,21 +292,27 @@ const isLoadingDashboard = ref(true);
 
 const notification = useNotification();
 
-const fetchServerBalances = async () => {
+const fetchServerBalances = async (isBackground = false) => {
   if (isLoadingBalances.value) return;
-  isLoadingBalances.value = true;
+  if (!isBackground) {
+    isLoadingBalances.value = true;
+  }
   try {
     const res = await dashboardService.getServerBalances();
     if (res.data) balances.value = res.data;
   } catch (error: any) {
     notification.displayNotification(error?.response?.data?.message || 'Gagal memuat saldo server', 'error');
   } finally {
-    isLoadingBalances.value = false;
+    if (!isBackground) {
+      isLoadingBalances.value = false;
+    }
   }
 };
 
-const fetchDashboardData = async () => {
-  isLoadingDashboard.value = true;
+const fetchDashboardData = async (isBackground = false) => {
+  if (!isBackground) {
+    isLoadingDashboard.value = true;
+  }
   try {
     const [statsRes, trxRes, prodRes, sysRes] = await Promise.all([
       dashboardService.getStatistics(),
@@ -381,12 +387,47 @@ const fetchDashboardData = async () => {
   } catch (error: any) {
     notification.displayNotification('Gagal memuat data dashboard', 'error');
   } finally {
-    isLoadingDashboard.value = false;
+    if (!isBackground) {
+      isLoadingDashboard.value = false;
+    }
+  }
+};
+
+let refreshInterval: ReturnType<typeof setInterval> | null = null;
+
+const startAutoRefresh = () => {
+  if (!refreshInterval) {
+    refreshInterval = setInterval(() => {
+      fetchServerBalances(true);
+      fetchDashboardData(true);
+    }, 5000);
+  }
+};
+
+const stopAutoRefresh = () => {
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
+    refreshInterval = null;
+  }
+};
+
+const handleVisibilityChange = () => {
+  if (document.hidden) {
+    stopAutoRefresh();
+  } else {
+    startAutoRefresh();
   }
 };
 
 onMounted(() => {
   fetchServerBalances();
   fetchDashboardData();
+  startAutoRefresh();
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+});
+
+onUnmounted(() => {
+  stopAutoRefresh();
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
 });
 </script>

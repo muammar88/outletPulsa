@@ -3,7 +3,7 @@ import { IconListDetails, IconSearch } from '@/components/Icons';
 
 import { usePagination } from '@/composables/usePaginations';
 import { useNotification } from '@/composables/useNotification';
-import { onMounted, ref } from 'vue';
+import { onMounted, onUnmounted, ref } from 'vue';
 
 // Table & Modal
 import BaseTable from '@/components/Table/BaseTable.vue';
@@ -99,8 +99,15 @@ const onSearch = () => {
   }, 500);
 };
 
-const fetchData = async () => {
-  isLoading.value = true;
+const fetchData = async (keyword?: string | Event | boolean, isBackground = false) => {
+  let isBg = isBackground;
+  if (typeof keyword === 'boolean') {
+    isBg = keyword;
+  }
+
+  if (!isBg) {
+    isLoading.value = true;
+  }
   try {
     const response = await riwayatTransferSaldoService.findAll({
       page: currentPage.value,
@@ -116,7 +123,9 @@ const fetchData = async () => {
     console.error('Gagal mengambil data riwayat transfer saldo:', error);
     displayNotification('Gagal mengambil data riwayat transfer saldo', 'error');
   } finally {
-    isLoading.value = false;
+    if (!isBg) {
+      isLoading.value = false;
+    }
   }
 };
 
@@ -146,8 +155,40 @@ const formatDate = (dateString: string) => {
   return dayjs(dateString).format('DD MMM YYYY HH:mm');
 };
 
+let refreshInterval: ReturnType<typeof setInterval> | null = null;
+
+const startAutoRefresh = () => {
+  if (!refreshInterval) {
+    refreshInterval = setInterval(() => {
+      fetchData(undefined, true);
+    }, 5000);
+  }
+};
+
+const stopAutoRefresh = () => {
+  if (refreshInterval) {
+    clearInterval(refreshInterval);
+    refreshInterval = null;
+  }
+};
+
+const handleVisibilityChange = () => {
+  if (document.hidden) {
+    stopAutoRefresh();
+  } else {
+    startAutoRefresh();
+  }
+};
+
 onMounted(() => {
   fetchData();
+  startAutoRefresh();
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+});
+
+onUnmounted(() => {
+  stopAutoRefresh();
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
 });
 </script>
 

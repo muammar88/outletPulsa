@@ -521,55 +521,7 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> wit
               ],
             ),
           ),
-          const SizedBox(height: 36),
-          Column(
-            children: [
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: loader.isLoad == true ? null : _peringatanKonfirmasiDeposit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _kPrimary,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    elevation: loader.isLoad == true ? 0 : 4,
-                    shadowColor: _kPrimary.withOpacity(0.4),
-                  ),
-                  child: loader.isLoad == true
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : Text(
-                          "SAYA SUDAH TRANSFER",
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: loader.isLoad == true ? null : _peringatanBatalkanDeposit,
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    side: const BorderSide(color: Color(0xFFD32F2F), width: 1.5),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  ),
-                  child: Text(
-                    "BATALKAN DEPOSIT",
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFFD32F2F),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+
         ],
       ),
     );
