@@ -29,12 +29,25 @@ class Beranda_tab extends StatefulWidget {
   final ConfigApp config;
 
   @override
-  State<Beranda_tab> createState() => _Beranda_tabState();
+  State<Beranda_tab> createState() => Beranda_tab_state();
 }
 
-class _Beranda_tabState extends State<Beranda_tab> {
+class Beranda_tab_state extends State<Beranda_tab> {
   bool _isInit = true;
   bool _isLoading = true;
+  final ScrollController _scrollController = ScrollController();
+
+  void scrollToTop() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients && _scrollController.offset > 0) {
+        _scrollController.animateTo(
+          0.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+        );
+      }
+    });
+  }
 
   @override
   void didChangeDependencies() {
@@ -56,6 +69,12 @@ class _Beranda_tabState extends State<Beranda_tab> {
         }
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Widget _buildLoadingScreen() {
@@ -166,6 +185,7 @@ class _Beranda_tabState extends State<Beranda_tab> {
             }
           },
           child: CustomScrollView(
+            controller: _scrollController,
             physics: const BouncingScrollPhysics(
                 parent: AlwaysScrollableScrollPhysics()),
             slivers: [

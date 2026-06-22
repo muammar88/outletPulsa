@@ -24,6 +24,9 @@ class _Home_pageState extends State<Home_page> {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
 
+  final GlobalKey<Beranda_tab_state> _berandaKey =
+      GlobalKey<Beranda_tab_state>();
+
   bool loadData = false;
   int _currentIndex = 0;
   final config = ConfigApp();
@@ -44,6 +47,7 @@ class _Home_pageState extends State<Home_page> {
     // Otomatis refresh data beranda saat tab Beranda diklik
     if (index == 0) {
       Provider.of<Beranda_provider>(context, listen: false).get_data_beranda();
+      _berandaKey.currentState?.scrollToTop();
     }
   }
 
@@ -128,6 +132,7 @@ class _Home_pageState extends State<Home_page> {
         index: _currentIndex,
         children: [
           Beranda_tab(
+              key: _berandaKey,
               refreshIndicatorKey: _refreshIndicatorKey, config: config),
           Riwayat_tab(),
           Info_tab(),
