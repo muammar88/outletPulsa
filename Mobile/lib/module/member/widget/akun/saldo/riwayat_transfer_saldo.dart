@@ -29,7 +29,8 @@ class _Riwayat_transfer_saldoState extends State<Riwayat_transfer_saldo> {
     if (!loadData) {
       loadData = true;
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        final provider = Provider.of<Riwayat_transfer_saldo_provider>(context, listen: false);
+        final provider = Provider.of<Riwayat_transfer_saldo_provider>(context,
+            listen: false);
         provider.list = null; // reset list untuk trigger skeleton
         await provider.getRiwayatTransferSaldo();
       });
@@ -49,10 +50,14 @@ class _Riwayat_transfer_saldoState extends State<Riwayat_transfer_saldo> {
         bottom: false,
         child: Stack(
           children: [
-            Positioned(top: -50, right: -50, child: _Circle(size: 200, opacity: 0.05)),
-            Positioned(top: 50, right: 50, child: _Circle(size: 90, opacity: 0.06)),
-            Positioned(bottom: -40, left: -40, child: _Circle(size: 130, opacity: 0.04)),
-
+            Positioned(
+                top: -50, right: -50, child: _Circle(size: 200, opacity: 0.05)),
+            Positioned(
+                top: 50, right: 50, child: _Circle(size: 90, opacity: 0.06)),
+            Positioned(
+                bottom: -40,
+                left: -40,
+                child: _Circle(size: 130, opacity: 0.04)),
             Positioned(
               top: compact ? 0 : 16,
               left: compact ? 0 : 16,
@@ -66,20 +71,21 @@ class _Riwayat_transfer_saldoState extends State<Riwayat_transfer_saldo> {
                     color: Colors.white.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(TablerIcons.arrow_left, color: Colors.white, size: 20),
+                  child: const Icon(TablerIcons.arrow_left,
+                      color: Colors.white, size: 20),
                 ),
               ),
             ),
-
             Center(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 32, vertical: compact ? 32 : 0),
+                padding: EdgeInsets.symmetric(
+                    horizontal: 32, vertical: compact ? 32 : 0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const SizedBox(height: 16),
                     Text(
-                      'Riwayat Transfer Saldo',
+                      'Riwayat\nTransfer Saldo',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.outfit(
                         fontSize: compact ? 26 : 36,
@@ -123,29 +129,34 @@ class _Riwayat_transfer_saldoState extends State<Riwayat_transfer_saldo> {
             child: riwayat.list == null
                 ? ListView.builder(
                     physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 20),
                     itemCount: 8,
                     itemBuilder: (context, index) {
                       return const Padding(
                         padding: EdgeInsets.only(bottom: 12.0),
-                        child: SkeletonWidget(height: 80, width: double.infinity, radius: 16),
+                        child: SkeletonWidget(
+                            height: 80, width: double.infinity, radius: 16),
                       );
                     },
                   )
                 : riwayat.error == true && riwayat.errorMsg != null
                     ? ErrorStateWidget(
                         config: config,
-                        errorMessage: riwayat.errorMsg ?? 'Terjadi kesalahan sistem',
+                        errorMessage:
+                            riwayat.errorMsg ?? 'Terjadi kesalahan sistem',
                         onRetry: () {
                           riwayat.getRiwayatTransferSaldo();
                         },
                       )
                     : riwayat.list!.isEmpty
                         ? NotfoundWidget(
-                            config: config, label: "Riwayat Transfer Saldo Kosong")
+                            config: config,
+                            label: "Riwayat Transfer Saldo Kosong")
                         : ListView.builder(
                             physics: const BouncingScrollPhysics(),
-                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 20),
                             itemCount: riwayat.list!.length,
                             itemBuilder: (BuildContext context, int index) {
                               return Padding(
@@ -204,12 +215,16 @@ class BoxRiwayatTransfer extends StatelessWidget {
     String noHp = item['nowhatsapp'] ?? '-';
     String namaTarget = item['namaTarget'] ?? '-';
 
-    bool isMasuk = tipe.toLowerCase().contains('terima') || tipe.toLowerCase().contains('masuk');
+    bool isMasuk = tipe.toLowerCase().contains('terima') ||
+        tipe.toLowerCase().contains('masuk');
     int staggerIndex = index > 15 ? 15 : index;
 
-    Color iconColor = isMasuk ? const Color(0xFF2E7D32) : const Color(0xFFD32F2F);
-    Color iconBgColor = isMasuk ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE);
-    IconData iconData = isMasuk ? TablerIcons.arrow_down_left : TablerIcons.arrow_up_right;
+    Color iconColor =
+        isMasuk ? const Color(0xFF2E7D32) : const Color(0xFFD32F2F);
+    Color iconBgColor =
+        isMasuk ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE);
+    IconData iconData =
+        isMasuk ? TablerIcons.arrow_down_left : TablerIcons.arrow_up_right;
 
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0.0, end: 1.0),
@@ -300,7 +315,8 @@ class BoxRiwayatTransfer extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(TablerIcons.device_mobile, size: 12, color: Colors.grey.shade600),
+                              Icon(TablerIcons.device_mobile,
+                                  size: 12, color: Colors.grey.shade600),
                               const SizedBox(width: 4),
                               Text(
                                 noHp,
@@ -354,7 +370,8 @@ class BoxRiwayatTransfer extends StatelessWidget {
                           style: GoogleFonts.poppins(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: isMasuk ? Colors.green[700] : Colors.red[700],
+                            color:
+                                isMasuk ? Colors.green[700] : Colors.red[700],
                           ),
                         ),
                       ),

@@ -170,7 +170,8 @@ class Sub_riwayat_deposit extends StatefulWidget {
   State<Sub_riwayat_deposit> createState() => _Sub_riwayat_depositState();
 }
 
-class _Sub_riwayat_depositState extends State<Sub_riwayat_deposit> with WidgetsBindingObserver {
+class _Sub_riwayat_depositState extends State<Sub_riwayat_deposit>
+    with WidgetsBindingObserver {
   final config = ConfigApp();
   bool loadData = false;
 
@@ -225,7 +226,8 @@ class _Sub_riwayat_depositState extends State<Sub_riwayat_deposit> with WidgetsB
 
     _isFetching = true;
     try {
-      final riwayat = Provider.of<Riwayat_deposit_provider>(context, listen: false);
+      final riwayat =
+          Provider.of<Riwayat_deposit_provider>(context, listen: false);
       await riwayat.getRiwayatDeposit();
     } finally {
       if (mounted) {
@@ -239,9 +241,10 @@ class _Sub_riwayat_depositState extends State<Sub_riwayat_deposit> with WidgetsB
     super.didChangeDependencies();
     if (loadData == false) {
       loadData = true;
-      
+
       // Initial fetch
-      final riwayat = Provider.of<Riwayat_deposit_provider>(context, listen: false);
+      final riwayat =
+          Provider.of<Riwayat_deposit_provider>(context, listen: false);
       final beranda = Provider.of<Beranda_provider>(context, listen: false);
       riwayat.getRiwayatDeposit().then((_) {
         if (mounted) {
@@ -283,7 +286,9 @@ class _Sub_riwayat_depositState extends State<Sub_riwayat_deposit> with WidgetsB
               config: config,
               errorMessage: riwayat.errorMsg ?? "Terjadi kesalahan",
               onRetry: () {
-                setState(() { loadData = false; });
+                setState(() {
+                  loadData = false;
+                });
               },
             );
           }
@@ -351,7 +356,9 @@ class BoxListDeposit extends StatelessWidget {
   String _formatCurrency(String amount) {
     try {
       double val = double.parse(amount);
-      return NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(val);
+      return NumberFormat.currency(
+              locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0)
+          .format(val);
     } catch (e) {
       return 'Rp ' + amount;
     }
@@ -397,7 +404,8 @@ class BoxListDeposit extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => Detail_deposit(status: status, id: id)),
+                    builder: (context) =>
+                        Detail_deposit(status: status, id: id)),
               );
             },
             child: Padding(
@@ -419,7 +427,7 @@ class BoxListDeposit extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  
+
                   // Content Details
                   Expanded(
                     child: Column(
@@ -447,7 +455,8 @@ class BoxListDeposit extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF8F9FA),
                             borderRadius: BorderRadius.circular(8),
@@ -456,7 +465,8 @@ class BoxListDeposit extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.tag_rounded, size: 12, color: Colors.grey.shade600),
+                              Icon(Icons.tag_rounded,
+                                  size: 12, color: Colors.grey.shade600),
                               const SizedBox(width: 4),
                               Flexible(
                                 child: Text(
@@ -476,8 +486,8 @@ class BoxListDeposit extends StatelessWidget {
                       ],
                     ),
                   ),
-                  
-                  // Trailing 
+
+                  // Trailing
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
@@ -531,7 +541,8 @@ class _Sub_riwayat_pascabayarState extends State<Sub_riwayat_pascabayar> {
     super.didChangeDependencies();
     if (loadData == false) {
       loadData = true;
-      final riwayat = Provider.of<Riwayat_pascabayar_provider>(context, listen: false);
+      final riwayat =
+          Provider.of<Riwayat_pascabayar_provider>(context, listen: false);
       await riwayat.getRiwayatPascabayar();
     }
   }
@@ -554,7 +565,9 @@ class _Sub_riwayat_pascabayarState extends State<Sub_riwayat_pascabayar> {
               config: config,
               errorMessage: riwayat.errorMsg ?? "Terjadi kesalahan",
               onRetry: () {
-                setState(() { loadData = false; });
+                setState(() {
+                  loadData = false;
+                });
               },
             );
           }
@@ -630,7 +643,9 @@ class BoxListRiwayatPascabayar extends StatelessWidget {
   String _formatCurrency(String amount) {
     try {
       double val = double.parse(amount);
-      return NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(val);
+      return NumberFormat.currency(
+              locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0)
+          .format(val);
     } catch (e) {
       return 'Rp ' + amount;
     }
@@ -698,7 +713,7 @@ class BoxListRiwayatPascabayar extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  
+
                   // Content Details
                   Expanded(
                     child: Column(
@@ -726,7 +741,8 @@ class BoxListRiwayatPascabayar extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF8F9FA),
                             borderRadius: BorderRadius.circular(8),
@@ -735,7 +751,8 @@ class BoxListRiwayatPascabayar extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.tag_rounded, size: 12, color: Colors.grey.shade600),
+                              Icon(Icons.tag_rounded,
+                                  size: 12, color: Colors.grey.shade600),
                               const SizedBox(width: 4),
                               Flexible(
                                 child: Text(
@@ -755,8 +772,8 @@ class BoxListRiwayatPascabayar extends StatelessWidget {
                       ],
                     ),
                   ),
-                  
-                  // Trailing 
+
+                  // Trailing
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -800,7 +817,8 @@ class _Sub_riwayat_prabayarState extends State<Sub_riwayat_prabayar> {
     super.didChangeDependencies();
     if (loadData == false) {
       loadData = true;
-      final riwayat = Provider.of<Riwayat_prabayar_provider>(context, listen: false);
+      final riwayat =
+          Provider.of<Riwayat_prabayar_provider>(context, listen: false);
       await riwayat.getRiwayatPrabayar();
     }
   }
@@ -823,7 +841,9 @@ class _Sub_riwayat_prabayarState extends State<Sub_riwayat_prabayar> {
               config: config,
               errorMessage: riwayat.errorMsg ?? "Terjadi kesalahan",
               onRetry: () {
-                setState(() { loadData = false; });
+                setState(() {
+                  loadData = false;
+                });
               },
             );
           }
@@ -899,7 +919,9 @@ class BoxListRiwayat extends StatelessWidget {
   String _formatCurrency(String amount) {
     try {
       double val = double.parse(amount);
-      return NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0).format(val);
+      return NumberFormat.currency(
+              locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0)
+          .format(val);
     } catch (e) {
       return 'Rp ' + amount;
     }
@@ -968,7 +990,7 @@ class BoxListRiwayat extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  
+
                   // Content Details
                   Expanded(
                     child: Column(
@@ -996,7 +1018,8 @@ class BoxListRiwayat extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF8F9FA),
                             borderRadius: BorderRadius.circular(8),
@@ -1005,7 +1028,8 @@ class BoxListRiwayat extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.tag_rounded, size: 12, color: Colors.grey.shade600),
+                              Icon(Icons.tag_rounded,
+                                  size: 12, color: Colors.grey.shade600),
                               const SizedBox(width: 4),
                               Flexible(
                                 child: Text(
@@ -1025,8 +1049,8 @@ class BoxListRiwayat extends StatelessWidget {
                       ],
                     ),
                   ),
-                  
-                  // Trailing 
+
+                  // Trailing
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
