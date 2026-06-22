@@ -13,6 +13,8 @@ import { DaftarProdukPrabayarTripayModule } from '../administrator/daftar_produk
 import { DaftarProdukPascabayarTripayModule } from '../administrator/daftar_produk_pascabayar_tripay/daftar_produk_pascabayar_tripay.module';
 import { ProdukPrabayarModule } from '../administrator/produk_prabayar/produk_prabayar.module';
 
+import { PrismaService } from '../prisma.service';
+
 @Module({})
 export class SchedulerModule {
   static register(): DynamicModule {
@@ -62,7 +64,7 @@ export class SchedulerModule {
         DaftarProdukPascabayarTripayModule,
         ProdukPrabayarModule,
       ],
-      providers: [SchedulerService, SchedulerProcessor],
+      providers: [SchedulerService, SchedulerProcessor, PrismaService],
     };
   }
 }

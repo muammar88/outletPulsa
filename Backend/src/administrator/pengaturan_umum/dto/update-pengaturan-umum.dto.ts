@@ -24,4 +24,8 @@ export class UpdatePengaturanUmumDto {
   @IsOptional()
   @IsString()
   alamat?: string;
+
+  @IsOptional()
+  @IsString()
+  bullmq_schedules?: string;
 }

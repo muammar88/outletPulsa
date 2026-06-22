@@ -6,6 +6,7 @@ export interface PengaturanUmum {
   email: string;
   telepon: string;
   alamat: string;
+  bullmq_schedules: string;
   createdAt: string;
   updatedAt: string;
 }

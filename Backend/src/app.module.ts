@@ -25,6 +25,7 @@ import { DepositModule } from './api/deposit/deposit.module';
 import { WebhookModule } from './api/webhook/webhook.module';
 import { ProvidersModule } from './providers/providers.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -36,7 +37,7 @@ import { SchedulerModule } from './scheduler/scheduler.module';
       ttl: 60000,
       limit: 100,
     }]),
-    ProvidersModule, AdministratorModule, AuthModule, BerandaModule, RiwayatModule, StubModule, InfoModule, AkunModule, ProdukModule, TransaksiModule, TransaksiPascabayarModule, WebhookModule, DepositModule, SchedulerModule.register()],
+    ProvidersModule, AdministratorModule, AuthModule, BerandaModule, RiwayatModule, StubModule, InfoModule, AkunModule, ProdukModule, TransaksiModule, TransaksiPascabayarModule, WebhookModule, DepositModule, SchedulerModule.register(), EventEmitterModule.forRoot()],
   controllers: [AppController, MemberController, ApiController],
   providers: [
     {
