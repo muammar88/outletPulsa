@@ -53,6 +53,9 @@ export class PengaturanUmumService {
       }
 
       if (updatedSchedules) {
+        // Tambahkan log ini agar terlihat di terminal saat event di trigger
+        const { Logger } = require('@nestjs/common');
+        new Logger('PengaturanUmum').log(`Jadwal BullMQ diperbarui! Mengirim event 'pengaturan.updated' dengan data: ${pengaturan.bullmq_schedules}`);
         this.eventEmitter.emit('pengaturan.updated', pengaturan.bullmq_schedules);
       }
 

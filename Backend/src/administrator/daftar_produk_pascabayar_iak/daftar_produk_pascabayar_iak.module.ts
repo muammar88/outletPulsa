@@ -6,5 +6,6 @@ import { PrismaService } from '../../prisma.service';
 @Module({
   controllers: [DaftarProdukPascabayarIakController],
   providers: [DaftarProdukPascabayarIakService, PrismaService],
+  exports: [DaftarProdukPascabayarIakService],
 })
 export class DaftarProdukPascabayarIakModule {}
