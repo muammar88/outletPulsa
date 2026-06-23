@@ -21,6 +21,8 @@ class Detail_provider with ChangeNotifier {
   String? _dateTransaction;
   String? _nomorTujuan;
   String? _price;
+  int? _feeAgen;
+  int? _sellingPriceRaw;
   String? _serialNumber;
   String? _message;
 
@@ -44,6 +46,8 @@ class Detail_provider with ChangeNotifier {
   String? get dateTransaction => _dateTransaction;
   String? get nomorTujuan => _nomorTujuan;
   String? get price => _price;
+  int? get feeAgen => _feeAgen;
+  int? get sellingPriceRaw => _sellingPriceRaw;
   String? get serialNumber => _serialNumber;
   String? get message => _message;
 
@@ -76,6 +80,8 @@ class Detail_provider with ChangeNotifier {
       _dateTransaction = e.dateTransaction;
       _nomorTujuan = e.nomorTujuan;
       _price = e.price;
+      _feeAgen = e.feeAgen;
+      _sellingPriceRaw = e.sellingPriceRaw;
       _serialNumber = e.serialNumber;
       _message = e.message;
       notifyListeners();

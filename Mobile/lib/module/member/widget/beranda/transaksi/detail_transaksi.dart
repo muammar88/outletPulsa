@@ -302,6 +302,17 @@ class _Detail_transaksiState extends State<Detail_transaksi> with SingleTickerPr
   }
 
   Widget _buildContentCard(Detail_provider detail, String statusName, Color statusColor, IconData statusIcon, Load_provider loader, {bool isWide = false}) {
+    final beranda = Provider.of<Beranda_provider>(context, listen: false);
+    final isReseller = !beranda.isAgen;
+    
+    String displayPriceStr = detail.price ?? 'Rp 0';
+    if (isReseller && detail.sellingPriceRaw != null && detail.feeAgen != null) {
+      int totalHarga = detail.sellingPriceRaw! + detail.feeAgen!;
+      displayPriceStr = _formatCurrency(totalHarga.toString());
+    } else {
+      displayPriceStr = _formatCurrency(detail.price ?? '0');
+    }
+
     return Container(
       padding: EdgeInsets.all(isWide ? 40 : 24),
       decoration: BoxDecoration(
@@ -378,7 +389,7 @@ class _Detail_transaksiState extends State<Detail_transaksi> with SingleTickerPr
                 Divider(color: Colors.grey.shade200, height: 1),
                 _buildDetailRow('Produk', detail.productName ?? '-'),
                 Divider(color: Colors.grey.shade200, height: 1),
-                _buildDetailRow('Harga Modal', _formatCurrency(detail.price ?? '0')),
+                _buildDetailRow('Harga Modal', displayPriceStr),
                 if (detail.serialNumber != null && detail.serialNumber!.isNotEmpty) ...[
                   Divider(color: Colors.grey.shade200, height: 1),
                   _buildDetailRow('Serial Number', detail.serialNumber!, isCopy: true),

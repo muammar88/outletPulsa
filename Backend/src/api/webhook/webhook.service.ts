@@ -405,15 +405,15 @@ export class WebhookService {
       id: number;
       purchase_price: number | null;
       selling_price: number | null;
+      fee_agen: number | null;
       riwayatTransaksi: { member: { kode_agen: string | null } | null } | null;
     },
   ): Promise<void> {
-    // Hitung fee agen (jika member punya kode_agen, fee = 20)
-    let feeAgen = 0;
+    // Ambil fee agen dari data transaksi jika sudah diset di awal
+    let feeAgen = transactionData.fee_agen || 0;
     let kodeAgen = '';
     const memberKodeAgen = transactionData.riwayatTransaksi?.member?.kode_agen;
     if (memberKodeAgen) {
-      feeAgen = 20;
       kodeAgen = memberKodeAgen;
     }
 
@@ -462,6 +462,7 @@ export class WebhookService {
     transactionData: {
       id: number;
       selling_price: number | null;
+      fee_agen: number | null;
       riwayatTransaksi: { member: { id: number; saldo: number | null } | null } | null;
     },
   ): Promise<void> {
@@ -472,15 +473,14 @@ export class WebhookService {
     }
 
     const sellingPrice = transactionData.selling_price || 0;
-    const currentSaldo = member.saldo || 0;
-    const newSaldo = currentSaldo + sellingPrice;
-
+    const feeAgen = transactionData.fee_agen || 0;
+    const totalRefund = sellingPrice + feeAgen;
     // Gunakan Prisma transaction untuk memastikan atomicity
     await this.prisma.$transaction(async (tx) => {
-      // 1. Kembalikan saldo member
+      // 1. Kembalikan saldo member secara atomik (mencegah race condition)
       await tx.member.update({
         where: { id: member.id },
-        data: { saldo: newSaldo },
+        data: { saldo: { increment: totalRefund } },
       });
 
       // 2. Update status transaksi ke gagal

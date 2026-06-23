@@ -16,6 +16,7 @@ class Beranda_provider with ChangeNotifier {
   String? _saldo;
   String? _kode;
   bool? _status_deposit;
+  String? _kode_agen;
   // String? _status_kirim;
 
   String? get name => _name ?? 'Tidak ada nama';
@@ -23,6 +24,11 @@ class Beranda_provider with ChangeNotifier {
   String? get saldo => _saldo ?? 'Rp 0,-';
   String? get kode => _kode ?? '-';
   bool? get status_deposit => _status_deposit ?? false;
+  String? get kode_agen => _kode_agen;
+
+  bool get isAgen {
+    return _kode_agen == null || _kode_agen!.isEmpty;
+  }
   // String? get status_kirim => _status_kirim;
 
   set name(String? value) {
@@ -53,6 +59,7 @@ class Beranda_provider with ChangeNotifier {
         _saldo = e.saldo;
         _kode = e.kode;
         _status_deposit = e.status_deposit;
+        _kode_agen = e.kode_agen;
         // _status_kirim = e.status_kirim;
 
         notifyListeners();

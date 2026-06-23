@@ -862,6 +862,8 @@ class _Sub_riwayat_prabayarState extends State<Sub_riwayat_prabayar> {
                     nomor_tujuan: item['nomor_tujuan'],
                     kode_transaksi: item['kode_transaksi'],
                     harga: item['selling_price'],
+                    fee_agen: item['fee_agen'],
+                    selling_price_raw: item['selling_price_raw'],
                     status: item['status'],
                     index: index,
                   ),
@@ -874,6 +876,8 @@ class _Sub_riwayat_prabayarState extends State<Sub_riwayat_prabayar> {
                   nomor_tujuan: item['nomor_tujuan'],
                   kode_transaksi: item['kode_transaksi'],
                   harga: item['selling_price'],
+                  fee_agen: item['fee_agen'],
+                  selling_price_raw: item['selling_price_raw'],
                   status: item['status'],
                   index: index,
                 );
@@ -893,6 +897,8 @@ class BoxListRiwayat extends StatelessWidget {
     required this.nomor_tujuan,
     required this.kode_transaksi,
     required this.harga,
+    required this.fee_agen,
+    required this.selling_price_raw,
     required this.status,
     required this.index,
   });
@@ -904,6 +910,8 @@ class BoxListRiwayat extends StatelessWidget {
   final String nomor_tujuan;
   final String? kode_transaksi;
   final String harga;
+  final dynamic fee_agen;
+  final dynamic selling_price_raw;
   final String status;
   final index;
 
@@ -930,7 +938,24 @@ class BoxListRiwayat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final formattedDate = _formatDate(waktu);
-    final formattedHarga = _formatCurrency(harga);
+
+    final beranda = Provider.of<Beranda_provider>(context, listen: false);
+    final isReseller = !beranda.isAgen;
+
+    String displayPriceStr = harga;
+    if (isReseller && fee_agen != null && selling_price_raw != null) {
+      try {
+        int basePrice = selling_price_raw is int ? selling_price_raw : int.parse(selling_price_raw.toString());
+        int fee = fee_agen is int ? fee_agen : int.parse(fee_agen.toString());
+        displayPriceStr = _formatCurrency((basePrice + fee).toString());
+      } catch (e) {
+        // ignore
+      }
+    } else {
+      displayPriceStr = _formatCurrency(harga.replaceAll(RegExp(r'[^0-9]'), ''));
+    }
+
+    final formattedHarga = displayPriceStr;
     int staggerIndex = index > 15 ? 15 : index;
 
     return TweenAnimationBuilder<double>(

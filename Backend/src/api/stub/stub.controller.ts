@@ -67,12 +67,6 @@ export class StubController {
   }
 
   // ── AGEN ──────────────────────────────────────────
-  /** GET /api/agen-daftar */
-  @UseGuards(JwtApiGuard)
-  @Get('agen-daftar')
-  daftarAgen() {
-    return { error: false, error_msg: '', list: {} };
-  }
 
   /** GET /api/agen-riwayat-pembayaran */
   @UseGuards(JwtApiGuard)

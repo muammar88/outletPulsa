@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:outletpulsa/module/member/widget/akun/agen/daftar_reseller_agen.dart';
+import 'package:outletpulsa/module/member/widget/akun/agen/info_keagenan.dart';
 import 'package:provider/provider.dart';
 
 import 'package:outletpulsa/core/constants/config.dart';
@@ -206,40 +207,62 @@ class _Akun_tabState extends State<Akun_tab> {
             ),
 
             // ── Keagenan ───────────────────────────────────────────
+            if (dataBeranda.isAgen) ...[
+              const SizedBox(height: 20),
+              _SectionLabel(label: 'Keagenan'),
+              const SizedBox(height: 8),
+              _MenuCard(
+                children: [
+                  _MenuItem(
+                    icon: TablerIcons.info_circle,
+                    iconColor: const Color(0xFF1976D2),
+                    label: 'Info Keagenan',
+                    value: '',
+                    showArrow: true,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => Info_keagenan()),
+                    ),
+                  ),
+                  _Divider(),
+                  _MenuItem(
+                    icon: TablerIcons.users,
+                    iconColor: const Color(0xFFF57F17),
+                    label: 'Daftar Reseller Agen',
+                    value: '',
+                    showArrow: true,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => Daftar_reseller_agen()),
+                    ),
+                  ),
+                  _Divider(),
+                  _MenuItem(
+                    icon: TablerIcons.receipt,
+                    iconColor: const Color(0xFF00796B),
+                    label: 'Riwayat Pembayaran Fee Agen',
+                    value: '',
+                    showArrow: true,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => Riwayat_pembayaran_fee_agen()),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+
+            // ── Ketentuan Dan Kebijakan ────────────────────────────
             const SizedBox(height: 20),
-            _SectionLabel(label: 'Keagenan'),
+            _SectionLabel(label: 'Ketentuan Dan Kebijakan'),
             const SizedBox(height: 8),
             _MenuCard(
               children: [
                 _MenuItem(
-                  icon: TablerIcons.users,
-                  iconColor: const Color(0xFFF57F17),
-                  label: 'Daftar Reseller Agen',
-                  value: '',
-                  showArrow: true,
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => Daftar_reseller_agen()),
-                  ),
-                ),
-                _Divider(),
-                _MenuItem(
-                  icon: TablerIcons.receipt,
-                  iconColor: const Color(0xFF00796B),
-                  label: 'Riwayat Pembayaran Fee Agen',
-                  value: '',
-                  showArrow: true,
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => Riwayat_pembayaran_fee_agen()),
-                  ),
-                ),
-                _Divider(),
-                _MenuItem(
                   icon: TablerIcons.file_description,
                   iconColor: const Color(0xFF5D4037),
-                  label: 'Ketentuan Dan Kebijakan Fitur Keagenans',
+                  label: 'Ketentuan dan Kebijakan',
                   value: '',
                   showArrow: true,
                   onTap: () => Navigator.push(

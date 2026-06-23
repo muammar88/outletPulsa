@@ -6,6 +6,7 @@ class Model_beranda {
   String? _nomor_whatsapp;
   String? _saldo;
   bool? _status_deposit;
+  String? _kode_agen;
 
   Model_beranda(this._error, this._errorMsg);
 
@@ -16,6 +17,7 @@ class Model_beranda {
   String? get nomor_whatsapp => _nomor_whatsapp;
   String? get saldo => _saldo;
   bool? get status_deposit => _status_deposit;
+  String? get kode_agen => _kode_agen;
 
   Model_beranda.map(dynamic obj) {
     if (obj['error'] != null && obj['error'] != '') {
@@ -31,5 +33,6 @@ class Model_beranda {
     _nomor_whatsapp = data['nomor_whatsapp'];
     _saldo = data['saldo'];
     _status_deposit = data['status_deposit'];
+    _kode_agen = data['kode_agen'];
   }
 }

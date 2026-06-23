@@ -16,6 +16,8 @@ class Model_detail_transaksi {
   String? _dateTransaction;
   String? _nomorTujuan;
   String? _price;
+  int? _feeAgen;
+  int? _sellingPriceRaw;
   String? _serialNumber;
   String? _message;
 
@@ -37,6 +39,8 @@ class Model_detail_transaksi {
   String? get dateTransaction => _dateTransaction;
   String? get nomorTujuan => _nomorTujuan;
   String? get price => _price;
+  int? get feeAgen => _feeAgen;
+  int? get sellingPriceRaw => _sellingPriceRaw;
   String? get serialNumber => _serialNumber;
   String? get message => _message;
 
@@ -65,6 +69,8 @@ class Model_detail_transaksi {
     _dateTransaction = obj['data']['dateTransaction'];
     _nomorTujuan = obj['data']['nomorTujuan'];
     _price = obj['data']['price'];
+    _feeAgen = obj['data']['fee_agen'];
+    _sellingPriceRaw = obj['data']['selling_price_raw'];
     _serialNumber = obj['data']['serialNumber'];
     _message = obj['data']['message'];
   }

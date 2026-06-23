@@ -18,6 +18,7 @@ export class BerandaService {
         whatsappnumber: true,
         saldo: true,
         status: true,
+        kode_agen: true,
       },
     });
 
@@ -31,6 +32,7 @@ export class BerandaService {
       error: false,
       error_msg: '',
       kode: member.kode,
+      kode_agen: member.kode_agen,
       name: member.fullname,
       nomor_whatsapp: member.whatsappnumber,
       saldo: member.saldo?.toString() ?? '0',

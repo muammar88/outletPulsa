@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:outletpulsa/shared/providers/AgenProvider.dart';
 import 'package:provider/provider.dart';
 import 'package:outletpulsa/core/constants/config.dart';
-import 'package:outletpulsa/shared/providers/RiwayatTransferProvider.dart';
-import 'package:outletpulsa/shared/widgets/NotFound.dart';
 import 'package:outletpulsa/shared/widgets/skeletonWidget.dart';
+import 'package:outletpulsa/shared/widgets/NotFound.dart';
 import 'package:outletpulsa/shared/widgets/ErrorStateWidget.dart';
+import 'package:intl/intl.dart';
 
-class Riwayat_transfer_saldo extends StatefulWidget {
-  const Riwayat_transfer_saldo({super.key});
+class Daftar_transaksi_reseller extends StatefulWidget {
+  const Daftar_transaksi_reseller({super.key});
 
   @override
-  State<Riwayat_transfer_saldo> createState() => _Riwayat_transfer_saldoState();
+  State<Daftar_transaksi_reseller> createState() =>
+      _Daftar_transaksi_resellerState();
 }
 
-class _Riwayat_transfer_saldoState extends State<Riwayat_transfer_saldo> {
+class _Daftar_transaksi_resellerState
+    extends State<Daftar_transaksi_reseller> {
   final config = ConfigApp();
   bool loadData = false;
 
@@ -27,12 +30,26 @@ class _Riwayat_transfer_saldoState extends State<Riwayat_transfer_saldo> {
     super.didChangeDependencies();
     if (!loadData) {
       loadData = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        final provider = Provider.of<Riwayat_transfer_saldo_provider>(context,
-            listen: false);
-        provider.list = null; // reset list untuk trigger skeleton
-        await provider.getRiwayatTransferSaldo();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Provider.of<Agen_provider>(context, listen: false)
+            .getTransaksiReseller();
       });
+    }
+  }
+
+  String formatCurrency(dynamic number) {
+    if (number == null) return 'Rp 0';
+    final formatter =
+        NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    return formatter.format(number);
+  }
+
+  String formatTanggal(dynamic dateVal) {
+    try {
+      final date = DateTime.parse(dateVal.toString()).toLocal();
+      return DateFormat('dd MMM yyyy, HH:mm', 'id_ID').format(date);
+    } catch (e) {
+      return '-';
     }
   }
 
@@ -57,6 +74,7 @@ class _Riwayat_transfer_saldoState extends State<Riwayat_transfer_saldo> {
                 bottom: -40,
                 left: -40,
                 child: _Circle(size: 130, opacity: 0.04)),
+
             Positioned(
               top: compact ? 0 : 16,
               left: compact ? 0 : 16,
@@ -65,7 +83,8 @@ class _Riwayat_transfer_saldoState extends State<Riwayat_transfer_saldo> {
                 child: Container(
                   width: 40,
                   height: 40,
-                  margin: compact ? const EdgeInsets.all(16) : EdgeInsets.zero,
+                  margin:
+                      compact ? const EdgeInsets.all(16) : EdgeInsets.zero,
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
@@ -75,6 +94,7 @@ class _Riwayat_transfer_saldoState extends State<Riwayat_transfer_saldo> {
                 ),
               ),
             ),
+
             Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(
@@ -84,7 +104,7 @@ class _Riwayat_transfer_saldoState extends State<Riwayat_transfer_saldo> {
                   children: [
                     const SizedBox(height: 16),
                     Text(
-                      'Riwayat\nTransfer Saldo',
+                      'Transaksi Reseller',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.outfit(
                         fontSize: compact ? 26 : 36,
@@ -96,7 +116,7 @@ class _Riwayat_transfer_saldoState extends State<Riwayat_transfer_saldo> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Histori pengiriman dan penerimaan saldo Anda',
+                      'Riwayat transaksi sukses bulan ini',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: compact ? 13 : 15,
@@ -117,7 +137,7 @@ class _Riwayat_transfer_saldoState extends State<Riwayat_transfer_saldo> {
 
   @override
   Widget build(BuildContext context) {
-    final riwayat = Provider.of<Riwayat_transfer_saldo_provider>(context);
+    final agenProv = Provider.of<Agen_provider>(context);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
@@ -125,48 +145,56 @@ class _Riwayat_transfer_saldoState extends State<Riwayat_transfer_saldo> {
         children: [
           _buildBrandPanel(compact: true),
           Expanded(
-            child: riwayat.list == null
+            child: agenProv.list_transaksi_reseller == null && agenProv.error == null
+                // --- Loading ---
                 ? ListView.builder(
                     physics: const NeverScrollableScrollPhysics(),
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20, vertical: 20),
-                    itemCount: 8,
+                    itemCount: 6,
                     itemBuilder: (context, index) {
                       return const Padding(
                         padding: EdgeInsets.only(bottom: 12.0),
                         child: SkeletonWidget(
-                            height: 80, width: double.infinity, radius: 16),
+                            height: 90, width: double.infinity, radius: 16),
                       );
                     },
                   )
-                : riwayat.error == true && riwayat.errorMsg != null
+                // --- Error ---
+                : agenProv.error == true
                     ? ErrorStateWidget(
                         config: config,
                         errorMessage:
-                            riwayat.errorMsg ?? 'Terjadi kesalahan sistem',
-                        onRetry: () {
-                          riwayat.getRiwayatTransferSaldo();
-                        },
+                            agenProv.errorMsg ?? 'Terjadi kesalahan sistem',
+                        onRetry: () => agenProv.getTransaksiReseller(),
                       )
-                    : riwayat.list!.isEmpty
-                        ? NotfoundWidget(
-                            config: config,
-                            label: "Riwayat Transfer Saldo Kosong")
-                        : ListView.builder(
-                            physics: const BouncingScrollPhysics(),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 20),
-                            itemCount: riwayat.list!.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 12.0),
-                                child: BoxRiwayatTransfer(
-                                  riwayat: riwayat,
-                                  index: index,
-                                ),
-                              );
-                            },
-                          ),
+                // --- Empty ---
+                : (agenProv.list_transaksi_reseller?.isEmpty ?? true)
+                    ? NotfoundWidget(
+                        config: config,
+                        label: 'Belum ada transaksi sukses\ndi bulan ini',
+                      )
+                // --- Data ---
+                : ListView.builder(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 20),
+                    itemCount: agenProv.list_transaksi_reseller!.length,
+                    itemBuilder: (context, index) {
+                      final item = agenProv.list_transaksi_reseller!.values
+                          .elementAt(index);
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: _TransaksiCard(
+                          index: index,
+                          config: config,
+                          item: item,
+                          formatCurrency: formatCurrency,
+                          formatTanggal: formatTanggal,
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -193,37 +221,27 @@ class _Circle extends StatelessWidget {
   }
 }
 
-class BoxRiwayatTransfer extends StatelessWidget {
-  const BoxRiwayatTransfer({
-    super.key,
-    required this.riwayat,
+class _TransaksiCard extends StatelessWidget {
+  const _TransaksiCard({
     required this.index,
+    required this.config,
+    required this.item,
+    required this.formatCurrency,
+    required this.formatTanggal,
   });
 
-  final Riwayat_transfer_saldo_provider riwayat;
   final int index;
+  final ConfigApp config;
+  final Map<String, dynamic> item;
+  final String Function(dynamic) formatCurrency;
+  final String Function(dynamic) formatTanggal;
 
   @override
   Widget build(BuildContext context) {
-    final item = riwayat.list![index.toString()];
-    if (item == null) return const SizedBox();
-
-    String tipe = item['tipeTransaksi'] ?? '-';
-    String tanggal = item['updatedAt'] ?? '-';
-    String nominal = item['biaya'] ?? '-';
-    String noHp = item['nowhatsapp'] ?? '-';
-    String namaTarget = item['namaTarget'] ?? '-';
-
-    bool isMasuk = tipe.toLowerCase().contains('terima') ||
-        tipe.toLowerCase().contains('masuk');
-    int staggerIndex = index > 15 ? 15 : index;
-
-    Color iconColor =
-        isMasuk ? const Color(0xFF2E7D32) : const Color(0xFFD32F2F);
-    Color iconBgColor =
-        isMasuk ? const Color(0xFFE8F5E9) : const Color(0xFFFFEBEE);
-    IconData iconData =
-        isMasuk ? TablerIcons.arrow_down_left : TablerIcons.arrow_up_right;
+    final bool isPrabayar = item['jenis'] == 'prabayar';
+    final Color accentColor =
+        isPrabayar ? const Color(0xFF0F1F6E) : const Color(0xFF7B1FA2);
+    final int staggerIndex = index > 15 ? 15 : index;
 
     return TweenAnimationBuilder<double>(
       tween: Tween<double>(begin: 0.0, end: 1.0),
@@ -232,10 +250,7 @@ class BoxRiwayatTransfer extends StatelessWidget {
       builder: (context, value, child) {
         return Transform.translate(
           offset: Offset(0, 30 * (1 - value)),
-          child: Opacity(
-            opacity: value,
-            child: child,
-          ),
+          child: Opacity(opacity: value, child: child),
         );
       },
       child: Container(
@@ -254,9 +269,7 @@ class BoxRiwayatTransfer extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             borderRadius: BorderRadius.circular(16),
-            onTap: () {
-              // Aksi klik riwayat bisa ditambahkan di sini
-            },
+            onTap: () {},
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(
@@ -266,12 +279,14 @@ class BoxRiwayatTransfer extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: iconBgColor,
+                      color: accentColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Icon(
-                      iconData,
-                      color: iconColor,
+                      isPrabayar
+                          ? TablerIcons.device_mobile
+                          : TablerIcons.receipt,
+                      color: accentColor,
                       size: 24,
                     ),
                   ),
@@ -283,103 +298,89 @@ class BoxRiwayatTransfer extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          tipe,
-                          maxLines: 1,
+                          item['produk_name'] ?? '-',
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.poppins(
-                            fontSize: 15,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             color: const Color(0xFF1A1A2E),
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Text(
-                          namaTarget,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            color: Colors.grey.shade600,
-                          ),
+                        Row(
+                          children: [
+                            const Icon(TablerIcons.user,
+                                size: 13, color: Colors.grey),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                item['reseller_name'] ?? 'Reseller',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade600,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
+                              horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF8F9FA),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(color: Colors.grey.shade200),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(TablerIcons.device_mobile,
-                                  size: 12, color: Colors.grey.shade600),
-                              const SizedBox(width: 4),
-                              Text(
-                                noHp,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey.shade600,
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            formatTanggal(item['tanggal']),
+                            style: GoogleFonts.poppins(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey.shade600,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
 
-                  // Price and Badge
+                  // Nominal & Komisi
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        nominal,
+                        formatCurrency(item['nominal']),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
-                          fontSize: 15,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: iconColor,
+                          color: const Color(0xFF1A1A2E),
                         ),
                       ),
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: isMasuk
-                              ? Colors.green.withOpacity(0.1)
-                              : Colors.red.withOpacity(0.1),
+                          color: Colors.green.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: isMasuk
-                                ? Colors.green.withOpacity(0.4)
-                                : Colors.red.withOpacity(0.4),
+                            color: Colors.green.withOpacity(0.35),
                             width: 1,
                           ),
                         ),
                         child: Text(
-                          isMasuk ? 'Masuk' : 'Keluar',
+                          '+ ${formatCurrency(item['fee_agen'])}',
                           style: GoogleFonts.poppins(
                             fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color:
-                                isMasuk ? Colors.green[700] : Colors.red[700],
+                            fontWeight: FontWeight.w700,
+                            color: Colors.green[700],
                           ),
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        tanggal,
-                        style: GoogleFonts.poppins(
-                          fontSize: 10,
-                          color: Colors.grey[400],
                         ),
                       ),
                     ],

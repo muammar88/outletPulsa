@@ -9,7 +9,7 @@ export class TransaksiPascabayarController {
 
   @Get('riwayat-pascabayar')
   async getRiwayatPascabayar(@Request() req: any) {
-    const memberId = req.user.sub;
+    const memberId = req.user.id;
     return await this.transaksiPascabayarService.getRiwayatPascabayar(memberId);
   }
 
@@ -21,7 +21,7 @@ export class TransaksiPascabayarController {
 
   @Post('pascabayar-inquiry')
   async inquiryPascabayar(@Request() req: any, @Body() body: any) {
-    const memberId = req.user.sub;
+    const memberId = req.user.id;
     const { product_code } = body;
     let { nomor_tujuan } = body;
     if (nomor_tujuan) {
@@ -32,7 +32,7 @@ export class TransaksiPascabayarController {
 
   @Post('pascabayar-pembayaran')
   async pembayaranPascabayar(@Request() req: any, @Body() body: any) {
-    const memberId = req.user.sub;
+    const memberId = req.user.id;
     // Mobile sends tr_id inside body
     const tr_id = body.tr_id || body.trId;
     return await this.transaksiPascabayarService.pembayaranPascabayar(memberId, tr_id);

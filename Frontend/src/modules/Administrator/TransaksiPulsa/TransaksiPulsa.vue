@@ -27,7 +27,7 @@ const tableColumns = [
   {
     key: 'createdAt',
     label: 'Tanggal',
-    headerClass: 'text-left w-[15%]',
+    headerClass: 'text-left w-[10%]',
     cellClass: 'text-left',
   },
   {
@@ -55,6 +55,12 @@ const tableColumns = [
     cellClass: 'text-left',
   },
   {
+    key: 'feeAgen',
+    label: 'Fee Agen',
+    headerClass: 'text-left w-[10%]',
+    cellClass: 'text-left',
+  },
+  {
     key: 'status',
     label: 'Status',
     headerClass: 'text-center w-[10%]',
@@ -63,7 +69,7 @@ const tableColumns = [
   {
     key: 'action',
     label: 'Aksi',
-    headerClass: 'text-center w-[15%]',
+    headerClass: 'text-center w-[10%]',
     cellClass: 'text-center',
   },
 ];
@@ -326,6 +332,22 @@ onUnmounted(() => {
         <div class="flex flex-col">
           <span class="text-sm text-gray-800" title="Harga Jual">{{ formatRupiah(row.selling_price) }}</span>
           <span class="text-xs text-green-600 font-medium" title="Keuntungan">+ {{ formatRupiah(row.laba) }}</span>
+        </div>
+      </template>
+
+      <template #cell-feeAgen="{ row }">
+        <div class="flex flex-col">
+          <span class="text-sm text-gray-800" title="Fee Agen">{{ formatRupiah(row.fee_agen || 0) }}</span>
+          <span 
+            v-if="row.fee_agen"
+            :class="[
+              'text-[10px] font-bold uppercase',
+              row.status_fee_agen === 'paid' ? 'text-green-600' : 'text-red-500'
+            ]"
+          >
+            {{ row.status_fee_agen === 'paid' ? 'SUDAH DIBAYAR' : 'BELUM DIBAYAR' }}
+          </span>
+          <span v-else class="text-[10px] text-gray-400 font-medium">-</span>
         </div>
       </template>
 

@@ -6,8 +6,19 @@ import { GetProdukDto } from './dto/get-produk.dto';
 export class ProdukService {
   constructor(private prisma: PrismaService) {}
 
-  async getDaftarProduk(query: GetProdukDto) {
+  async getDaftarProduk(query: GetProdukDto, user?: any) {
     const { search, kategori, operator, page = 1, limit = 20 } = query;
+    let isReseller = false;
+
+    if (user && user.id) {
+      const member = await this.prisma.member.findFirst({
+        where: { id: Number(user.id) },
+        select: { kode_agen: true }
+      });
+      if (member && member.kode_agen) {
+        isReseller = true;
+      }
+    }
 
     const where: any = {
       status: 'active',
@@ -79,7 +90,10 @@ export class ProdukService {
       const list_produk: any = {};
       produks.forEach((item, index) => {
         const harga_modal = item.purchase_price || 0;
-        const markup = item.markup || 0;
+        let markup = item.markup || 0;
+        if (isReseller) {
+          markup += 20;
+        }
         const harga_jual = harga_modal + markup;
 
         list_produk[index.toString()] = {

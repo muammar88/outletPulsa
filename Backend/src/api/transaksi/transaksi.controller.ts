@@ -4,7 +4,7 @@ import { TransaksiService } from './transaksi.service';
 import { CreateTransaksiPrabayarDto } from './dto/create-transaksi-prabayar.dto';
 
 @Controller('api')
-// @UseGuards(JwtApiGuard)
+@UseGuards(JwtApiGuard)
 export class TransaksiController {
   constructor(
     private readonly transaksiService: TransaksiService
@@ -12,8 +12,7 @@ export class TransaksiController {
 
   @Get('riwayat-prabayar')
   async getRiwayatPrabayar(@Request() req: any) {
-    // req.user is populated by JwtApiGuard (usually contains { sub: memberId, email, dll })
-    const memberId = 1; // req.user.sub;
+    const memberId = req.user.id;
     return await this.transaksiService.getRiwayatPrabayar(memberId);
   }
 
@@ -22,8 +21,7 @@ export class TransaksiController {
     if (body.nomor_tujuan) {
       body.nomor_tujuan = body.nomor_tujuan.replace(/\s+/g, '');
     }
-    // TODO: Gunakan req.user.sub setelah auth aktif
-    const memberId = 1;
+    const memberId = req.user.id;
     return await this.transaksiService.createTransaksiPrabayar(memberId, body);
   }
 
@@ -32,8 +30,7 @@ export class TransaksiController {
     if (!kodeTransaksi) {
       return { error: true, error_msg: 'Parameter kode_transaksi wajib diisi' };
     }
-    // TODO: Gunakan req.user.sub setelah auth aktif
-    const memberId = 1;
+    const memberId = req.user.id;
     return await this.transaksiService.getDetailTransaksiPrabayar(memberId, kodeTransaksi);
   }
 }

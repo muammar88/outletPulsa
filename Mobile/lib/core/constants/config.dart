@@ -38,6 +38,9 @@ class ConfigApp {
   String? _pembayaranPascabayar_url;
   String? _daftarAgen_url;
   String? _daftarRiwayatPembayaran_url;
+  String? _statistikAgen_url;
+  String? _klaimAgen_url;
+  String? _transaksiReseller_url;
 
   Color? _background_color;
   Color? _background_light_color;
@@ -94,8 +97,11 @@ class ConfigApp {
     _detailTransaksiPascabayar_url = '$_mainurl/transaksi-detail-pascabayar';
     _inquiryPascabayar_url = '$_mainurl/pascabayar-inquiry';
     _pembayaranPascabayar_url = '$_mainurl/pascabayar-pembayaran';
-    _daftarAgen_url = '$_mainurl/agen-daftar';
+    _daftarAgen_url = '$_mainurl/agen/reseller';
     _daftarRiwayatPembayaran_url = '$_mainurl/agen-riwayat-pembayaran';
+    _statistikAgen_url = '$_mainurl/agen/statistik';
+    _klaimAgen_url = '$_mainurl/agen/klaim';
+    _transaksiReseller_url = '$_mainurl/agen/transaksi';
 
     // Background COLOR
     _background_color = const Color(0xFF0F1F6E); // Royal Sapphire deep
@@ -157,8 +163,13 @@ class ConfigApp {
   String? get pembayaranPascabayar_url => _pembayaranPascabayar_url!;
   String? get daftarAgen_url => _daftarAgen_url!;
   String? get daftarRiwayatPembayaran_url => _daftarRiwayatPembayaran_url!;
-
-  Color get background_color => _background_color!;
+  String? get statistikAgen_url => _statistikAgen_url!;
+  String get klaimAgen_url {
+    return _klaimAgen_url!;
+  }
+  String get transaksiReseller_url {
+    return _transaksiReseller_url!;
+  } Color get background_color => _background_color!;
   Color get background_light_color => _background_light_color!;
   Color get background_tab => _background_tab!;
   Color get background_smooth_navy => _background_smooth_navy!;

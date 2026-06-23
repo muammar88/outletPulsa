@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/shared/providers/AgenProvider.dart';
+import 'package:outletpulsa/shared/providers/BerandaProvider.dart';
 import 'package:outletpulsa/shared/widgets/NotFound.dart';
 import 'package:outletpulsa/shared/widgets/allBoxLoading.dart';
 
@@ -25,6 +26,16 @@ class _Riwayat_pembayaran_fee_agenState
   void didChangeDependencies() async {
     super.didChangeDependencies();
     if (!loadData) {
+      final beranda = Provider.of<Beranda_provider>(context, listen: false);
+      if (!beranda.isAgen) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Fitur ini hanya dapat diakses oleh agen.')),
+          );
+          Navigator.pop(context);
+        });
+        return;
+      }
       await Provider.of<Agen_provider>(context, listen: false)
           .getDaftarRiwayatPembayaranFeeAgen();
       loadData = true;
@@ -33,6 +44,9 @@ class _Riwayat_pembayaran_fee_agenState
 
   @override
   Widget build(BuildContext context) {
+    final beranda = Provider.of<Beranda_provider>(context, listen: false);
+    if (!beranda.isAgen) return const Scaffold(body: SizedBox.shrink());
+
     final list = Provider.of<Agen_provider>(context);
     bool isLoading = list.list_riwayat_pembayaran == null;
     bool isEmpty = !isLoading && list.list_riwayat_pembayaran!.isEmpty;

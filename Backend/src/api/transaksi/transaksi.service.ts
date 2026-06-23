@@ -41,6 +41,8 @@ export class TransaksiService {
           nomor_tujuan: trx.nomorTujuan ?? '',
           name_produk: trx.produk ? trx.produk.name : 'Unknown Produk',
           selling_price: 'Rp ' + (trx.selling_price || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."),
+          fee_agen: trx.fee_agen || 0,
+          selling_price_raw: trx.selling_price || 0,
           status: trx.status ?? 'proses',
           transaction_date: trx.createdAt.toISOString().replace(/T/, ' ').replace(/\..+/, ''),
           ket: trx.ket ?? '',
@@ -134,18 +136,26 @@ export class TransaksiService {
         return { error: true, error_msg: 'Member tidak ditemukan' };
       }
 
+      const isReseller = !!member.kode_agen;
+
       const hargaModal = produk.purchase_price || 0;
       const markup = produk.markup || 0;
-      const hargaJual = hargaModal + markup;
+      const hargaJualAsli = hargaModal + markup;
+      let totalBayar = hargaJualAsli;
+
+      if (isReseller) {
+        totalBayar += 20;
+      }
 
       console.log("-----------------5");
       console.log("Harga Modal", hargaModal);
-      console.log("Harga Jual", hargaJual);
+      console.log("Harga Jual Asli", hargaJualAsli);
+      console.log("Total Bayar", totalBayar);
       console.log("-----------------5");
 
       // 3. Pengecekan saldo (Optimistic Check)
       const currentSaldo = member.saldo ?? 0;
-      if (currentSaldo < hargaJual) {
+      if (currentSaldo < totalBayar) {
         return { error: true, error_msg: 'Saldo member tidak mencukupi' };
       }
 
@@ -163,12 +173,12 @@ export class TransaksiService {
         await this.prisma.$transaction(async (tx) => {
 
           console.log("-----------------6.1");
-          console.log("Harga Jual", hargaJual);
+          console.log("Total Bayar", totalBayar);
           console.log("-----------------6.1");
           // Potong saldo dengan Atomic Decrement
           const updateMember = await tx.member.update({
             where: { id: memberId },
-            data: { saldo: { decrement: hargaJual } }
+            data: { saldo: { decrement: totalBayar } }
           });
 
           console.log("-----------------6.2");
@@ -196,20 +206,28 @@ export class TransaksiService {
           });
 
           // Catat ke tabel Transaction
+          const transactionData: any = {
+            kode: kodeTransaksi,
+            type: 'prabayar',
+            produkId: produk.id,
+            riwayatTransaksiId: riwayat.id,
+            nomorTujuan: dto.nomor_tujuan,
+            purchase_price: hargaModal,
+            selling_price: hargaJualAsli,
+            saldo_sebelum: currentSaldo,
+            saldo_sesudah: updatedSaldo,
+            serverId: produk.serverId,
+            status: 'proses',
+          };
+
+          if (isReseller) {
+            transactionData.fee_agen = 20;
+            transactionData.status_fee_agen = 'unpaid';
+            transactionData.kodeAgen = member.kode_agen;
+          }
+
           const trx = await tx.transaction.create({
-            data: {
-              kode: kodeTransaksi,
-              type: 'prabayar',
-              produkId: produk.id,
-              riwayatTransaksiId: riwayat.id,
-              nomorTujuan: dto.nomor_tujuan,
-              purchase_price: hargaModal,
-              selling_price: hargaJual,
-              saldo_sebelum: currentSaldo,
-              saldo_sesudah: updatedSaldo,
-              serverId: produk.serverId,
-              status: 'proses',
-            }
+            data: transactionData
           });
 
           newTrxId = trx.id;
@@ -346,9 +364,11 @@ export class TransaksiService {
            // Jika status menjadi gagal, kembalikan saldo
            if (checkRes.status === 'gagal') {
                await this.prisma.$transaction(async (tx) => {
+                 const feeAgenRefund = trx!.fee_agen || 0;
+                 const refundAmount = (trx!.selling_price || 0) + feeAgenRefund;
                  await tx.member.update({
                      where: { id: memberId },
-                     data: { saldo: { increment: trx!.selling_price || 0 } }
+                     data: { saldo: { increment: refundAmount } }
                  });
                  await tx.riwayatTransaksi.create({
                      data: {
@@ -454,6 +474,8 @@ export class TransaksiService {
           dateTransaction: currentTrx.updatedAt.toISOString().replace(/T/, ' ').replace(/\..+/, ''),
           nomorTujuan: currentTrx.nomorTujuan || '',
           price: formatRp(currentTrx.selling_price || 0),
+          fee_agen: currentTrx.fee_agen || 0,
+          selling_price_raw: currentTrx.selling_price || 0,
           serialNumber: '-',
           message: !currentTrx.ket || currentTrx.ket === '' ? '-' : currentTrx.ket,
         },
