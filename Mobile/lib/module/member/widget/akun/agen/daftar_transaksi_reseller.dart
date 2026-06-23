@@ -116,7 +116,7 @@ class _Daftar_transaksi_resellerState
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Riwayat transaksi sukses bulan ini',
+                      'Daftar komisi agen yang belum dicairkan',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: compact ? 13 : 15,

@@ -68,12 +68,6 @@ export class StubController {
 
   // ── AGEN ──────────────────────────────────────────
 
-  /** GET /api/agen-riwayat-pembayaran */
-  @UseGuards(JwtApiGuard)
-  @Get('agen-riwayat-pembayaran')
-  riwayatPembayaranAgen() {
-    return { error: false, error_msg: '', list: {} };
-  }
 
   // ── REGISTRASI (publik, tanpa JWT) ───────────────
   /** POST /api/otp-register */

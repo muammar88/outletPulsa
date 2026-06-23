@@ -67,19 +67,16 @@ export class AgenService {
 
     // 4. Calculations
     let totalTransaksiSemuaReseller = trxPrabayar.length + trxCetak.length;
-    let totalTransaksiBulanIni = 0;
+    let totalTransaksiBelumDiklaim = 0;
     
     let totalOmzetJaringan = 0;
     let totalFeeAgenAkumulasi = 0;
     let feeUnpaid = 0;
     let feePaid = 0;
 
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
     for (const t of trxPrabayar) {
-      if (t.createdAt >= startOfMonth) {
-        totalTransaksiBulanIni++;
+      if (t.status_fee_agen === 'unpaid') {
+        totalTransaksiBelumDiklaim++;
       }
       totalOmzetJaringan += (t.selling_price || 0);
       const fee = t.fee_agen || 0;
@@ -89,8 +86,8 @@ export class AgenService {
     }
 
     for (const t of trxCetak) {
-      if (t.createdAt >= startOfMonth) {
-        totalTransaksiBulanIni++;
+      if (t.status_fee_agen === 'unpaid') {
+        totalTransaksiBelumDiklaim++;
       }
       totalOmzetJaringan += (t.total || 0);
       const fee = t.fee_agen || 0;
@@ -107,7 +104,7 @@ export class AgenService {
       data: {
         list: {
           total_reseller_aktif: totalResellerAktif,
-          total_transaksi_bulan_ini: totalTransaksiBulanIni,
+          total_transaksi_belum_diklaim: totalTransaksiBelumDiklaim,
           total_transaksi_semua_reseller: totalTransaksiSemuaReseller,
           total_omzet_jaringan: totalOmzetJaringan,
           total_fee_agen_akumulasi: totalFeeAgenAkumulasi,
@@ -258,16 +255,13 @@ export class AgenService {
       return { error: true, error_msg: 'Akses ditolak', list: [] };
     }
 
-    const now = new Date();
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
     try {
       // Get from Transaction (Prabayar)
       const trxPrabayar = await this.prisma.transaction.findMany({
         where: {
           kodeAgen: kodeAgen,
           status: 'sukses',
-          createdAt: { gte: startOfMonth }
+          status_fee_agen: 'unpaid'
         },
         include: {
           riwayatTransaksi: {
@@ -278,12 +272,11 @@ export class AgenService {
         orderBy: { createdAt: 'desc' }
       });
 
-      // Get from TransactionPascabayar (Pascabayar)
       const trxCetak = await this.prisma.transactionPascabayar.findMany({
         where: {
           kodeAgen: kodeAgen,
           status: 'sukses',
-          createdAt: { gte: startOfMonth }
+          status_fee_agen: 'unpaid'
         },
         include: {
           riwayatTransaksi: {
@@ -339,6 +332,46 @@ export class AgenService {
     } catch (e) {
       console.error('Error fetching reseller transactions:', e);
       return { error: true, error_msg: 'Gagal mengambil data', list: [] };
+    }
+  }
+
+  async getRiwayatPembayaran(memberId: number) {
+    if (!memberId) {
+      return { error: true, error_msg: 'Akses ditolak', list: {} };
+    }
+
+    try {
+      const history = await this.prisma.paymentFeeAgenHistory.findMany({
+        where: { memberId: memberId },
+        orderBy: { createdAt: 'desc' }
+      });
+
+      const listMap = {};
+      history.forEach((item, index) => {
+        listMap[index.toString()] = {
+          id: item.id,
+          kode: item.kode,
+          totalPayment: item.totalPayment,
+          paymentType: item.paymentType,
+          transaksiPrabayar: item.transaksiPrabayar,
+          transaksiPascabayar: item.transaksiPascabayar,
+          saldo_sebelum_klaim: item.saldo_sebelum_klaim,
+          saldo_setelah_klaim: item.saldo_setelah_klaim,
+          datetimes: item.createdAt, // will be formatted in flutter or we can format here if flutter expects string, wait let's send string datetimes
+          createdAt: item.createdAt,
+        };
+      });
+
+      return {
+        error: false,
+        error_msg: 'Berhasil mengambil riwayat pembayaran',
+        data: {
+          list: listMap
+        }
+      };
+    } catch (e) {
+      console.error('Error getRiwayatPembayaran:', e);
+      return { error: true, error_msg: 'Gagal mengambil data', data: { list: {} } };
     }
   }
 }

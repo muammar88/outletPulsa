@@ -518,12 +518,12 @@ class _Info_keagenanState extends State<Info_keagenan> {
                               ),
                               const SizedBox(width: 14),
                               _buildNetworkStatCard(
-                                title: 'Transaksi\nBulan Ini',
+                                title: 'Transaksi\nBelum Diklaim',
                                 value:
-                                    '${stat['total_transaksi_bulan_ini'] ?? 0}',
+                                    '${stat['total_transaksi_belum_diklaim'] ?? 0}',
                                 icon: TablerIcons.receipt,
                                 color: const Color(0xFF7B1FA2),
-                                badge: 'Transaksi sukses',
+                                badge: 'Bisa diklaim',
                                 onTap: () => Navigator.push(
                                   context,
                                   MaterialPageRoute(

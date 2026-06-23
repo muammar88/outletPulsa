@@ -77,4 +77,21 @@ export class AgenController {
       };
     }
   }
+
+  @Get('riwayat-pembayaran')
+  async getRiwayatPembayaran(@Request() req) {
+    try {
+      const result = await this.agenService.getRiwayatPembayaran(req.user.id);
+      return result;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      return {
+        error: true,
+        error_msg: 'Terjadi kesalahan pada server saat mengambil riwayat pembayaran',
+        data: {}
+      };
+    }
+  }
 }

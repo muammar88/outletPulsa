@@ -98,7 +98,7 @@ class ConfigApp {
     _inquiryPascabayar_url = '$_mainurl/pascabayar-inquiry';
     _pembayaranPascabayar_url = '$_mainurl/pascabayar-pembayaran';
     _daftarAgen_url = '$_mainurl/agen/reseller';
-    _daftarRiwayatPembayaran_url = '$_mainurl/agen-riwayat-pembayaran';
+    _daftarRiwayatPembayaran_url = '$_mainurl/agen/riwayat-pembayaran';
     _statistikAgen_url = '$_mainurl/agen/statistik';
     _klaimAgen_url = '$_mainurl/agen/klaim';
     _transaksiReseller_url = '$_mainurl/agen/transaksi';
