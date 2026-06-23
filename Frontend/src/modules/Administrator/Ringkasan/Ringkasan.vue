@@ -324,9 +324,9 @@ const fetchDashboardData = async (isBackground = false) => {
     const s = statsRes.data;
     stats.value = [
       {
-        label: 'Total Pendapatan',
+        label: 'Total Pendapatan Keseluruhan',
         value: formatCurrency(s.revenue.value),
-        sub: 'Bulan ini',
+        sub: 'Belum dicairkan',
         trend: `${s.revenue.trend > 0 ? '+' : ''}${s.revenue.trend.toFixed(1)}%`,
         trendUp: s.revenue.trendUp,
         icon: IconCurrencyDollar,

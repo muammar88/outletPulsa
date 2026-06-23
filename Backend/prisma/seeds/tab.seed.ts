@@ -227,6 +227,12 @@ export default async function tabSeed(prisma: PrismaClient) {
         created_at: new Date(),
         updated_at: new Date(), 
       },
+      {
+        name: 'Laba Diambil',
+        icon: 'IconWallet',
+        path: 'laba-diambil',
+        desc: 'Data Laba Diambil'
+      }
     ],
     skipDuplicates: true,
   });

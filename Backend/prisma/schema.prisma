@@ -239,6 +239,7 @@ model Transaction {
   saldo_sesudah      Int?
   kodeAgen           String?
   laba               Int?
+  status_laba        StatusLaba?        @default(unpaid)
   fee_agen           Int?
   status_fee_agen    FeeAgenStatus?     @default(unpaid)
   serverId           Int?
@@ -279,6 +280,7 @@ model TransactionPascabayar {
   saldo_sesudah      Int?
   kodeAgen           String?
   laba               Int?
+  status_laba        StatusLaba?        @default(unpaid)
   fee_agen           Int?
   status_fee_agen    FeeAgenStatus?     @default(unpaid)
   serverId           Int?
@@ -289,6 +291,11 @@ model TransactionPascabayar {
   produkPascabayar ProdukPascabayar? @relation(fields: [produkId], references: [id])
   server           Server?           @relation(fields: [serverId], references: [id])
   riwayatTransaksi RiwayatTransaksi? @relation(fields: [riwayatTransaksiId], references: [id])
+}
+
+enum StatusLaba {
+  paid
+  unpaid
 }
 
 enum FeeAgenStatus {

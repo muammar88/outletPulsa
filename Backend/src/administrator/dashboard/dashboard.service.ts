@@ -10,34 +10,23 @@ export class DashboardService {
     const firstDayThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
     const firstDayLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     
-    // Total Pendapatan
+    // Total Pendapatan Keseluruhan (Laba Belum Dicairkan)
     const [
-      revenueThisMonthPrabayar,
-      revenueThisMonthPascabayar,
-      revenueLastMonthPrabayar,
-      revenueLastMonthPascabayar,
+      revenueUnpaidPrabayar,
+      revenueUnpaidPascabayar,
     ] = await Promise.all([
       this.prisma.transaction.aggregate({
         _sum: { laba: true },
-        where: { status: 'sukses', createdAt: { gte: firstDayThisMonth } }
+        where: { status: 'sukses', status_laba: 'unpaid' }
       }),
       this.prisma.transactionPascabayar.aggregate({
         _sum: { laba: true },
-        where: { status: 'sukses', createdAt: { gte: firstDayThisMonth } }
-      }),
-      this.prisma.transaction.aggregate({
-        _sum: { laba: true },
-        where: { status: 'sukses', createdAt: { gte: firstDayLastMonth, lt: firstDayThisMonth } }
-      }),
-      this.prisma.transactionPascabayar.aggregate({
-        _sum: { laba: true },
-        where: { status: 'sukses', createdAt: { gte: firstDayLastMonth, lt: firstDayThisMonth } }
+        where: { status: 'sukses', status_laba: 'unpaid' }
       }),
     ]);
 
-    const revThis = (revenueThisMonthPrabayar._sum.laba || 0) + (revenueThisMonthPascabayar._sum.laba || 0);
-    const revLast = (revenueLastMonthPrabayar._sum.laba || 0) + (revenueLastMonthPascabayar._sum.laba || 0);
-    const revTrend = revLast === 0 ? 100 : ((revThis - revLast) / revLast) * 100;
+    const revThis = (revenueUnpaidPrabayar._sum.laba || 0) + (revenueUnpaidPascabayar._sum.laba || 0);
+    const revTrend = 0; // Tidak ada trend untuk nilai kumulatif keseluruhan
 
     // Total Transaksi
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());

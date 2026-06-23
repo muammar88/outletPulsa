@@ -25,6 +25,8 @@ export default async function subSeed(prisma: PrismaClient) {
     { menu_name: 'Produk', name: 'Daftar Server', icon: 'IconServer', path: 'daftar_server', tab: JSON.stringify([{ id: tabs[5].id } ]) },
     { menu_name: 'Master Data', name: 'Kategori', icon: 'IconCategory', path: 'kategori', tab: JSON.stringify([{ id: tabs[7].id } ]) },
     { menu_name: 'Master Data', name: 'Operator', icon: 'IconAntenna', path: 'operator', tab: JSON.stringify([{ id: tabs[8].id } ]) },
+    { menu_name: 'Keuangan', name: 'Keuangan', path: 'keuangan', icon: 'IconWallet', tab: JSON.stringify([{ id: tabs[28].id}]) },
+    { menu_name: 'Keuangan', name: 'Laporan', path: 'laporan', icon: 'IconReport', tab: null },
     { menu_name: 'Pengaturan', name: 'Pengaturan Umum', icon: 'IconSettings', path: 'pengaturan', tab: JSON.stringify([{ id: tabs[4].id } ]) },
     { menu_name: 'Pengaturan', name: 'Daftar Grup', icon: 'IconUsersGroup', path: 'daftar_grup', tab: JSON.stringify([{ id: tabs[11].id } ]) },
     { menu_name: 'Pengaturan', name: 'Daftar Pengguna', icon: 'IconUserShield', path: 'daftar_pengguna', tab: JSON.stringify([{ id: tabs[12].id } ]) },

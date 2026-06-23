@@ -18,6 +18,7 @@ export default async function menuSeed(prisma: PrismaClient) {
     { name: 'Membership', path: '#', icon: 'IconUsers', tab: null },
     { name: 'Produk', path: '#', icon: 'IconBox', tab: null },
     { name: 'Master Data', path: '#', icon: 'IconDatabase', tab: null },
+    { name: 'Keuangan', path: '#', icon: 'IconWallet', tab: null },
     { name: 'Pengaturan', path: '#', icon: 'IconSettings', tab: null },
   ];
 
