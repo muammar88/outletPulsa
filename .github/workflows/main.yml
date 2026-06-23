@@ -73,6 +73,9 @@ jobs:
 
             echo "✅ Deployment selesai dengan sukses!"
 
+            echo "🔧 Mengatasi failed migration sebelumnya..."
+            docker exec -i outletpulsa_backend npx prisma migrate resolve --applied 20260622152905_add_bullmq_schedules || true
+
             # echo "📜 Run migration"
             docker exec -i outletpulsa_backend npx prisma migrate deploy
 
