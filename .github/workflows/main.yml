@@ -82,8 +82,11 @@ jobs:
             echo "🌱 Generate Prisma Client"
             docker exec -i outletpulsa_backend npx prisma generate
 
-            echo "🔄 Run Sync Menu Seed (Menyinkronkan Menu, SubMenu, dan Tab)"
-            docker exec -i outletpulsa_backend npx ts-node prisma/seeds/sync_menu.seed.ts
+            echo "🎯 Run Status Laba Seeder (Transaction)"
+            docker exec -i outletpulsa_backend npx ts-node prisma/seeds/20260623-add-status-laba-transaction.seed.ts
+
+            # echo "🔄 Run Sync Menu Seed (Menyinkronkan Menu, SubMenu, dan Tab)"
+            # docker exec -i outletpulsa_backend npx ts-node prisma/seeds/sync_menu.seed.ts
 
             # echo "🏦 Run Bank Seed (Aman untuk data yang sudah ada)"
             # docker exec -i outletpulsa_backend npx ts-node prisma/seeds/bank_menu.seed.ts
