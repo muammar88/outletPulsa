@@ -351,13 +351,22 @@ export class TransaksiService {
 
         if (checkRes && checkRes.status !== 'proses') {
            let newKet = trx.ket;
+           let realPurchasePrice = trx.purchase_price;
            
-           if (checkRes.status === 'sukses' && checkRes.sn) {
-              const isPlnProduct = trx.produk?.kode?.toUpperCase().includes('PLN') || trx.produk?.name?.toUpperCase().includes('PLN');
-              if (trx.server?.kode === 'DIGI' && !isPlnProduct) {
-                 newKet = "SN : " + checkRes.sn;
-              } else {
-                 newKet = checkRes.sn;
+           if (checkRes.status === 'sukses') {
+              if (checkRes.sn) {
+                 const isPlnProduct = trx.produk?.kode?.toUpperCase().includes('PLN') || trx.produk?.name?.toUpperCase().includes('PLN');
+                 if (trx.server?.kode === 'DIGI' && !isPlnProduct) {
+                    newKet = "SN : " + checkRes.sn;
+                 } else {
+                    newKet = checkRes.sn;
+                 }
+              }
+
+              // Ambil harga modal dari response raw masing-masing provider
+              const rawData = checkRes.raw?.data;
+              if (rawData && rawData.price !== undefined) {
+                 realPurchasePrice = Number(rawData.price);
               }
            }
            
@@ -379,12 +388,25 @@ export class TransaksiService {
                });
            }
 
+           let calculatedLaba: number | null = trx.laba;
+           if (checkRes.status === 'sukses') {
+               const sellingPrice = trx.selling_price || 0;
+               // laba = harga jual - harga modal. Jika ada fee agen, berarti labanya = harga jual - fee agen - harga modal,
+               // Tapi karena user menyebutkan "seller_price dikurang dengan harga modal yang dikirimkan oleh masing-masing provider",
+               // kita asumsikan laba = selling_price - realPurchasePrice.
+               // Jika transaksi adalah agen, fee agen adalah bagian dari totalBayar tapi totalBayar = harga_jual_asli + fee_agen. 
+               // selling_price saat ini diisikan hargaJualAsli.
+               calculatedLaba = sellingPrice - (realPurchasePrice || 0);
+           }
+
            // Update status transaksi di database
            trx = await this.prisma.transaction.update({
              where: { id: trx.id },
              data: {
                status: checkRes.status as any,
                ket: newKet || trx.ket,
+               purchase_price: realPurchasePrice,
+               laba: calculatedLaba,
              },
              include: {
                produk: true,
