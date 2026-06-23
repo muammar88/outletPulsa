@@ -154,6 +154,17 @@ export class AgenService {
     }
 
     try {
+      // Ambil saldo member sebelum klaim (snapshot sebelum transaction dimulai)
+      const memberBefore = await this.prisma.member.findUnique({
+        where: { id: memberId },
+        select: { id: true, saldo: true, kode: true }
+      });
+      const saldoSebelumKlaim = memberBefore?.saldo ?? 0;
+      const saldoSetelahKlaim = saldoSebelumKlaim + totalFee;
+
+      // Kode unik untuk riwayat klaim
+      const kodeKlaim = `KLAIM-FEE-${Date.now()}`;
+
       await this.prisma.$transaction(async (tx) => {
         // 1. Update saldo member
         await tx.member.update({
@@ -161,7 +172,7 @@ export class AgenService {
           data: { saldo: { increment: totalFee } }
         });
 
-        // 2. Update status fee transaksi prabayar
+        // 2. Update status fee transaksi prabayar → paid (tidak bisa diklaim ulang)
         if (prabayarIds.length > 0) {
           await tx.transaction.updateMany({
             where: { id: { in: prabayarIds } },
@@ -169,7 +180,7 @@ export class AgenService {
           });
         }
 
-        // 3. Update status fee transaksi pascabayar
+        // 3. Update status fee transaksi pascabayar → paid (tidak bisa diklaim ulang)
         if (cetakIds.length > 0) {
           await tx.transactionPascabayar.updateMany({
             where: { id: { in: cetakIds } },
@@ -177,7 +188,7 @@ export class AgenService {
           });
         }
 
-        // 4. Catat riwayat
+        // 4. Buat RiwayatTransaksi sebagai anchor transaksi member
         const riwayat = await tx.riwayatTransaksi.create({
           data: {
             memberId: memberId,
@@ -185,12 +196,40 @@ export class AgenService {
           }
         });
 
-        // 5. Catat mutasi terima saldo
+        // 5. Catat ke TerimaSaldo (riwayat mutasi saldo masuk)
         await tx.terimaSaldo.create({
           data: {
-            kode: 'KLAIM-FEE-AGEN',
+            kode: kodeKlaim,
             riwayatTransaksiId: riwayat.id,
             biaya: totalFee
+          }
+        });
+
+        // 6. Catat ke RiwayatSaldo (histori saldo lengkap dengan saldo sebelum/sesudah)
+        await tx.riwayatSaldo.create({
+          data: {
+            kode: kodeKlaim,
+            member_id: memberId,
+            nominal: totalFee,
+            saldo_sebelumnya: saldoSebelumKlaim,
+            saldo_setelahnya: saldoSetelahKlaim,
+            status: 'pencairan_fee_agen',
+            ket: `Pencairan fee agen dari ${prabayarIds.length + cetakIds.length} transaksi reseller`,
+            riwayat_transaksi_id: riwayat.id,
+          }
+        });
+
+        // 7. Catat ke PaymentFeeAgenHistory dengan kolom saldo sebelum & sesudah klaim
+        await tx.paymentFeeAgenHistory.create({
+          data: {
+            memberId: memberId,
+            kode: kodeKlaim,
+            totalPayment: totalFee,
+            paymentType: 'withdraw',
+            transaksiPrabayar: prabayarIds.length,
+            transaksiPascabayar: cetakIds.length,
+            saldo_sebelum_klaim: saldoSebelumKlaim,
+            saldo_setelah_klaim: saldoSetelahKlaim,
           }
         });
       });
@@ -198,11 +237,19 @@ export class AgenService {
       return {
         error: false,
         error_msg: 'Klaim saldo keagenan berhasil sebesar Rp ' + totalFee.toLocaleString('id-ID'),
-        data: {}
+        data: {
+          list: {
+            total_klaim: totalFee,
+            saldo_sebelum_klaim: saldoSebelumKlaim,
+            saldo_setelah_klaim: saldoSetelahKlaim,
+            jumlah_transaksi_prabayar: prabayarIds.length,
+            jumlah_transaksi_pascabayar: cetakIds.length,
+          }
+        }
       };
     } catch (e) {
-      console.log('Error claim fee:', e);
-      return { error: true, error_msg: 'Terjadi kesalahan saat klaim saldo', data: {} };
+      console.error('Error klaim fee agen:', e);
+      return { error: true, error_msg: 'Terjadi kesalahan saat klaim saldo, silakan coba lagi', data: {} };
     }
   }
 

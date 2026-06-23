@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:outletpulsa/models/model_agen.dart';
 import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/core/storage/SQLHelper.dart';
@@ -51,7 +52,8 @@ class Rest_agen {
   Future<Model_agen> klaimFee() async {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_klaimAgen_url!);
-    return _netUtil.post(url, headers, {}).then((dynamic res) async {
+    // Body harus berupa JSON string (bukan Map mentah) ketika Content-Type: application/json
+    return _netUtil.post(url, headers, jsonEncode({})).then((dynamic res) async {
       return new Model_agen.map(res);
     });
   }

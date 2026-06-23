@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:outletpulsa/services/agen.dart';
-import 'package:outletpulsa/services/deposit.dart';
 import 'package:outletpulsa/models/model_agen.dart';
-import 'package:outletpulsa/models/model_detail_deposit.dart';
-import 'package:outletpulsa/models/model_list_produk.dart';
-import 'package:outletpulsa/models/model_void.dart';
+import 'package:outletpulsa/shared/providers/BerandaProvider.dart';
 
 class Agen_provider with ChangeNotifier {
   bool? _error;
@@ -65,13 +63,23 @@ class Agen_provider with ChangeNotifier {
     });
   }
 
-  Future<void> klaimFeeAgen() async {
+  Future<void> klaimFeeAgen(Beranda_provider berandaProv) async {
     await Rest_agen().klaimFee().then((Model_agen e) async {
       _error = e.error;
       _errorMsg = e.errorMsg;
       if (e.error == false) {
-        // Refresh statistik jika sukses
-        await getStatistikAgen();
+        // Update saldo langsung dari data response agar UI tidak perlu reload penuh
+        final saldoSetelah = e.list?['saldo_setelah_klaim'];
+        if (saldoSetelah != null) {
+          final formatter = NumberFormat.currency(
+              locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+          berandaProv.saldo = formatter.format(saldoSetelah);
+        }
+        // Refresh statistik & beranda untuk data terbaru
+        await Future.wait([
+          getStatistikAgen(),
+          berandaProv.get_data_beranda(),
+        ]);
       }
       notifyListeners();
     });

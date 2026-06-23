@@ -771,6 +771,8 @@ model PaymentFeeAgenHistory {
   paymentType         PaymentType?
   transaksiPrabayar   Int?
   transaksiPascabayar Int?
+  saldo_sebelum_klaim Int?
+  saldo_setelah_klaim Int?
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
 
