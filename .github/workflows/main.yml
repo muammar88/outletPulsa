@@ -73,8 +73,8 @@ jobs:
 
             echo "✅ Deployment selesai dengan sukses!"
 
-            echo "🔧 Mengatasi failed migration sebelumnya..."
-            docker exec -i outletpulsa_backend npx prisma migrate resolve --applied 20260622152905_add_bullmq_schedules || true
+            # echo "🔧 Mengatasi failed migration sebelumnya..."
+            # docker exec -i outletpulsa_backend npx prisma migrate resolve --applied 20260622152905_add_bullmq_schedules || true
 
             # echo "📜 Run migration"
             docker exec -i outletpulsa_backend npx prisma migrate deploy
@@ -82,5 +82,5 @@ jobs:
             echo "🌱 Generate Prisma Client"
             docker exec -i outletpulsa_backend npx prisma generate
 
-            echo "🏦 Run Bank Seed (Aman untuk data yang sudah ada)"
+            # echo "🏦 Run Bank Seed (Aman untuk data yang sudah ada)"
             # docker exec -i outletpulsa_backend npx ts-node prisma/seeds/bank_menu.seed.ts
