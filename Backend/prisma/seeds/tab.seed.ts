@@ -230,8 +230,10 @@ export default async function tabSeed(prisma: PrismaClient) {
       {
         name: 'Laba Diambil',
         icon: 'IconWallet',
-        path: 'laba-diambil',
-        desc: 'Data Laba Diambil'
+        path: 'laba_diambil',
+        desc: 'Data Laba Diambil',
+        created_at: new Date(),
+        updated_at: new Date(), 
       }
     ],
     skipDuplicates: true,

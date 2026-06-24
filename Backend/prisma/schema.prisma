@@ -901,3 +901,12 @@ model WebhookLog {
   ipAddress      String?  // IP address pengirim webhook
   createdAt      DateTime @default(now())
 }
+
+model TakeLaba {
+  id               Int      @id @default(autoincrement())
+  kode_invoice     String   @unique
+  jumlah_laba      Int
+  jumlah_transaksi Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}

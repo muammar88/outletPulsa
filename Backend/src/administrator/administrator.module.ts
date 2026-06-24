@@ -37,8 +37,10 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { RiwayatTransferSaldoModule } from './riwayat_transfer_saldo/riwayat_transfer_saldo.module';
 import { BankTransferOutletModule } from './bank-transfer-outlet/bank-transfer-outlet.module';
 
+import { LabaDiambilModule } from './laba_diambil/laba_diambil.module';
+
 @Module({
-  imports: [AuthModule, MenuModule, DaftarMemberModule, DaftarAgenModule, TransaksiPulsaModule, ProdukPrabayarModule, ProdukPascabayarModule, SemuaServerModule, PengaturanUmumModule, KategoriModule, OperatorModule, DepositModule, LogModule, DaftarGrupModule, DaftarPenggunaModule, TripayModule, DaftarProdukPrabayarTripayModule, DaftarProdukPascabayarTripayModule, KategoriPrabayarTripayModule, OperatorPrabayarTripayModule, KategoriPascabayarTripayModule, OperatorPascabayarTripayModule, DaftarTypeIakModule, DaftarOperatorIakModule, DaftarProdukPrabayarIakModule, DaftarProdukPascabayarIakModule, DaftarSellerDigiflazzModule, DaftarProdukSellerDigiflazzModule, DaftarProdukDigiflazzModule, DashboardModule, RiwayatTransferSaldoModule, BankModule, BankTransferOutletModule],
+  imports: [AuthModule, MenuModule, DaftarMemberModule, DaftarAgenModule, TransaksiPulsaModule, ProdukPrabayarModule, ProdukPascabayarModule, SemuaServerModule, PengaturanUmumModule, KategoriModule, OperatorModule, DepositModule, LogModule, DaftarGrupModule, DaftarPenggunaModule, TripayModule, DaftarProdukPrabayarTripayModule, DaftarProdukPascabayarTripayModule, KategoriPrabayarTripayModule, OperatorPrabayarTripayModule, KategoriPascabayarTripayModule, OperatorPascabayarTripayModule, DaftarTypeIakModule, DaftarOperatorIakModule, DaftarProdukPrabayarIakModule, DaftarProdukPascabayarIakModule, DaftarSellerDigiflazzModule, DaftarProdukSellerDigiflazzModule, DaftarProdukDigiflazzModule, DashboardModule, RiwayatTransferSaldoModule, BankModule, BankTransferOutletModule, LabaDiambilModule],
   controllers: [AdministratorController],
   providers: [AdministratorService],
 })
