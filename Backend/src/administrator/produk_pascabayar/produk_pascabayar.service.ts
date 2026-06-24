@@ -35,7 +35,7 @@ export class ProdukPascabayarService {
       where.kategoriId = kategoriId;
     }
 
-    const [list, total] = await Promise.all([
+    const [list, total, connectedCount, unconnectedCount] = await Promise.all([
       this.prisma.produkPascabayar.findMany({
         where,
         skip,
@@ -48,7 +48,18 @@ export class ProdukPascabayarService {
         },
       }),
       this.prisma.produkPascabayar.count({ where }),
+      this.prisma.produkPascabayar.count({
+        where: { iakPascabayarProducts: { some: {} } }
+      }),
+      this.prisma.produkPascabayar.count({
+        where: { iakPascabayarProducts: { none: {} } }
+      }),
     ]);
+
+    const summary = {
+      iak: connectedCount,
+      unconnected: unconnectedCount,
+    };
 
     return {
       list,
@@ -56,6 +67,7 @@ export class ProdukPascabayarService {
       page,
       limit,
       totalPages: Math.ceil(total / limit),
+      summary,
     };
   }
 

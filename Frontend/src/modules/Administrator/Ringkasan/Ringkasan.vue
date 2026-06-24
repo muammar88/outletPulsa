@@ -359,7 +359,7 @@ const fetchDashboardData = async (isBackground = false) => {
       {
         label: 'Produk Aktif',
         value: new Intl.NumberFormat('id-ID').format(s.products.value),
-        sub: 'Siap dijual',
+        sub: `Pra: ${s.products.prabayar} | Pasca: ${s.products.pascabayar}`,
         trend: `${s.products.trend > 0 ? '+' : ''}${s.products.trend.toFixed(1)}%`,
         trendUp: s.products.trendUp,
         icon: IconPackage,

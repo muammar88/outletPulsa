@@ -6,15 +6,19 @@ import { onMounted, onUnmounted, ref } from 'vue';
 import BaseTable from '@/components/Table/BaseTable.vue';
 // Modal
 import TransaksiDetailModal from '@/modules/Administrator/TransaksiPulsa/components/TransaksiDetailModal.vue';
+import Confirmation from '@/components/Modal/Confirmation.vue';
 // Button
 import LightButton from '@/components/Button/LightButton.vue';
+import DangerButton from '@/components/Button/DangerButton.vue';
+import BaseButton from '@/components/Button/BaseButton.vue';
 // Icon
 import IconInfo from '@/components/Icons/IconInfo.vue';
+import IconDelete from '@/components/Icons/IconDelete.vue';
 import { useNotification } from '@/composables/useNotification';
+import { useConfirmation } from '@/composables/useConfirmation';
 import Notification from '@/components/Modal/Notification.vue';
 import { transaksiPulsaService } from '@/service/administrator/transaksi_pulsa';
 import { IconClockPlay, IconServerCog, IconX, IconChecks } from '@/components/Icons';
-import BaseButton from '@/components/Button/BaseButton.vue';
 
 // Definisi Kolom Tabel & Interface
 const tableColumns = [
@@ -89,6 +93,9 @@ const {
   displayNotification,
   hideNotification,
 } = useNotification();
+
+const { showConfirmDialog, confirmTitle, confirmMessage, displayConfirmation, confirm, cancel } =
+  useConfirmation();
 
 // Modal State
 const showDetailModal = ref(false);
@@ -190,16 +197,20 @@ const handleCheckStatus = async () => {
   }
 };
 
-const handleDeleteTransaksi = async (id: number) => {
-  if (confirm('Apakah Anda Yakin Untuk Menghapus Transaksi Ini?')) {
-    try {
-      const res = await transaksiPulsaService.delete(id);
-      displayNotification(res.data?.message || 'Transaksi berhasil dihapus', 'success');
-      fetchData();
-    } catch (error: any) {
-      displayNotification(error.response?.data?.message || 'Gagal menghapus transaksi', 'error');
+const handleDeleteTransaksi = (id: number) => {
+  displayConfirmation(
+    'Konfirmasi Hapus',
+    'Apakah Anda Yakin Untuk Menghapus Transaksi Ini?',
+    async () => {
+      try {
+        const res = await transaksiPulsaService.delete(id);
+        displayNotification(res.data?.message || 'Transaksi berhasil dihapus', 'success');
+        fetchData();
+      } catch (error: any) {
+        displayNotification(error.response?.data?.message || 'Gagal menghapus transaksi', 'error');
+      }
     }
-  }
+  );
 };
 
 const handleCheckStatusTransaksi = async (id: number) => {
@@ -366,15 +377,7 @@ onUnmounted(() => {
       <template #cell-action="{ row }">
         <div class="flex justify-center gap-1 flex-wrap">
           <LightButton 
-            v-if="row.status === 'gagal'" 
-            @click="handleDeleteTransaksi(row.id)" 
-            title="Delete Transaksi"
-          >
-            <IconX class="h-4 w-4 text-gray-700" />
-          </LightButton>
-
-          <LightButton 
-            v-else-if="row.status === 'proses'" 
+            v-if="row.status === 'proses'" 
             @click="handleCheckStatusTransaksi(row.id)" 
             title="Periksa Request"
           >
@@ -392,6 +395,14 @@ onUnmounted(() => {
           <LightButton @click="handleDetail(row)" title="Detail Transaksi">
             <IconInfo />
           </LightButton>
+
+          <DangerButton 
+            @click="handleDeleteTransaksi(row.id)" 
+            title="Hapus Transaksi"
+            class="hover:shadow-md transition-all"
+          >
+            <IconDelete />
+          </DangerButton>
         </div>
       </template>
     </BaseTable>
@@ -413,5 +424,24 @@ onUnmounted(() => {
       :notification-message-html="notificationMessage"
       @close="hideNotification"
     />
+
+    <Confirmation
+      :show-confirm-dialog="showConfirmDialog"
+      :confirm-title="confirmTitle"
+      :confirm-message="confirmMessage"
+    >
+      <button
+        @click="cancel"
+        class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+      >
+        Batal
+      </button>
+      <button
+        @click="confirm"
+        class="rounded-md bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-700 focus:outline-none shadow-[0_0_15px_rgba(225,29,72,0.5)]"
+      >
+        Hapus
+      </button>
+    </Confirmation>
   </div>
 </template>

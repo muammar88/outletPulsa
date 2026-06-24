@@ -56,6 +56,11 @@ const filterkategoriId = ref('');
 
 // List Options
 const listKategori = ref<any[]>([]);
+
+const serverSummary = ref({
+  iak: 0,
+  unconnected: 0,
+});
 // Form State
 const showFormModal = ref(false);
 const formMode = ref<'add' | 'edit'>('add');
@@ -138,6 +143,9 @@ const fetchData = async (keyword?: string | Event) => {
     );
     dataProduk.value = response.data.data.list;
     totalRow.value = response.data.data.total;
+    if (response.data.data.summary) {
+      serverSummary.value = response.data.data.summary;
+    }
     // Reset selection on fetch
     selectedProducts.value = [];
   } catch (error) {
@@ -238,6 +246,18 @@ onMounted(() => {
         <p class="text-xs text-gray-400 font-medium uppercase tracking-[0.2em]">
           Kelola daftar produk, konfigurasi Fee, dan comission margin.
         </p>
+      </div>
+
+      <!-- Server Cards -->
+      <div class="flex gap-2 flex-wrap">
+        <div class="bg-white border border-gray-200 rounded-lg px-3 py-1.5 shadow-sm flex flex-col items-center w-[96px]">
+          <span class="text-[9px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">IAK</span>
+          <span class="text-sm font-black text-gray-800">{{ serverSummary.iak }}</span>
+        </div>
+        <div class="bg-rose-50 border border-rose-100 rounded-lg px-3 py-1.5 shadow-sm flex flex-col items-center w-[96px]">
+          <span class="text-[9px] font-bold text-rose-500 uppercase tracking-wider mb-0.5 whitespace-nowrap">Tanpa Server</span>
+          <span class="text-sm font-black text-rose-700">{{ serverSummary.unconnected }}</span>
+        </div>
       </div>
     </div>
 

@@ -106,6 +106,8 @@ export class DashboardService {
       },
       products: {
         value: produkActiveTotal,
+        prabayar: produkPrabayarActive,
+        pascabayar: produkPascabayarActive,
         trend: produkTrend,
         trendUp: produkTrend >= 0,
       }

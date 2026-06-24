@@ -158,6 +158,7 @@ onMounted(() => {
         :showActions="false"
         :showSearch="false"
         :showAddButton="false"
+        :showAdd="false"
       >
         <template #custom-actions>
           <ExpandableActionButton
