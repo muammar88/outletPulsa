@@ -43,7 +43,7 @@ const tableColumns = [
   {
     key: 'nomorTujuan',
     label: 'Nomor Tujuan',
-    headerClass: 'text-left w-[15%]',
+    headerClass: 'text-left w-[10%]',
     cellClass: 'text-left font-semibold',
   },
   {
@@ -73,7 +73,7 @@ const tableColumns = [
   {
     key: 'action',
     label: 'Aksi',
-    headerClass: 'text-center w-[10%]',
+    headerClass: 'text-center w-[15%]',
     cellClass: 'text-center',
   },
 ];

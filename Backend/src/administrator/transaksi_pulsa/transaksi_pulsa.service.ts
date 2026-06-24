@@ -126,9 +126,9 @@ export class TransaksiPulsaService {
     const transaksi = await this.prisma.transaction.findUnique({ where: { id } });
     if (!transaksi) throw new NotFoundException('Data transaksi tidak ditemukan');
     
-    // Hanya bisa hapus jika status gagal
-    if (transaksi.status !== 'gagal') {
-      throw new BadRequestException('Hanya transaksi dengan status gagal yang dapat dihapus.');
+    // Hanya bisa hapus jika status gagal atau proses
+    if (transaksi.status !== 'gagal' && transaksi.status !== 'proses') {
+      throw new BadRequestException('Hanya transaksi dengan status gagal atau proses yang dapat dihapus.');
     }
 
     await this.prisma.transaction.delete({ where: { id } });
