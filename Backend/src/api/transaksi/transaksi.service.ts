@@ -484,7 +484,6 @@ export class TransaksiService {
           print_status: !!print_status,
           print_tanggal,
           print_waktu,
-          status: currentTrx.status,
           kodeAgen: currentTrx.kodeAgen,
           laba: currentTrx.laba,
           fee_agen: currentTrx.fee_agen,
