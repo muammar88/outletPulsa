@@ -202,7 +202,8 @@ export class TransaksiPulsaService {
            where: { id },
            data: {
              status: 'sukses',
-             ket: sn ? `SN: ${sn}` : currentTrx.ket
+             ket: sn ? `SN: ${sn}` : currentTrx.ket,
+             serial_number: sn ? String(sn) : undefined,
            }
          });
       } else if (statusProvider === 'gagal') {
@@ -210,7 +211,8 @@ export class TransaksiPulsaService {
            where: { id },
            data: {
              status: 'gagal',
-             ket: sn ? `Gagal: ${sn}` : 'Gagal dari server provider'
+             ket: sn ? `Gagal: ${sn}` : 'Gagal dari server provider',
+             serial_number: sn ? String(sn) : undefined,
            }
          });
 

@@ -75,6 +75,7 @@ export class DigiflazzService {
         price: data?.data?.price || 0,
         rc: data?.data?.rc || '',
         raw_response: data,
+        sn: data?.data?.sn || '',
       };
     } catch (error) {
       this.logger.error('DIGIFLAZZ TopUp Error', error);
@@ -98,6 +99,9 @@ export class DigiflazzService {
         }),
       });
       const data = await response.json();
+
+
+      console.log()
 
       let status = 'proses';
       let sn = '';

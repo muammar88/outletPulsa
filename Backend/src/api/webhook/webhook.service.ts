@@ -437,6 +437,7 @@ export class WebhookService {
         kodeAgen: kodeAgen,
         laba: laba,
         fee_agen: feeAgen,
+        serial_number: sn ? String(sn) : undefined,
       },
     });
   }

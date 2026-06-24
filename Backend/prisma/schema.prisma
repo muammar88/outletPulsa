@@ -245,6 +245,7 @@ model Transaction {
   serverId           Int?
   status             TransactionStatus? @default(proses)
   trx_id             Int?
+  serial_number      String?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 

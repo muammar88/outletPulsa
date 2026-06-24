@@ -97,6 +97,7 @@ export class TripayService {
         trx_id: data?.trxid || '',
         status_success: data?.success || false,
         raw_response: data,
+        sn: data?.sn || data?.note || '',
       };
     } catch (error) {
       this.logger.error('TRIPAY TopUp Error', error);

@@ -238,6 +238,10 @@ const badgeColor = computed(() => {
           <p class="text-sm text-gray-700 font-semibold leading-relaxed">
             {{ transactionData.ket || 'Tidak ada keterangan terkait transaksi ini.' }}
           </p>
+          <div v-if="transactionData.serial_number" class="mt-3 pt-3 border-t border-gray-200">
+            <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest block mb-1">Serial Number (SN)</span>
+            <span class="text-sm font-bold text-blue-600 break-all font-mono">{{ transactionData.serial_number }}</span>
+          </div>
         </div>
         
         <div class="bg-gray-50 rounded-2xl p-5 border border-gray-100 flex flex-col justify-center">

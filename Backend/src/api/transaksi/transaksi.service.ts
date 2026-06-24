@@ -290,7 +290,8 @@ export class TransaksiService {
          await this.prisma.transaction.update({
            where: { id: newTrxId },
            data: { 
-             trx_id: providerResponse.trx_id ? parseInt(String(providerResponse.trx_id), 10) : undefined 
+             trx_id: providerResponse.trx_id ? parseInt(String(providerResponse.trx_id), 10) : undefined,
+             serial_number: providerResponse.sn ? String(providerResponse.sn) : undefined
            }
          });
       } else {
@@ -370,50 +371,46 @@ export class TransaksiService {
               }
            }
            
-           // Jika status menjadi gagal, kembalikan saldo
-           if (checkRes.status === 'gagal') {
-               await this.prisma.$transaction(async (tx) => {
-                 const feeAgenRefund = trx!.fee_agen || 0;
-                 const refundAmount = (trx!.selling_price || 0) + feeAgenRefund;
-                 await tx.member.update({
-                     where: { id: memberId },
-                     data: { saldo: { increment: refundAmount } }
-                 });
-                 await tx.riwayatTransaksi.create({
-                     data: {
-                        memberId: memberId,
-                        tipeTransaksi: 'terima_saldo',
-                     }
-                 });
-               });
-           }
-
            let calculatedLaba: number | null = trx.laba;
            if (checkRes.status === 'sukses') {
                const sellingPrice = trx.selling_price || 0;
-               // laba = harga jual - harga modal. Jika ada fee agen, berarti labanya = harga jual - fee agen - harga modal,
-               // Tapi karena user menyebutkan "seller_price dikurang dengan harga modal yang dikirimkan oleh masing-masing provider",
-               // kita asumsikan laba = selling_price - realPurchasePrice.
-               // Jika transaksi adalah agen, fee agen adalah bagian dari totalBayar tapi totalBayar = harga_jual_asli + fee_agen. 
-               // selling_price saat ini diisikan hargaJualAsli.
                calculatedLaba = sellingPrice - (realPurchasePrice || 0);
            }
 
-           // Update status transaksi di database
-           trx = await this.prisma.transaction.update({
-             where: { id: trx.id },
-             data: {
-               status: checkRes.status as any,
-               ket: newKet || trx.ket,
-               purchase_price: realPurchasePrice,
-               laba: calculatedLaba,
-             },
-             include: {
-               produk: true,
-               server: true,
-               riwayatTransaksi: true,
-             }
-           }) as any;
+           // Proses update status transaksi, refund (jika gagal), dan update serial_number dalam satu prisma.$transaction()
+           trx = await this.prisma.$transaction(async (tx) => {
+               // Jika status menjadi gagal, kembalikan saldo
+               if (checkRes!.status === 'gagal') {
+                   const feeAgenRefund = trx!.fee_agen || 0;
+                   const refundAmount = (trx!.selling_price || 0) + feeAgenRefund;
+                   await tx.member.update({
+                       where: { id: memberId },
+                       data: { saldo: { increment: refundAmount } }
+                   });
+                   await tx.riwayatTransaksi.create({
+                       data: {
+                          memberId: memberId,
+                          tipeTransaksi: 'terima_saldo',
+                       }
+                   });
+               }
+
+               return await tx.transaction.update({
+                 where: { id: trx!.id },
+                 data: {
+                   status: checkRes!.status as any,
+                   ket: newKet || trx!.ket,
+                   purchase_price: realPurchasePrice,
+                   laba: calculatedLaba,
+                   serial_number: checkRes!.sn ? String(checkRes!.sn) : undefined,
+                 },
+                 include: {
+                   produk: true,
+                   server: true,
+                   riwayatTransaksi: true,
+                 }
+               }) as any;
+           });
         }
       }
       // --- END Realtime status check ---
@@ -487,6 +484,14 @@ export class TransaksiService {
           print_status: !!print_status,
           print_tanggal,
           print_waktu,
+          status: currentTrx.status,
+          kodeAgen: currentTrx.kodeAgen,
+          laba: currentTrx.laba,
+          fee_agen: currentTrx.fee_agen,
+          serial_number: currentTrx.serial_number,
+          trx_id: currentTrx.trx_id,
+          createdAt: currentTrx.createdAt,
+          updatedAt: currentTrx.updatedAt.toISOString().replace(/T/, ' ').replace(/\..+/, ''),
           print_tarif_daya,
           print_id_pelanggan,
           print_nama,
@@ -496,9 +501,8 @@ export class TransaksiService {
           dateTransaction: currentTrx.updatedAt.toISOString().replace(/T/, ' ').replace(/\..+/, ''),
           nomorTujuan: currentTrx.nomorTujuan || '',
           price: formatRp(currentTrx.selling_price || 0),
-          fee_agen: currentTrx.fee_agen || 0,
           selling_price_raw: currentTrx.selling_price || 0,
-          serialNumber: '-',
+          serialNumber: currentTrx.serial_number || '-',
           message: !currentTrx.ket || currentTrx.ket === '' ? '-' : currentTrx.ket,
         },
       };

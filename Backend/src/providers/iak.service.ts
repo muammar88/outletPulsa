@@ -87,6 +87,7 @@ export class IakService {
         status_success: isSuccess,
         price: data?.data?.price || 0,
         raw_response: data,
+        sn: data?.data?.sn || '',
       };
     } catch (error) {
       this.logger.error('IAK TopUp Error', error);
