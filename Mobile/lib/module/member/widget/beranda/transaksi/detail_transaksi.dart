@@ -390,10 +390,6 @@ class _Detail_transaksiState extends State<Detail_transaksi> with SingleTickerPr
                 _buildDetailRow('Produk', detail.productName ?? '-'),
                 Divider(color: Colors.grey.shade200, height: 1),
                 _buildDetailRow('Harga Modal', displayPriceStr),
-                if (detail.serialNumber != null && detail.serialNumber!.isNotEmpty) ...[
-                  Divider(color: Colors.grey.shade200, height: 1),
-                  _buildDetailRow('Serial Number', detail.serialNumber!, isCopy: true),
-                ],
               ],
             ),
           ),

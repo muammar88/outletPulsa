@@ -241,7 +241,7 @@ const stopAutoRefresh = () => {
 };
 
 const handleVisibilityChange = () => {
-  if (document.hidden) {
+  if (window.document.hidden) {
     stopAutoRefresh();
   } else {
     startAutoRefresh();
@@ -251,12 +251,12 @@ const handleVisibilityChange = () => {
 onMounted(() => {
   fetchData();
   startAutoRefresh();
-  document.addEventListener('visibilitychange', handleVisibilityChange);
+  window.document.addEventListener('visibilitychange', handleVisibilityChange);
 });
 
 onUnmounted(() => {
   stopAutoRefresh();
-  document.removeEventListener('visibilitychange', handleVisibilityChange);
+  window.document.removeEventListener('visibilitychange', handleVisibilityChange);
 });
 </script>
 

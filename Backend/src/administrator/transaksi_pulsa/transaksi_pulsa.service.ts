@@ -1,11 +1,21 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
 import { GetTransaksiDto } from './dto/get-transaksi.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
+import { IakService } from '../../providers/iak.service';
+import { DigiflazzService } from '../../providers/digiflazz.service';
+import { TripayService } from '../../providers/tripay.service';
 
 @Injectable()
 export class TransaksiPulsaService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(TransaksiPulsaService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly iakService: IakService,
+    private readonly digiflazzService: DigiflazzService,
+    private readonly tripayService: TripayService,
+  ) {}
 
   async findAll(query: GetTransaksiDto) {
     const { search, page = '1', limit = '10', status, start_date, end_date } = query;
@@ -100,13 +110,29 @@ export class TransaksiPulsaService {
   }
 
   async runCronJob() {
-    // Placeholder implementation for starting cron job
+    await this.checkStatusServer();
     return { message: 'Cron job pengecekan status berhasil dijalankan.' };
   }
 
   async checkStatusServer() {
-    // Placeholder implementation for checking status from server (e.g., Digiflazz/Tripay)
-    return { message: 'Pengecekan status transaksi di server pihak ketiga berhasil.' };
+    const prosesTransactions = await this.prisma.transaction.findMany({
+      where: { status: 'proses' }
+    });
+
+    let successCount = 0;
+    let failedCount = 0;
+
+    for (const trx of prosesTransactions) {
+      try {
+        await this.reCheckStatus(trx.id);
+        successCount++;
+      } catch (error) {
+        this.logger.error(`Error checking status for TRX ID ${trx.id}:`, error);
+        failedCount++;
+      }
+    }
+
+    return { message: `Pengecekan massal selesai. ${successCount} berhasil, ${failedCount} gagal diproses.` };
   }
 
   async create(createData: any) {
@@ -116,10 +142,112 @@ export class TransaksiPulsaService {
   }
 
   async reCheckStatus(id: number) {
-    const transaksi = await this.prisma.transaction.findUnique({ where: { id } });
+    const transaksi = await this.prisma.transaction.findUnique({ 
+      where: { id },
+      include: {
+        server: true,
+        riwayatTransaksi: { include: { member: true } },
+        produk: true
+      }
+    });
+
     if (!transaksi) throw new NotFoundException('Data transaksi tidak ditemukan');
-    // Mock re-check status
-    return { message: `Permintaan pengecekan ulang status untuk transaksi #${id} berhasil dikirim.` };
+
+    if (transaksi.status === 'sukses' || transaksi.status === 'gagal' || transaksi.status === 'expired') {
+       return { message: 'Transaksi sudah memiliki status final.' };
+    }
+
+    let statusProvider = 'proses';
+    let sn = '';
+
+    if (!transaksi.serverId || !transaksi.server) {
+      statusProvider = 'gagal';
+      sn = 'Tanpa Provider / Server belum dikonfigurasi';
+    } else {
+      const serverName = transaksi.server.name?.toLowerCase() || '';
+      if (serverName.includes('iak')) {
+        const res = await this.iakService.checkStatus(transaksi.kode || '');
+        statusProvider = res.status;
+        sn = res.sn;
+      } else if (serverName.includes('digiflazz')) {
+        const res = await this.digiflazzService.checkStatus(transaksi.kode || '', transaksi.nomorTujuan || '', transaksi.produk?.kode || '');
+        statusProvider = res.status;
+        sn = res.sn;
+      } else if (serverName.includes('tripay')) {
+        const res = await this.tripayService.checkStatus(transaksi.trx_id?.toString() || '', transaksi.kode || '');
+        statusProvider = res.status;
+        sn = res.sn;
+      } else {
+        statusProvider = 'gagal';
+        sn = 'Provider tidak dikenali';
+      }
+    }
+
+    if (statusProvider === 'proses') {
+      return { message: `Transaksi #${id} masih dalam status proses di server.` };
+    }
+
+    await this.prisma.$transaction(async (prisma) => {
+      // Re-fetch untuk lock
+      const currentTrx = await prisma.transaction.findUnique({
+         where: { id }
+      });
+
+      if (!currentTrx || currentTrx.status !== 'proses') {
+         return; 
+      }
+
+      if (statusProvider === 'sukses') {
+         await prisma.transaction.update({
+           where: { id },
+           data: {
+             status: 'sukses',
+             ket: sn ? `SN: ${sn}` : currentTrx.ket
+           }
+         });
+      } else if (statusProvider === 'gagal') {
+         await prisma.transaction.update({
+           where: { id },
+           data: {
+             status: 'gagal',
+             ket: sn ? `Gagal: ${sn}` : 'Gagal dari server provider'
+           }
+         });
+
+         const isRefundEligible = currentTrx.saldo_sebelum !== null && currentTrx.saldo_sesudah !== null;
+         if (isRefundEligible && transaksi.riwayatTransaksi?.member) {
+            const memberId = transaksi.riwayatTransaksi.member.id;
+            const currentMember = await prisma.member.findUnique({ where: { id: memberId } });
+            
+            if (currentMember) {
+               const sellingPrice = currentTrx.selling_price || 0;
+               const feeAgen = currentTrx.fee_agen || 0;
+               const nominalRefund = sellingPrice + feeAgen;
+               const saldoBaru = (currentMember.saldo || 0) + nominalRefund;
+
+               await prisma.member.update({
+                 where: { id: memberId },
+                 data: { saldo: saldoBaru }
+               });
+
+               await prisma.riwayatSaldo.create({
+                 data: {
+                   kode: `REF-${currentTrx.kode || Date.now()}`,
+                   member_id: memberId,
+                   nominal: nominalRefund,
+                   saldo_sebelumnya: currentMember.saldo || 0,
+                   saldo_setelahnya: saldoBaru,
+                   status: 'deposit',
+                   riwayat_transaksi_id: currentTrx.riwayatTransaksiId,
+                   ket: `Pengembalian dana transaksi gagal ${currentTrx.nomorTujuan} (${currentTrx.kode})`
+                 }
+               });
+            }
+         }
+      }
+    });
+
+    return { message: `Pengecekan status untuk transaksi #${id} selesai dengan hasil: ${statusProvider}` };
   }
 
   async delete(id: number) {
