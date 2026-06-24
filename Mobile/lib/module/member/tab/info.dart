@@ -259,7 +259,6 @@ class BoxInfo extends StatelessWidget {
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
@@ -277,36 +276,97 @@ class BoxInfo extends StatelessWidget {
             ),
           ],
         ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
           children: [
-            // Icon Container
+            // Header
             Container(
-              width: 48,
-              height: 48,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: isRead
                     ? Colors.grey.shade50
-                    : const Color(0xFF0F1F6E).withOpacity(0.06),
-                shape: BoxShape.circle,
+                    : const Color(0xFF0F1F6E).withOpacity(0.05),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                border: Border(
+                  bottom: BorderSide(color: Colors.grey.shade100),
+                ),
               ),
-              child: Icon(
-                isRead ? TablerIcons.mail_opened : TablerIcons.bell,
-                color: isRead ? Colors.grey.shade400 : const Color(0xFF0F1F6E),
-                size: 24,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Icon(
+                          TablerIcons.info_circle,
+                          size: 16,
+                          color: isRead ? Colors.grey.shade500 : const Color(0xFF0F1F6E),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Informasi #$id',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: isRead ? Colors.grey.shade600 : const Color(0xFF0F1F6E),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (!isRead)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
+                      ),
+                      child: Text(
+                        'Baru',
+                        style: GoogleFonts.poppins(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.redAccent,
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-            const SizedBox(width: 16),
-            // Text Content
-            Expanded(
-              child: Column(
+            
+            // Body
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
+                  // Icon Container
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: isRead
+                          ? Colors.grey.shade50
+                          : const Color(0xFF0F1F6E).withOpacity(0.06),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(
+                      isRead ? TablerIcons.mail_opened : TablerIcons.bell,
+                      color: isRead ? Colors.grey.shade400 : const Color(0xFF0F1F6E),
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  // Text Content
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
                           title,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -319,52 +379,42 @@ class BoxInfo extends StatelessWidget {
                             height: 1.3,
                           ),
                         ),
-                      ),
-                      if (!isRead)
-                        Container(
-                          margin: const EdgeInsets.only(left: 8, top: 4),
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: Colors.redAccent,
-                            shape: BoxShape.circle,
+                        const SizedBox(height: 6),
+                        Text(
+                          desc,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: Colors.grey.shade500,
+                            height: 1.5,
                           ),
                         ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    desc,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: Colors.grey.shade500,
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Text(
-                        'Baca Selengkapnya',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: isRead
-                              ? Colors.grey.shade400
-                              : const Color(0xFF0F1F6E),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Text(
+                              'Baca Selengkapnya',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: isRead
+                                    ? Colors.grey.shade400
+                                    : const Color(0xFF0F1F6E),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(
+                              TablerIcons.arrow_right,
+                              size: 16,
+                              color: isRead
+                                  ? Colors.grey.shade400
+                                  : const Color(0xFF0F1F6E),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(width: 4),
-                      Icon(
-                        TablerIcons.arrow_right,
-                        size: 16,
-                        color: isRead
-                            ? Colors.grey.shade400
-                            : const Color(0xFF0F1F6E),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ],
               ),

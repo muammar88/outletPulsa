@@ -262,7 +262,7 @@ class _Input_ppob_pascabayarState extends State<Input_ppob_pascabayar> with Sing
               keyboardType: TextInputType.number,
               style: GoogleFonts.poppins(
                 fontSize: 16,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w500,
                 color: const Color(0xFF1A1A2E),
               ),
               decoration: InputDecoration(
