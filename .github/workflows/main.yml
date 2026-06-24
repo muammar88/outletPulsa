@@ -82,11 +82,11 @@ jobs:
             echo "🌱 Generate Prisma Client"
             docker exec -i outletpulsa_backend npx prisma generate
 
-            echo "🗑️ Menghapus data tabel ProdukPascabayar di database production..."
-            echo 'DELETE FROM "ProdukPascabayar";' | docker exec -i outletpulsa_backend npx prisma db execute --stdin
+            # echo "🗑️ Menghapus data tabel ProdukPascabayar di database production..."
+            # echo 'DELETE FROM "ProdukPascabayar";' | docker exec -i outletpulsa_backend npx prisma db execute --stdin
 
             echo "🌱 Menjalankan seed khusus produk_pascabayar..."
-            docker exec -i outletpulsa_backend npx ts-node prisma/seeds/produk_pascabayar.seed.ts
+            docker exec -i outletpulsa_backend npx ts-node prisma/execution/run_produk_pascabayar_seed.ts
 
             # echo "🎯 Run Status Laba Seeder (Transaction)"
             # docker exec -i outletpulsa_backend npx ts-node prisma/seeds/20260623-add-status-laba-transaction.seed.ts
