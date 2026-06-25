@@ -33,13 +33,13 @@ jobs:
 
           docker push muammar88/outletpulsa-backend:1.0.0
 
-      - name: Build and push Docker image frontend
-        run: |
-          docker build \
-            --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} \
-            -t muammar88/outletpulsa-frontend:1.0.0 ./Frontend
+      # - name: Build and push Docker image frontend
+      #   run: |
+      #     docker build \
+      #       --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} \
+      #       -t muammar88/outletpulsa-frontend:1.0.0 ./Frontend
 
-          docker push muammar88/outletpulsa-frontend:1.0.0
+      #     docker push muammar88/outletpulsa-frontend:1.0.0
 
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v1
@@ -76,6 +76,9 @@ jobs:
             # echo "🔧 Mengatasi failed migration sebelumnya..."
             # docker exec -i outletpulsa_backend npx prisma migrate resolve --applied 20260622152905_add_bullmq_schedules || true
 
+            echo "🔧 Resolve failed migration (jika ada)..."
+            docker exec -i outletpulsa_backend npx prisma migrate resolve --rolled-back "20260625092400_add_device_code_to_otp_register" || true
+
             # echo "📜 Run migration"
             docker exec -i outletpulsa_backend npx prisma migrate deploy
 
@@ -94,8 +97,8 @@ jobs:
             # echo "🔄 Run Sync Menu Seed (Menyinkronkan Menu, SubMenu, dan Tab)"
             # docker exec -i outletpulsa_backend npx ts-node prisma/seeds/sync_menu.seed.ts
 
-            echo "🔍 Checking Database Schema vs Prisma Schema..."
-            docker exec -i outletpulsa_backend npx ts-node prisma/execution/check_schema_diff.ts
+            # echo "🔍 Checking Database Schema vs Prisma Schema..."
+            # docker exec -i outletpulsa_backend npx ts-node prisma/execution/check_schema_diff.ts
 
             # echo "🏦 Run Bank Seed (Aman untuk data yang sudah ada)"
             # docker exec -i outletpulsa_backend npx ts-node prisma/seeds/bank_menu.seed.ts
