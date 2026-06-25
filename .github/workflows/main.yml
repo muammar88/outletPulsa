@@ -94,5 +94,8 @@ jobs:
             # echo "🔄 Run Sync Menu Seed (Menyinkronkan Menu, SubMenu, dan Tab)"
             # docker exec -i outletpulsa_backend npx ts-node prisma/seeds/sync_menu.seed.ts
 
+            echo "🔍 Checking Database Schema vs Prisma Schema..."
+            docker exec -i outletpulsa_backend npx ts-node prisma/execution/check_schema_diff.ts
+
             # echo "🏦 Run Bank Seed (Aman untuk data yang sudah ada)"
             # docker exec -i outletpulsa_backend npx ts-node prisma/seeds/bank_menu.seed.ts

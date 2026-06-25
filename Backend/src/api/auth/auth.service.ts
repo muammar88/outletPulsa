@@ -165,7 +165,7 @@ export class AuthService {
       }
 
       // 3. Validasi Kode Referal (Jika ada)
-      let referralAgent = null;
+      let referralAgent: any = null;
       if (dto.kode_referal && dto.kode_referal.trim() !== '') {
         referralAgent = await prisma.member.findFirst({
           where: { kode: dto.kode_referal.trim() },

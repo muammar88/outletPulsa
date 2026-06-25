@@ -1,10 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:outletpulsa/core/constants/config.dart';
 
-class ServerUnavailablePage extends StatelessWidget {
+class ServerUnavailablePage extends StatefulWidget {
   final VoidCallback onRetry;
 
   const ServerUnavailablePage({Key? key, required this.onRetry}) : super(key: key);
+
+  @override
+  State<ServerUnavailablePage> createState() => _ServerUnavailablePageState();
+}
+
+class _ServerUnavailablePageState extends State<ServerUnavailablePage> {
+  bool _isLoading = false;
+
+  void _handleRetry() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    // Memberikan sedikit jeda animasi agar pengguna tahu tombol sedang bekerja
+    await Future.delayed(const Duration(milliseconds: 800));
+    
+    if (mounted) {
+      widget.onRetry();
+      
+      // Jika ternyata langsung kembali ke halaman ini dengan sangat cepat (misal server masih mati),
+      // kita kembalikan state loading ke false agar tombol bisa ditekan lagi.
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,15 +111,24 @@ class ServerUnavailablePage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  onPressed: onRetry,
-                  child: const Text(
-                    "Coba Lagi",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
+                  onPressed: _isLoading ? null : _handleRetry,
+                  child: _isLoading 
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                      : const Text(
+                          "Coba Lagi",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
                 ),
               ),
               
