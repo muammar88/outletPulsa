@@ -1,4 +1,4 @@
-package com.outletpulsa
+package com.outletpulsade
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -63,7 +63,7 @@ export const disable_2fa = async (payload: { password: string }) => {
 
 export const get_info_edit_profile = async () => {
   try {
-    const response = await api.get('/auth/administrator/get_info_edit_profile')
+    const response = await api.get('/administrator/auth/get_info_edit_profile')
     return response.data
   } catch (error) {
     console.error('Gagal edit profile:', error)
@@ -83,7 +83,7 @@ export const get_info_edit_profile_member = async () => {
 
 export const edit_profile = async (param: any) => {
   try {
-    const response = await api.post('/auth/administrator/edit_profile', param)
+    const response = await api.post('/administrator/auth/edit_profile', param)
     return response.data
   } catch (error) {
     console.error('Gagal edit profile:', error)

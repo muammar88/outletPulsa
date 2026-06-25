@@ -180,6 +180,45 @@ export class AuthService {
     return { twoFactorEnabled: user.twoFactorEnabled };
   }
 
+  async getProfileInfo(userId: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, kode: true },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('User tidak ditemukan');
+    }
+
+    // Map `kode` dari database ke field `username` yang diharapkan frontend
+    return {
+      status: true,
+      data: {
+        name: user.name,
+        username: user.kode,
+      }
+    };
+  }
+
+  async updateProfile(userId: number, data: any) {
+    const { name, username, password } = data;
+    const updateData: any = {};
+    
+    if (name) updateData.name = name;
+    if (username) updateData.kode = username;
+    
+    if (password) {
+      updateData.password = await bcrypt.hash(password, 10);
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+    });
+
+    return { status: true, message: 'Profile berhasil diperbarui' };
+  }
+
   private async generateAuthTokens(user: any) {
     const payload = { sub: user.id, kode: user.kode, type: user.type };
 

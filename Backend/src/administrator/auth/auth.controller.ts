@@ -83,6 +83,20 @@ export class AuthController {
     return this.authService.getTwoFactorStatus(req.user.id);
   }
 
+  @Get('get_info_edit_profile')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  async getProfileInfo(@Req() req: Request & { user: any }) {
+    return this.authService.getProfileInfo(req.user.id);
+  }
+
+  @Post('edit_profile')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  async updateProfile(@Req() req: Request & { user: any }, @Body() body: any) {
+    return this.authService.updateProfile(req.user.id, body);
+  }
+
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refreshToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
