@@ -55,9 +55,14 @@ const handleSelect = async (server: any) => {
   const connected = getConnectedProducts(server);
   if (connected.length === 0) return;
 
+  const productPrice = connected[0].price || connected[0].selectedSellerPrice || 0;
+
   isSubmitting.value = true;
   try {
-    await ProdukPrabayarService.update(props.produk!.id, { serverId: server.id });
+    await ProdukPrabayarService.update(props.produk!.id, { 
+      serverId: server.id,
+      purchase_price: productPrice
+    });
     emit('notify', `Server berhasil diubah ke ${server.name}`, 'success');
     emit('refresh');
     emit('close');

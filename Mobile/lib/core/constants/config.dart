@@ -65,8 +65,8 @@ class ConfigApp {
   // constructor
   ConfigApp() {
     // 10.94.252.166
-    _mainurl = "http://10.94.252.166:3005/api";
-    // _mainurl = "https://api.outletpulsa.com/api";
+    //_mainurl = "http://10.94.252.166:3005/api";
+    _mainurl = "https://api.outletpulsa.com/api";
     _login_url = '$_mainurl/auth/login';
     _check_login_url = '$_mainurl/auth/check-login';
     _health_url = '$_mainurl/health';

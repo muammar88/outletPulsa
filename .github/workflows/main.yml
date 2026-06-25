@@ -71,15 +71,15 @@ jobs:
             echo "🚀 6. Menjalankan seluruh service..."
             docker compose up -d
 
-            echo "✅ Deployment selesai dengan sukses!"
+            # echo "✅ Deployment selesai dengan sukses!"
 
             # echo "🔧 Mengatasi failed migration sebelumnya..."
             # docker exec -i outletpulsa_backend npx prisma migrate resolve --applied 20260622152905_add_bullmq_schedules || true
 
-            echo "🔧 Resolve failed migration (jika ada)..."
-            docker exec -i outletpulsa_backend npx prisma migrate resolve --rolled-back "20260625092400_add_device_code_to_otp_register" || true
+            # echo "🔧 Resolve failed migration (jika ada)..."
+            # docker exec -i outletpulsa_backend npx prisma migrate resolve --rolled-back "20260625092400_add_device_code_to_otp_register" || true
 
-            # echo "📜 Run migration"
+            echo "📜 Run migration"
             docker exec -i outletpulsa_backend npx prisma migrate deploy
 
             echo "🌱 Generate Prisma Client"
@@ -97,8 +97,8 @@ jobs:
             # echo "🔄 Run Sync Menu Seed (Menyinkronkan Menu, SubMenu, dan Tab)"
             # docker exec -i outletpulsa_backend npx ts-node prisma/seeds/sync_menu.seed.ts
 
-            echo "🔍 Checking Database Schema vs Prisma Schema..."
-            docker exec -i outletpulsa_backend npx ts-node prisma/execution/check_schema_diff.ts
+            # echo "🔍 Checking Database Schema vs Prisma Schema..."
+            # docker exec -i outletpulsa_backend npx ts-node prisma/execution/check_schema_diff.ts
 
             # echo "🏦 Run Bank Seed (Aman untuk data yang sudah ada)"
             # docker exec -i outletpulsa_backend npx ts-node prisma/seeds/bank_menu.seed.ts
