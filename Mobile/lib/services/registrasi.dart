@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/models/model_void.dart';
 import 'package:outletpulsa/core/utils/network_util.dart';
+import 'package:outletpulsa/core/storage/SQLHelper.dart';
 
 class Rest_registrasi {
   String? _get_otp_url;
@@ -29,8 +30,9 @@ class Rest_registrasi {
 
   Future<Model_void> getOTP(String nomor_tujuan) async {
     Uri url = Uri.parse(_get_otp_url!);
+    String deviceCode = await SQLHelper().getDeviceCode() ?? '';
     return _netUtil
-        .post(url, _publicHeaders, jsonEncode({"nomor_tujuan": nomor_tujuan}))
+        .post(url, _publicHeaders, jsonEncode({"whatsapp": nomor_tujuan, "device_code": deviceCode}))
         .then((dynamic res) async {
       return new Model_void.map(res);
     });
@@ -52,16 +54,18 @@ class Rest_registrasi {
       String password,
       String kode_referal) async {
     Uri url = Uri.parse(_register_url!);
+    String deviceCode = await SQLHelper().getDeviceCode() ?? '';
     return _netUtil
         .post(
             url,
             _publicHeaders,
             jsonEncode({
               "nama_pengguna": nama_pengguna,
-              "nomor_whatsapp": nomor_whatsapp,
+              "whatsapp": nomor_whatsapp,
               "otp": otp,
               "password": password,
-              "kode_referal": kode_referal
+              "kode_referal": kode_referal,
+              "device_code": deviceCode
             }))
         .then((dynamic res) async {
       return new Model_void.map(res);

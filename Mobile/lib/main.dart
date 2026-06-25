@@ -7,6 +7,8 @@ import 'package:outletpulsa/shared/providers/InfoAddDepositProvider.dart';
 import 'package:outletpulsa/shared/providers/RegistrasiProvider.dart';
 import 'package:provider/provider.dart';
 
+import 'package:outletpulsa/module/public/splash_screen.dart';
+
 import 'module/member/main.dart';
 import 'shared/providers/AgenProvider.dart';
 import 'shared/providers/AuthenticationProvider.dart';
@@ -117,38 +119,7 @@ class _MyAppState extends State<MyApp> {
               Theme.of(context).textTheme,
             ),
           ),
-          home: SupportWidget()),
+          home: const SplashScreen()),
     );
-  }
-}
-
-class SupportWidget extends StatefulWidget {
-  const SupportWidget({
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  State<SupportWidget> createState() => _SupportWidgetState();
-}
-
-class _SupportWidgetState extends State<SupportWidget> {
-  int numLoad = 0;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (numLoad == 0) {
-      numLoad = 1;
-      // check login
-      Provider.of<Authentication_provider>(context, listen: false).check_login();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<Authentication_provider>(
-        builder: (context, auth, child) => Container(
-              child: (auth.isLogin == true) ? Home_page() : Login_page(),
-            ));
   }
 }

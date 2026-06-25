@@ -4,6 +4,9 @@ class ConfigApp {
   String? _mainurl;
   String? _login_url;
   String? _check_login_url;
+  String? _health_url;
+  String? _device_register_url;
+  String? _device_validate_url;
   String? _beranda_url;
   String? _info_deposit_url;
   String? _getPrefix_url;
@@ -61,10 +64,14 @@ class ConfigApp {
 
   // constructor
   ConfigApp() {
+    // 10.94.252.166
     _mainurl = "http://10.94.252.166:3005/api";
     //_mainurl = "https://api.outletpulsa.com/api";
     _login_url = '$_mainurl/auth/login';
     _check_login_url = '$_mainurl/auth/check-login';
+    _health_url = '$_mainurl/health';
+    _device_register_url = '$_mainurl/device/register';
+    _device_validate_url = '$_mainurl/device/validate';
     _beranda_url = '$_mainurl/beranda';
     _info_deposit_url = '$_mainurl/deposit-info';
     _getPrefix_url = '$_mainurl/daftar-produk/get-prefix';
@@ -88,9 +95,9 @@ class ConfigApp {
     _delete_konfirmasi_deposit_url = '$_mainurl/deposit-delete-konfirmasi';
     _konfirmasi_deposit_url = '$_mainurl/deposit-konfirmasi';
     _detail_deposit_saldo_url = '$_mainurl/deposit-detail';
-    _get_otp_url = '$_mainurl/otp-register';
+    _get_otp_url = '$_mainurl/auth/otp-register';
     _get_otp_reset_password_url = '$_mainurl/otp-reset-password';
-    _register_url = '$_mainurl/register';
+    _register_url = '$_mainurl/auth/register';
     _reset_password_url = '$_mainurl/reset-password';
     _prabayarTransaction_url = '$_mainurl/transaksi-prabayar';
     _detailTransaksi_url = '$_mainurl/transaksi-detail';
@@ -128,6 +135,9 @@ class ConfigApp {
   String? get mainUrl => _mainurl;
   String? get login_url => _login_url!;
   String? get check_login_url => _check_login_url!;
+  String? get health_url => _health_url!;
+  String? get device_register_url => _device_register_url!;
+  String? get device_validate_url => _device_validate_url!;
   String? get beranda_url => _beranda_url!;
   String? get info_deposit_url => _info_deposit_url!;
   String? get getPrefix_url => _getPrefix_url!;
@@ -167,9 +177,12 @@ class ConfigApp {
   String get klaimAgen_url {
     return _klaimAgen_url!;
   }
+
   String get transaksiReseller_url {
     return _transaksiReseller_url!;
-  } Color get background_color => _background_color!;
+  }
+
+  Color get background_color => _background_color!;
   Color get background_light_color => _background_light_color!;
   Color get background_tab => _background_tab!;
   Color get background_smooth_navy => _background_smooth_navy!;

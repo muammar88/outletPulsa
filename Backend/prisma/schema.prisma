@@ -65,7 +65,7 @@ model Member {
   uuid           String       @unique @default(uuid())
   kode           String
   fullname       String
-  whatsappnumber String
+  whatsappnumber String       @unique
   kode_agen      String?
   password       String
   saldo          Int?         @default(0)
@@ -80,6 +80,7 @@ model Member {
   promos                  Promo[]
   riwayatSaldos           RiwayatSaldo[]
   activityLogs            ActivityLog[]
+  devicesConnected        DeviceConnected[]
 
   @@index([whatsappnumber])
   @@index([kode])
@@ -765,11 +766,16 @@ model TabMenu {
 }
 
 model OtpRegister {
-  id           Int      @id @default(autoincrement())
-  nomor_tujuan String?
-  otp          String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id          Int      @id @default(autoincrement())
+  device_code String
+  whatsapp    String
+  otp         String
+  status      String   @default("active")
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  @@index([device_code])
+  @@index([whatsapp])
 }
 
 model PaymentFeeAgenHistory {
@@ -911,4 +917,21 @@ model TakeLaba {
   jumlah_transaksi Int
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+}
+
+model DeviceConnected {
+  id           Int       @id @default(autoincrement())
+  device_code  String    @unique
+  member_id    Int?
+  device_name  String?
+  device_brand String?
+  device_model String?
+  os_name      String?
+  os_version   String?
+  app_version  String?
+  last_login   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  member       Member?   @relation(fields: [member_id], references: [id])
 }

@@ -19,11 +19,12 @@ class Rest_login {
   final NetworkUtil _netUtil = NetworkUtil();
   var db = new DatabaseHelper();
 
-  Future<Model_login> RestSubmitLogin(String whatsapp_number, String password) {
+  Future<Model_login> RestSubmitLogin(String whatsapp_number, String password, String device_code) {
     Uri url = Uri.parse(_login_url!);
     return _netUtil.post_login(url, {
       "whatsapp_number": whatsapp_number,
       "password": password,
+      "device_code": device_code,
     }).then((dynamic res) async {
       return new Model_login.map(res);
     });

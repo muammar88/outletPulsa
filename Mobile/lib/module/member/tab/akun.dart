@@ -14,6 +14,7 @@ import 'package:outletpulsa/module/member/widget/akun/saldo/form_transfer_saldo.
 import 'package:outletpulsa/module/member/widget/akun/UpdatePassword.dart';
 import 'package:outletpulsa/module/member/widget/akun/ketentuan_dan_kebijakan/ketentuan_dan_kebijakan.dart';
 import 'package:outletpulsa/module/member/widget/akun/agen/riwayat_pembayaran_fee_agen.dart';
+import 'package:outletpulsa/module/public/splash_screen.dart';
 
 class Akun_tab extends StatefulWidget {
   const Akun_tab({super.key});
@@ -280,6 +281,9 @@ class _Akun_tabState extends State<Akun_tab> {
               onTap: () {
                 Provider.of<Authentication_provider>(context, listen: false)
                     .logOut();
+                Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (context) => const SplashScreen()),
+                    (route) => false);
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 14),

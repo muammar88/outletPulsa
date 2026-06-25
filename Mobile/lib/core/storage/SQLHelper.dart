@@ -17,18 +17,19 @@ class SQLHelper {
   Future<Database> initDatabase() async {
     final getDirectory = await getApplicationDocumentsDirectory();
     String path = getDirectory.path + '/outletdb.db';
-    log(path);
     return await openDatabase(
       path,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
-      version: 2,
+      version: 3,
     );
   }
 
   void _onCreate(Database db, int version) async {
     await db.execute(
         'CREATE TABLE DataProfil(id TEXT PRIMARY KEY, kode TEXT, username TEXT, token TEXT)');
+    await db.execute(
+        'CREATE TABLE DeviceConnected(id TEXT PRIMARY KEY, device_code TEXT)');
     log('TABLE CREATED');
   }
 
@@ -42,6 +43,11 @@ class SQLHelper {
           'INSERT INTO DataProfil(id, kode, username, token) SELECT id, kode, username, token FROM DataProfil_old');
       await db.execute('DROP TABLE DataProfil_old');
       log('MIGRATED to v2: removed password column');
+    }
+    if (oldVersion < 3) {
+      await db.execute(
+          'CREATE TABLE IF NOT EXISTS DeviceConnected(id TEXT PRIMARY KEY, device_code TEXT)');
+      log('MIGRATED to v3: added DeviceConnected table');
     }
   }
 
@@ -106,4 +112,28 @@ class SQLHelper {
     var data = await db.rawDelete('DELETE from DataProfil WHERE id=?', [id]);
     log('deleted $data');
   }
+
+  // Helper untuk DeviceConnected
+  Future<String?> getDeviceCode() async {
+    final db = await _databaseService.database;
+    List<Map<String, dynamic>> result = await db.query(
+      'DeviceConnected',
+      where: 'id = ?',
+      whereArgs: ['1'],
+      limit: 1,
+    );
+    if (result.isNotEmpty && result.first['device_code'] != null) {
+      return result.first['device_code'] as String;
+    }
+    return null;
+  }
+
+  Future<void> saveDeviceCode(String deviceCode) async {
+    final db = await _databaseService.database;
+    await db.rawInsert(
+        'INSERT OR REPLACE INTO DeviceConnected(id, device_code) VALUES(?,?)',
+        ['1', deviceCode]);
+    log('saved device code $deviceCode');
+  }
 }
+

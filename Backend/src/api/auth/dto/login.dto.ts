@@ -14,4 +14,11 @@ export class LoginDto {
   @IsNotEmpty({ message: 'Password tidak boleh kosong' })
   @IsString()
   password: string;
+
+  /**
+   * Device Code dari aplikasi mobile
+   */
+  @IsNotEmpty({ message: 'Device Code tidak boleh kosong' })
+  @IsString()
+  device_code: string;
 }

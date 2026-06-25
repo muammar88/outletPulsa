@@ -102,18 +102,10 @@ class _ResetPasswordState extends State<ResetPassword>
 
   // ── Submit Reset ──────────────────────────────
   Future<void> _doReset(Load_provider loader) async {
-    if (_formKey.currentState == null || !_formKey.currentState!.validate())
-      return;
-
-    var errMsg = '';
-    if (nomor_whatsapp == null || nomor_whatsapp!.isEmpty)
-      errMsg += 'Nomor WhatsApp tidak boleh kosong.\n';
-    if (otp == null || otp!.isEmpty) errMsg += 'OTP tidak boleh kosong.\n';
-
-    if (errMsg.isNotEmpty) {
-      _showSnackBar(errMsg.trim(), isSuccess: false);
+    if (_formKey.currentState == null || !_formKey.currentState!.validate()) {
       return;
     }
+    _formKey.currentState!.save();
 
     loader.isLoad = true;
     final reg = Provider.of<Registrasi_provider>(context, listen: false);
@@ -179,16 +171,15 @@ class _ResetPasswordState extends State<ResetPassword>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: EdgeInsets.all(compact ? 16 : 20),
+                      padding: EdgeInsets.all(compact ? 10 : 14),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(compact ? 20 : 28),
-                        border: Border.all(color: Colors.white24),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(compact ? 14 : 20),
                       ),
                       child: Icon(
                         TablerIcons.lock_off,
-                        color: Colors.white,
-                        size: compact ? 48 : 64,
+                        color: _kPrimary,
+                        size: compact ? 36 : 48,
                       ),
                     ),
                     SizedBox(height: compact ? 16 : 24),

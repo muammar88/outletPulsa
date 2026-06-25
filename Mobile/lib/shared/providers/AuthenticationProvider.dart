@@ -30,10 +30,15 @@ class Authentication_provider with ChangeNotifier {
 
   Future<Model_void> submit_login(
       String nomor_whatsapp, String password) async {
+    final db = SQLHelper();
+    String? deviceCode = await db.getDeviceCode();
+    if (deviceCode == null) {
+      return new Model_void.map({'error': true, 'error_msg': 'Perangkat tidak terdaftar. Silakan restart aplikasi.'});
+    }
+
     return await Rest_login()
-        .RestSubmitLogin(nomor_whatsapp, password)
+        .RestSubmitLogin(nomor_whatsapp, password, deviceCode)
         .then((Model_login e) async {
-      final db = SQLHelper();
       // filter error
       if (e.error == true) {
         _isLogin = false;

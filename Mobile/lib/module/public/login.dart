@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:math' as math;
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:outletpulsa/module/public/registration.dart';
@@ -83,18 +84,10 @@ class _Login_pageState extends State<Login_page>
   }
 
   Future<void> _doLogin(Load_provider loader) async {
-    if (_formKey.currentState == null ||
-        !_formKey.currentState!.validate()) return;
-
-    var errMsg = '';
-    if (nomor_whatsapp == null || nomor_whatsapp!.isEmpty)
-      errMsg += 'Nomor WhatsApp tidak boleh kosong. ';
-    if (password == null || password!.isEmpty)
-      errMsg += 'Password tidak boleh kosong.';
-    if (errMsg.isNotEmpty) {
-      _showSnackBar(errMsg.trim(), isSuccess: false);
+    if (_formKey.currentState == null || !_formKey.currentState!.validate()) {
       return;
     }
+    _formKey.currentState!.save();
 
     loader.isLoad = true;
     final auth =
@@ -107,6 +100,13 @@ class _Login_pageState extends State<Login_page>
           (feedBack.error == false ? 'Login berhasil' : 'Gagal login'),
       isSuccess: feedBack.error == false,
     );
+
+    if (feedBack.error == false) {
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const Home_page()),
+      );
+    }
   }
 
   // ─── Brand Panel (kiri pada wide layout) ───────────────────────
@@ -137,21 +137,20 @@ class _Login_pageState extends State<Login_page>
                 children: [
                   Container(
                     margin: EdgeInsets.only(top: compact ? 24 : 0),
-                    padding: EdgeInsets.all(compact ? 14 : 20),
+                    padding: EdgeInsets.all(compact ? 10 : 14),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.12),
+                      color: Colors.white,
                       borderRadius:
-                          BorderRadius.circular(compact ? 20 : 28),
-                      border: Border.all(color: Colors.white24),
+                          BorderRadius.circular(compact ? 14 : 20),
                     ),
                     child: Image.asset(
                       'assets/img/vertical-logo.png',
-                      width: compact ? 56 : 80,
-                      height: compact ? 56 : 80,
+                      width: compact ? 42 : 60,
+                      height: compact ? 42 : 60,
                       errorBuilder: (_, __, ___) => Icon(
                         TablerIcons.bolt,
                         color: Colors.white,
-                        size: compact ? 48 : 64,
+                        size: compact ? 36 : 48,
                       ),
                     ),
                   ),
@@ -245,6 +244,9 @@ class _Login_pageState extends State<Login_page>
               keyboardType: TextInputType.number,
               onChanged: (v) => nomor_whatsapp = v,
               onSaved: (v) => nomor_whatsapp = v!,
+              validator: (v) => (v == null || v.isEmpty)
+                  ? 'Nomor whatsapp belum di isi.'
+                  : null,
             ),
             const SizedBox(height: 20),
 
@@ -257,6 +259,9 @@ class _Login_pageState extends State<Login_page>
               obscureText: !_passwordVisible,
               onChanged: (v) => password = v,
               onSaved: (v) => password = v,
+              validator: (v) => (v == null || v.isEmpty)
+                  ? 'Password belum di isi.'
+                  : null,
               suffixIcon: IconButton(
                 icon: Icon(
                   _passwordVisible
@@ -549,7 +554,7 @@ class _GradientButton extends StatelessWidget {
   }
 }
 
-class AuthInput extends StatelessWidget {
+class AuthInput extends StatefulWidget {
   const AuthInput({
     super.key,
     required this.hintText,
@@ -572,36 +577,91 @@ class AuthInput extends StatelessWidget {
   final Widget? suffixIcon;
 
   @override
+  State<AuthInput> createState() => _AuthInputState();
+}
+
+class _AuthInputState extends State<AuthInput> with SingleTickerProviderStateMixin {
+  late AnimationController _shakeController;
+
+  @override
+  void initState() {
+    super.initState();
+    _shakeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+  }
+
+  @override
+  void dispose() {
+    _shakeController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FC),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE5E9F2), width: 1.5),
-      ),
+    return AnimatedBuilder(
+      animation: _shakeController,
+      builder: (context, child) {
+        final sineValue = math.sin(_shakeController.value * 4 * math.pi) * 8;
+        return Transform.translate(
+          offset: Offset(sineValue, 0),
+          child: child,
+        );
+      },
       child: TextFormField(
-        onChanged: onChanged,
-        onSaved: onSaved,
-        validator: validator,
-        obscureText: obscureText,
-        keyboardType: keyboardType,
+        onChanged: widget.onChanged,
+        onSaved: widget.onSaved,
+        validator: (v) {
+          if (widget.validator != null) {
+            final err = widget.validator!(v);
+            if (err != null) {
+              _shakeController.forward(from: 0.0);
+            }
+            return err;
+          }
+          return null;
+        },
+        obscureText: widget.obscureText,
+        keyboardType: widget.keyboardType,
         autocorrect: false,
-        enableSuggestions: !obscureText,
+        enableSuggestions: !widget.obscureText,
         style: GoogleFonts.poppins(
           fontSize: 14,
           fontWeight: FontWeight.w500,
           color: const Color(0xFF1A1A2E),
         ),
         decoration: InputDecoration(
+          fillColor: const Color(0xFFF8F9FC),
+          filled: true,
           prefixIcon:
-              Icon(icon, color: _kPrimary.withOpacity(0.5), size: 20),
-          hintText: hintText,
+              Icon(widget.icon, color: _kPrimary.withOpacity(0.5), size: 20),
+          hintText: widget.hintText,
           hintStyle: GoogleFonts.poppins(
               fontSize: 13, color: Colors.grey.shade400),
-          border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
               vertical: 16, horizontal: 16),
-          suffixIcon: suffixIcon,
+          suffixIcon: widget.suffixIcon,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: Color(0xFFE5E9F2), width: 1.5),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: Color(0xFFE5E9F2), width: 1.5),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: _kPrimary, width: 1.5),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: Colors.red, width: 1.5),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: const BorderSide(color: Colors.red, width: 1.5),
+          ),
         ),
       ),
     );

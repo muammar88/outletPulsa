@@ -109,26 +109,10 @@ class _Register_pageState extends State<Register_page>
 
   // ── Submit Registrasi ─────────────────────────
   Future<void> _doRegister(Load_provider loader) async {
-    if (_formKey.currentState == null || !_formKey.currentState!.validate())
-      return;
-
-    var errMsg = '';
-    if (nama_pengguna == null || nama_pengguna!.isEmpty)
-      errMsg += 'Nama pengguna tidak boleh kosong.\n';
-    if (nomor_whatsapp == null || nomor_whatsapp!.isEmpty)
-      errMsg += 'Nomor WhatsApp tidak boleh kosong.\n';
-    if (otp == null || otp!.isEmpty) errMsg += 'OTP tidak boleh kosong.\n';
-    if (password == null || password!.isEmpty)
-      errMsg += 'Password tidak boleh kosong.\n';
-    if (konf_password == null || konf_password!.isEmpty)
-      errMsg += 'Konfirmasi password tidak boleh kosong.\n';
-    else if (password != konf_password)
-      errMsg += 'Konfirmasi password harus sama dengan password.\n';
-
-    if (errMsg.isNotEmpty) {
-      _showSnackBar(errMsg.trim(), isSuccess: false);
+    if (_formKey.currentState == null || !_formKey.currentState!.validate()) {
       return;
     }
+    _formKey.currentState!.save();
 
     if (kode_referal == null) kode_referal = '';
 
@@ -200,20 +184,19 @@ class _Register_pageState extends State<Register_page>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: EdgeInsets.all(compact ? 16 : 20),
+                      padding: EdgeInsets.all(compact ? 10 : 14),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(compact ? 20 : 28),
-                        border: Border.all(color: Colors.white24),
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(compact ? 14 : 20),
                       ),
                       child: Image.asset(
                         'assets/img/vertical-logo.png',
-                        width: compact ? 60 : 80,
-                        height: compact ? 60 : 80,
+                        width: compact ? 42 : 60,
+                        height: compact ? 42 : 60,
                         errorBuilder: (_, __, ___) => Icon(
                           TablerIcons.bolt,
                           color: Colors.white,
-                          size: compact ? 48 : 64,
+                          size: compact ? 36 : 48,
                         ),
                       ),
                     ),
