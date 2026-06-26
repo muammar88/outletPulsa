@@ -7,6 +7,6 @@ import { PrismaService } from '../prisma.service';
 @Global()
 @Module({
   providers: [IakService, DigiflazzService, TripayService, PrismaService],
-  exports: [IakService, DigiflazzService, TripayService],
+  exports: [IakService, DigiflazzService, TripayService, PrismaService],
 })
 export class ProvidersModule {}
