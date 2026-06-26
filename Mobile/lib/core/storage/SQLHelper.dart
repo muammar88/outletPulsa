@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'ModelSQL.dart';
+import 'SecureStorageHelper.dart';
 
 class SQLHelper {
   static final SQLHelper _databaseService = SQLHelper._internal();
@@ -54,8 +55,15 @@ class SQLHelper {
   Future<List<ModelSQL>> getDataProfil() async {
     final db = await _databaseService.database;
     var data = await db.rawQuery('SELECT * FROM DataProfil');
+    final secureStorage = SecureStorageHelper();
+    final token = await secureStorage.getToken() ?? '';
+    
     List<ModelSQL> dataProfil =
-        List.generate(data.length, (index) => ModelSQL.fromJson(data[index]));
+        List.generate(data.length, (index) {
+          var item = Map<String, dynamic>.from(data[index]);
+          item['token'] = token;
+          return ModelSQL.fromJson(item);
+        });
     return dataProfil;
   }
 
@@ -68,7 +76,14 @@ class SQLHelper {
       limit: 1, // Memastikan hanya satu data yang diambil
     );
 
-    return result.isNotEmpty ? result.first : null;
+    if (result.isNotEmpty) {
+      final secureStorage = SecureStorageHelper();
+      final token = await secureStorage.getToken() ?? '';
+      var data = Map<String, dynamic>.from(result.first);
+      data['token'] = token;
+      return data;
+    }
+    return null;
   }
 
   Future<bool> isDataExist(String id) async {
@@ -82,6 +97,9 @@ class SQLHelper {
   }
 
   Future<void> insertDataProfil(ModelSQL dataProfil) async {
+    final secureStorage = SecureStorageHelper();
+    await secureStorage.saveToken(dataProfil.token);
+
     final db = await _databaseService.database;
     var data = await db.rawInsert(
         'INSERT OR REPLACE INTO DataProfil(id, kode, username, token) VALUES(?,?,?,?)',
@@ -89,25 +107,31 @@ class SQLHelper {
           dataProfil.id,
           dataProfil.kode,
           dataProfil.username,
-          dataProfil.token,
+          '',
         ]);
     log('inserted $data');
   }
 
   Future<void> editDataProfil(ModelSQL dataProfil) async {
+    final secureStorage = SecureStorageHelper();
+    await secureStorage.saveToken(dataProfil.token);
+
     final db = await _databaseService.database;
     var data = await db.rawUpdate(
         'UPDATE DataProfil SET kode=?, username=?, token=? WHERE id=?',
         [
           dataProfil.kode,
           dataProfil.username,
-          dataProfil.token,
+          '',
           dataProfil.id,
         ]);
     log('updated $data');
   }
 
   Future<void> deleteDataProfil(String id) async {
+    final secureStorage = SecureStorageHelper();
+    await secureStorage.deleteToken();
+
     final db = await _databaseService.database;
     var data = await db.rawDelete('DELETE from DataProfil WHERE id=?', [id]);
     log('deleted $data');
@@ -115,25 +139,14 @@ class SQLHelper {
 
   // Helper untuk DeviceConnected
   Future<String?> getDeviceCode() async {
-    final db = await _databaseService.database;
-    List<Map<String, dynamic>> result = await db.query(
-      'DeviceConnected',
-      where: 'id = ?',
-      whereArgs: ['1'],
-      limit: 1,
-    );
-    if (result.isNotEmpty && result.first['device_code'] != null) {
-      return result.first['device_code'] as String;
-    }
-    return null;
+    final secureStorage = SecureStorageHelper();
+    return await secureStorage.getDeviceCode();
   }
 
   Future<void> saveDeviceCode(String deviceCode) async {
-    final db = await _databaseService.database;
-    await db.rawInsert(
-        'INSERT OR REPLACE INTO DeviceConnected(id, device_code) VALUES(?,?)',
-        ['1', deviceCode]);
-    log('saved device code $deviceCode');
+    final secureStorage = SecureStorageHelper();
+    await secureStorage.saveDeviceCode(deviceCode);
+    log('saved device code securely');
   }
 }
 
