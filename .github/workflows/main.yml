@@ -33,13 +33,13 @@ jobs:
 
           docker push muammar88/outletpulsa-backend:1.0.0
 
-      # - name: Build and push Docker image frontend
-      #   run: |
-      #     docker build \
-      #       --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} \
-      #       -t muammar88/outletpulsa-frontend:1.0.0 ./Frontend
+      - name: Build and push Docker image frontend
+        run: |
+          docker build \
+            --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} \
+            -t muammar88/outletpulsa-frontend:1.0.0 ./Frontend
 
-      #     docker push muammar88/outletpulsa-frontend:1.0.0
+          docker push muammar88/outletpulsa-frontend:1.0.0
 
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v1

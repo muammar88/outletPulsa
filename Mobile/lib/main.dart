@@ -6,7 +6,6 @@ import 'package:outletpulsa/shared/providers/BerandaProvider.dart';
 import 'package:outletpulsa/shared/providers/InfoAddDepositProvider.dart';
 import 'package:outletpulsa/shared/providers/RegistrasiProvider.dart';
 import 'package:provider/provider.dart';
-
 import 'package:outletpulsa/module/public/splash_screen.dart';
 
 import 'module/member/main.dart';

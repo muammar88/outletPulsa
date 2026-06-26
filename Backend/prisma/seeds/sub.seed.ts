@@ -8,8 +8,10 @@ export default async function subSeed(prisma: PrismaClient) {
 
   // Ambil semua tab dari TabAdmin
   const tabs = await prisma.tabMenu.findMany({
-    select: { id: true },
+    select: { id: true, path: true },
   });
+
+  const getTabId = (path: string) => tabs.find(t => t.path === path)?.id;
 
   if (tabs.length === 0) return;
 
@@ -27,7 +29,7 @@ export default async function subSeed(prisma: PrismaClient) {
     { menu_name: 'Master Data', name: 'Operator', icon: 'IconAntenna', path: 'operator', tab: JSON.stringify([{ id: tabs[8].id } ]) },
     { menu_name: 'Keuangan', name: 'Keuangan', path: 'keuangan', icon: 'IconWallet', tab: JSON.stringify([{ id: tabs[28].id}]) },
     { menu_name: 'Keuangan', name: 'Laporan', path: 'laporan', icon: 'IconReport', tab: null },
-    { menu_name: 'Pengaturan', name: 'Pengaturan Umum', icon: 'IconSettings', path: 'pengaturan', tab: JSON.stringify([{ id: tabs[4].id } ]) },
+    { menu_name: 'Pengaturan', name: 'Pengaturan Umum', icon: 'IconSettings', path: 'pengaturan', tab: JSON.stringify([{ id: tabs[4].id }, { id: getTabId('daftar_device') }].filter(t => t.id)) },
     { menu_name: 'Pengaturan', name: 'Daftar Grup', icon: 'IconUsersGroup', path: 'daftar_grup', tab: JSON.stringify([{ id: tabs[11].id } ]) },
     { menu_name: 'Pengaturan', name: 'Daftar Pengguna', icon: 'IconUserShield', path: 'daftar_pengguna', tab: JSON.stringify([{ id: tabs[12].id } ]) },
     { menu_name: 'Pengaturan', name: 'Log', icon: 'IconHistory', path: 'log', tab: JSON.stringify([{ id: tabs[10].id } ]) },

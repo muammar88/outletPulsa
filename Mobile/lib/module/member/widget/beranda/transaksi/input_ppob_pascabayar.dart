@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_native_contact_picker/flutter_native_contact_picker.dart';
+import 'package:flutter_native_contact_picker/model/contact.dart';
 import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/shared/providers/TransactionProvider.dart';
 import 'package:outletpulsa/shared/providers/loadProvider.dart';
@@ -29,6 +31,8 @@ class _Input_ppob_pascabayarState extends State<Input_ppob_pascabayar> with Sing
   final config = ConfigApp();
   final _formKey = GlobalKey<FormState>();
   String? nomor_tujuan;
+  final TextEditingController _nomorController = TextEditingController();
+  final FlutterNativeContactPicker _contactPicker = FlutterNativeContactPicker();
 
   static const double _kWideBreakpoint = 700.0;
   static const Color _kPrimary = Color(0xFF0F1F6E);
@@ -58,6 +62,7 @@ class _Input_ppob_pascabayarState extends State<Input_ppob_pascabayar> with Sing
   @override
   void dispose() {
     _animController.dispose();
+    _nomorController.dispose();
     super.dispose();
   }
 
@@ -255,6 +260,7 @@ class _Input_ppob_pascabayarState extends State<Input_ppob_pascabayar> with Sing
             ),
             const SizedBox(height: 12),
             TextFormField(
+              controller: _nomorController,
               onChanged: (text) => setState(() => nomor_tujuan = text),
               onSaved: (val) => nomor_tujuan = val!,
               enableSuggestions: false,
@@ -292,6 +298,24 @@ class _Input_ppob_pascabayarState extends State<Input_ppob_pascabayar> with Sing
                   ),
                 ),
                 prefixIconConstraints: const BoxConstraints(minWidth: 40),
+                suffixIcon: IconButton(
+                  icon: const Icon(TablerIcons.address_book, color: _kPrimary),
+                  onPressed: () async {
+                    Contact? contact = await _contactPicker.selectContact();
+                    if (contact != null && contact.phoneNumbers != null && contact.phoneNumbers!.isNotEmpty) {
+                      String phone = contact.phoneNumbers!.first.replaceAll(RegExp(r'[^\d+]'), '');
+                      if (phone.startsWith('+62')) {
+                        phone = '0${phone.substring(3)}';
+                      } else if (phone.startsWith('62')) {
+                        phone = '0${phone.substring(2)}';
+                      }
+                      setState(() {
+                        nomor_tujuan = phone;
+                        _nomorController.text = phone;
+                      });
+                    }
+                  },
+                ),
               ),
             ),
             

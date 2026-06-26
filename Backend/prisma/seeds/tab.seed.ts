@@ -234,6 +234,14 @@ export default async function tabSeed(prisma: PrismaClient) {
         desc: 'Data Laba Diambil',
         created_at: new Date(),
         updated_at: new Date(), 
+      },
+      {
+        name: 'Daftar Device',
+        icon: 'IconDeviceMobile',
+        path: 'daftar_device',
+        desc: 'Daftar Device',
+        created_at: new Date(),
+        updated_at: new Date(),
       }
     ],
     skipDuplicates: true,
