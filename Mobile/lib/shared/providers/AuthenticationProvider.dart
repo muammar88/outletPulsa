@@ -21,7 +21,7 @@ class Authentication_provider with ChangeNotifier {
     notifyListeners();
   }
 
-  void logOut() async {
+  Future<void> logOut() async {
     final db = SQLHelper();
     await db.deleteDataProfil('1');
     _isLogin = false;
@@ -43,14 +43,14 @@ class Authentication_provider with ChangeNotifier {
       if (e.error == true) {
         _isLogin = false;
         // menghapus data di database jika error pada proses login
-        db.deleteDataProfil('1');
+        await db.deleteDataProfil('1');
         notifyListeners();
         return new Model_void.map({'error': true, 'error_msg': e.errorMsg});
       } else {
         // menyimpan data login ke dalam database (tanpa password)
         var dataProfil = ModelSQL(
             id: '1', kode: e.kode!, username: nomor_whatsapp, token: e.token!);
-        db.insertDataProfil(dataProfil);
+        await db.insertDataProfil(dataProfil);
         _isLogin = true;
         notifyListeners();
         return new Model_void.map({'error': false, 'error_msg': e.errorMsg});

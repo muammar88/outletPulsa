@@ -278,9 +278,10 @@ class _Akun_tabState extends State<Akun_tab> {
             // ── Logout ─────────────────────────────────────────────
             const SizedBox(height: 24),
             GestureDetector(
-              onTap: () {
-                Provider.of<Authentication_provider>(context, listen: false)
+              onTap: () async {
+                await Provider.of<Authentication_provider>(context, listen: false)
                     .logOut();
+                if (!context.mounted) return;
                 Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(builder: (context) => const SplashScreen()),
                     (route) => false);
