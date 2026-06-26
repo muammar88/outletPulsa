@@ -32,5 +32,6 @@ export const tabComponents: Record<string, any> = {
   daftar_bank: defineAsyncComponent(() => import('@/modules/Administrator/DaftarBank/DaftarBank.vue')),
   daftar_bank_transfer: defineAsyncComponent(() => import('@/modules/Administrator/DaftarBankTransfer/DaftarBankTransfer.vue')),
   laba_diambil: defineAsyncComponent(() => import('@/modules/Administrator/LabaDiambil/LabaDiambil.vue')),
+  daftar_device: defineAsyncComponent(() => import('@/modules/Administrator/DaftarDevice/DaftarDevice.vue')),
   notFound: defineAsyncComponent(() => import('@/views/errors/NotFoundView.vue')),
 };

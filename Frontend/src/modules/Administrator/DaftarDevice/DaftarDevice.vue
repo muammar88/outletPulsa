@@ -129,49 +129,35 @@ fetchData();
 </script>
 
 <template>
-  <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-    <!-- Header Page -->
-    <div class="sm:flex sm:justify-between sm:items-center mb-8">
-      <div class="mb-4 sm:mb-0">
-        <h1 class="text-2xl md:text-3xl text-gray-800 font-bold tracking-tight">Daftar Device</h1>
-        <!-- Breadcrumbs -->
-        <nav class="flex mt-1.5" aria-label="Breadcrumb">
-          <ol class="inline-flex items-center space-x-1 md:space-x-2">
-            <li class="inline-flex items-center">
-              <a href="#" class="text-gray-500 hover:text-primary-600">Administrator</a>
-            </li>
-            <li>
-              <div class="flex items-center">
-                <span class="text-gray-400 mx-2">/</span>
-                <span class="text-gray-800 font-medium">Daftar Device</span>
-              </div>
-            </li>
-          </ol>
-        </nav>
-      </div>
-    </div>
-
-    <!-- Filter & Table Card -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 mb-8 overflow-hidden">
-      <!-- Card Header -->
-      <div class="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gray-50/50">
-        <div class="flex-1 max-w-md">
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-              </svg>
-            </div>
-            <input
-              type="text"
-              v-model="searchQuery"
-              @keyup.enter="fetchData(searchQuery)"
-              placeholder="Cari nama device, merk, atau pemilik..."
-              class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-shadow"
-            />
-          </div>
+  <div>
+    <div class="px-8 py-6">
+      <!-- Header Page -->
+      <div class="mb-10 flex items-center justify-between">
+        <div>
+          <h1 class="text-3xl font-black text-[#0f2155] dark:text-white mb-2 uppercase tracking-tight font-semibold">
+          Daftar Device
+          </h1>
+          <p class="text-xs text-gray-400 font-medium uppercase tracking-[0.2em]">
+          Manajemen Data Device
+          </p>
         </div>
-        <div class="flex items-center space-x-3">
+      </div>
+
+      <!-- Table Section -->
+      <BaseTable
+        :columns="tableColumns"
+        :data="dataDevice"
+        :loading="isLoading"
+        :pagination="paginationProps"
+        search-placeholder="Cari nama device, merk, atau pemilik..."
+        :show-add="false"
+        :show-numbering="false"
+        :show-actions="false"
+        @search="fetchData"
+        @page-change="currentPage = $event"
+        @fetch-data="fetchData"
+      >
+        <template #custom-actions>
           <button
             @click="fetchData()"
             class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
@@ -181,18 +167,7 @@ fetchData();
             </svg>
             Refresh
           </button>
-        </div>
-      </div>
-
-      <!-- Table Section -->
-      <BaseTable
-        :columns="tableColumns"
-        :data="dataDevice"
-        :isLoading="isLoading"
-        :pagination="paginationProps"
-        @page-change="currentPage = $event"
-        @fetch-data="fetchData"
-      >
+        </template>
         <template #cell-device_name="{ row }">
           <div class="flex items-center">
             <div class="flex-shrink-0 h-10 w-10 bg-indigo-50 rounded-lg flex items-center justify-center border border-indigo-100">
