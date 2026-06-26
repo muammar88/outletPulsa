@@ -23,7 +23,7 @@ const tableColumns = [
   {
     key: 'action',
     label: 'Aksi',
-    headerClass: 'text-center w-[10%]',
+    headerClass: 'text-center w-[20%]',
     cellClass: 'text-center',
   },
   {
@@ -35,7 +35,7 @@ const tableColumns = [
   {
     key: 'description',
     label: 'Deskripsi',
-    headerClass: 'text-left w-[45%] pr-4',
+    headerClass: 'text-left w-[35%] pr-4',
     cellClass: 'text-left pr-4',
   },
 ];
