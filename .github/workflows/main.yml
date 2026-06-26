@@ -25,21 +25,21 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USER }}
           password: ${{ secrets.DOCKER_HUB_PASS }}
 
-      - name: Build and push Docker image backend
-        run: |
-          docker build \
-            --build-arg DATABASE_URL="postgresql://user:pass@localhost:5432/outletpulsa_db" \
-            -t muammar88/outletpulsa-backend:1.0.0 ./Backend
+      # - name: Build and push Docker image backend
+      #   run: |
+      #     docker build \
+      #       --build-arg DATABASE_URL="postgresql://user:pass@localhost:5432/outletpulsa_db" \
+      #       -t muammar88/outletpulsa-backend:1.0.0 ./Backend
 
-          docker push muammar88/outletpulsa-backend:1.0.0
+      #     docker push muammar88/outletpulsa-backend:1.0.0
 
-      - name: Build and push Docker image frontend
-        run: |
-          docker build \
-            --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} \
-            -t muammar88/outletpulsa-frontend:1.0.0 ./Frontend
+      # - name: Build and push Docker image frontend
+      #   run: |
+      #     docker build \
+      #       --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} \
+      #       -t muammar88/outletpulsa-frontend:1.0.0 ./Frontend
 
-          docker push muammar88/outletpulsa-frontend:1.0.0
+      #     docker push muammar88/outletpulsa-frontend:1.0.0
 
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v1
@@ -62,9 +62,9 @@ jobs:
             echo "🗑️ 3. Menghapus image outletpulsa-backend..."
             docker rmi muammar88/outletpulsa-backend:1.0.0 || true
 
-            echo "📥 Pull latest image"
-            docker pull muammar88/outletpulsa-frontend:1.0.0
-            docker pull muammar88/outletpulsa-backend:1.0.0
+            # echo "📥 Pull latest image"
+            # docker pull muammar88/outletpulsa-frontend:1.0.0
+            # docker pull muammar88/outletpulsa-backend:1.0.0
 
 
 
@@ -94,8 +94,8 @@ jobs:
             # echo "🎯 Run Status Laba Seeder (Transaction)"
             # docker exec -i outletpulsa_backend npx ts-node prisma/seeds/20260623-add-status-laba-transaction.seed.ts
 
-            # echo "🔄 Run Sync Menu Seed (Menyinkronkan Menu, SubMenu, dan Tab)"
-            # docker exec -i outletpulsa_backend npx ts-node prisma/seeds/sync_menu.seed.ts
+            echo "🔄 Run Sync Menu Seed (Menyinkronkan Menu, SubMenu, dan Tab)"
+            docker exec -i outletpulsa_backend npx ts-node prisma/seeds/sync_menu.seed.ts
 
             # echo "🔍 Checking Database Schema vs Prisma Schema..."
             # docker exec -i outletpulsa_backend npx ts-node prisma/execution/check_schema_diff.ts
