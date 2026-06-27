@@ -31,19 +31,23 @@ class Daftar_operator extends StatefulWidget {
 
 class _Daftar_operatorState extends State<Daftar_operator> {
   final config = ConfigApp();
-  bool loadData = false;
 
   static const Color _kPrimary = Color(0xFF0F1F6E);
   static const Color _kPrimaryLight = Color(0xFF1A3DB5);
 
+  bool _isFetching = false;
+
   @override
-  void didChangeDependencies() async {
-    if (loadData == false) {
-      await Provider.of<Transaction_provider>(context, listen: false)
-          .getDaftarOperator(widget.nomor_tujuan, widget.path, widget.prefix);
-      loadData = true;
-    }
-    super.didChangeDependencies();
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !_isFetching) {
+        _isFetching = true;
+        final provider = Provider.of<Transaction_provider>(context, listen: false);
+        provider.resetListOperator();
+        provider.getDaftarOperator(widget.nomor_tujuan, widget.path, widget.prefix);
+      }
+    });
   }
 
   Widget _buildBrandPanel({bool compact = false}) {
@@ -142,7 +146,7 @@ class _Daftar_operatorState extends State<Daftar_operator> {
                     },
                   )
                 : trans.list_operator!.length == 0
-                    ? NotfoundWidget(config: config, label: "Daftar Paket Data")
+                    ? NotfoundWidget(config: config, label: "Daftar Operator Kosong")
                     : ListView.builder(
                         physics: const BouncingScrollPhysics(),
                         padding: const EdgeInsets.symmetric(

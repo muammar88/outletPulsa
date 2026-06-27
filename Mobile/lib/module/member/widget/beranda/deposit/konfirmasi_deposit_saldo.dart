@@ -49,8 +49,9 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> wit
   @override
   void didChangeDependencies() async {
     if (loadData == false) {
-      await Provider.of<Konfirmasi_provider>(context, listen: false).getInfoKonfirmasi();
       loadData = true;
+
+      await Provider.of<Konfirmasi_provider>(context, listen: false).getInfoKonfirmasi();
       update = true;
     }
     if (update == true) {

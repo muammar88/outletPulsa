@@ -35,9 +35,10 @@ class _Daftar_kategoriState extends State<Daftar_kategori> {
   @override
   void didChangeDependencies() async {
     if (loadData == false) {
+      loadData = true;
+
       await Provider.of<Transaction_provider>(context, listen: false)
           .getDaftarKategori(widget.path);
-      loadData = true;
     }
     super.didChangeDependencies();
   }

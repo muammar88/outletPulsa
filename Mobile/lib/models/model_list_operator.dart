@@ -15,6 +15,17 @@ class Model_list_operator {
     }
     _errorMsg = obj['message'] ?? obj['error_msg'];
     var data = obj['data'] ?? obj;
-    _list_operator = data['list_operator'];
+
+    // Server returns 'list' key (not 'list_operator')
+    // Also handles empty object {} from server when no data found
+    var rawList = data['list'] ?? data['list_operator'];
+    if (rawList == null || (rawList is Map && rawList.isEmpty) || (rawList is List && rawList.isEmpty)) {
+      // Set to empty map (not null) so UI shows "not found" instead of infinite skeleton
+      _list_operator = {};
+    } else if (rawList is Map) {
+      _list_operator = Map<String, dynamic>.from(rawList);
+    } else {
+      _list_operator = {};
+    }
   }
 }

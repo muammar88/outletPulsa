@@ -62,9 +62,10 @@ class _Daftar_produkState extends State<Daftar_produk> {
   @override
   void didChangeDependencies() async {
     if (loadData == false) {
+      loadData = true;
+
       await Provider.of<Transaction_provider>(context, listen: false)
           .getDaftarProduk(operator: widget.path);
-      loadData = true;
     }
     super.didChangeDependencies();
   }

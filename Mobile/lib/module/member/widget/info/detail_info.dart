@@ -30,11 +30,12 @@ class _Detail_infoState extends State<Detail_info> {
   @override
   void didChangeDependencies() async {
     if (loadData == false) {
+      loadData = true;
+
       await Provider.of<Update_status_baca_provider>(context, listen: false)
           .updateStatusBaca(widget.id);
       await Provider.of<Info_belum_baca_provider>(context, listen: false)
           .getInfoBelumBaca();
-      loadData = true;
     }
     super.didChangeDependencies();
   }

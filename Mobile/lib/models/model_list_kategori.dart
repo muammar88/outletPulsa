@@ -15,16 +15,24 @@ class Model_list_kategori {
     }
     _errorMsg = obj['message'] ?? obj['error_msg'];
     var data = obj['data'] ?? obj;
-    
-    if (data['list_kategori'] is List) {
-      Map<String, dynamic> convertedMap = {};
-      List<dynamic> list = data['list_kategori'];
-      for (int i = 0; i < list.length; i++) {
-        convertedMap[i.toString()] = list[i];
+
+    // Server may use 'list_kategori' or 'list' as the key
+    var rawList = data['list_kategori'] ?? data['list'];
+
+    if (rawList == null || (rawList is Map && rawList.isEmpty) || (rawList is List && rawList.isEmpty)) {
+      // Empty map (not null) so UI shows "not found" instead of infinite skeleton
+      _list_kategori = {};
+    } else if (rawList is List) {
+      // Convert List to indexed Map
+      Map<String, dynamic> converted = {};
+      for (int i = 0; i < rawList.length; i++) {
+        converted[i.toString()] = rawList[i];
       }
-      _list_kategori = convertedMap;
+      _list_kategori = converted;
+    } else if (rawList is Map) {
+      _list_kategori = Map<String, dynamic>.from(rawList);
     } else {
-      _list_kategori = data['list_kategori'];
+      _list_kategori = {};
     }
   }
 }

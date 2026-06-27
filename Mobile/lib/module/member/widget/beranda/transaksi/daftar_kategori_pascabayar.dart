@@ -38,9 +38,10 @@ class _Daftar_kategori_pascabayarState
   @override
   void didChangeDependencies() async {
     if (loadData == false) {
+      loadData = true;
+
       await Provider.of<Transaction_provider>(context, listen: false)
           .getDaftarKategoriPascabayar(widget.path);
-      loadData = true;
     }
     super.didChangeDependencies();
   }

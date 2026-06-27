@@ -28,10 +28,11 @@ class _Info_keagenanState extends State<Info_keagenan> {
   @override
   void didChangeDependencies() async {
     if (loadData == false) {
+      loadData = true;
+
       final agenProv = Provider.of<Agen_provider>(context, listen: false);
       // Panggil API Statistik
       await agenProv.getStatistikAgen();
-      loadData = true;
     }
     super.didChangeDependencies();
   }

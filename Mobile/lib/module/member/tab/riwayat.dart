@@ -242,6 +242,8 @@ class _Sub_riwayat_depositState extends State<Sub_riwayat_deposit>
     if (loadData == false) {
       loadData = true;
 
+      loadData = true;
+
       // Initial fetch
       final riwayat =
           Provider.of<Riwayat_deposit_provider>(context, listen: false);
@@ -554,7 +556,6 @@ class _Sub_riwayat_pascabayarState extends State<Sub_riwayat_pascabayar> {
   void didChangeDependencies() async {
     super.didChangeDependencies();
     if (loadData == false) {
-      loadData = true;
       final riwayat =
           Provider.of<Riwayat_pascabayar_provider>(context, listen: false);
       await riwayat.getRiwayatPascabayar();
@@ -846,7 +847,9 @@ class _Sub_riwayat_prabayarState extends State<Sub_riwayat_prabayar> {
   void didChangeDependencies() async {
     super.didChangeDependencies();
     if (loadData == false) {
-      loadData = true;
+     loadData = true;
+
+     
       final riwayat =
           Provider.of<Riwayat_prabayar_provider>(context, listen: false);
       await riwayat.getRiwayatPrabayar();

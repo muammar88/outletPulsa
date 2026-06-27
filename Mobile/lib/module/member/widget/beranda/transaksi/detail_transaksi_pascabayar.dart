@@ -56,11 +56,12 @@ class _Detail_transaksi_pascabayarState extends State<Detail_transaksi_pascabaya
     final details = Provider.of<Detail_pascabayar_provider>(context, listen: false);
     
     if (loadData == false) {
+      loadData = true;
+
       Future.delayed(Duration.zero, () => load.isLoad = true);
       await details.detailTransaksiPascabayar(widget.kodeTrans);
       await Provider.of<Riwayat_pascabayar_provider>(context, listen: false).getRiwayatPascabayar();
       await Provider.of<Beranda_provider>(context, listen: false).get_data_beranda();
-      loadData = true;
       load.isLoad = false;
     }
     super.didChangeDependencies();

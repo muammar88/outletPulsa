@@ -55,11 +55,12 @@ class _Detail_transaksiState extends State<Detail_transaksi> with SingleTickerPr
     final details = Provider.of<Detail_provider>(context, listen: false);
     
     if (loadData == false) {
+      loadData = true;
+
       Future.delayed(Duration.zero, () => load.isLoad = true);
       await details.detailTransaksi(widget.kodeTrans);
       await Provider.of<Riwayat_prabayar_provider>(context, listen: false).getRiwayatPrabayar();
       await Provider.of<Beranda_provider>(context, listen: false).get_data_beranda();
-      loadData = true;
       load.isLoad = false;
     }
     super.didChangeDependencies();

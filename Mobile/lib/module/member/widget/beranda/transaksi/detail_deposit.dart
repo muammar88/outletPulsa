@@ -49,8 +49,9 @@ class _Detail_depositState extends State<Detail_deposit> with SingleTickerProvid
   @override
   void didChangeDependencies() async {
     if (loadData == false) {
-      await Provider.of<Deposit_provider>(context).getDetailDeposit(widget.id);
       loadData = true;
+
+      await Provider.of<Deposit_provider>(context).getDetailDeposit(widget.id);
     }
     super.didChangeDependencies();
   }

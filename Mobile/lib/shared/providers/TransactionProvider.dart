@@ -34,6 +34,11 @@ class Transaction_provider with ChangeNotifier {
   bool get hasNextPage => _hasNextPage;
   bool get isLoadingNextPage => _isLoadingNextPage;
 
+  void resetListOperator() {
+    _list_operator = null;
+    notifyListeners();
+  }
+
   Future<void> getPrefix(String nomorTujuan, String kode) async {
     await Rest_transaction()
         .getPrefix(nomorTujuan, kode)
@@ -50,11 +55,15 @@ class Transaction_provider with ChangeNotifier {
     await Rest_transaction()
         .getDaftarOperator(nomorTujuan, path, prefix)
         .then((Model_list_operator e) async {
-      if (e.error == false) {
-        _list_operator = e.list_operator;
-      }
+      // Always assign list (even if empty) so UI doesn't stay in null/skeleton loop
+      _list_operator = e.list_operator ?? {};
       _error = e.error;
       _errorMsg = e.errorMsg;
+      notifyListeners();
+    }).catchError((err) {
+      _list_operator = {};
+      _error = true;
+      _errorMsg = err.toString().replaceAll('Exception: ', '');
       notifyListeners();
     });
   }
@@ -132,12 +141,15 @@ class Transaction_provider with ChangeNotifier {
     await Rest_transaction()
         .getDaftarProdukData(id, kode, name, nomor_tujuan)
         .then((Model_list_produk e) async {
-      if (e.error == false) {
-        _list_produk = e.list_produk;
-      }
+      // Always assign (even if empty) so UI exits skeleton loop
+      _list_produk = e.list_produk ?? {};
       _error = e.error;
       _errorMsg = e.errorMsg;
-
+      notifyListeners();
+    }).catchError((err) {
+      _list_produk = {};
+      _error = true;
+      _errorMsg = err.toString().replaceAll('Exception: ', '');
       notifyListeners();
     });
   }
@@ -146,11 +158,15 @@ class Transaction_provider with ChangeNotifier {
     await Rest_transaction()
         .getDaftarKategori(path)
         .then((Model_list_kategori e) async {
-      if (e.error == false) {
-        _list_kategori = e.list_kategori;
-      }
+      // Always assign (even if empty) so UI exits skeleton loop
+      _list_kategori = e.list_kategori ?? {};
       _error = e.error;
       _errorMsg = e.errorMsg;
+      notifyListeners();
+    }).catchError((err) {
+      _list_kategori = {};
+      _error = true;
+      _errorMsg = err.toString().replaceAll('Exception: ', '');
       notifyListeners();
     });
   }
@@ -159,11 +175,15 @@ class Transaction_provider with ChangeNotifier {
     await Rest_transaction()
         .getDaftarKategoriPascabayar(path)
         .then((Model_list_kategori e) async {
-      if (e.error == false) {
-        _list_kategori_pascabayar = e.list_kategori;
-      }
+      // Always assign (even if empty) so UI exits skeleton loop
+      _list_kategori_pascabayar = e.list_kategori ?? {};
       _error = e.error;
       _errorMsg = e.errorMsg;
+      notifyListeners();
+    }).catchError((err) {
+      _list_kategori_pascabayar = {};
+      _error = true;
+      _errorMsg = err.toString().replaceAll('Exception: ', '');
       notifyListeners();
     });
   }

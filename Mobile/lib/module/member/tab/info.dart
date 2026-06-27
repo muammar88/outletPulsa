@@ -116,8 +116,9 @@ class _Sub_tab_sudah_bacaState extends State<Sub_tab_sudah_baca> {
   @override
   void didChangeDependencies() async {
     if (loadData == false) {
-      await Provider.of<Info_sudah_baca_provider>(context).getInfoSudahBaca();
       loadData = true;
+
+      await Provider.of<Info_sudah_baca_provider>(context).getInfoSudahBaca();
     }
     super.didChangeDependencies();
   }
@@ -180,8 +181,9 @@ class _Sub_tab_belum_bacaState extends State<Sub_tab_belum_baca> {
   @override
   void didChangeDependencies() async {
     if (loadData == false) {
-      await Provider.of<Info_belum_baca_provider>(context).getInfoBelumBaca();
       loadData = true;
+
+      await Provider.of<Info_belum_baca_provider>(context).getInfoBelumBaca();
     }
     super.didChangeDependencies();
   }

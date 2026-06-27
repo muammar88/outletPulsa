@@ -25,8 +25,9 @@ class _Daftar_reseller_agenState extends State<Daftar_reseller_agen> {
   @override
   void didChangeDependencies() async {
     if (loadData == false) {
-      await Provider.of<Agen_provider>(context, listen: false).getDaftarAgen();
       loadData = true;
+
+      await Provider.of<Agen_provider>(context, listen: false).getDaftarAgen();
     }
     super.didChangeDependencies();
   }
