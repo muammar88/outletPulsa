@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Delete,
   Param,
   Query,
   UseGuards,
@@ -30,6 +31,16 @@ export class DaftarDeviceController {
     return {
       success: true,
       message: 'Berhasil mengambil detail device.',
+      data,
+    };
+  }
+
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    const data = await this.daftarDeviceService.remove(+id);
+    return {
+      success: true,
+      message: 'Berhasil menghapus device.',
       data,
     };
   }

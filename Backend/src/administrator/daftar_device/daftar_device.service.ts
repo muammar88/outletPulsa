@@ -110,4 +110,20 @@ export class DaftarDeviceService {
       status: isOnline ? 'Online' : 'Offline',
     };
   }
+
+  async remove(id: number) {
+    const device = await this.prisma.deviceConnected.findUnique({
+      where: { id },
+    });
+
+    if (!device) {
+      throw new NotFoundException(`Device with ID ${id} not found`);
+    }
+
+    await this.prisma.deviceConnected.delete({
+      where: { id },
+    });
+
+    return { message: `Device with ID ${id} successfully deleted` };
+  }
 }
