@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { usePagination } from '@/composables/usePaginations';
+import { useNotification } from '@/composables/useNotification';
+import { useConfirmation } from '@/composables/useConfirmation';
 import { deviceService, type Device } from '@/service/administrator/device';
 
 // Table
@@ -9,9 +11,14 @@ import LightButton from '@/components/Button/LightButton.vue';
 
 // Modal
 import DaftarDeviceDetailModal from '@/modules/Administrator/DaftarDevice/components/DaftarDeviceDetailModal.vue';
+import Confirmation from '@/components/Modal/Confirmation.vue';
+
+// Notification
+import Notification from '@/components/Modal/Notification.vue';
 
 // Icon
 import IconEye from '@/components/Icons/IconEye.vue';
+import IconTrash from '@/components/Icons/IconTrash.vue';
 
 // Definisi Kolom Tabel
 const tableColumns = [
@@ -67,6 +74,17 @@ const searchQuery = ref('');
 const showDetailModal = ref(false);
 const selectedDevice = ref<Device | null>(null);
 
+// Composable Setup
+const {
+  showNotification,
+  notificationMessage,
+  notificationType,
+  displayNotification,
+} = useNotification();
+
+const { showConfirmDialog, confirmTitle, confirmMessage, displayConfirmation, confirm, cancel } =
+  useConfirmation();
+
 // Inisialisasi Composable Pagination
 const { currentPage, totalPages, pages, totalRow, pageNow, perPage } = usePagination(
   () => fetchData(),
@@ -111,6 +129,23 @@ const handleDetail = async (row: Device) => {
   } catch (error) {
     console.error('Gagal mengambil detail device:', error);
   }
+};
+
+const handleDelete = (row: Device) => {
+  displayConfirmation(
+    'Konfirmasi Hapus',
+    `Apakah Anda yakin ingin menghapus device <strong>${row.device_name || 'Tidak Bernama'}</strong>?`,
+    async () => {
+      try {
+        await deviceService.delete(row.id!);
+        displayNotification('Device berhasil dihapus', 'success');
+        fetchData();
+      } catch (error) {
+        displayNotification('Gagal menghapus device', 'error');
+        console.error('Error saat menghapus device:', error);
+      }
+    },
+  );
 };
 
 const formatDate = (dateString?: string) => {
@@ -223,6 +258,9 @@ fetchData();
             <LightButton @click="handleDetail(row)" class="p-1.5" title="Detail">
               <IconEye class="w-4 h-4 text-blue-600" />
             </LightButton>
+            <LightButton @click="handleDelete(row)" class="p-1.5" title="Hapus">
+              <IconTrash class="w-4 h-4 text-red-600" />
+            </LightButton>
           </div>
         </template>
       </BaseTable>
@@ -233,6 +271,21 @@ fetchData();
       :show="showDetailModal"
       :device="selectedDevice"
       @close="showDetailModal = false"
+    />
+
+    <Confirmation
+      :show-confirm-dialog="showConfirmDialog"
+      :confirm-title="confirmTitle"
+      :confirm-message="confirmMessage"
+      @cancel="cancel"
+      @confirm="confirm"
+    />
+
+    <Notification
+      :show="showNotification"
+      :type="notificationType"
+      :message="notificationMessage"
+      @close="showNotification = false"
     />
   </div>
 </template>

@@ -31,4 +31,8 @@ export const deviceService = {
   getById: async (id: number) => {
     return await api.get(`/administrator/device/${id}`);
   },
+
+  delete: async (id: number) => {
+    return await api.delete(`/administrator/device/${id}`);
+  },
 };
