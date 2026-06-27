@@ -4,6 +4,11 @@ const props = defineProps<{
   confirmTitle: string
   confirmMessage: string
 }>()
+
+const emit = defineEmits<{
+  (e: 'cancel'): void
+  (e: 'confirm'): void
+}>()
 </script>
 
 <template>
@@ -70,7 +75,20 @@ const props = defineProps<{
 
         <!-- Footer -->
         <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3">
-          <slot />
+          <slot>
+            <button
+              @click="emit('cancel')"
+              class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+            >
+              Batal
+            </button>
+            <button
+              @click="emit('confirm')"
+              class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none"
+            >
+              Ya
+            </button>
+          </slot>
         </div>
       </div>
     </div>

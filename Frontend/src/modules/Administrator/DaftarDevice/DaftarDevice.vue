@@ -277,9 +277,20 @@ fetchData();
       :show-confirm-dialog="showConfirmDialog"
       :confirm-title="confirmTitle"
       :confirm-message="confirmMessage"
-      @cancel="cancel"
-      @confirm="confirm"
-    />
+    >
+      <button
+        @click="cancel"
+        class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none"
+      >
+        Batal
+      </button>
+      <button
+        @click="confirm"
+        class="rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none"
+      >
+        Hapus
+      </button>
+    </Confirmation>
 
     <Notification
       :show="showNotification"
