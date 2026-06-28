@@ -22,6 +22,8 @@ class SecureStorageHelper {
   bool _isTokenCached = false;
   bool _isDeviceCodeCached = false;
 
+  // ─── TOKEN ────────────────────────────────────────────────────────────────
+
   Future<void> saveToken(String token) async {
     try {
       await _storage.write(key: _keyToken, value: token);
@@ -29,7 +31,8 @@ class SecureStorageHelper {
       _isTokenCached = true;
     } catch (e) {
       debugPrint('SecureStorage Error saveToken: $e');
-      await deleteAll();
+      // Hanya hapus token, JANGAN hapus device_code
+      await _deleteTokenOnly();
     }
   }
 
@@ -41,21 +44,28 @@ class SecureStorageHelper {
       return _cachedToken;
     } catch (e) {
       debugPrint('SecureStorage Error getToken: $e');
-      await deleteAll();
+      // Hanya hapus token, JANGAN hapus device_code
+      await _deleteTokenOnly();
       return null;
     }
   }
 
   Future<void> deleteToken() async {
+    await _deleteTokenOnly();
+  }
+
+  /// Internal: hapus token saja tanpa menyentuh device_code
+  Future<void> _deleteTokenOnly() async {
     try {
       await _storage.delete(key: _keyToken);
-      _cachedToken = null;
-      _isTokenCached = true;
     } catch (e) {
-      debugPrint('SecureStorage Error deleteToken: $e');
-      await deleteAll();
+      debugPrint('SecureStorage Error _deleteTokenOnly: $e');
     }
+    _cachedToken = null;
+    _isTokenCached = true;
   }
+
+  // ─── DEVICE CODE ──────────────────────────────────────────────────────────
 
   Future<void> saveDeviceCode(String deviceCode) async {
     try {
@@ -64,7 +74,8 @@ class SecureStorageHelper {
       _isDeviceCodeCached = true;
     } catch (e) {
       debugPrint('SecureStorage Error saveDeviceCode: $e');
-      await deleteAll();
+      // Hanya hapus device_code, JANGAN hapus token
+      await _deleteDeviceCodeOnly();
     }
   }
 
@@ -76,11 +87,31 @@ class SecureStorageHelper {
       return _cachedDeviceCode;
     } catch (e) {
       debugPrint('SecureStorage Error getDeviceCode: $e');
-      await deleteAll();
+      // Hanya hapus device_code, JANGAN hapus token
+      await _deleteDeviceCodeOnly();
       return null;
     }
   }
 
+  Future<void> deleteDeviceCode() async {
+    await _deleteDeviceCodeOnly();
+  }
+
+  /// Internal: hapus device_code saja tanpa menyentuh token
+  Future<void> _deleteDeviceCodeOnly() async {
+    try {
+      await _storage.delete(key: _keyDeviceCode);
+    } catch (e) {
+      debugPrint('SecureStorage Error _deleteDeviceCodeOnly: $e');
+    }
+    _cachedDeviceCode = null;
+    _isDeviceCodeCached = true;
+  }
+
+  // ─── DELETE ALL (hanya untuk logout total / uninstall logic) ──────────────
+
+  /// Hapus semua storage. Gunakan hanya saat logout total,
+  /// JANGAN panggil dari error handler individual.
   Future<void> deleteAll() async {
     try {
       await _storage.deleteAll();

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/shared/providers/TransactionProvider.dart';
+import 'package:outletpulsa/shared/widgets/ErrorStateWidget.dart';
 import 'package:outletpulsa/shared/widgets/NotFound.dart';
 import 'package:outletpulsa/shared/widgets/skeletonWidget.dart';
 import 'daftar_produk_data.dart';
@@ -134,18 +135,29 @@ class _Daftar_operatorState extends State<Daftar_operator> {
           _buildBrandPanel(compact: true),
           Expanded(
             child: trans.list_operator == null
-                ? ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                    itemCount: 8,
-                    itemBuilder: (context, index) {
-                      return const Padding(
-                        padding: EdgeInsets.only(bottom: 12.0),
-                        child: SkeletonWidget(height: 80, width: double.infinity, radius: 16),
-                      );
-                    },
-                  )
-                : trans.list_operator!.length == 0
+                // null = loading ATAU network error
+                ? (trans.error == true
+                    ? ErrorStateWidget(
+                        config: config,
+                        errorMessage: trans.errorMsg ?? 'Terjadi kesalahan sistem',
+                        onRetry: () {
+                          trans.getDaftarOperator(
+                              widget.nomor_tujuan, widget.path, widget.prefix);
+                        },
+                      )
+                    : ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                        itemCount: 8,
+                        itemBuilder: (context, index) {
+                          return const Padding(
+                            padding: EdgeInsets.only(bottom: 12.0),
+                            child: SkeletonWidget(height: 80, width: double.infinity, radius: 16),
+                          );
+                        },
+                      ))
+                // tidak null tapi kosong = data tidak ada
+                : trans.list_operator!.isEmpty
                     ? NotfoundWidget(config: config, label: "Daftar Operator Kosong")
                     : ListView.builder(
                         physics: const BouncingScrollPhysics(),

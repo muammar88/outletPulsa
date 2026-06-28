@@ -28,7 +28,10 @@ export class DeviceService {
           },
         };
       }
-      console.log(`[Device Register] Device tidak ditemukan di database. Akan membuat baru dengan kode tersebut.`);
+      // Device_code lama tidak ditemukan di DB (mungkin dihapus admin),
+      // generate device_code baru yang proper
+      console.log(`[Device Register] Device tidak ditemukan di database. Generate device_code baru...`);
+      deviceCode = 'DEV-' + uuidv4().toUpperCase().split('-')[0] + '-' + Date.now().toString().slice(-6);
     } else {
       console.log(`[Device Register] Klien tidak mengirimkan device_code. Generate kode baru...`);
       deviceCode = 'DEV-' + uuidv4().toUpperCase().split('-')[0] + '-' + Date.now().toString().slice(-6);

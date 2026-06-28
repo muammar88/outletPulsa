@@ -63,6 +63,8 @@ class _SplashScreenState extends State<SplashScreen> {
           _goToUnavailablePage();
           return;
         }
+        // Fix: simpan newCode yang diterima dari server ke storage
+        await db.saveDeviceCode(newCode);
       }
     }
 

@@ -34,6 +34,9 @@ class _Daftar_produkState extends State<Daftar_produk> {
   final config = ConfigApp();
   bool loadData = false;
   final ScrollController _scrollController = ScrollController();
+  // Simpan referensi provider lebih awal agar dispose() bisa
+  // memanggilnya dengan aman (context tidak valid saat dispose)
+  Transaction_provider? _transProvider;
 
   @override
   void initState() {
@@ -44,6 +47,9 @@ class _Daftar_produkState extends State<Daftar_produk> {
   @override
   void dispose() {
     _scrollController.dispose();
+    // Bersihkan list produk saat halaman ditutup agar tidak
+    // muncul sekilas data lama saat membuka produk operator lain
+    _transProvider?.resetListProduk();
     super.dispose();
   }
 
@@ -61,11 +67,13 @@ class _Daftar_produkState extends State<Daftar_produk> {
 
   @override
   void didChangeDependencies() async {
+    // Simpan referensi provider sekali di sini (aman untuk dipakai di dispose)
+    _transProvider ??= Provider.of<Transaction_provider>(context, listen: false);
     if (loadData == false) {
       loadData = true;
-
-      await Provider.of<Transaction_provider>(context, listen: false)
-          .getDaftarProduk(operator: widget.path);
+      // Reset dulu sebelum fetch agar UI langsung tampil skeleton
+      _transProvider!.resetListProduk();
+      await _transProvider!.getDaftarProduk(operator: widget.path);
     }
     super.didChangeDependencies();
   }
@@ -154,18 +162,8 @@ class _Daftar_produkState extends State<Daftar_produk> {
           _buildBrandPanel(compact: true),
           Expanded(
             child: trans.list_produk == null
-                ? ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                    itemCount: 8,
-                    itemBuilder: (context, index) {
-                      return const Padding(
-                        padding: EdgeInsets.only(bottom: 12.0),
-                        child: SkeletonWidget(height: 80, width: double.infinity, radius: 16),
-                      );
-                    },
-                  )
-                : trans.error == true && trans.errorMsg != null
+                // list_produk null = sedang loading ATAU network error (catchError)
+                ? (trans.error == true
                     ? ErrorStateWidget(
                         config: config,
                         errorMessage: trans.errorMsg ?? 'Terjadi kesalahan sistem',
@@ -173,48 +171,63 @@ class _Daftar_produkState extends State<Daftar_produk> {
                           trans.getDaftarProduk(operator: widget.path);
                         },
                       )
-                    : trans.list_produk!.length == 0
-                        ? NotfoundWidget(
-                            config: config, label: "Daftar Produk Kosong")
-                        : ListView.builder(
-                            controller: _scrollController,
-                            physics: const BouncingScrollPhysics(),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 20),
-                            itemCount: trans.list_produk!.length + (trans.isLoadingNextPage ? 1 : 0),
-                            itemBuilder: (BuildContext context, int index) {
-                              if (index == trans.list_produk!.length) {
-                                return const Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 20.0),
-                                  child: Center(
-                                    child: SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child: CircularProgressIndicator(strokeWidth: 2.5),
-                                    ),
-                                  ),
-                                );
-                              }
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 12.0),
-                                child: BoxListProduk(
-                                  index: index,
-                                  config: config,
-                                  kode: trans.list_produk![index.toString()]
-                                      ['kode'],
-                                  operator: trans.list_produk![index.toString()]
-                                      ['operator'],
-                                  nominal: trans.list_produk![index.toString()]
-                                      ['name'],
-                                  harga: trans.list_produk![index.toString()]
-                                      ['price'],
-                                  status: trans.list_produk![index.toString()]
-                                      ['status'],
-                                  nomor_tujuan: widget.nomor_tujuan,
+                    : ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                        itemCount: 8,
+                        itemBuilder: (context, index) {
+                          return const Padding(
+                            padding: EdgeInsets.only(bottom: 12.0),
+                            child: SkeletonWidget(height: 80, width: double.infinity, radius: 16),
+                          );
+                        },
+                      ))
+                // list_produk tidak null tapi kosong = data memang tidak ada
+                : trans.list_produk!.isEmpty
+                    ? NotfoundWidget(
+                        config: config,
+                        label: "Daftar Produk Kosong",
+                        subtitle: 'Produk tidak tersedia untuk operator ini.',
+                      )
+                    : ListView.builder(
+                        controller: _scrollController,
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 20),
+                        itemCount: trans.list_produk!.length + (trans.isLoadingNextPage ? 1 : 0),
+                        itemBuilder: (BuildContext context, int index) {
+                          if (index == trans.list_produk!.length) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 20.0),
+                              child: Center(
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(strokeWidth: 2.5),
                                 ),
-                              );
-                            },
-                          ),
+                              ),
+                            );
+                          }
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12.0),
+                            child: BoxListProduk(
+                              index: index,
+                              config: config,
+                              kode: trans.list_produk![index.toString()]
+                                  ['kode'],
+                              operator: trans.list_produk![index.toString()]
+                                  ['operator'],
+                              nominal: trans.list_produk![index.toString()]
+                                  ['name'],
+                              harga: trans.list_produk![index.toString()]
+                                  ['price'],
+                              status: trans.list_produk![index.toString()]
+                                  ['status'],
+                              nomor_tujuan: widget.nomor_tujuan,
+                            ),
+                          );
+                        },
+                      ),
           ),
         ],
       ),

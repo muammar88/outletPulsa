@@ -29,19 +29,33 @@ class Daftar_produk_data extends StatefulWidget {
 class _Daftar_produk_dataState extends State<Daftar_produk_data> {
   final config = ConfigApp();
   bool loadData = false;
+  // Simpan referensi provider lebih awal agar dispose() bisa
+  // memanggilnya dengan aman (context tidak valid saat dispose)
+  Transaction_provider? _transProvider;
 
   static const Color _kPrimary = Color(0xFF0F1F6E);
   static const Color _kPrimaryLight = Color(0xFF1A3DB5);
 
   @override
   void didChangeDependencies() async {
+    // Simpan referensi provider sekali di sini (aman untuk dipakai di dispose)
+    _transProvider ??= Provider.of<Transaction_provider>(context, listen: false);
     if (loadData == false) {
       loadData = true;
-
-      await Provider.of<Transaction_provider>(context, listen: false).getDaftarProdukData(
+      // Reset dulu sebelum fetch agar UI langsung tampil skeleton
+      _transProvider!.resetListProduk();
+      await _transProvider!.getDaftarProdukData(
           widget.id, widget.kode, widget.name, widget.nomor_tujuan);
     }
     super.didChangeDependencies();
+  }
+
+  @override
+  void dispose() {
+    // Bersihkan list produk saat halaman ditutup agar tidak
+    // muncul sekilas data lama saat membuka kategori produk lain
+    _transProvider?.resetListProduk();
+    super.dispose();
   }
 
   Widget _buildBrandPanel({bool compact = false}) {

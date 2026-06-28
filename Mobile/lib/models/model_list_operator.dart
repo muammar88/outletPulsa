@@ -11,7 +11,8 @@ class Model_list_operator {
     if (obj['error'] != null && obj['error'] != '') {
       _error = obj['error'] == true || obj['error'] == 'true';
     } else {
-      _error = obj['data'] == null || (obj['data'] is Map && obj['data'].isEmpty);
+      // Data null/kosong bukan berarti error — tampilkan empty state
+      _error = false;
     }
     _errorMsg = obj['message'] ?? obj['error_msg'];
     var data = obj['data'] ?? obj;

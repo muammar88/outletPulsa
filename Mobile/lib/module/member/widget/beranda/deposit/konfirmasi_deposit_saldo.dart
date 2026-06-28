@@ -7,7 +7,7 @@ import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/shared/providers/BerandaProvider.dart';
 import 'package:outletpulsa/shared/providers/KonfirmasiProvider.dart';
 import 'package:outletpulsa/shared/providers/loadProvider.dart';
-import 'package:outletpulsa/shared/widgets/CircularProgressWidget.dart';
+import 'package:outletpulsa/shared/widgets/NotFound.dart';
 
 class Konfirmasi_deposit_saldo extends StatefulWidget {
   const Konfirmasi_deposit_saldo({super.key});
@@ -206,53 +206,11 @@ class _Konfirmasi_deposit_saldoState extends State<Konfirmasi_deposit_saldo> wit
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(color: _kPrimary.withOpacity(0.1), blurRadius: 30, offset: const Offset(0, 10))
-              ],
-            ),
-            child: const Icon(TablerIcons.receipt_off, size: 60, color: Color(0xFF8898AA)),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'Tidak Ada Deposit',
-            style: GoogleFonts.outfit(
-              fontSize: 24,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF1A1A2E),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Saat ini tidak ada permintaan deposit\nyang menunggu konfirmasi pembayaran.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: const Color(0xFF8898AA),
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: 32),
-          ElevatedButton.icon(
-            icon: const Icon(TablerIcons.arrow_left, size: 18, color: Colors.white),
-            label: Text('Kembali ke Beranda',
-                style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _kPrimary,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            onPressed: () => Navigator.of(context).popUntil((route) => route.isFirst),
-          )
-        ],
+    return const Center(
+      child: NotfoundWidget(
+        label: 'Konfirmasi Deposit Kosong',
+        subtitle: 'Saat ini tidak ada permintaan deposit\nyang menunggu konfirmasi pembayaran.',
+        icon: TablerIcons.receipt_off,
       ),
     );
   }

@@ -31,19 +31,27 @@ class Daftar_kategori_pascabayar extends StatefulWidget {
 class _Daftar_kategori_pascabayarState
     extends State<Daftar_kategori_pascabayar> {
   bool loadData = false;
+  Transaction_provider? _transProvider;
 
   static const Color _kPrimary = Color(0xFF0F1F6E);
   static const Color _kPrimaryLight = Color(0xFF1A3DB5);
 
   @override
-  void didChangeDependencies() async {
-    if (loadData == false) {
-      loadData = true;
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !loadData) {
+        loadData = true;
+        _transProvider = Provider.of<Transaction_provider>(context, listen: false);
+        _transProvider!.getDaftarKategoriPascabayar(widget.path);
+      }
+    });
+  }
 
-      await Provider.of<Transaction_provider>(context, listen: false)
-          .getDaftarKategoriPascabayar(widget.path);
-    }
-    super.didChangeDependencies();
+  @override
+  void dispose() {
+    _transProvider?.resetListKategoriPascabayar();
+    super.dispose();
   }
 
   final config = ConfigApp();
@@ -131,16 +139,17 @@ class _Daftar_kategori_pascabayarState
         children: [
           _buildBrandPanel(compact: true),
           Expanded(
-            child: trans.error == true
-                ? ErrorStateWidget(
-                    config: config,
-                    errorMessage: trans.errorMsg ?? 'Terjadi kesalahan sistem',
-                    onRetry: () {
-                      trans.getDaftarKategoriPascabayar(widget.path);
-                    },
-                  )
-                : trans.list_kategori_pascabayar == null
-                    ? ListView.builder(
+            child: trans.list_kategori_pascabayar == null
+                // null = loading ATAU network error
+                ? (trans.error == true
+                    ? ErrorStateWidget(
+                        config: config,
+                        errorMessage: trans.errorMsg ?? 'Terjadi kesalahan sistem',
+                        onRetry: () {
+                          trans.getDaftarKategoriPascabayar(widget.path);
+                        },
+                      )
+                    : ListView.builder(
                         physics: const NeverScrollableScrollPhysics(),
                         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                         itemCount: 8,
@@ -150,25 +159,26 @@ class _Daftar_kategori_pascabayarState
                             child: SkeletonWidget(height: 80, width: double.infinity, radius: 16),
                           );
                         },
-                      )
-                    : trans.list_kategori_pascabayar!.length == 0
-                        ? NotfoundWidget(config: config, label: "Daftar Produk Pascabayar")
-                        : ListView.builder(
-                            physics: const BouncingScrollPhysics(),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 20),
-                            itemCount: trans.list_kategori_pascabayar!.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 12.0),
-                                child: _BoxKategoriPascabayar(
-                                  index: index,
-                                  config: config,
-                                  trans: trans,
-                                ),
-                              );
-                            },
-                          ),
+                      ))
+                // tidak null tapi kosong = data tidak ada
+                : trans.list_kategori_pascabayar!.isEmpty
+                    ? NotfoundWidget(config: config, label: "Daftar Produk Pascabayar")
+                    : ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 20),
+                        itemCount: trans.list_kategori_pascabayar!.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12.0),
+                            child: _BoxKategoriPascabayar(
+                              index: index,
+                              config: config,
+                              trans: trans,
+                            ),
+                          );
+                        },
+                      ),
           ),
         ],
       ),

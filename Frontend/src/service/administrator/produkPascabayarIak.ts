@@ -15,8 +15,8 @@ export const produkPascabayarIakService = {
   getInternalOperators: (search = '') => {
     return api.get('/administrator/daftar-produk-pascabayar-iak/internal-operators', { params: { search } });
   },
-  getInternalProducts: (operatorId: number, search = '') => {
-    return api.get('/administrator/daftar-produk-pascabayar-iak/internal-products', { params: { operatorId, search } });
+  getInternalProducts: (search = '') => {
+    return api.get('/administrator/daftar-produk-pascabayar-iak/internal-products', { params: { search } });
   },
   connectProduct: (id: number, produkPascabayarId: number) => {
     return api.post(`/administrator/daftar-produk-pascabayar-iak/${id}/connect`, { produkPascabayarId });

@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/shared/providers/TransactionProvider.dart';
+import 'package:outletpulsa/shared/widgets/ErrorStateWidget.dart';
 import 'package:outletpulsa/shared/widgets/NotFound.dart';
 import 'package:outletpulsa/shared/widgets/skeletonWidget.dart';
 import 'input_ppob.dart';
@@ -28,19 +29,27 @@ class Daftar_kategori extends StatefulWidget {
 
 class _Daftar_kategoriState extends State<Daftar_kategori> {
   bool loadData = false;
+  Transaction_provider? _transProvider;
 
   static const Color _kPrimary = Color(0xFF0F1F6E);
   static const Color _kPrimaryLight = Color(0xFF1A3DB5);
 
   @override
-  void didChangeDependencies() async {
-    if (loadData == false) {
-      loadData = true;
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !loadData) {
+        loadData = true;
+        _transProvider = Provider.of<Transaction_provider>(context, listen: false);
+        _transProvider!.getDaftarKategori(widget.path);
+      }
+    });
+  }
 
-      await Provider.of<Transaction_provider>(context, listen: false)
-          .getDaftarKategori(widget.path);
-    }
-    super.didChangeDependencies();
+  @override
+  void dispose() {
+    _transProvider?.resetListKategori();
+    super.dispose();
   }
 
   final config = ConfigApp();
@@ -129,18 +138,28 @@ class _Daftar_kategoriState extends State<Daftar_kategori> {
           _buildBrandPanel(compact: true),
           Expanded(
             child: trans.list_kategori == null
-                ? ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                    itemCount: 8,
-                    itemBuilder: (context, index) {
-                      return const Padding(
-                        padding: EdgeInsets.only(bottom: 12.0),
-                        child: SkeletonWidget(height: 80, width: double.infinity, radius: 16),
-                      );
-                    },
-                  )
-                : trans.list_kategori!.length == 0
+                // null = loading ATAU network error
+                ? (trans.error == true
+                    ? ErrorStateWidget(
+                        config: config,
+                        errorMessage: trans.errorMsg ?? 'Terjadi kesalahan sistem',
+                        onRetry: () {
+                          trans.getDaftarKategori(widget.path);
+                        },
+                      )
+                    : ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                        itemCount: 8,
+                        itemBuilder: (context, index) {
+                          return const Padding(
+                            padding: EdgeInsets.only(bottom: 12.0),
+                            child: SkeletonWidget(height: 80, width: double.infinity, radius: 16),
+                          );
+                        },
+                      ))
+                // tidak null tapi kosong = data tidak ada
+                : trans.list_kategori!.isEmpty
                     ? NotfoundWidget(config: config, label: "Daftar Kategori Kosong")
                     : ListView.builder(
                         physics: const BouncingScrollPhysics(),

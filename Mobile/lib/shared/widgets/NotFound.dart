@@ -4,34 +4,55 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'package:outletpulsa/core/constants/config.dart';
 
+/// Widget empty state yang seragam untuk seluruh fitur.
+///
+/// Parameter:
+/// - [label]    : Judul utama (wajib), contoh: "Daftar Produk Kosong"
+/// - [subtitle] : Keterangan tambahan (opsional), default: pesan umum
+/// - [icon]     : Ikon (opsional), default: TablerIcons.file_search
+/// - [config]   : ConfigApp (opsional, untuk konsistensi tema)
+/// - [showBackButton] : Tampilkan tombol kembali (default: true)
 class NotfoundWidget extends StatelessWidget {
   const NotfoundWidget({
     super.key,
-    required this.config,
     required this.label,
+    this.subtitle,
+    this.icon,
+    this.config,
+    this.showBackButton = true,
   });
 
   final String label;
-  final ConfigApp config;
+  final String? subtitle;
+  final IconData? icon;
+  final ConfigApp? config;
+  final bool showBackButton;
+
+  static const Color _defaultPrimary = Color(0xFF0F1F6E);
 
   @override
   Widget build(BuildContext context) {
+    final Color primaryColor = _defaultPrimary;
+    final IconData displayIcon = icon ?? TablerIcons.file_search;
+    final String displaySubtitle =
+        subtitle ?? 'Data tidak ditemukan.\nCoba refresh atau kembali ke beranda.';
+
     return Container(
-      margin: const EdgeInsets.only(top: 80),
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 40),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Icon container
+          // Ikon container
           Container(
-            width: 100,
-            height: 100,
+            width: 104,
+            height: 104,
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFF0F1F6E).withOpacity(0.08),
-                  const Color(0xFF1A3DB5).withOpacity(0.15),
+                  primaryColor.withOpacity(0.08),
+                  primaryColor.withOpacity(0.15),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -40,14 +61,15 @@ class NotfoundWidget extends StatelessWidget {
             ),
             child: Center(
               child: Icon(
-                TablerIcons.file_search,
+                displayIcon,
                 size: 48,
-                color: const Color(0xFF0F1F6E).withOpacity(0.5),
+                color: primaryColor.withOpacity(0.5),
               ),
             ),
           ),
           const SizedBox(height: 20),
-          // Title
+
+          // Judul
           Text(
             label,
             textAlign: TextAlign.center,
@@ -58,9 +80,10 @@ class NotfoundWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          // Subtitle
+
+          // Subjudul
           Text(
-            'Data tidak ditemukan.\nCoba refresh atau kembali ke beranda.',
+            displaySubtitle,
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
               fontSize: 12,
@@ -68,43 +91,47 @@ class NotfoundWidget extends StatelessWidget {
               height: 1.5,
             ),
           ),
-          const SizedBox(height: 24),
-          // Back button
-          GestureDetector(
-            onTap: () {
-              Navigator.of(context).popUntil((route) => route.isFirst);
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0F1F6E),
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF0F1F6E).withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(TablerIcons.arrow_left,
-                      size: 16, color: Colors.white),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Kembali',
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
+
+          // Tombol kembali (opsional)
+          if (showBackButton) ...[
+            const SizedBox(height: 24),
+            GestureDetector(
+              onTap: () {
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              },
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                decoration: BoxDecoration(
+                  color: primaryColor,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: primaryColor.withOpacity(0.3),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(TablerIcons.arrow_left,
+                        size: 16, color: Colors.white),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Kembali',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );

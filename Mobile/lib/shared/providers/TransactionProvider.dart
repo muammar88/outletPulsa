@@ -36,7 +36,35 @@ class Transaction_provider with ChangeNotifier {
 
   void resetListOperator() {
     _list_operator = null;
-    notifyListeners();
+    _error = null;
+    _errorMsg = null;
+    // Tidak perlu notifyListeners() — method ini hanya untuk cleanup saat dispose.
+    // Screen baru akan mendapat notifikasi dari getDaftarOperator() yang sudah
+    // memanggil notifyListeners() sendiri di awal fetch.
+  }
+
+  void resetListProduk() {
+    _list_produk = null;
+    _error = null;
+    _errorMsg = null;
+    _currentPage = 1;
+    _hasNextPage = true;
+    _isLoadingNextPage = false;
+    // Tidak perlu notifyListeners() — lihat penjelasan resetListOperator().
+  }
+
+  void resetListKategori() {
+    _list_kategori = null;
+    _error = null;
+    _errorMsg = null;
+    // Tidak perlu notifyListeners() — lihat penjelasan resetListOperator().
+  }
+
+  void resetListKategoriPascabayar() {
+    _list_kategori_pascabayar = null;
+    _error = null;
+    _errorMsg = null;
+    // Tidak perlu notifyListeners() — lihat penjelasan resetListOperator().
   }
 
   Future<void> getPrefix(String nomorTujuan, String kode) async {
@@ -52,10 +80,15 @@ class Transaction_provider with ChangeNotifier {
 
   Future<void> getDaftarOperator(
       String nomorTujuan, String path, bool prefix) async {
+    // Reset sebelum fetch agar UI langsung tampil skeleton bukan data lama
+    _list_operator = null;
+    _error = null;
+    _errorMsg = null;
+    notifyListeners();
+
     await Rest_transaction()
         .getDaftarOperator(nomorTujuan, path, prefix)
         .then((Model_list_operator e) async {
-      // Always assign list (even if empty) so UI doesn't stay in null/skeleton loop
       _list_operator = e.list_operator ?? {};
       _error = e.error;
       _errorMsg = e.errorMsg;
@@ -138,6 +171,12 @@ class Transaction_provider with ChangeNotifier {
 
   Future<void> getDaftarProdukData(
       String id, String kode, String name, String nomor_tujuan) async {
+    // Reset sebelum fetch agar UI langsung tampil skeleton bukan data lama
+    _list_produk = null;
+    _error = null;
+    _errorMsg = null;
+    notifyListeners();
+
     await Rest_transaction()
         .getDaftarProdukData(id, kode, name, nomor_tujuan)
         .then((Model_list_produk e) async {
@@ -155,10 +194,15 @@ class Transaction_provider with ChangeNotifier {
   }
 
   Future<void> getDaftarKategori(String path) async {
+    // Reset sebelum fetch agar UI langsung tampil skeleton bukan data lama
+    _list_kategori = null;
+    _error = null;
+    _errorMsg = null;
+    notifyListeners();
+
     await Rest_transaction()
         .getDaftarKategori(path)
         .then((Model_list_kategori e) async {
-      // Always assign (even if empty) so UI exits skeleton loop
       _list_kategori = e.list_kategori ?? {};
       _error = e.error;
       _errorMsg = e.errorMsg;
@@ -172,10 +216,15 @@ class Transaction_provider with ChangeNotifier {
   }
 
   Future<void> getDaftarKategoriPascabayar(String path) async {
+    // Reset sebelum fetch agar UI langsung tampil skeleton bukan data lama
+    _list_kategori_pascabayar = null;
+    _error = null;
+    _errorMsg = null;
+    notifyListeners();
+
     await Rest_transaction()
         .getDaftarKategoriPascabayar(path)
         .then((Model_list_kategori e) async {
-      // Always assign (even if empty) so UI exits skeleton loop
       _list_kategori_pascabayar = e.list_kategori ?? {};
       _error = e.error;
       _errorMsg = e.errorMsg;
