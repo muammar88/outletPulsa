@@ -193,7 +193,7 @@ class Transaction_provider with ChangeNotifier {
     });
   }
 
-  Future<void> getDaftarKategori(String path) async {
+  Future<void> getDaftarKategori(String path, {String search = ''}) async {
     // Reset sebelum fetch agar UI langsung tampil skeleton bukan data lama
     _list_kategori = null;
     _error = null;
@@ -201,7 +201,7 @@ class Transaction_provider with ChangeNotifier {
     notifyListeners();
 
     await Rest_transaction()
-        .getDaftarKategori(path)
+        .getDaftarKategori(path, search: search)
         .then((Model_list_kategori e) async {
       _list_kategori = e.list_kategori ?? {};
       _error = e.error;
@@ -215,7 +215,7 @@ class Transaction_provider with ChangeNotifier {
     });
   }
 
-  Future<void> getDaftarKategoriPascabayar(String path) async {
+  Future<void> getDaftarKategoriPascabayar(String path, {String search = ''}) async {
     // Reset sebelum fetch agar UI langsung tampil skeleton bukan data lama
     _list_kategori_pascabayar = null;
     _error = null;
@@ -223,7 +223,7 @@ class Transaction_provider with ChangeNotifier {
     notifyListeners();
 
     await Rest_transaction()
-        .getDaftarKategoriPascabayar(path)
+        .getDaftarKategoriPascabayar(path, search: search)
         .then((Model_list_kategori e) async {
       _list_kategori_pascabayar = e.list_kategori ?? {};
       _error = e.error;

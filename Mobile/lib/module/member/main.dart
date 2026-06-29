@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:outletpulsa/shared/providers/BerandaProvider.dart';
+import 'package:outletpulsa/shared/providers/notification_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'package:outletpulsa/core/constants/config.dart';
@@ -41,6 +42,7 @@ class _Home_pageState extends State<Home_page> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<Beranda_provider>(context, listen: false).get_data_beranda();
+      Provider.of<NotificationProvider>(context, listen: false).initNotification();
     });
   }
 

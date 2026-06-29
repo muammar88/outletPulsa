@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
 import { DepositSaldoDto } from './dto/deposit-saldo.dto';
+import { NotificationService } from '../../notification/notification.service';
 
 @Injectable()
 export class DepositService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService
+  ) {}
 
   async getDepositInfo(memberId: number) {
     try {
@@ -226,6 +230,16 @@ export class DepositService {
           },
         });
       });
+
+      // Fire notification
+      this.notificationService.sendNotification({
+          title: 'Tiket Deposit Berhasil',
+          body: `Tiket deposit Rp ${nominal} berhasil dibuat. Silakan transfer sesuai instruksi.`,
+          notificationType: 'Deposit',
+          targetType: 'User',
+          targetId: memberId.toString(),
+          payload: { kodeTrans, nominal }
+      }).catch(e => console.error('Failed to send deposit notification', e));
 
       return {
         error: false,

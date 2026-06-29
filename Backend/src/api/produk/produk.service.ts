@@ -133,87 +133,36 @@ export class ProdukService {
     }
   }
 
-  async getDaftarKategori(kode: string) {
+  async getDaftarKategori(kode: string, search: string = '') {
     try {
-      // const kategori = await this.prisma.kategori.findFirst({
-      //   where: { kode: kode },
-      //   // include: {
-      //   //   operators: {
-      //   //     select: {
-      //   //       id: true,
-      //   //       kode: true,
-      //   //       name: true,
-      //   //     }
-      //   //   }
-      //   // }
-      // });
+      const where: any = {
+        kategori: { kode: kode },
+      };
 
-      // if (!kategori) {
-      //   return {
-      //     error: false,
-      //     message: 'Kategori tidak ditemukan',
-      //     data: {
-      //       list_kategori: {}
-      //     }
-      //   };
-      // }
-
-      // if (!kategori.operators || kategori.operators.length === 0) {
-      //   return {
-      //     error: false,
-      //     error_msg: 'Data operator kosong untuk kategori ini',
-      //     message: 'Data operator kosong untuk kategori ini',
-      //     data: {
-      //       list_kategori: {}
-      //     }
-      //   };
-      // }
-
-      // Format as Map {"0": {...}, "1": {...}} to be compatible with Flutter Model_list_kategori
-      // const list_kategori: any = {};
-      // kategori.operators.forEach((op, index) => {
-      //   list_kategori[index.toString()] = {
-      //     uuid: op.id.toString(),
-      //     kode: op.kode,
-      //     nama: op.name,
-      //     kodeKategori: kategori.kode,
-      //     status: 'aktif'
-      //   };
-      // });
+      if (search) {
+        where.OR = [
+          { name: { contains: search, mode: 'insensitive' } },
+          { kode: { contains: search, mode: 'insensitive' } },
+        ];
+        // Pastikan filter kategori tetap diterapkan meski ada OR
+        where.AND = [{ kategori: { kode: kode } }];
+        delete where.kategori;
+      }
 
       const [total, operators] = await Promise.all([
-        this.prisma.operator.count({ where : {
-            kategori : {
-              kode: kode
-            },
-          } }),
+        this.prisma.operator.count({ where }),
         this.prisma.operator.findMany({
-          where : {
-            kategori : {
-              kode: kode
-            },
-          },
-          include: {
-            kategori: true
-          },
+          where,
+          include: { kategori: true },
         }),
       ]);
-
-      // console.log("**********************8");
-      // console.log(operators);
-      // console.log("**********************8");
 
       return {
         error: false,
         message: 'Data kategori berhasil ditemukan',
-        data: {
-          list_kategori: operators
-        }
+        data: { list_kategori: operators }
       };
     } catch (error) {
-      // console.log("~~~~~~~~~~~~~~");
-      // console.error(error);
-      // console.log("~~~~~~~~~~~~~~");
       return {
         error: true,
         message: 'Terjadi kesalahan pada server',

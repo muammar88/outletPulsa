@@ -4,12 +4,14 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import { GetOtpRegisterDto, RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcryptjs';
+import { NotificationService } from '../../notification/notification.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly notificationService: NotificationService
   ) {}
 
   /**
@@ -64,6 +66,15 @@ export class AuthService {
     // 6. Jika sukses, buat payload untuk JWT
     const payload = { sub: member.id, kode: member.kode, wa: member.whatsappnumber, device_code };
     const token = await this.jwtService.signAsync(payload);
+
+    // Kirim notifikasi login
+    this.notificationService.sendNotification({
+        title: 'Login Berhasil',
+        body: `Akun Anda berhasil login dari perangkat ${device.device_name || 'Tidak dikenal'}`,
+        notificationType: 'System',
+        targetType: 'User',
+        targetId: member.id.toString(),
+    }).catch(e => console.error('Failed to send login notification', e));
 
     // 5. Kembalikan response sukses menggunakan property data
     return {
@@ -211,6 +222,15 @@ export class AuthService {
           data: { member_id: newMember.id },
         });
       }
+
+      // Kirim notifikasi selamat datang
+      this.notificationService.sendNotification({
+          title: 'Selamat Datang di OutletPulsa!',
+          body: `Halo ${newMember.fullname}, akun Anda berhasil didaftarkan. Nikmati kemudahan transaksi bersama kami.`,
+          notificationType: 'System',
+          targetType: 'User',
+          targetId: newMember.id.toString(),
+      }).catch(e => console.error('Failed to send welcome notification', e));
 
       return { message: 'Registrasi berhasil', data: { success: true } };
     });

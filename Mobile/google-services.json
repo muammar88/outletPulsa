@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "926258955866",
+    "project_id": "outletpulsa",
+    "storage_bucket": "outletpulsa.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:926258955866:android:9f2df3a564df4c9432ba63",
+        "android_client_info": {
+          "package_name": "com.outletpulsade"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJPXG1DvkrTciNo9ql7IsoAHd6o_NZ2Fw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -25,6 +25,7 @@ model User {
   activityLogs ActivityLog[]
   riwayatTransferSaldos RiwayatTransferSaldoServer[]
   riwayatSaldos         RiwayatSaldo[]
+  notifications         Notification[]
 }
 
 model Group {
@@ -81,6 +82,7 @@ model Member {
   riwayatSaldos           RiwayatSaldo[]
   activityLogs            ActivityLog[]
   devicesConnected        DeviceConnected[]
+  notificationRecipients  NotificationRecipient[]
 
   @@index([whatsappnumber])
   @@index([kode])
@@ -929,9 +931,47 @@ model DeviceConnected {
   os_name      String?
   os_version   String?
   app_version  String?
+  fcm_token    String?   @db.Text
   last_login   DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  member       Member?   @relation(fields: [member_id], references: [id])
+  member                Member?                 @relation(fields: [member_id], references: [id])
+  notificationRecipients NotificationRecipient[]
+}
+
+model Notification {
+  id                Int       @id @default(autoincrement())
+  title             String
+  body              String    @db.Text
+  image_url         String?   @db.Text
+  payload           String?   @db.Text // Format JSON string
+  notification_type String    // cth: 'Promo', 'Transaction', 'System', 'Broadcast'
+  target_type       String    // cth: 'All', 'User', 'Device'
+  target_id         String?   // User ID atau Device Code
+  created_by        Int?      // Admin User ID
+  status            String    @default("Draft") // Draft, Sending, Success, Failed
+  sent_at           DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  creator           User?     @relation(fields: [created_by], references: [id])
+  recipients        NotificationRecipient[]
+}
+
+model NotificationRecipient {
+  id              Int       @id @default(autoincrement())
+  notification_id Int
+  member_id       Int?
+  device_code     String?
+  status          String    @default("Pending") // Pending, Delivered, Failed, Read
+  delivered_at    DateTime?
+  read_at         DateTime?
+  error_message   String?   @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  notification    Notification     @relation(fields: [notification_id], references: [id], onDelete: Cascade)
+  member          Member?          @relation(fields: [member_id], references: [id], onDelete: Cascade)
+  device          DeviceConnected? @relation(fields: [device_code], references: [device_code], onDelete: Cascade)
 }

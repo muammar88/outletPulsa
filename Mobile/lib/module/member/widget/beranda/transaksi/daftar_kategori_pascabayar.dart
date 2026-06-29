@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/shared/providers/TransactionProvider.dart';
+import 'package:outletpulsa/shared/widgets/FloatingSearchBar.dart';
 import 'package:outletpulsa/shared/widgets/skeletonWidget.dart';
 import 'package:outletpulsa/shared/widgets/NotFound.dart';
 import 'package:outletpulsa/shared/widgets/ErrorStateWidget.dart';
@@ -32,6 +33,8 @@ class _Daftar_kategori_pascabayarState
     extends State<Daftar_kategori_pascabayar> {
   bool loadData = false;
   Transaction_provider? _transProvider;
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
 
   static const Color _kPrimary = Color(0xFF0F1F6E);
   static const Color _kPrimaryLight = Color(0xFF1A3DB5);
@@ -50,6 +53,7 @@ class _Daftar_kategori_pascabayarState
 
   @override
   void dispose() {
+    _searchController.dispose();
     _transProvider?.resetListKategoriPascabayar();
     super.dispose();
   }
@@ -133,8 +137,31 @@ class _Daftar_kategori_pascabayarState
   @override
   Widget build(BuildContext context) {
     final trans = Provider.of<Transaction_provider>(context);
+
+    // Filter lokal berdasarkan search query
+    Map<String, dynamic>? filteredKategori;
+    if (trans.list_kategori_pascabayar != null && _searchQuery.isNotEmpty) {
+      int idx = 0;
+      filteredKategori = {};
+      trans.list_kategori_pascabayar!.forEach((key, value) {
+        final name = (value['nama'] ?? value['name'] ?? '').toString().toLowerCase();
+        final kode = (value['kode'] ?? '').toString().toLowerCase();
+        if (name.contains(_searchQuery) || kode.contains(_searchQuery)) {
+          filteredKategori![idx.toString()] = value;
+          idx++;
+        }
+      });
+    } else {
+      filteredKategori = trans.list_kategori_pascabayar;
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
+      floatingActionButton: FloatingSearchBar(
+        controller: _searchController,
+        onChanged: (v) => setState(() => _searchQuery = v.trim().toLowerCase()),
+        hintText: 'Cari produk',
+      ),
       body: Column(
         children: [
           _buildBrandPanel(compact: true),
@@ -161,20 +188,21 @@ class _Daftar_kategori_pascabayarState
                         },
                       ))
                 // tidak null tapi kosong = data tidak ada
-                : trans.list_kategori_pascabayar!.isEmpty
-                    ? NotfoundWidget(config: config, label: "Daftar Produk Pascabayar")
+                : filteredKategori!.isEmpty
+                    ? NotfoundWidget(config: config, label: "Layanan tidak ditemukan")
                     : ListView.builder(
                         physics: const BouncingScrollPhysics(),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 20),
-                        itemCount: trans.list_kategori_pascabayar!.length,
+                        itemCount: filteredKategori!.length,
                         itemBuilder: (BuildContext context, int index) {
+                          final data = filteredKategori![index.toString()];
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12.0),
                             child: _BoxKategoriPascabayar(
                               index: index,
                               config: config,
-                              trans: trans,
+                              item: data,
                             ),
                           );
                         },
@@ -209,12 +237,12 @@ class _BoxKategoriPascabayar extends StatelessWidget {
   const _BoxKategoriPascabayar({
     required this.index,
     required this.config,
-    required this.trans,
+    required this.item,
   });
 
   final int index;
   final ConfigApp config;
-  final Transaction_provider trans;
+  final dynamic item;
 
   // Gradient palettes for accent color per card (cycles through)
   static const List<List<Color>> _gradients = [
@@ -230,7 +258,6 @@ class _BoxKategoriPascabayar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final item = trans.list_kategori_pascabayar![index.toString()];
     int staggerIndex = index > 15 ? 15 : index;
 
     String feeStr = item['fee'].toString();

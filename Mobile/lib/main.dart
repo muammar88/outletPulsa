@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:outletpulsa/module/public/login.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'package:outletpulsa/shared/providers/BerandaProvider.dart';
 import 'package:outletpulsa/shared/providers/InfoAddDepositProvider.dart';
@@ -26,8 +28,24 @@ import 'shared/providers/TransferSaldoProvider.dart';
 import 'shared/providers/UpdateAkunProvider.dart';
 import 'shared/providers/UpdateStatusBacaProvider.dart';
 import 'shared/providers/loadProvider.dart';
+import 'shared/providers/notification_provider.dart';
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Handle background messages
+  print('Handling a background message: ${message.messageId}');
+}
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    // If you have firebase_options.dart generated, you should pass options: DefaultFirebaseOptions.currentPlatform
+    await Firebase.initializeApp();
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  } catch (e) {
+    print('Error initializing Firebase: $e');
+    print('Note: Ensure you have added google-services.json and configured Firebase properly.');
+  }
+  
   runApp(const MyApp());
 }
 
@@ -108,6 +126,9 @@ class _MyAppState extends State<MyApp> {
         ),
         ChangeNotifierProvider<Agen_provider>(
           create: (context) => Agen_provider(),
+        ),
+        ChangeNotifierProvider<NotificationProvider>(
+          create: (context) => NotificationProvider(),
         ),
       ],
       child: MaterialApp(

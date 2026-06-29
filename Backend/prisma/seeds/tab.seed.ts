@@ -242,6 +242,14 @@ export default async function tabSeed(prisma: PrismaClient) {
         desc: 'Daftar Device',
         created_at: new Date(),
         updated_at: new Date(),
+      },
+      {
+        name: 'Pengumuman',
+        icon: 'IconNotifications',
+        path: 'pengumuman',
+        desc: 'Pengumuman',
+        created_at: new Date(),
+        updated_at: new Date(),
       }
     ],
     skipDuplicates: true,

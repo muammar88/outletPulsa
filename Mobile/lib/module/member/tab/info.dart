@@ -4,11 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 import 'package:outletpulsa/core/constants/config.dart';
-import 'package:outletpulsa/shared/providers/InfoBelumBacaProvider.dart';
-import 'package:outletpulsa/shared/providers/InfoSudahBacaProvider.dart';
+import 'package:outletpulsa/shared/providers/notification_provider.dart';
 import 'package:outletpulsa/shared/widgets/allBoxLoading.dart';
 import 'package:outletpulsa/shared/widgets/NotFound.dart';
-import 'package:outletpulsa/module/member/widget/info/detail_info.dart';
 
 class Info_tab extends StatefulWidget {
   const Info_tab({super.key});
@@ -17,21 +15,15 @@ class Info_tab extends StatefulWidget {
   State<Info_tab> createState() => _Info_tabState();
 }
 
-class _Info_tabState extends State<Info_tab>
-    with SingleTickerProviderStateMixin {
+class _Info_tabState extends State<Info_tab> {
   final config = ConfigApp();
-  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<NotificationProvider>(context, listen: false).fetchMobileHistory();
+    });
   }
 
   @override
@@ -51,378 +43,150 @@ class _Info_tabState extends State<Info_tab>
           ),
         ),
         title: Text(
-          'Informasi',
+          'Pusat Notifikasi',
           style: GoogleFonts.poppins(
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: Colors.white,
           ),
         ),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(46),
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-            height: 38,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              indicator: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              indicatorSize: TabBarIndicatorSize.tab,
-              dividerColor: Colors.transparent,
-              labelColor: const Color(0xFF0F1F6E),
-              unselectedLabelColor: Colors.white.withOpacity(0.85),
-              labelStyle: GoogleFonts.poppins(
-                  fontSize: 12, fontWeight: FontWeight.w600),
-              unselectedLabelStyle: GoogleFonts.poppins(
-                  fontSize: 12, fontWeight: FontWeight.w400),
-              tabs: const [
-                Tab(text: 'Belum Dibaca'),
-                Tab(text: 'Sudah Dibaca'),
-              ],
-            ),
-          ),
-        ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          Sub_tab_belum_baca(),
-          Sub_tab_sudah_baca(),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── Sub Tab Sudah Baca ───────────────────────────────────────────────────────
-
-class Sub_tab_sudah_baca extends StatefulWidget {
-  Sub_tab_sudah_baca({super.key});
-
-  @override
-  State<Sub_tab_sudah_baca> createState() => _Sub_tab_sudah_bacaState();
-}
-
-class _Sub_tab_sudah_bacaState extends State<Sub_tab_sudah_baca> {
-  final config = ConfigApp();
-  bool loadData = false;
-
-  @override
-  void didChangeDependencies() async {
-    if (loadData == false) {
-      loadData = true;
-
-      await Provider.of<Info_sudah_baca_provider>(context).getInfoSudahBaca();
-    }
-    super.didChangeDependencies();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final info = Provider.of<Info_sudah_baca_provider>(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: ListView.builder(
-        physics: const BouncingScrollPhysics(),
-        itemCount: info.list != null
-            ? info.list!.length == 0
-                ? 1
-                : info.list!.length
-            : 1,
-        itemBuilder: (BuildContext context, int index) {
-          if (info.list == null) return AllBoxLoading();
-          if (info.list!.length == 0) {
-            return NotfoundWidget(config: config, label: 'Daftar Info');
+      body: Consumer<NotificationProvider>(
+        builder: (context, provider, child) {
+          if (provider.isLoading) {
+            return const AllBoxLoading();
           }
-          final item = info.list![index.toString()];
-          return index == 0
-              ? Column(children: [
-                  const SizedBox(height: 16),
-                  BoxInfo(
-                    config: config,
-                    id: item['id'].toString(),
-                    title: item['title'].toString(),
-                    desc: item['desc'].toString(),
-                    isRead: true,
-                  ),
-                ])
-              : BoxInfo(
-                  config: config,
-                  id: item['id'].toString(),
-                  title: item['title'].toString(),
-                  desc: item['desc'].toString(),
-                  isRead: true,
-                );
-        },
-      ),
-    );
-  }
-}
 
-// ─── Sub Tab Belum Baca ───────────────────────────────────────────────────────
-
-class Sub_tab_belum_baca extends StatefulWidget {
-  Sub_tab_belum_baca({super.key});
-
-  @override
-  State<Sub_tab_belum_baca> createState() => _Sub_tab_belum_bacaState();
-}
-
-class _Sub_tab_belum_bacaState extends State<Sub_tab_belum_baca> {
-  final config = ConfigApp();
-  bool loadData = false;
-
-  @override
-  void didChangeDependencies() async {
-    if (loadData == false) {
-      loadData = true;
-
-      await Provider.of<Info_belum_baca_provider>(context).getInfoBelumBaca();
-    }
-    super.didChangeDependencies();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final info = Provider.of<Info_belum_baca_provider>(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: ListView.builder(
-        physics: const BouncingScrollPhysics(),
-        itemCount: info.list != null
-            ? info.list!.length == 0
-                ? 1
-                : info.list!.length
-            : 1,
-        itemBuilder: (BuildContext context, int index) {
-          if (info.list == null) return AllBoxLoading();
-          if (info.list!.length == 0) {
-            return NotfoundWidget(config: config, label: 'Daftar Info');
+          if (provider.listNotification.isEmpty) {
+            return NotfoundWidget(config: config, label: 'Daftar Notifikasi');
           }
-          final item = info.list![index.toString()];
-          return index == 0
-              ? Column(children: [
-                  const SizedBox(height: 16),
-                  BoxInfo(
-                    config: config,
-                    id: item['id'].toString(),
-                    title: item['title'].toString(),
-                    desc: item['desc'].toString(),
-                    isRead: false,
-                  ),
-                ])
-              : BoxInfo(
-                  config: config,
-                  id: item['id'].toString(),
-                  title: item['title'].toString(),
-                  desc: item['desc'].toString(),
-                  isRead: false,
-                );
-        },
-      ),
-    );
-  }
-}
 
-// ─── BoxInfo Card ─────────────────────────────────────────────────────────────
+          return RefreshIndicator(
+            onRefresh: () async {
+              await provider.fetchMobileHistory();
+            },
+            child: ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+              padding: const EdgeInsets.all(16),
+              itemCount: provider.listNotification.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final item = provider.listNotification[index];
+                final notification = item['notification'];
+                final isRead = item['status'] == 'Read';
 
-class BoxInfo extends StatelessWidget {
-  const BoxInfo({
-    super.key,
-    required this.config,
-    required this.id,
-    required this.title,
-    required this.desc,
-    this.isRead = false,
-  });
-
-  final ConfigApp config;
-  final String id;
-  final String title;
-  final String desc;
-  final bool isRead;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  Detail_info(id: id, title: title, desc: desc)),
-        );
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isRead
-                ? Colors.grey.shade200
-                : const Color(0xFF0F1F6E).withOpacity(0.1),
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF0F1F6E).withOpacity(0.04),
-              blurRadius: 24,
-              offset: const Offset(0, 8),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: isRead
-                    ? Colors.grey.shade50
-                    : const Color(0xFF0F1F6E).withOpacity(0.05),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                border: Border(
-                  bottom: BorderSide(color: Colors.grey.shade100),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Icon(
-                          TablerIcons.info_circle,
-                          size: 16,
-                          color: isRead ? Colors.grey.shade500 : const Color(0xFF0F1F6E),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Informasi #$id',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: isRead ? Colors.grey.shade600 : const Color(0xFF0F1F6E),
-                            ),
+                return InkWell(
+                  onTap: () {
+                    if (!isRead) {
+                      provider.markAsRead(item['id']);
+                    }
+                    // Tampilkan dialog detail
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: Text(notification['title'], style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                        content: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (notification['image_url'] != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.network(notification['image_url']),
+                                  ),
+                                ),
+                              Text(notification['body'], style: GoogleFonts.poppins()),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  if (!isRead)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.redAccent.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.redAccent.withOpacity(0.3)),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Tutup'),
+                          )
+                        ],
                       ),
-                      child: Text(
-                        'Baru',
-                        style: GoogleFonts.poppins(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.redAccent,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            
-            // Body
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Icon Container
-                  Container(
-                    width: 48,
-                    height: 48,
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: isRead
-                          ? Colors.grey.shade50
-                          : const Color(0xFF0F1F6E).withOpacity(0.06),
-                      borderRadius: BorderRadius.circular(14),
+                      color: isRead ? Colors.white : const Color(0xFFE8EAF6),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isRead ? Colors.grey.shade200 : const Color(0xFF1A3DB5).withOpacity(0.3),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        )
+                      ]
                     ),
-                    child: Icon(
-                      isRead ? TablerIcons.mail_opened : TablerIcons.bell,
-                      color: isRead ? Colors.grey.shade400 : const Color(0xFF0F1F6E),
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // Text Content
-                  Expanded(
-                    child: Column(
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: isRead
-                                ? Colors.grey.shade600
-                                : const Color(0xFF1A1A2E),
-                            height: 1.3,
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: isRead ? Colors.grey.shade100 : const Color(0xFF1A3DB5).withOpacity(0.1),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            notification['notification_type'] == 'Transaction' ? TablerIcons.receipt :
+                            notification['notification_type'] == 'Promo' ? TablerIcons.discount : TablerIcons.bell,
+                            color: isRead ? Colors.grey.shade500 : const Color(0xFF1A3DB5),
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          desc,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: Colors.grey.shade500,
-                            height: 1.5,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Text(
-                              'Baca Selengkapnya',
-                              style: GoogleFonts.poppins(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: isRead
-                                    ? Colors.grey.shade400
-                                    : const Color(0xFF0F1F6E),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                notification['title'],
+                                style: GoogleFonts.poppins(
+                                  fontWeight: isRead ? FontWeight.w600 : FontWeight.bold,
+                                  fontSize: 14,
+                                  color: isRead ? Colors.black87 : Colors.black,
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 4),
-                            Icon(
-                              TablerIcons.arrow_right,
-                              size: 16,
-                              color: isRead
-                                  ? Colors.grey.shade400
-                                  : const Color(0xFF0F1F6E),
-                            ),
-                          ],
+                              const SizedBox(height: 4),
+                              Text(
+                                notification['body'],
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+                        if (!isRead)
+                          Container(
+                            width: 8,
+                            height: 8,
+                            margin: const EdgeInsets.only(top: 6),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF1A3DB5),
+                              shape: BoxShape.circle,
+                            ),
+                          )
                       ],
                     ),
                   ),
-                ],
-              ),
+                );
+              },
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

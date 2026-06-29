@@ -1,12 +1,18 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
 import { CreateDepositDto } from './dto/create-deposit.dto';
 import { UpdateDepositDto } from './dto/update-deposit.dto';
 import { GetDepositDto } from './dto/get-deposit.dto';
+import { NotificationService } from '../../notification/notification.service';
 
 @Injectable()
 export class DepositService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(DepositService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService
+  ) {}
 
   async findAll(query: GetDepositDto) {
 
@@ -343,6 +349,14 @@ export class DepositService {
           }
         });
 
+        this.notificationService.sendNotification({
+          title: 'Deposit Berhasil',
+          body: `Deposit sebesar Rp ${nominalTotal} telah berhasil ditambahkan ke saldo Anda.`,
+          notificationType: 'Deposit',
+          targetType: 'User',
+          targetId: member.id.toString(),
+        }).catch(e => this.logger.error('Failed to send deposit success notif', e));
+
         return updatedRequest;
 
       } else if (dto.status === 'gagal') {
@@ -357,6 +371,18 @@ export class DepositService {
             alasanPenolakan: dto.alasanPenolakan,
           }
         });
+
+        const member = requestDeposit.riwayatTransaksi?.member;
+        if (member) {
+          const nominalTotal = (requestDeposit.nominal || 0) + (requestDeposit.nominalTambahan || 0);
+          this.notificationService.sendNotification({
+            title: 'Deposit Ditolak',
+            body: `Deposit sebesar Rp ${nominalTotal} telah ditolak. Alasan: ${dto.alasanPenolakan}`,
+            notificationType: 'Deposit',
+            targetType: 'User',
+            targetId: member.id.toString(),
+          }).catch(e => this.logger.error('Failed to send deposit rejected notif', e));
+        }
 
         return updatedRequest;
       }

@@ -60,6 +60,7 @@ export { default as IconMapPin } from './IconMapPin.vue';
 export { default as IconMenu2 } from './IconMenu2.vue';
 export { default as IconMessageCircle } from './IconMessageCircle.vue';
 export { default as IconMoney } from './IconMoney.vue';
+export { default as IconNotifications } from './IconNotifications.vue';
 export { default as IconPackage } from './IconPackage.vue';
 export { default as IconPhone } from './IconPhone.vue';
 export { default as IconPlug } from './IconPlug.vue';

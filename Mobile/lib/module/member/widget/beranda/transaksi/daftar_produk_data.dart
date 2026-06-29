@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/shared/providers/TransactionProvider.dart';
 import 'package:outletpulsa/shared/widgets/NotFound.dart';
+import 'package:outletpulsa/shared/widgets/FloatingSearchBar.dart';
 import 'package:outletpulsa/shared/widgets/skeletonWidget.dart';
 import 'konfirmasi_pembelian.dart';
 
@@ -29,6 +31,8 @@ class Daftar_produk_data extends StatefulWidget {
 class _Daftar_produk_dataState extends State<Daftar_produk_data> {
   final config = ConfigApp();
   bool loadData = false;
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
   // Simpan referensi provider lebih awal agar dispose() bisa
   // memanggilnya dengan aman (context tidak valid saat dispose)
   Transaction_provider? _transProvider;
@@ -52,6 +56,7 @@ class _Daftar_produk_dataState extends State<Daftar_produk_data> {
 
   @override
   void dispose() {
+    _searchController.dispose();
     // Bersihkan list produk saat halaman ditutup agar tidak
     // muncul sekilas data lama saat membuka kategori produk lain
     _transProvider?.resetListProduk();
@@ -135,8 +140,31 @@ class _Daftar_produk_dataState extends State<Daftar_produk_data> {
   @override
   Widget build(BuildContext context) {
     final trans = Provider.of<Transaction_provider>(context);
+
+    // Filter lokal berdasarkan search query
+    Map<String, dynamic>? filteredProduk;
+    if (trans.list_produk != null && _searchQuery.isNotEmpty) {
+      int idx = 0;
+      filteredProduk = {};
+      trans.list_produk!.forEach((key, value) {
+        final name = (value['name'] ?? '').toString().toLowerCase();
+        final kode = (value['kode'] ?? '').toString().toLowerCase();
+        if (name.contains(_searchQuery) || kode.contains(_searchQuery)) {
+          filteredProduk![idx.toString()] = value;
+          idx++;
+        }
+      });
+    } else {
+      filteredProduk = trans.list_produk;
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
+      floatingActionButton: FloatingSearchBar(
+        controller: _searchController,
+        onChanged: (v) => setState(() => _searchQuery = v.trim().toLowerCase()),
+        hintText: 'Cari produk',
+      ),
       body: Column(
         children: [
           _buildBrandPanel(compact: true),
@@ -153,23 +181,23 @@ class _Daftar_produk_dataState extends State<Daftar_produk_data> {
                       );
                     },
                   )
-                : trans.list_produk!.length == 0
-                    ? NotfoundWidget(config: config, label: "Daftar Produk Data Kosong")
+                : filteredProduk!.isEmpty
+                    ? NotfoundWidget(config: config, label: "Produk tidak ditemukan")
                     : ListView.builder(
                         physics: const BouncingScrollPhysics(),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 20),
-                        itemCount: trans.list_produk!.length,
+                        itemCount: filteredProduk!.length,
                         itemBuilder: (BuildContext context, int index) {
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12.0),
                             child: _BoxProdukData(
                               index: index,
-                              kode: trans.list_produk![index.toString()]['kode'],
-                              operator: trans.list_produk![index.toString()]['operator'],
-                              nominal: trans.list_produk![index.toString()]['name'],
-                              harga: trans.list_produk![index.toString()]['price'],
-                              status: trans.list_produk![index.toString()]['status'],
+                              kode: filteredProduk![index.toString()]['kode'],
+                              operator: filteredProduk![index.toString()]['operator'],
+                              nominal: filteredProduk![index.toString()]['name'],
+                              harga: filteredProduk![index.toString()]['price'],
+                              status: filteredProduk![index.toString()]['status'],
                               nomor_tujuan: widget.nomor_tujuan,
                             ),
                           );

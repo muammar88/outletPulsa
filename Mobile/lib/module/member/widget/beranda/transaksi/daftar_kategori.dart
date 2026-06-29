@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/shared/providers/TransactionProvider.dart';
 import 'package:outletpulsa/shared/widgets/ErrorStateWidget.dart';
+import 'package:outletpulsa/shared/widgets/FloatingSearchBar.dart';
 import 'package:outletpulsa/shared/widgets/NotFound.dart';
 import 'package:outletpulsa/shared/widgets/skeletonWidget.dart';
 import 'input_ppob.dart';
@@ -30,6 +31,8 @@ class Daftar_kategori extends StatefulWidget {
 class _Daftar_kategoriState extends State<Daftar_kategori> {
   bool loadData = false;
   Transaction_provider? _transProvider;
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
 
   static const Color _kPrimary = Color(0xFF0F1F6E);
   static const Color _kPrimaryLight = Color(0xFF1A3DB5);
@@ -48,6 +51,7 @@ class _Daftar_kategoriState extends State<Daftar_kategori> {
 
   @override
   void dispose() {
+    _searchController.dispose();
     _transProvider?.resetListKategori();
     super.dispose();
   }
@@ -131,8 +135,31 @@ class _Daftar_kategoriState extends State<Daftar_kategori> {
   @override
   Widget build(BuildContext context) {
     final trans = Provider.of<Transaction_provider>(context);
+    
+    // Filter lokal berdasarkan search query
+    Map<String, dynamic>? filteredKategori;
+    if (trans.list_kategori != null && _searchQuery.isNotEmpty) {
+      int idx = 0;
+      filteredKategori = {};
+      trans.list_kategori!.forEach((key, value) {
+        final name = (value['nama'] ?? value['name'] ?? '').toString().toLowerCase();
+        final kode = (value['kode'] ?? '').toString().toLowerCase();
+        if (name.contains(_searchQuery) || kode.contains(_searchQuery)) {
+          filteredKategori![idx.toString()] = value;
+          idx++;
+        }
+      });
+    } else {
+      filteredKategori = trans.list_kategori;
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
+      floatingActionButton: FloatingSearchBar(
+        controller: _searchController,
+        onChanged: (v) => setState(() => _searchQuery = v.trim().toLowerCase()),
+        hintText: 'Cari produk',
+      ),
       body: Column(
         children: [
           _buildBrandPanel(compact: true),
@@ -159,20 +186,21 @@ class _Daftar_kategoriState extends State<Daftar_kategori> {
                         },
                       ))
                 // tidak null tapi kosong = data tidak ada
-                : trans.list_kategori!.isEmpty
-                    ? NotfoundWidget(config: config, label: "Daftar Kategori Kosong")
+                : filteredKategori!.isEmpty
+                    ? NotfoundWidget(config: config, label: "Kategori tidak ditemukan")
                     : ListView.builder(
                         physics: const BouncingScrollPhysics(),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 20),
-                        itemCount: trans.list_kategori!.length,
+                        itemCount: filteredKategori!.length,
                         itemBuilder: (BuildContext context, int index) {
+                          final data = filteredKategori![index.toString()];
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12.0),
                             child: _BoxKategori(
                               index: index,
                               config: config,
-                              trans: trans,
+                              item: data,
                             ),
                           );
                         },
@@ -207,12 +235,12 @@ class _BoxKategori extends StatelessWidget {
   const _BoxKategori({
     required this.index,
     required this.config,
-    required this.trans,
+    required this.item,
   });
 
   final int index;
   final ConfigApp config;
-  final Transaction_provider trans;
+  final dynamic item;
 
   // Gradient palettes for accent color per card (cycles through)
   static const List<List<Color>> _gradients = [
@@ -229,7 +257,6 @@ class _BoxKategori extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     int staggerIndex = index > 15 ? 15 : index;
-    final item = trans.list_kategori![index.toString()];
     final gradient = _gradients[index % _gradients.length];
 
     return TweenAnimationBuilder<double>(

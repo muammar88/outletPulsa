@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
+import { NotificationService } from '../../notification/notification.service';
 
 @Injectable()
 export class TransaksiPascabayarService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notificationService: NotificationService
+  ) {}
 
   async getRiwayatPascabayar(userId: number) {
     try {
@@ -226,6 +230,14 @@ export class TransaksiPascabayarService {
             status: 'sukses',
           },
         });
+
+        // Fire notification
+        this.notificationService.sendTransactionStatus(
+            userId,
+            'Pembayaran Pascabayar Berhasil',
+            `Pembayaran Pascabayar untuk ${trx.nomorTujuan} telah berhasil.`,
+            { transactionKode: trx.kode, status: 'sukses' }
+        ).catch(e => console.error('Failed to send notification', e));
 
         return {
           error: false,

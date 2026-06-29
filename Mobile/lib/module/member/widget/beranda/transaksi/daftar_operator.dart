@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -5,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/shared/providers/TransactionProvider.dart';
 import 'package:outletpulsa/shared/widgets/ErrorStateWidget.dart';
+import 'package:outletpulsa/shared/widgets/FloatingSearchBar.dart';
 import 'package:outletpulsa/shared/widgets/NotFound.dart';
 import 'package:outletpulsa/shared/widgets/skeletonWidget.dart';
 import 'daftar_produk_data.dart';
@@ -32,6 +34,8 @@ class Daftar_operator extends StatefulWidget {
 
 class _Daftar_operatorState extends State<Daftar_operator> {
   final config = ConfigApp();
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
 
   static const Color _kPrimary = Color(0xFF0F1F6E);
   static const Color _kPrimaryLight = Color(0xFF1A3DB5);
@@ -49,6 +53,12 @@ class _Daftar_operatorState extends State<Daftar_operator> {
         provider.getDaftarOperator(widget.nomor_tujuan, widget.path, widget.prefix);
       }
     });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   Widget _buildBrandPanel({bool compact = false}) {
@@ -128,8 +138,31 @@ class _Daftar_operatorState extends State<Daftar_operator> {
   @override
   Widget build(BuildContext context) {
     final trans = Provider.of<Transaction_provider>(context);
+
+    // Filter lokal berdasarkan search query
+    Map<String, dynamic>? filteredOperator;
+    if (trans.list_operator != null && _searchQuery.isNotEmpty) {
+      int idx = 0;
+      filteredOperator = {};
+      trans.list_operator!.forEach((key, value) {
+        final name = (value['name'] ?? '').toString().toLowerCase();
+        final kode = (value['kode'] ?? '').toString().toLowerCase();
+        if (name.contains(_searchQuery) || kode.contains(_searchQuery)) {
+          filteredOperator![idx.toString()] = value;
+          idx++;
+        }
+      });
+    } else {
+      filteredOperator = trans.list_operator;
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
+      floatingActionButton: FloatingSearchBar(
+        controller: _searchController,
+        onChanged: (v) => setState(() => _searchQuery = v.trim().toLowerCase()),
+        hintText: 'Cari produk',
+      ),
       body: Column(
         children: [
           _buildBrandPanel(compact: true),
@@ -157,21 +190,21 @@ class _Daftar_operatorState extends State<Daftar_operator> {
                         },
                       ))
                 // tidak null tapi kosong = data tidak ada
-                : trans.list_operator!.isEmpty
-                    ? NotfoundWidget(config: config, label: "Daftar Operator Kosong")
+                : filteredOperator!.isEmpty
+                    ? NotfoundWidget(config: config, label: "Operator tidak ditemukan")
                     : ListView.builder(
                         physics: const BouncingScrollPhysics(),
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 20),
-                        itemCount: trans.list_operator!.length,
+                        itemCount: filteredOperator!.length,
                         itemBuilder: (BuildContext context, int index) {
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 12.0),
                             child: _BoxOperator(
                               index: index,
-                              id: trans.list_operator![index.toString()]['id'],
-                              kode: trans.list_operator![index.toString()]['kode'],
-                              name: trans.list_operator![index.toString()]['name'],
+                              id: filteredOperator![index.toString()]['id'],
+                              kode: filteredOperator![index.toString()]['kode'],
+                              name: filteredOperator![index.toString()]['name'],
                               nomor_tujuan: widget.nomor_tujuan,
                             ),
                           );

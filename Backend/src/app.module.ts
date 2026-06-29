@@ -29,6 +29,7 @@ import { WebhookModule } from './api/webhook/webhook.module';
 import { ProvidersModule } from './providers/providers.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -40,7 +41,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
       ttl: 60000,
       limit: 100,
     }]),
-    ProvidersModule, AdministratorModule, AuthModule, BerandaModule, RiwayatModule, StubModule, InfoModule, AkunModule, ProdukModule, TransaksiModule, AgenModule, TransaksiPascabayarModule, WebhookModule, DepositModule, HealthModule, DeviceModule, SchedulerModule.register(), EventEmitterModule.forRoot()],
+    ProvidersModule, AdministratorModule, AuthModule, BerandaModule, RiwayatModule, StubModule, InfoModule, AkunModule, ProdukModule, TransaksiModule, AgenModule, TransaksiPascabayarModule, WebhookModule, DepositModule, HealthModule, DeviceModule, SchedulerModule.register(), EventEmitterModule.forRoot(), NotificationModule],
   controllers: [AppController, MemberController, ApiController],
   providers: [
     {

@@ -1,5 +1,6 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
+import { NotificationService } from '../../notification/notification.service';
 import * as crypto from 'crypto';
 
 interface IakCallbackPayload {
@@ -40,7 +41,10 @@ interface DigiflazzCallbackPayload {
 export class WebhookService {
   private readonly logger = new Logger(WebhookService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationService: NotificationService
+  ) {}
 
   async handleIakCallback(
     kodeVerifikasi: string,
@@ -97,7 +101,7 @@ export class WebhookService {
       }
       const statusCode = Number(status);
       if (statusCode === 1 || String(status) === 'SUCCESS') {
-        await this.updateSuccessTransactionPascabayar(transactionPasca.id, sn);
+        await this.updateSuccessTransactionPascabayar(transactionPasca.id, sn, transactionPasca);
         await this.logWebhook('IAK', 'callback_pascabayar', refId, body, 'success', `Transaksi sukses. SN: ${sn}`, ipAddress);
       } else if (statusCode === 2 || String(status) === 'FAILED') {
         await this.updateFailedTransactionPascabayar(transactionPasca.id, transactionPasca);
@@ -177,7 +181,7 @@ export class WebhookService {
         return { error: false, error_msg: 'Berhasil' };
       }
       if (status === 1) {
-        await this.updateSuccessTransactionPascabayar(transactionPasca.id, token);
+        await this.updateSuccessTransactionPascabayar(transactionPasca.id, token, transactionPasca);
         await this.logWebhook('TRIPAY', 'callback_pascabayar', String(trxId), body, 'success', `Transaksi sukses. Token: ${token}`, ipAddress);
       } else if (status === 2) {
         await this.updateFailedTransactionPascabayar(transactionPasca.id, transactionPasca);
@@ -262,7 +266,7 @@ export class WebhookService {
       }
 
       if (rc === '00') {
-        await this.updateSuccessTransactionPascabayar(transactionPasca.id, sn);
+        await this.updateSuccessTransactionPascabayar(transactionPasca.id, sn, transactionPasca);
         await this.logWebhook('DIGIFLAZZ', 'callback_pascabayar', refId, body, 'success', `Transaksi sukses. SN: ${sn}`, ipAddress);
       } else if (rc === '03') {
         await this.logWebhook('DIGIFLAZZ', 'callback_pascabayar', refId, body, 'ignored', 'Masih pending (rc=03)', ipAddress);
@@ -279,7 +283,7 @@ export class WebhookService {
 
   private async updateSuccessTransaction(
     sn: string,
-    transactionData: { id: number; purchase_price: number | null; selling_price: number | null; fee_agen: number | null; riwayatTransaksi: { member: { kode_agen: string | null } | null } | null },
+    transactionData: { id: number; kode?: string | null; purchase_price: number | null; selling_price: number | null; fee_agen: number | null; riwayatTransaksi: { member: { id: number; kode_agen: string | null } | null } | null },
   ): Promise<void> {
     const feeAgen = transactionData.fee_agen || 0;
     const kodeAgen = transactionData.riwayatTransaksi?.member?.kode_agen || '';
@@ -296,10 +300,20 @@ export class WebhookService {
         serial_number: sn ? String(sn) : undefined,
       },
     });
+
+    const member = transactionData.riwayatTransaksi?.member;
+    if (member) {
+      this.notificationService.sendTransactionStatus(
+        member.id,
+        'Transaksi Berhasil',
+        `Pembelian Prabayar dengan kode ${transactionData.kode || transactionData.id} telah sukses. SN: ${sn}`,
+        { transactionKode: transactionData.kode, status: 'sukses' }
+      ).catch(e => this.logger.error('Failed to send webhook success notif', e));
+    }
   }
 
   private async updateFailedTransaction(
-    transactionData: { id: number; selling_price: number | null; fee_agen: number | null; riwayatTransaksi: { member: { id: number; saldo: number | null } | null } | null },
+    transactionData: { id: number; kode?: string | null; selling_price: number | null; fee_agen: number | null; riwayatTransaksi: { member: { id: number; saldo: number | null } | null } | null },
   ): Promise<void> {
     const member = transactionData.riwayatTransaksi?.member;
     if (!member) return;
@@ -309,9 +323,20 @@ export class WebhookService {
       await tx.member.update({ where: { id: member.id }, data: { saldo: { increment: totalRefund } } });
       await tx.transaction.update({ where: { id: transactionData.id }, data: { status: 'gagal' } });
     });
+
+    this.notificationService.sendTransactionStatus(
+      member.id,
+      'Transaksi Gagal',
+      `Pembelian Prabayar dengan kode ${transactionData.kode || transactionData.id} gagal. Saldo telah dikembalikan.`,
+      { transactionKode: transactionData.kode, status: 'gagal' }
+    ).catch(e => this.logger.error('Failed to send webhook failed notif', e));
   }
 
-  private async updateSuccessTransactionPascabayar(id: number, sn: string): Promise<void> {
+  private async updateSuccessTransactionPascabayar(
+    id: number,
+    sn: string,
+    transactionData?: { trId?: string | null; riwayatTransaksi: { member: { id: number } | null } | null },
+  ): Promise<void> {
     await this.prisma.transactionPascabayar.update({
       where: { id },
       data: {
@@ -320,11 +345,21 @@ export class WebhookService {
         serial_number: sn ? String(sn) : undefined,
       },
     });
+
+    const member = transactionData?.riwayatTransaksi?.member;
+    if (member) {
+      this.notificationService.sendTransactionStatus(
+        member.id,
+        'Transaksi Pascabayar Berhasil',
+        `Pembayaran tagihan dengan ID ${transactionData?.trId || id} sukses. SN: ${sn}`,
+        { transactionKode: transactionData?.trId, status: 'sukses' }
+      ).catch(e => this.logger.error('Failed to send pasca success notif', e));
+    }
   }
 
   private async updateFailedTransactionPascabayar(
     id: number,
-    transactionData: { total: number | null; riwayatTransaksi: { member: { id: number; saldo: number | null } | null } | null },
+    transactionData: { trId?: string | null; total: number | null; riwayatTransaksi: { member: { id: number; saldo: number | null } | null } | null },
   ): Promise<void> {
     const member = transactionData.riwayatTransaksi?.member;
     if (!member) return;
@@ -334,6 +369,13 @@ export class WebhookService {
       await tx.member.update({ where: { id: member.id }, data: { saldo: { increment: totalRefund } } });
       await tx.transactionPascabayar.update({ where: { id }, data: { status: 'gagal' } });
     });
+
+    this.notificationService.sendTransactionStatus(
+      member.id,
+      'Transaksi Pascabayar Gagal',
+      `Pembayaran tagihan dengan ID ${transactionData.trId || id} gagal. Saldo dikembalikan.`,
+      { transactionKode: transactionData.trId, status: 'gagal' }
+    ).catch(e => this.logger.error('Failed to send pasca failed notif', e));
   }
 
   private async logWebhook(

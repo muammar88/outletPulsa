@@ -4,6 +4,7 @@ import { CreateTransaksiPrabayarDto } from './dto/create-transaksi-prabayar.dto'
 import { IakService } from '../../providers/iak.service';
 import { DigiflazzService } from '../../providers/digiflazz.service';
 import { TripayService } from '../../providers/tripay.service';
+import { NotificationService } from '../../notification/notification.service';
 
 @Injectable()
 export class TransaksiService {
@@ -13,7 +14,8 @@ export class TransaksiService {
     private prisma: PrismaService,
     private iakService: IakService,
     private digiflazzService: DigiflazzService,
-    private tripayService: TripayService
+    private tripayService: TripayService,
+    private notificationService: NotificationService
   ) {}
 
   async getRiwayatPrabayar(userId: number) {
@@ -411,6 +413,20 @@ export class TransaksiService {
                  }
                }) as any;
            });
+
+           // Fire notification after db transaction succeeds
+           if (checkRes!.status === 'sukses' || checkRes!.status === 'gagal') {
+               const statusText = checkRes!.status === 'sukses' ? 'Berhasil' : 'Gagal';
+               this.notificationService.sendTransactionStatus(
+                   memberId,
+                   `Transaksi ${statusText}`,
+                   `Pembelian ${trx!.produk?.name || ''} untuk ${trx!.nomorTujuan || ''} telah ${statusText.toLowerCase()}.`,
+                   { 
+                       transactionKode: trx!.kode, 
+                       status: checkRes!.status 
+                   }
+               ).catch(e => this.logger.error('Failed to send notification', e));
+           }
         }
       }
       // --- END Realtime status check ---

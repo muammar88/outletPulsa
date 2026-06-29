@@ -20,6 +20,7 @@ export default async function subSeed(prisma: PrismaClient) {
     { menu_name: 'Transaksi', name: 'Transaksi Deposit', icon: 'IconWallet', path: 'transaksi_deposit', tab: JSON.stringify([{ id: tabs[9].id } ]) },
     { menu_name: 'Transaksi', name: 'Transfer Saldo', icon: 'IconWallet', path: 'transfer_saldo', tab: JSON.stringify([{ id: tabs[27].id } ]) },
     { menu_name: 'Membership', name: 'Membership', icon: 'IconUsers', path: 'membership', tab: JSON.stringify([{ id: tabs[2].id }, { id: tabs[6].id } ]) },
+    { menu_name: 'Membership', name: 'Notifikasi', icon: 'IconNotifications', path: 'notifikasi', tab: JSON.stringify([{ id: tabs[30].id } ]) },
     { menu_name: 'Produk', name: 'Daftar Produk', icon: 'IconBox', path: 'daftar_produk', tab: JSON.stringify([{ id: tabs[3].id }, { id: tabs[19].id } ]) },
     { menu_name: 'Produk', name: 'Daftar Produk Tripay', icon: 'IconBox', path: 'daftar_produk_tripay', tab: JSON.stringify([{ id: tabs[13].id },{ id: tabs[20].id },{ id: tabs[14].id },{ id: tabs[15].id },{ id: tabs[23].id },{ id: tabs[22].id } ]) },
     { menu_name: 'Produk', name: 'Daftar Produk IAK', icon: 'IconBox', path: 'daftar_produk_iak', tab: JSON.stringify([{ id: tabs[16].id },{ id: tabs[21].id },{ id: tabs[17].id },{ id: tabs[18].id } ]) },

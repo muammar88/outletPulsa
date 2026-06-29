@@ -116,9 +116,11 @@ class Rest_transaction {
     });
   }
 
-  Future<Model_list_kategori> getDaftarKategori(String kodeKategori) async {
+  Future<Model_list_kategori> getDaftarKategori(String kodeKategori, {String search = ''}) async {
     final headers = await ApiHeaders.getHeaders();
-    Uri url = Uri.parse(_getDaftarKategori_url!);
+    // Search dikirim via query param karena body sudah berisi kode
+    final queryStr = search.isNotEmpty ? '?search=${Uri.encodeQueryComponent(search)}' : '';
+    Uri url = Uri.parse('${_getDaftarKategori_url!}$queryStr');
     return _netUtil
         .post(url, headers, jsonEncode({"kode": kodeKategori}))
         .then((dynamic res) async {
@@ -127,9 +129,10 @@ class Rest_transaction {
   }
 
   Future<Model_list_kategori> getDaftarKategoriPascabayar(
-      String kodeKategori) async {
+      String kodeKategori, {String search = ''}) async {
     final headers = await ApiHeaders.getHeaders();
-    Uri url = Uri.parse(_getDaftarKategoriPascabayar_url!);
+    final queryStr = search.isNotEmpty ? '?search=${Uri.encodeQueryComponent(search)}' : '';
+    Uri url = Uri.parse('${_getDaftarKategoriPascabayar_url!}$queryStr');
     return _netUtil
         .post(url, headers, jsonEncode({"kode": kodeKategori}))
         .then((dynamic res) async {

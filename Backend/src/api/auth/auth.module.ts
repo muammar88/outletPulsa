@@ -3,9 +3,12 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { PrismaService } from '../../prisma.service';
 import { JwtModule } from '@nestjs/jwt';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { NotificationModule } from '../../notification/notification.module';
 
 @Module({
   imports: [
+    NotificationModule,
     JwtModule.register({
       global: true, // Membuat JwtService tersedia untuk injeksi secara global
       secret: process.env.JWT_SECRET as string,
