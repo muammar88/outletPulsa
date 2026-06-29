@@ -74,8 +74,8 @@ jobs:
             # echo "🔧 Mengatasi failed migration sebelumnya..."
             # docker exec -i outletpulsa_backend npx prisma migrate resolve --applied 20260622152905_add_bullmq_schedules || true
 
-            # echo "🔧 Resolve failed migration (jika ada)..."
-            # docker exec -i outletpulsa_backend npx prisma migrate resolve --rolled-back "20260625092400_add_device_code_to_otp_register" || true
+            echo "🔧 Resolve failed migration akibat BOM UTF-8..."
+            docker exec -i outletpulsa_backend npx prisma migrate resolve --rolled-back "20260629160000_refactor_pengumuman" || true
 
             echo "📜 Run migration"
             docker exec -i outletpulsa_backend npx prisma migrate deploy
