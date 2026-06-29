@@ -3,20 +3,20 @@ import { initializeApp, cert, applicationDefault, getApps } from 'firebase-admin
 import { getMessaging } from 'firebase-admin/messaging';
 import { PrismaService } from '../prisma.service';
 
-interface SendNotificationDto {
+interface SendPengumumanDto {
   title: string;
   body: string;
   imageUrl?: string;
   payload?: any;
-  notificationType: string;
+  pengumumanType: string;
   targetType: 'All' | 'User' | 'Device';
   targetId?: string; // Member ID stringified or Device Code
   createdBy?: number;
 }
 
 @Injectable()
-export class NotificationService implements OnModuleInit {
-  private readonly logger = new Logger(NotificationService.name);
+export class PengumumanService implements OnModuleInit {
+  private readonly logger = new Logger(PengumumanService.name);
 
   constructor(private prisma: PrismaService) {}
 
@@ -46,17 +46,17 @@ export class NotificationService implements OnModuleInit {
   }
 
   /**
-   * Main entry point to send notifications
+   * Main entry point to send pengumumans
    */
-  async sendNotification(dto: SendNotificationDto) {
-    // 1. Insert into Notification table
-    const notification = await this.prisma.notification.create({
+  async sendPengumuman(dto: SendPengumumanDto) {
+    // 1. Insert into Pengumuman table
+    const pengumuman = await this.prisma.pengumuman.create({
       data: {
         title: dto.title,
         body: dto.body,
         image_url: dto.imageUrl,
         payload: dto.payload ? JSON.stringify(dto.payload) : null,
-        notification_type: dto.notificationType,
+        pengumuman_type: dto.pengumumanType,
         target_type: dto.targetType,
         target_id: dto.targetId,
         created_by: dto.createdBy,
@@ -66,61 +66,61 @@ export class NotificationService implements OnModuleInit {
 
     try {
       if (dto.targetType === 'Device' && dto.targetId) {
-        await this.sendToDevice(notification, dto.targetId);
+        await this.sendToDevice(pengumuman, dto.targetId);
       } else if (dto.targetType === 'User' && dto.targetId) {
-        await this.sendToUser(notification, parseInt(dto.targetId));
+        await this.sendToUser(pengumuman, parseInt(dto.targetId));
       } else if (dto.targetType === 'All') {
-        await this.sendBroadcast(notification);
+        await this.sendBroadcast(pengumuman);
       }
 
-      await this.prisma.notification.update({
-        where: { id: notification.id },
+      await this.prisma.pengumuman.update({
+        where: { id: pengumuman.id },
         data: { status: 'Success', sent_at: new Date() },
       });
-      this.logger.log(`Notification ${notification.id} processed successfully`);
+      this.logger.log(`Pengumuman ${pengumuman.id} processed successfully`);
     } catch (error) {
-      await this.prisma.notification.update({
-        where: { id: notification.id },
+      await this.prisma.pengumuman.update({
+        where: { id: pengumuman.id },
         data: { status: 'Failed', sent_at: new Date() },
       });
-      this.logger.error(`Failed to process notification ${notification.id}:`, error);
+      this.logger.error(`Failed to process pengumuman ${pengumuman.id}:`, error);
     }
   }
 
-  private async sendToDevice(notification: any, deviceCode: string) {
+  public async sendToDevice(pengumuman: any, deviceCode: string) {
     const device = await this.prisma.deviceConnected.findUnique({
       where: { device_code: deviceCode },
     });
 
     if (!device) return;
 
-    await this.createRecipientAndSend(notification, device);
+    await this.createRecipientAndSend(pengumuman, device);
   }
 
-  private async sendToUser(notification: any, memberId: number) {
+  public async sendToUser(pengumuman: any, memberId: number) {
     const devices = await this.prisma.deviceConnected.findMany({
       where: { member_id: memberId },
     });
 
     for (const device of devices) {
-      await this.createRecipientAndSend(notification, device);
+      await this.createRecipientAndSend(pengumuman, device);
     }
   }
 
-  private async sendBroadcast(notification: any) {
+  public async sendBroadcast(pengumuman: any) {
     const devices = await this.prisma.deviceConnected.findMany({
       where: { fcm_token: { not: null } },
     });
 
     for (const device of devices) {
-      await this.createRecipientAndSend(notification, device);
+      await this.createRecipientAndSend(pengumuman, device);
     }
   }
 
-  private async createRecipientAndSend(notification: any, device: any) {
-    const recipient = await this.prisma.notificationRecipient.create({
+  public async createRecipientAndSend(pengumuman: any, device: any) {
+    const recipient = await this.prisma.pengumumanRecipient.create({
       data: {
-        notification_id: notification.id,
+        pengumuman_id: pengumuman.id,
         member_id: device.member_id,
         device_code: device.device_code,
         status: 'Pending',
@@ -128,7 +128,7 @@ export class NotificationService implements OnModuleInit {
     });
 
     if (!device.fcm_token) {
-      await this.prisma.notificationRecipient.update({
+      await this.prisma.pengumumanRecipient.update({
         where: { id: recipient.id },
         data: { status: 'Failed', error_message: 'No FCM Token' },
       });
@@ -136,26 +136,36 @@ export class NotificationService implements OnModuleInit {
     }
 
     try {
+      let parsedPayload: Record<string, string> = {};
+      if (pengumuman.payload) {
+        const rawPayload = JSON.parse(pengumuman.payload);
+        for (const key in rawPayload) {
+          if (rawPayload[key] !== null && rawPayload[key] !== undefined) {
+            parsedPayload[key] = String(rawPayload[key]);
+          }
+        }
+      }
+
       const message = {
         token: device.fcm_token,
-        notification: {
-          title: notification.title,
-          body: notification.body,
+        pengumuman: {
+          title: pengumuman.title,
+          body: pengumuman.body,
         },
         data: {
-          notificationId: notification.id.toString(),
-          notificationType: notification.notification_type,
-          ...(notification.payload ? JSON.parse(notification.payload) : {}),
+          pengumumanId: pengumuman.id.toString(),
+          pengumumanType: pengumuman.pengumuman_type,
+          ...parsedPayload,
         },
       };
 
-      if (notification.image_url) {
-        message.notification['imageUrl'] = notification.image_url;
+      if (pengumuman.image_url) {
+        message.pengumuman['imageUrl'] = pengumuman.image_url;
       }
 
       await getMessaging().send(message as any);
 
-      await this.prisma.notificationRecipient.update({
+      await this.prisma.pengumumanRecipient.update({
         where: { id: recipient.id },
         data: { status: 'Delivered', delivered_at: new Date() },
       });
@@ -175,7 +185,7 @@ export class NotificationService implements OnModuleInit {
         errorMessage = 'Invalid token removed';
       }
 
-      await this.prisma.notificationRecipient.update({
+      await this.prisma.pengumumanRecipient.update({
         where: { id: recipient.id },
         data: { status, error_message: errorMessage },
       });
@@ -187,10 +197,10 @@ export class NotificationService implements OnModuleInit {
    * Helper for System Events
    */
   async sendTransactionStatus(memberId: number, title: string, body: string, payload?: any) {
-    return this.sendNotification({
+    return this.sendPengumuman({
       title,
       body,
-      notificationType: 'Transaction',
+      pengumumanType: 'Transaction',
       targetType: 'User',
       targetId: memberId.toString(),
       payload,
@@ -198,15 +208,15 @@ export class NotificationService implements OnModuleInit {
   }
 
   async getMobileHistory(memberId: number) {
-     return this.prisma.notificationRecipient.findMany({
+     return this.prisma.pengumumanRecipient.findMany({
         where: { member_id: memberId },
-        include: { notification: true },
+        include: { pengumuman: true },
         orderBy: { createdAt: 'desc' }
      });
   }
 
   async markAsRead(recipientId: number) {
-      return this.prisma.notificationRecipient.update({
+      return this.prisma.pengumumanRecipient.update({
           where: { id: recipientId },
           data: {
               status: 'Read',

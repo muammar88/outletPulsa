@@ -3,11 +3,10 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:outletpulsa/core/constants/config.dart';
-import 'package:outletpulsa/shared/providers/InfoBelumBacaProvider.dart';
-import 'package:outletpulsa/shared/providers/UpdateStatusBacaProvider.dart';
+import 'package:outletpulsa/shared/providers/pengumuman_provider.dart';
 
-class Detail_info extends StatefulWidget {
-  const Detail_info({
+class Detail_pengumuman extends StatefulWidget {
+  const Detail_pengumuman({
     super.key,
     required this.id,
     required this.title,
@@ -19,23 +18,40 @@ class Detail_info extends StatefulWidget {
   final String desc;
 
   @override
-  State<Detail_info> createState() => _Detail_infoState();
+  State<Detail_pengumuman> createState() => _Detail_pengumumanState();
 }
 
-class _Detail_infoState extends State<Detail_info> {
+class _Detail_pengumumanState extends State<Detail_pengumuman> {
   final config = ConfigApp();
 
   bool loadData = false;
 
   @override
-  void didChangeDependencies() async {
-    if (loadData == false) {
+  void didChangeDependencies() {
+    if (!loadData) {
       loadData = true;
 
-      await Provider.of<Update_status_baca_provider>(context, listen: false)
-          .updateStatusBaca(widget.id);
-      await Provider.of<Info_belum_baca_provider>(context, listen: false)
-          .getInfoBelumBaca();
+      // id here might be Pengumuman_id from FCM push or recipient_id from Info tab.
+      // If it's opened from Info tab, we don't necessarily need to mark as read here 
+      // because Info tab already marks it as read when clicked.
+      // If opened from Push Pengumuman, it's PengumumanId, which we match and mark.
+      int parsedId = int.tryParse(widget.id) ?? 0;
+      if (parsedId != 0) {
+         WidgetsBinding.instance.addPostFrameCallback((_) {
+             final provider = Provider.of<PengumumanProvider>(context, listen: false);
+             provider.fetchMobileHistory().then((_) {
+                 try {
+                   final item = provider.listPengumuman.firstWhere(
+                       (el) => el['Pengumuman']['id'] == parsedId || el['id'] == parsedId);
+                   if (item != null && item['status'] != 'Read') {
+                       provider.markAsRead(item['id']);
+                   }
+                 } catch (e) {
+                   debugPrint('Pengumuman not found in history yet');
+                 }
+             });
+         });
+      }
     }
     super.didChangeDependencies();
   }
@@ -212,3 +228,4 @@ class _Detail_infoState extends State<Detail_info> {
     );
   }
 }
+

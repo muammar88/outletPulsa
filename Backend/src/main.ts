@@ -6,7 +6,6 @@ import { AuthModule } from './api/auth/auth.module';
 import { BerandaModule } from './api/beranda/beranda.module';
 import { RiwayatModule } from './api/riwayat/riwayat.module';
 import { StubModule } from './api/stub/stub.module';
-import { InfoModule } from './api/info/info.module';
 import { AkunModule } from './api/akun/akun.module';
 import { ProdukModule } from './api/produk/produk.module';
 import { TransaksiModule } from './api/transaksi/transaksi.module';
@@ -73,7 +72,6 @@ async function bootstrap() {
       BerandaModule,
       RiwayatModule,
       StubModule,
-      InfoModule,
       AkunModule,
       ProdukModule,
       TransaksiModule,

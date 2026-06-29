@@ -1,10 +1,10 @@
 import { Controller, Post, Body, Get, UseGuards, Req } from '@nestjs/common';
-import { NotificationService } from './notification.service';
+import { PengumumanService } from './pengumuman.service';
 import { JwtApiGuard } from '../api/guards/jwt-api.guard';
 
-@Controller('api/notifications')
-export class NotificationController {
-    constructor(private readonly notificationService: NotificationService) {}
+@Controller('api/pengumumans')
+export class PengumumanController {
+    constructor(private readonly pengumumanService: PengumumanService) {}
 
     @UseGuards(JwtApiGuard)
     @Post('fcm-token')
@@ -14,7 +14,7 @@ export class NotificationController {
             return { status: false, message: 'Device code missing' };
         }
 
-        await this.notificationService.updateFcmToken(deviceCode, body.fcm_token);
+        await this.pengumumanService.updateFcmToken(deviceCode, body.fcm_token);
         
         return {
             status: true,
@@ -27,7 +27,7 @@ export class NotificationController {
     async getMobileHistory(@Req() req) {
         const memberId = req.user?.id; // Assuming user is populated by JwtApiGuard
 
-        const history = await this.notificationService.getMobileHistory(memberId);
+        const history = await this.pengumumanService.getMobileHistory(memberId);
 
         return {
             status: true,
@@ -38,11 +38,11 @@ export class NotificationController {
     @UseGuards(JwtApiGuard)
     @Post('read')
     async markAsRead(@Body() body: { recipient_id: number }) {
-        await this.notificationService.markAsRead(body.recipient_id);
+        await this.pengumumanService.markAsRead(body.recipient_id);
         
         return {
             status: true,
-            message: 'Notification marked as read'
+            message: 'Pengumuman marked as read'
         };
     }
 }

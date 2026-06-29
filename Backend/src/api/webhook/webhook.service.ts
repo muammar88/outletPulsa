@@ -1,6 +1,6 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
-import { NotificationService } from '../../notification/notification.service';
+import { PengumumanService } from '../../pengumuman/pengumuman.service';
 import * as crypto from 'crypto';
 
 interface IakCallbackPayload {
@@ -43,7 +43,7 @@ export class WebhookService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly notificationService: NotificationService
+    private readonly pengumumanService: PengumumanService
   ) {}
 
   async handleIakCallback(
@@ -303,7 +303,7 @@ export class WebhookService {
 
     const member = transactionData.riwayatTransaksi?.member;
     if (member) {
-      this.notificationService.sendTransactionStatus(
+      this.pengumumanService.sendTransactionStatus(
         member.id,
         'Transaksi Berhasil',
         `Pembelian Prabayar dengan kode ${transactionData.kode || transactionData.id} telah sukses. SN: ${sn}`,
@@ -324,7 +324,7 @@ export class WebhookService {
       await tx.transaction.update({ where: { id: transactionData.id }, data: { status: 'gagal' } });
     });
 
-    this.notificationService.sendTransactionStatus(
+    this.pengumumanService.sendTransactionStatus(
       member.id,
       'Transaksi Gagal',
       `Pembelian Prabayar dengan kode ${transactionData.kode || transactionData.id} gagal. Saldo telah dikembalikan.`,
@@ -348,7 +348,7 @@ export class WebhookService {
 
     const member = transactionData?.riwayatTransaksi?.member;
     if (member) {
-      this.notificationService.sendTransactionStatus(
+      this.pengumumanService.sendTransactionStatus(
         member.id,
         'Transaksi Pascabayar Berhasil',
         `Pembayaran tagihan dengan ID ${transactionData?.trId || id} sukses. SN: ${sn}`,
@@ -370,7 +370,7 @@ export class WebhookService {
       await tx.transactionPascabayar.update({ where: { id }, data: { status: 'gagal' } });
     });
 
-    this.notificationService.sendTransactionStatus(
+    this.pengumumanService.sendTransactionStatus(
       member.id,
       'Transaksi Pascabayar Gagal',
       `Pembayaran tagihan dengan ID ${transactionData.trId || id} gagal. Saldo dikembalikan.`,

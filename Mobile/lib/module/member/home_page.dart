@@ -8,7 +8,7 @@ import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/shared/providers/loadProvider.dart';
 import 'tab/akun.dart';
 import 'tab/beranda.dart';
-import 'tab/info.dart';
+import 'tab/pengumuman.dart';
 import 'tab/riwayat.dart';
 
 class Home_page extends StatefulWidget {
@@ -123,7 +123,7 @@ class _Home_pageState extends State<Home_page> {
           children: [
             _buildNavItem(0, TablerIcons.home, "Beranda"),
             _buildNavItem(1, TablerIcons.history, "Riwayat"),
-            _buildNavItem(2, TablerIcons.bell, "Info"),
+            _buildNavItem(2, TablerIcons.bell, "Pengumuman"),
             _buildNavItem(3, TablerIcons.user, "Akun"),
           ],
         ),
@@ -134,9 +134,9 @@ class _Home_pageState extends State<Home_page> {
           Beranda_tab(
               key: _berandaKey,
               refreshIndicatorKey: _refreshIndicatorKey, config: config),
-          Riwayat_tab(),
-          Info_tab(),
-          Akun_tab(),
+          const Riwayat_tab(),
+          const Pengumuman_tab(),
+          const Akun_tab(),
         ],
       ),
     );
@@ -232,3 +232,4 @@ class TitleAppBar extends StatelessWidget {
     );
   }
 }
+

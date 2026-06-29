@@ -28,12 +28,14 @@ import 'shared/providers/TransferSaldoProvider.dart';
 import 'shared/providers/UpdateAkunProvider.dart';
 import 'shared/providers/UpdateStatusBacaProvider.dart';
 import 'shared/providers/loadProvider.dart';
-import 'shared/providers/notification_provider.dart';
+import 'shared/providers/pengumuman_provider.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Handle background messages
   print('Handling a background message: ${message.messageId}');
 }
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -127,11 +129,12 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider<Agen_provider>(
           create: (context) => Agen_provider(),
         ),
-        ChangeNotifierProvider<NotificationProvider>(
-          create: (context) => NotificationProvider(),
+        ChangeNotifierProvider<PengumumanProvider>(
+          create: (context) => PengumumanProvider(),
         ),
       ],
       child: MaterialApp(
+          navigatorKey: navigatorKey,
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
             textTheme: GoogleFonts.poppinsTextTheme(
@@ -142,3 +145,4 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
+

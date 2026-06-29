@@ -14,7 +14,6 @@ import { AuthModule } from './api/auth/auth.module';
 import { BerandaModule } from './api/beranda/beranda.module';
 import { RiwayatModule } from './api/riwayat/riwayat.module';
 import { StubModule } from './api/stub/stub.module';
-import { InfoModule } from './api/info/info.module';
 import { AkunModule } from './api/akun/akun.module';
 import { ProdukModule } from './api/produk/produk.module';
 import { TransaksiModule } from './api/transaksi/transaksi.module';
@@ -29,7 +28,7 @@ import { WebhookModule } from './api/webhook/webhook.module';
 import { ProvidersModule } from './providers/providers.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { NotificationModule } from './notification/notification.module';
+import { PengumumanModule } from './pengumuman/pengumuman.module';
 
 @Module({
   imports: [
@@ -41,7 +40,7 @@ import { NotificationModule } from './notification/notification.module';
       ttl: 60000,
       limit: 100,
     }]),
-    ProvidersModule, AdministratorModule, AuthModule, BerandaModule, RiwayatModule, StubModule, InfoModule, AkunModule, ProdukModule, TransaksiModule, AgenModule, TransaksiPascabayarModule, WebhookModule, DepositModule, HealthModule, DeviceModule, SchedulerModule.register(), EventEmitterModule.forRoot(), NotificationModule],
+    ProvidersModule, AdministratorModule, AuthModule, BerandaModule, RiwayatModule, StubModule, AkunModule, ProdukModule, TransaksiModule, AgenModule, TransaksiPascabayarModule, WebhookModule, DepositModule, HealthModule, DeviceModule, SchedulerModule.register(), EventEmitterModule.forRoot(), PengumumanModule],
   controllers: [AppController, MemberController, ApiController],
   providers: [
     {

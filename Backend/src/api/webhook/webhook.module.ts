@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { WebhookController } from './webhook.controller';
 import { WebhookService } from './webhook.service';
 import { PrismaService } from '../../prisma.service';
-import { NotificationModule } from '../../notification/notification.module';
+import { PengumumanModule } from '../../pengumuman/pengumuman.module';
 
 @Module({
-  imports: [NotificationModule],
+  imports: [PengumumanModule],
   controllers: [WebhookController],
   providers: [WebhookService, PrismaService],
 })

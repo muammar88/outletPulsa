@@ -25,7 +25,7 @@ model User {
   activityLogs ActivityLog[]
   riwayatTransferSaldos RiwayatTransferSaldoServer[]
   riwayatSaldos         RiwayatSaldo[]
-  notifications         Notification[]
+  pengumuman          Pengumuman[]
 }
 
 model Group {
@@ -82,7 +82,7 @@ model Member {
   riwayatSaldos           RiwayatSaldo[]
   activityLogs            ActivityLog[]
   devicesConnected        DeviceConnected[]
-  notificationRecipients  NotificationRecipient[]
+  pengumumanRecipients    PengumumanRecipient[]
 
   @@index([whatsappnumber])
   @@index([kode])
@@ -937,31 +937,37 @@ model DeviceConnected {
   updatedAt    DateTime  @updatedAt
 
   member                Member?                 @relation(fields: [member_id], references: [id])
-  notificationRecipients NotificationRecipient[]
+  pengumumanRecipients  PengumumanRecipient[]
 }
 
-model Notification {
+model Pengumuman {
+  @@map("Notification")
   id                Int       @id @default(autoincrement())
   title             String
   body              String    @db.Text
   image_url         String?   @db.Text
   payload           String?   @db.Text // Format JSON string
-  notification_type String    // cth: 'Promo', 'Transaction', 'System', 'Broadcast'
+  pengumuman_type   String    @map("notification_type") // cth: 'Promo', 'Transaction', 'System', 'Broadcast'
   target_type       String    // cth: 'All', 'User', 'Device'
   target_id         String?   // User ID atau Device Code
   created_by        Int?      // Admin User ID
   status            String    @default("Draft") // Draft, Sending, Success, Failed
   sent_at           DateTime?
+  start_date        DateTime?
+  end_date          DateTime?
+  priority          String?   @default("Normal")
+  is_active         Boolean   @default(true)
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
 
   creator           User?     @relation(fields: [created_by], references: [id])
-  recipients        NotificationRecipient[]
+  recipients        PengumumanRecipient[]
 }
 
-model NotificationRecipient {
+model PengumumanRecipient {
+  @@map("NotificationRecipient")
   id              Int       @id @default(autoincrement())
-  notification_id Int
+  pengumuman_id   Int       @map("notification_id")
   member_id       Int?
   device_code     String?
   status          String    @default("Pending") // Pending, Delivered, Failed, Read
@@ -971,7 +977,7 @@ model NotificationRecipient {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  notification    Notification     @relation(fields: [notification_id], references: [id], onDelete: Cascade)
+  pengumuman      Pengumuman       @relation(fields: [pengumuman_id], references: [id], onDelete: Cascade)
   member          Member?          @relation(fields: [member_id], references: [id], onDelete: Cascade)
   device          DeviceConnected? @relation(fields: [device_code], references: [device_code], onDelete: Cascade)
 }

@@ -1,22 +1,24 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import '../../main.dart';
+import '../../module/member/widget/pengumuman/Detail_pengumuman.dart';
+import '../../core/storage/SecureStorageHelper.dart';
 import 'package:http/http.dart' as http;
 
 import '../../core/constants/config.dart';
 import 'package:flutter/foundation.dart';
 
-class NotificationProvider extends ChangeNotifier {
+class PengumumanProvider extends ChangeNotifier {
   FirebaseMessaging? _firebaseMessaging;
   
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  List<dynamic> _listNotification = [];
-  List<dynamic> get listNotification => _listNotification;
+  List<dynamic> _listPengumuman = [];
+  List<dynamic> get listPengumuman => _listPengumuman;
 
-  Future<void> initNotification() async {
+  Future<void> initPengumuman() async {
     try {
       _firebaseMessaging = FirebaseMessaging.instance;
       
@@ -39,9 +41,9 @@ class NotificationProvider extends ChangeNotifier {
         debugPrint('Message data: ${message.data}');
 
         if (message.notification != null) {
-          debugPrint('Message also contained a notification: ${message.notification}');
+          debugPrint('Message also contained a Pengumuman: ${message.notification}');
           // You could show a local snackbar or flushbar here if desired.
-          // Or just fetch the latest notifications
+          // Or just fetch the latest Pengumumans
           fetchMobileHistory();
         }
       });
@@ -50,14 +52,14 @@ class NotificationProvider extends ChangeNotifier {
       FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
         if (message != null) {
           debugPrint('Opened from terminated state with message: ${message.data}');
-          // Handle navigation or logic here
+          _handlePengumumanClick(message);
         }
       });
 
       // Handle when app is opened from background
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
         debugPrint('Opened from background state with message: ${message.data}');
-        // Handle navigation or logic here
+        _handlePengumumanClick(message);
       });
 
       // Get FCM Token and send to backend
@@ -74,20 +76,38 @@ class NotificationProvider extends ChangeNotifier {
       });
 
     } catch (e) {
-      debugPrint('Error init notification: $e');
+      debugPrint('Error init Pengumuman: $e');
+    }
+  }
+
+  void _handlePengumumanClick(RemoteMessage message) {
+    String title = message.notification?.title ?? "Info";
+    String body = message.notification?.body ?? "";
+    String id = message.data['PengumumanId']?.toString() ?? "";
+    
+    if (navigatorKey.currentState != null && id.isNotEmpty) {
+       navigatorKey.currentState!.push(
+         MaterialPageRoute(
+           builder: (_) => Detail_pengumuman(
+             id: id,
+             title: title,
+             desc: body,
+           )
+         )
+       );
     }
   }
 
   Future<void> updateFcmToken(String fcmToken) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');
-    String? deviceCode = prefs.getString('device_code');
+    final secureStorage = SecureStorageHelper();
+    String? token = await secureStorage.getToken();
+    String? deviceCode = await secureStorage.getDeviceCode();
 
     if (token == null || deviceCode == null) return;
 
     try {
       ConfigApp config = ConfigApp();
-      var url = Uri.parse('${config.mainUrl}/notifications/fcm-token');
+      var url = Uri.parse('${config.mainUrl}/Pengumumans/fcm-token');
       var response = await http.post(
         url,
         headers: {
@@ -108,21 +128,21 @@ class NotificationProvider extends ChangeNotifier {
 
   Future<void> fetchMobileHistory() async {
     _isLoading = true;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');
-    String? deviceCode = prefs.getString('device_code');
+    final secureStorage = SecureStorageHelper();
+    String? token = await secureStorage.getToken();
+    String? deviceCode = await secureStorage.getDeviceCode();
 
     if (token == null || deviceCode == null) {
       _isLoading = false;
-      notifyListeners();
+      WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
       return;
     }
 
     try {
       ConfigApp config = ConfigApp();
-      var url = Uri.parse('${config.mainUrl}/notifications/mobile');
+      var url = Uri.parse('${config.mainUrl}/Pengumumans/mobile');
       var response = await http.get(
         url,
         headers: {
@@ -134,7 +154,7 @@ class NotificationProvider extends ChangeNotifier {
       if (response.statusCode == 200) {
         var result = jsonDecode(response.body);
         if (result['status'] == true) {
-           _listNotification = result['data'];
+           _listPengumuman = result['data'];
         }
       }
     } catch (e) {
@@ -142,19 +162,19 @@ class NotificationProvider extends ChangeNotifier {
     }
 
     _isLoading = false;
-    notifyListeners();
+    WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
   }
 
   Future<void> markAsRead(int recipientId) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? token = prefs.getString('token');
-    String? deviceCode = prefs.getString('device_code');
+    final secureStorage = SecureStorageHelper();
+    String? token = await secureStorage.getToken();
+    String? deviceCode = await secureStorage.getDeviceCode();
 
     if (token == null || deviceCode == null) return;
 
     try {
       ConfigApp config = ConfigApp();
-      var url = Uri.parse('${config.mainUrl}/notifications/read');
+      var url = Uri.parse('${config.mainUrl}/Pengumumans/read');
       await http.post(
         url,
         headers: {
@@ -168,13 +188,15 @@ class NotificationProvider extends ChangeNotifier {
       );
 
       // Refresh list locally
-      int index = _listNotification.indexWhere((element) => element['id'] == recipientId);
+      int index = _listPengumuman.indexWhere((element) => element['id'] == recipientId);
       if (index != -1) {
-        _listNotification[index]['status'] = 'Read';
-        notifyListeners();
+        _listPengumuman[index]['status'] = 'Read';
+        WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
       }
     } catch (e) {
       debugPrint('Error markAsRead: $e');
     }
   }
 }
+
+

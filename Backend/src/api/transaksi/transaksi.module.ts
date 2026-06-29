@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { TransaksiController } from './transaksi.controller';
 import { TransaksiService } from './transaksi.service';
 import { PrismaService } from '../../prisma.service';
-import { NotificationModule } from '../../notification/notification.module';
+import { PengumumanModule } from '../../pengumuman/pengumuman.module';
 
 @Module({
-  imports: [NotificationModule],
+  imports: [PengumumanModule],
   controllers: [TransaksiController],
   providers: [TransaksiService, PrismaService],
 })

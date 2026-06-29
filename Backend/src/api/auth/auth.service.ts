@@ -4,14 +4,14 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import { GetOtpRegisterDto, RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcryptjs';
-import { NotificationService } from '../../notification/notification.service';
+import { PengumumanService } from '../../pengumuman/pengumuman.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly notificationService: NotificationService
+    private readonly pengumumanService: PengumumanService
   ) {}
 
   /**
@@ -68,13 +68,13 @@ export class AuthService {
     const token = await this.jwtService.signAsync(payload);
 
     // Kirim notifikasi login
-    this.notificationService.sendNotification({
+    this.pengumumanService.sendPengumuman({
         title: 'Login Berhasil',
         body: `Akun Anda berhasil login dari perangkat ${device.device_name || 'Tidak dikenal'}`,
-        notificationType: 'System',
+        pengumumanType: 'System',
         targetType: 'User',
         targetId: member.id.toString(),
-    }).catch(e => console.error('Failed to send login notification', e));
+    }).catch(e => console.error('Failed to send login pengumuman', e));
 
     // 5. Kembalikan response sukses menggunakan property data
     return {
@@ -224,13 +224,13 @@ export class AuthService {
       }
 
       // Kirim notifikasi selamat datang
-      this.notificationService.sendNotification({
+      this.pengumumanService.sendPengumuman({
           title: 'Selamat Datang di OutletPulsa!',
           body: `Halo ${newMember.fullname}, akun Anda berhasil didaftarkan. Nikmati kemudahan transaksi bersama kami.`,
-          notificationType: 'System',
+          pengumumanType: 'System',
           targetType: 'User',
           targetId: newMember.id.toString(),
-      }).catch(e => console.error('Failed to send welcome notification', e));
+      }).catch(e => console.error('Failed to send welcome pengumuman', e));
 
       return { message: 'Registrasi berhasil', data: { success: true } };
     });

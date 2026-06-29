@@ -3,7 +3,7 @@ import { PrismaService } from '../../prisma.service';
 import { CreateDepositDto } from './dto/create-deposit.dto';
 import { UpdateDepositDto } from './dto/update-deposit.dto';
 import { GetDepositDto } from './dto/get-deposit.dto';
-import { NotificationService } from '../../notification/notification.service';
+import { PengumumanService } from '../../pengumuman/pengumuman.service';
 
 @Injectable()
 export class DepositService {
@@ -11,7 +11,7 @@ export class DepositService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly notificationService: NotificationService
+    private readonly pengumumanService: PengumumanService
   ) {}
 
   async findAll(query: GetDepositDto) {
@@ -349,10 +349,10 @@ export class DepositService {
           }
         });
 
-        this.notificationService.sendNotification({
+        this.pengumumanService.sendPengumuman({
           title: 'Deposit Berhasil',
           body: `Deposit sebesar Rp ${nominalTotal} telah berhasil ditambahkan ke saldo Anda.`,
-          notificationType: 'Deposit',
+          pengumumanType: 'Deposit',
           targetType: 'User',
           targetId: member.id.toString(),
         }).catch(e => this.logger.error('Failed to send deposit success notif', e));
@@ -375,10 +375,10 @@ export class DepositService {
         const member = requestDeposit.riwayatTransaksi?.member;
         if (member) {
           const nominalTotal = (requestDeposit.nominal || 0) + (requestDeposit.nominalTambahan || 0);
-          this.notificationService.sendNotification({
+          this.pengumumanService.sendPengumuman({
             title: 'Deposit Ditolak',
             body: `Deposit sebesar Rp ${nominalTotal} telah ditolak. Alasan: ${dto.alasanPenolakan}`,
-            notificationType: 'Deposit',
+            pengumumanType: 'Deposit',
             targetType: 'User',
             targetId: member.id.toString(),
           }).catch(e => this.logger.error('Failed to send deposit rejected notif', e));
