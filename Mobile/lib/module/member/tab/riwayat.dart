@@ -170,78 +170,14 @@ class Sub_riwayat_deposit extends StatefulWidget {
   State<Sub_riwayat_deposit> createState() => _Sub_riwayat_depositState();
 }
 
-class _Sub_riwayat_depositState extends State<Sub_riwayat_deposit>
-    with WidgetsBindingObserver {
+class _Sub_riwayat_depositState extends State<Sub_riwayat_deposit> {
   final config = ConfigApp();
   bool loadData = false;
-
-  Timer? _timer;
-  bool _isFetching = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    if (widget.tabController != null) {
-      widget.tabController!.addListener(_handleTabSelection);
-    }
-  }
-
-  void _handleTabSelection() {
-    if (widget.tabController?.index == 2) {
-      _startPolling();
-    } else {
-      _stopPolling();
-    }
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      if (widget.tabController == null || widget.tabController!.index == 2) {
-        _startPolling();
-      }
-    } else {
-      _stopPolling();
-    }
-  }
-
-  void _startPolling() {
-    if (_timer != null && _timer!.isActive) return;
-    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      _fetchData();
-    });
-  }
-
-  void _stopPolling() {
-    _timer?.cancel();
-    _timer = null;
-  }
-
-  Future<void> _fetchData() async {
-    if (_isFetching || !mounted) return;
-
-    final isCurrentRoute = ModalRoute.of(context)?.isCurrent ?? true;
-    if (!isCurrentRoute) return;
-
-    _isFetching = true;
-    try {
-      final riwayat =
-          Provider.of<Riwayat_deposit_provider>(context, listen: false);
-      await riwayat.getRiwayatDeposit();
-    } finally {
-      if (mounted) {
-        _isFetching = false;
-      }
-    }
-  }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (loadData == false) {
-      loadData = true;
-
       loadData = true;
 
       // Initial fetch
@@ -253,20 +189,11 @@ class _Sub_riwayat_depositState extends State<Sub_riwayat_deposit>
           beranda.get_data_beranda();
         }
       });
-
-      if (widget.tabController == null || widget.tabController!.index == 2) {
-        _startPolling();
-      }
     }
   }
 
   @override
   void dispose() {
-    _stopPolling();
-    if (widget.tabController != null) {
-      widget.tabController!.removeListener(_handleTabSelection);
-    }
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -556,6 +483,7 @@ class _Sub_riwayat_pascabayarState extends State<Sub_riwayat_pascabayar> {
   void didChangeDependencies() async {
     super.didChangeDependencies();
     if (loadData == false) {
+      loadData = true;
       final riwayat =
           Provider.of<Riwayat_pascabayar_provider>(context, listen: false);
       await riwayat.getRiwayatPascabayar();

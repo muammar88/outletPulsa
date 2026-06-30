@@ -128,8 +128,8 @@ export class AdminPengumumanService {
         data: { status: 'Sending' }
       });
 
-      // Send to all devices
-      await this.pengumumanService.sendBroadcast(pengumuman);
+      // Send to all devices and capture summary
+      const summary = await this.pengumumanService.sendBroadcast(pengumuman);
 
       // Update status to Success
       await this.prisma.pengumuman.update({
@@ -137,7 +137,7 @@ export class AdminPengumumanService {
         data: { status: 'Success', sent_at: new Date() }
       });
 
-      return { message: 'Push pengumuman diproses' };
+      return { message: 'Push pengumuman selesai diproses', summary };
     } catch (error) {
       await this.prisma.pengumuman.update({
         where: { id },

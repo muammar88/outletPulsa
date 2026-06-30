@@ -81,6 +81,9 @@ class _Home_pageState extends State<Home_page> {
     setState(() {
       _currentIndex = index;
     });
+    if (index == 2) {
+      Provider.of<PengumumanProvider>(context, listen: false).fetchMobileHistory();
+    }
   }
 
   @override
@@ -94,8 +97,10 @@ class _Home_pageState extends State<Home_page> {
           elevation: 0,
           selectedItemColor: cnf.text_navy_color,
           unselectedItemColor: Colors.grey.shade400,
-          selectedLabelStyle: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold),
-          unselectedLabelStyle: GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500),
+          selectedLabelStyle:
+              GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.bold),
+          unselectedLabelStyle:
+              GoogleFonts.poppins(fontSize: 12, fontWeight: FontWeight.w500),
           type: BottomNavigationBarType.fixed,
           currentIndex: _currentIndex!,
           items: getItems(),
@@ -197,5 +202,3 @@ class TitleAppBar extends StatelessWidget {
     );
   }
 }
-
-

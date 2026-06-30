@@ -42,7 +42,7 @@ class _Detail_pengumumanState extends State<Detail_pengumuman> {
              provider.fetchMobileHistory().then((_) {
                  try {
                    final item = provider.listPengumuman.firstWhere(
-                       (el) => el['Pengumuman']['id'] == parsedId || el['id'] == parsedId);
+                       (el) => (el['pengumuman'] != null && el['pengumuman']['id'] == parsedId) || el['id'] == parsedId);
                    if (item != null && item['status'] != 'Read') {
                        provider.markAsRead(item['id']);
                    }

@@ -83,7 +83,7 @@ class PengumumanProvider extends ChangeNotifier {
   void _handlePengumumanClick(RemoteMessage message) {
     String title = message.notification?.title ?? "Info";
     String body = message.notification?.body ?? "";
-    String id = message.data['PengumumanId']?.toString() ?? "";
+    String id = message.data['pengumumanId']?.toString() ?? "";
     
     if (navigatorKey.currentState != null && id.isNotEmpty) {
        navigatorKey.currentState!.push(
@@ -107,7 +107,7 @@ class PengumumanProvider extends ChangeNotifier {
 
     try {
       ConfigApp config = ConfigApp();
-      var url = Uri.parse('${config.mainUrl}/Pengumumans/fcm-token');
+      var url = Uri.parse('${config.mainUrl}/pengumumans/fcm-token');
       var response = await http.post(
         url,
         headers: {
@@ -127,6 +127,7 @@ class PengumumanProvider extends ChangeNotifier {
   }
 
   Future<void> fetchMobileHistory() async {
+    debugPrint('==== fetchMobileHistory CALLED ====');
     _isLoading = true;
     WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
 
@@ -135,6 +136,7 @@ class PengumumanProvider extends ChangeNotifier {
     String? deviceCode = await secureStorage.getDeviceCode();
 
     if (token == null || deviceCode == null) {
+      debugPrint('==== fetchMobileHistory ABORTED: token=$token, deviceCode=$deviceCode ====');
       _isLoading = false;
       WidgetsBinding.instance.addPostFrameCallback((_) => notifyListeners());
       return;
@@ -142,7 +144,12 @@ class PengumumanProvider extends ChangeNotifier {
 
     try {
       ConfigApp config = ConfigApp();
-      var url = Uri.parse('${config.mainUrl}/Pengumumans/mobile');
+      var url = Uri.parse('${config.mainUrl}/pengumumans/mobile');
+      
+      debugPrint('==== DEBUG API PENGUMUMAN ====');
+      debugPrint('URL: $url');
+      debugPrint('HEADERS: { Authorization: Bearer $token, x-device-code: $deviceCode }');
+
       var response = await http.get(
         url,
         headers: {
@@ -151,9 +158,13 @@ class PengumumanProvider extends ChangeNotifier {
         },
       );
 
+      debugPrint('RESPONSE STATUS: ${response.statusCode}');
+      debugPrint('RESPONSE BODY: ${response.body}');
+      debugPrint('==============================');
+
       if (response.statusCode == 200) {
         var result = jsonDecode(response.body);
-        if (result['status'] == true) {
+        if (result['error'] == '' || result['status'] == true || result['status'] == 'true') {
            _listPengumuman = result['data'];
         }
       }
@@ -174,7 +185,7 @@ class PengumumanProvider extends ChangeNotifier {
 
     try {
       ConfigApp config = ConfigApp();
-      var url = Uri.parse('${config.mainUrl}/Pengumumans/read');
+      var url = Uri.parse('${config.mainUrl}/pengumumans/read');
       await http.post(
         url,
         headers: {

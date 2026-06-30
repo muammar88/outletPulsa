@@ -32,6 +32,7 @@ const {
   showNotification,
   notificationType,
   notificationMessage,
+  notificationMessageHtml,
   displayNotification,
   hideNotification,
 } = useNotification();
@@ -112,6 +113,15 @@ watch(statusFilter, () => {
   fetchPengumuman();
 });
 
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+const onSearch = () => {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1;
+    fetchPengumuman();
+  }, 500);
+};
+
 const paginationProps = ref({
   currentPage,
   totalPages,
@@ -179,8 +189,25 @@ const handlePublish = (pengumuman: Pengumuman) => {
     `Kirim push notification pengumuman "${pengumuman.title}" ke semua perangkat mobile pengguna?`,
     async () => {
       try {
-        await pengumumanService.publish(pengumuman.id!);
-        displayNotification('Push notification sedang diproses ke semua perangkat', 'success');
+        const response: any = await pengumumanService.publish(pengumuman.id!);
+        const summary = response.data?.data?.summary;
+        
+        if (summary) {
+          const htmlMsg = `
+            <div class="mt-2 text-sm text-gray-700">
+              <p class="font-bold mb-1">Ringkasan Pengiriman:</p>
+              <ul class="list-disc pl-5 space-y-1">
+                <li><span class="text-emerald-600 font-semibold">Berhasil:</span> ${summary.success}</li>
+                <li><span class="text-blue-600 font-semibold">Dikirim Ulang (Retry):</span> ${summary.retried}</li>
+                <li><span class="text-gray-500 font-semibold">Dilewati (Sudah ada):</span> ${summary.skipped}</li>
+                <li><span class="text-rose-600 font-semibold">Gagal:</span> ${summary.failed}</li>
+              </ul>
+            </div>
+          `;
+          displayNotification(htmlMsg, 'success', 5000, true);
+        } else {
+          displayNotification('Push notification sedang diproses ke semua perangkat', 'success');
+        }
       } catch (error: any) {
         displayNotification(
           error.response?.data?.message || 'Gagal memproses publikasi notifikasi',
@@ -216,33 +243,41 @@ onMounted(() => {
         </div>
       </div>
 
-      <div class="mb-4 flex items-center gap-4">
-        <div class="w-48">
-          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Filter Status</label>
-          <select
-            v-model="statusFilter"
-            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm h-10 px-3"
-          >
-            <option value="">Semua Status</option>
-            <option value="true">Aktif</option>
-            <option value="false">Tidak Aktif</option>
-          </select>
-        </div>
-      </div>
-
       <BaseTable
         :columns="tableColumns"
         :data="pengumumans"
         :loading="isLoading"
         :pagination="paginationProps"
-        search-placeholder="Cari berdasarkan judul..."
         add-label="Tambah Pengumuman"
-        @search="fetchPengumuman"
         @add="openAddModal"
         @page-change="pageNow"
         :showNumbering="false"
         :showActions="false"
+        :showSearch="false"
       >
+        <template #filters>
+          <div class="flex flex-wrap gap-3">
+            <div class="inline-flex rounded-xl shadow-sm" role="group">
+              <input
+                type="text"
+                id="search"
+                class="relative block w-64 px-4 py-2.5 text-sm text-gray-800 bg-white border border-gray-200 rounded-s-xl hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200"
+                v-model="searchQuery"
+                @input="onSearch"
+                placeholder="Cari berdasarkan judul..."
+              />
+              <select
+                v-model="statusFilter"
+                class="relative block w-40 px-4 py-2.5 text-sm text-gray-800 bg-white border-y border-r border-gray-200 rounded-e-xl hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200 cursor-pointer"
+              >
+                <option value="">Semua Status</option>
+                <option value="true">Aktif</option>
+                <option value="false">Tidak Aktif</option>
+              </select>
+            </div>
+          </div>
+        </template>
+
         <template #cell-title="{ row }">
           <div class="font-semibold text-slate-700">{{ row.title }}</div>
         </template>
@@ -331,6 +366,7 @@ onMounted(() => {
       :showNotification="showNotification"
       :notificationType="notificationType"
       :notificationMessage="notificationMessage"
+      :notificationMessageHtml="notificationMessageHtml"
       @close="hideNotification"
     />
   </div>

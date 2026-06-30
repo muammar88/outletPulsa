@@ -9,6 +9,7 @@ import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/shared/providers/TransactionProvider.dart';
 import 'package:outletpulsa/shared/providers/loadProvider.dart';
 import 'package:outletpulsa/shared/widgets/CircularProgressWidget.dart';
+import 'package:outletpulsa/core/utils/format_util.dart';
 import 'daftar_operator.dart';
 import 'daftar_produk.dart';
 
@@ -109,6 +110,12 @@ class _Input_ppobState extends State<Input_ppob>
     if (nomor_tujuan == null || nomor_tujuan!.trim().isEmpty) {
       err_msg = '$inputLabel wajib diisi';
       err = true;
+    } else {
+      nomor_tujuan = FormatUtil.normalizePhoneNumber(nomor_tujuan!);
+      if (nomor_tujuan!.isEmpty) {
+        err_msg = '$inputLabel tidak valid';
+        err = true;
+      }
     }
 
     if (!err) {
@@ -383,12 +390,7 @@ class _Input_ppobState extends State<Input_ppob>
                   onPressed: () async {
                     Contact? contact = await _contactPicker.selectContact();
                     if (contact != null && contact.phoneNumbers != null && contact.phoneNumbers!.isNotEmpty) {
-                      String phone = contact.phoneNumbers!.first.replaceAll(RegExp(r'[^\d+]'), '');
-                      if (phone.startsWith('+62')) {
-                        phone = '0${phone.substring(3)}';
-                      } else if (phone.startsWith('62')) {
-                        phone = '0${phone.substring(2)}';
-                      }
+                      String phone = FormatUtil.normalizePhoneNumber(contact.phoneNumbers!.first);
                       setState(() {
                         nomor_tujuan = phone;
                         _nomorController.text = phone;

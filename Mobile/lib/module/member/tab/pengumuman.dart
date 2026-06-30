@@ -46,7 +46,7 @@ class _Pengumuman_tabState extends State<Pengumuman_tab> {
             ),
           ),
           title: Text(
-            'Pusat Notifikasi',
+            'Pusat Info',
             style: GoogleFonts.poppins(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -93,13 +93,13 @@ class _Pengumuman_tabState extends State<Pengumuman_tab> {
               return const AllBoxLoading();
             }
 
-            final unreadList = provider.listPengumuman.where((item) => item['status'] != 'Read').toList();
+            final unreadList = provider.listPengumuman.where((item) => item['status'] == 'Delivered').toList();
             final readList = provider.listPengumuman.where((item) => item['status'] == 'Read').toList();
 
             return TabBarView(
               children: [
-                _buildPengumumanList(provider, unreadList, 'Notifikasi Belum Dibaca'),
-                _buildPengumumanList(provider, readList, 'Notifikasi Sudah Dibaca'),
+                _buildPengumumanList(provider, unreadList, 'Tidak ada Info baru'),
+                _buildPengumumanList(provider, readList, 'Belum ada Info yang dibaca'),
               ],
             );
           },
@@ -109,23 +109,22 @@ class _Pengumuman_tabState extends State<Pengumuman_tab> {
   }
 
   Widget _buildPengumumanList(PengumumanProvider provider, List<dynamic> list, String emptyLabel) {
+    Widget content;
     if (list.isEmpty) {
-      return NotfoundWidget(config: config, label: emptyLabel);
-    }
-
-    return RefreshIndicator(
-      onRefresh: () async {
-        await provider.fetchMobileHistory();
-      },
-      child: ListView.separated(
+      content = NotfoundWidget(config: config, label: emptyLabel);
+    } else {
+      content = ListView.separated(
         physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
         padding: const EdgeInsets.all(16),
         itemCount: list.length,
         separatorBuilder: (context, index) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           final item = list[index];
-          final Pengumuman = item['Pengumuman'];
+          final pengumumanData = item['pengumuman'];
           final isRead = item['status'] == 'Read';
+
+          // Safe check if pengumumanData is null
+          if (pengumumanData == null) return const SizedBox();
 
           return InkWell(
             onTap: () {
@@ -138,8 +137,8 @@ class _Pengumuman_tabState extends State<Pengumuman_tab> {
                 MaterialPageRoute(
                   builder: (context) => Detail_pengumuman(
                     id: item['id'].toString(),
-                    title: Pengumuman['title'],
-                    desc: Pengumuman['body'],
+                    title: pengumumanData['title'] ?? 'No Title',
+                    desc: pengumumanData['body'] ?? 'No Content',
                   )
                 ),
               );
@@ -171,8 +170,8 @@ class _Pengumuman_tabState extends State<Pengumuman_tab> {
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
-                      Pengumuman['Pengumuman_type'] == 'Transaction' ? TablerIcons.receipt :
-                      Pengumuman['Pengumuman_type'] == 'Promo' ? TablerIcons.discount : TablerIcons.bell,
+                      pengumumanData['pengumuman_type'] == 'Transaction' ? TablerIcons.receipt :
+                      pengumumanData['pengumuman_type'] == 'Promo' ? TablerIcons.discount : TablerIcons.bell,
                       color: isRead ? Colors.grey.shade500 : const Color(0xFF1A3DB5),
                     ),
                   ),
@@ -182,7 +181,7 @@ class _Pengumuman_tabState extends State<Pengumuman_tab> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          Pengumuman['title'],
+                          pengumumanData['title'] ?? '',
                           style: GoogleFonts.poppins(
                             fontWeight: isRead ? FontWeight.w600 : FontWeight.bold,
                             fontSize: 14,
@@ -191,7 +190,7 @@ class _Pengumuman_tabState extends State<Pengumuman_tab> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          Pengumuman['body'],
+                          pengumumanData['body'] ?? '',
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.poppins(
@@ -217,7 +216,14 @@ class _Pengumuman_tabState extends State<Pengumuman_tab> {
             ),
           );
         },
-      ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: () async {
+        await provider.fetchMobileHistory();
+      },
+      child: content,
     );
   }
 }

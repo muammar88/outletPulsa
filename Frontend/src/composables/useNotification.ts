@@ -4,21 +4,28 @@ export function useNotification() {
   const showNotification = ref(false);
   const notificationType = ref<'success' | 'error' | 'warning'>('success');
   const notificationMessage = ref('');
+  const notificationMessageHtml = ref('');
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   function displayNotification(
     message: string,
     type: 'success' | 'error' | 'warning' = 'success',
     duration: number = 2000, // default 2 detik
+    isHtml: boolean = false
   ) {
-    // reset timeout biar gk bentrok kalo dipanggil berkali-kali
     if (timeoutId) clearTimeout(timeoutId);
 
-    notificationMessage.value = message;
+    if (isHtml) {
+      notificationMessage.value = '';
+      notificationMessageHtml.value = message;
+    } else {
+      notificationMessage.value = message;
+      notificationMessageHtml.value = '';
+    }
+
     notificationType.value = type;
     showNotification.value = true;
 
-    // auto hide setelah duration
     timeoutId = setTimeout(() => {
       showNotification.value = false;
       timeoutId = null;
@@ -37,6 +44,7 @@ export function useNotification() {
     showNotification,
     notificationType,
     notificationMessage,
+    notificationMessageHtml,
     displayNotification,
     hideNotification,
   };

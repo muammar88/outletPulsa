@@ -25,9 +25,10 @@ export class PengumumanController {
     @UseGuards(JwtApiGuard)
     @Get('mobile')
     async getMobileHistory(@Req() req) {
-        const memberId = req.user?.id; // Assuming user is populated by JwtApiGuard
+        const memberId = req.user?.id;
+        const deviceCode = req.headers['x-device-code'];
 
-        const history = await this.pengumumanService.getMobileHistory(memberId);
+        const history = await this.pengumumanService.getMobileHistory(memberId, deviceCode);
 
         return {
             status: true,
@@ -37,8 +38,10 @@ export class PengumumanController {
 
     @UseGuards(JwtApiGuard)
     @Post('read')
-    async markAsRead(@Body() body: { recipient_id: number }) {
-        await this.pengumumanService.markAsRead(body.recipient_id);
+    async markAsRead(@Req() req, @Body() body: { recipient_id: number }) {
+        const memberId = req.user?.id;
+        const deviceCode = req.headers['x-device-code'];
+        await this.pengumumanService.markAsRead(body.recipient_id, memberId, deviceCode);
         
         return {
             status: true,
