@@ -48,7 +48,7 @@ jobs:
           username: ${{ secrets.SSH_USER_SERVER_MACHINE_2 }}
           key: ${{ secrets.SSH_PRIVATE_KEY_SERVER_MACHINE_2 }}
           script: |
-            set -e # Menghentikan script jika ada perintah penting yang gagal
+            set -e
 
             echo "📁 Pindah ke direktori project..."
             cd /home/outletpulsa/outletpulsa
@@ -56,47 +56,25 @@ jobs:
             echo "🛑 1. Menghentikan seluruh container..."
             docker compose down
 
-            # echo "🗑️ 2. Menghapus image outletpulsa-frontend..."
-            # docker rmi muammar88/outletpulsa-frontend:1.0.0 || true
-
-            echo "🗑️ 3. Menghapus image outletpulsa-backend..."
+            echo "🗑️ 2. Menghapus image outletpulsa-backend lama..."
             docker rmi muammar88/outletpulsa-backend:1.0.0 || true
 
-            # echo "📥 Pull latest image"
-            # docker pull muammar88/outletpulsa-frontend:1.0.0
+            echo "📥 3. Pull image backend terbaru..."
             docker pull muammar88/outletpulsa-backend:1.0.0
 
-            echo "🚀 6. Menjalankan seluruh service..."
+            echo "🚀 4. Menjalankan seluruh service..."
             docker compose up -d
 
-            # echo "✅ Deployment selesai dengan sukses!"
+            echo "⏳ 5. Menunggu backend siap (5 detik)..."
+            sleep 5
 
-            # echo "🔧 Mengatasi failed migration sebelumnya..."
-            # docker exec -i outletpulsa_backend npx prisma migrate resolve --applied 20260622152905_add_bullmq_schedules || true
-
-            echo "🔧 Resolve failed migration akibat BOM UTF-8..."
+            echo "🔧 6. Resolve migration refactor_pengumuman jika sebelumnya gagal..."
             docker exec -i outletpulsa_backend npx prisma migrate resolve --rolled-back "20260629160000_refactor_pengumuman" || true
 
-            echo "📜 Run migration"
+            echo "📜 7. Menjalankan semua migration yang belum diterapkan..."
             docker exec -i outletpulsa_backend npx prisma migrate deploy
 
-            echo "🌱 Generate Prisma Client"
+            echo "🔄 8. Generate Prisma Client..."
             docker exec -i outletpulsa_backend npx prisma generate
 
-            # echo "🗑️ Menghapus data tabel ProdukPascabayar di database production..."
-            # echo 'DELETE FROM "ProdukPascabayar";' | docker exec -i outletpulsa_backend npx prisma db execute --stdin
-
-            # echo "🌱 Menjalankan seed khusus produk_pascabayar..."
-            # docker exec -i outletpulsa_backend npx ts-node prisma/execution/run_produk_pascabayar_seed.ts
-
-            # echo "🎯 Run Status Laba Seeder (Transaction)"
-            # docker exec -i outletpulsa_backend npx ts-node prisma/seeds/20260623-add-status-laba-transaction.seed.ts
-
-            # echo "🔄 Run Sync Menu Seed (Menyinkronkan Menu, SubMenu, dan Tab)"
-            # docker exec -i outletpulsa_backend npx ts-node prisma/seeds/sync_menu.seed.ts
-
-            # echo "🔍 Checking Database Schema vs Prisma Schema..."
-            # docker exec -i outletpulsa_backend npx ts-node prisma/execution/check_schema_diff.ts
-
-            # echo "🏦 Run Bank Seed (Aman untuk data yang sudah ada)"
-            # docker exec -i outletpulsa_backend npx ts-node prisma/seeds/bank_menu.seed.ts
+            echo "✅ Deployment selesai!"
