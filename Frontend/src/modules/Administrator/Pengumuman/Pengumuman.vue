@@ -315,13 +315,14 @@ onMounted(() => {
 
         <template #cell-action="{ row }">
           <div class="flex justify-center gap-2">
-            <button
+            <LightButton
               @click="handlePublish(row)"
               title="Publish & Kirim Notifikasi"
-              class="inline-flex items-center justify-center p-1.5 rounded-md text-blue-600 hover:bg-blue-50 focus:outline-none transition-colors border border-blue-200"
+              
             >
+            
               <IconSend class="w-4 h-4" />
-            </button>
+            </LightButton>
             <LightButton @click="openEditModal(row)" title="Edit">
               <IconEdit class="w-4 h-4" />
             </LightButton>
