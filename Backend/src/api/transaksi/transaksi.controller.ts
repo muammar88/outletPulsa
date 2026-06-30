@@ -11,9 +11,9 @@ export class TransaksiController {
   ) {}
 
   @Get('riwayat-prabayar')
-  async getRiwayatPrabayar(@Request() req: any) {
+  async getRiwayatPrabayar(@Request() req: any, @Query('search') search?: string) {
     const memberId = req.user.id;
-    return await this.transaksiService.getRiwayatPrabayar(memberId);
+    return await this.transaksiService.getRiwayatPrabayar(memberId, search);
   }
 
   @Post('transaksi-prabayar')

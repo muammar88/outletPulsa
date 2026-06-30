@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,6 +8,7 @@ import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/shared/widgets/skeletonWidget.dart';
 import 'package:outletpulsa/shared/widgets/NotFound.dart';
 import 'package:outletpulsa/shared/widgets/ErrorStateWidget.dart';
+import 'package:outletpulsa/shared/widgets/FloatingSearchBar.dart';
 import 'package:intl/intl.dart';
 
 class Daftar_transaksi_reseller extends StatefulWidget {
@@ -21,9 +23,25 @@ class _Daftar_transaksi_resellerState
     extends State<Daftar_transaksi_reseller> {
   final config = ConfigApp();
   bool loadData = false;
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
 
   static const Color _kPrimary = Color(0xFF0F1F6E);
   static const Color _kPrimaryLight = Color(0xFF1A3DB5);
+
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      Provider.of<Agen_provider>(context, listen: false).getTransaksiReseller(search: query.trim());
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _debounce?.cancel();
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() {
@@ -141,6 +159,11 @@ class _Daftar_transaksi_resellerState
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
+      floatingActionButton: FloatingSearchBar(
+        controller: _searchController,
+        onChanged: _onSearchChanged,
+        hintText: 'Cari transaksi',
+      ),
       body: Column(
         children: [
           _buildBrandPanel(compact: true),
@@ -170,9 +193,11 @@ class _Daftar_transaksi_resellerState
                       )
                 // --- Empty ---
                 : (agenProv.list_transaksi_reseller?.isEmpty ?? true)
-                    ? NotfoundWidget(
-                        config: config,
-                        label: 'Belum ada transaksi sukses\ndi bulan ini',
+                    ? Center(
+                        child: NotfoundWidget(
+                          config: config,
+                          label: 'Belum ada transaksi sukses\ndi bulan ini',
+                        ),
                       )
                 // --- Data ---
                 : ListView.builder(

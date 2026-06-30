@@ -15,8 +15,8 @@ class Riwayat_transfer_saldo_provider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> getRiwayatTransferSaldo() async {
-    await Rest_riwayat().getRiwayatTransferSaldo().then((Model_list e) async {
+  Future<void> getRiwayatTransferSaldo({String search = ""}) async {
+    await Rest_riwayat().getRiwayatTransferSaldo(search: search).then((Model_list e) async {
       if (e.error == false) {
         _list = e.list;
       }

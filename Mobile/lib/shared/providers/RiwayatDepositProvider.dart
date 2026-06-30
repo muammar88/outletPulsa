@@ -11,8 +11,8 @@ class Riwayat_deposit_provider with ChangeNotifier {
   String? get errorMsg => _errorMsg;
   Map<String, dynamic>? get list => _list;
 
-  Future<void> getRiwayatDeposit() async {
-    await Rest_riwayat().getRiwayatDeposit().then((Model_list e) async {
+  Future<void> getRiwayatDeposit({String search = ""}) async {
+    await Rest_riwayat().getRiwayatDeposit(search: search).then((Model_list e) async {
       if (e.error == false) {
         _list = e.list;
       }

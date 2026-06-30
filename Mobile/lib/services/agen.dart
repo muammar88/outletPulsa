@@ -25,17 +25,23 @@ class Rest_agen {
   final NetworkUtil _netUtil = NetworkUtil();
   final db = SQLHelper();
 
-  Future<Model_agen> listAgen() async {
+  Future<Model_agen> listAgen({String search = ""}) async {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_daftarAgen_url!);
+    if (search.isNotEmpty) {
+      url = url.replace(queryParameters: {'search': search});
+    }
     return _netUtil.get(url, headers).then((dynamic res) async {
       return new Model_agen.map(res);
     });
   }
 
-  Future<Model_agen> listRiwayatPembayaran() async {
+  Future<Model_agen> listRiwayatPembayaran({String search = ""}) async {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_daftarRiwayatPembayaran_url!);
+    if (search.isNotEmpty) {
+      url = url.replace(queryParameters: {'search': search});
+    }
     return _netUtil.get(url, headers).then((dynamic res) async {
       return new Model_agen.map(res);
     });
@@ -58,9 +64,12 @@ class Rest_agen {
     });
   }
 
-  Future<Model_agen> listTransaksiReseller() async {
+  Future<Model_agen> listTransaksiReseller({String search = ""}) async {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_transaksiReseller_url!);
+    if (search.isNotEmpty) {
+      url = url.replace(queryParameters: {'search': search});
+    }
     return _netUtil.get(url, headers).then((dynamic res) async {
       return new Model_agen.map(res);
     });

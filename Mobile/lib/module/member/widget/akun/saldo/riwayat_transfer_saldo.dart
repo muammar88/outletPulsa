@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,6 +8,7 @@ import 'package:outletpulsa/shared/providers/RiwayatTransferProvider.dart';
 import 'package:outletpulsa/shared/widgets/NotFound.dart';
 import 'package:outletpulsa/shared/widgets/skeletonWidget.dart';
 import 'package:outletpulsa/shared/widgets/ErrorStateWidget.dart';
+import 'package:outletpulsa/shared/widgets/FloatingSearchBar.dart';
 
 class Riwayat_transfer_saldo extends StatefulWidget {
   const Riwayat_transfer_saldo({super.key});
@@ -18,6 +20,23 @@ class Riwayat_transfer_saldo extends StatefulWidget {
 class _Riwayat_transfer_saldoState extends State<Riwayat_transfer_saldo> {
   final config = ConfigApp();
   bool loadData = false;
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
+
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      Provider.of<Riwayat_transfer_saldo_provider>(context, listen: false)
+          .getRiwayatTransferSaldo(search: query.trim());
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _debounce?.cancel();
+    super.dispose();
+  }
 
   static const Color _kPrimary = Color(0xFF0F1F6E);
   static const Color _kPrimaryLight = Color(0xFF1A3DB5);
@@ -121,6 +140,11 @@ class _Riwayat_transfer_saldoState extends State<Riwayat_transfer_saldo> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
+      floatingActionButton: FloatingSearchBar(
+        controller: _searchController,
+        onChanged: _onSearchChanged,
+        hintText: 'Cari tujuan transfer',
+      ),
       body: Column(
         children: [
           _buildBrandPanel(compact: true),

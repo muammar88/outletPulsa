@@ -5,7 +5,7 @@ import { PrismaService } from '../../prisma.service';
 export class AgenService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getResellers(kodeAgen: string) {
+  async getResellers(kodeAgen: string, search?: string) {
     if (!kodeAgen) {
       return {
         error: true,
@@ -14,8 +14,17 @@ export class AgenService {
       };
     }
 
+    const whereCondition: any = { kode_agen: kodeAgen };
+    if (search) {
+      whereCondition.OR = [
+        { fullname: { contains: search } },
+        { whatsappnumber: { contains: search } },
+        { kode: { contains: search } }
+      ];
+    }
+
     const resellers = await this.prisma.member.findMany({
-      where: { kode_agen: kodeAgen },
+      where: whereCondition,
       select: {
         id: true,
         kode: true,
@@ -250,19 +259,38 @@ export class AgenService {
     }
   }
 
-  async getTransaksiReseller(kodeAgen: string) {
+  async getTransaksiReseller(kodeAgen: string, search?: string) {
     if (!kodeAgen) {
       return { error: true, error_msg: 'Akses ditolak', list: [] };
     }
 
     try {
+      const whereConditionPrabayar: any = {
+        kodeAgen: kodeAgen,
+        status: 'sukses',
+        status_fee_agen: 'unpaid'
+      };
+
+      const whereConditionPascabayar: any = {
+        kodeAgen: kodeAgen,
+        status: 'sukses',
+        status_fee_agen: 'unpaid'
+      };
+
+      if (search) {
+        whereConditionPrabayar.OR = [
+          { produk: { name: { contains: search } } },
+          { riwayatTransaksi: { member: { fullname: { contains: search } } } }
+        ];
+        whereConditionPascabayar.OR = [
+          { produkPascabayar: { name: { contains: search } } },
+          { riwayatTransaksi: { member: { fullname: { contains: search } } } }
+        ];
+      }
+
       // Get from Transaction (Prabayar)
       const trxPrabayar = await this.prisma.transaction.findMany({
-        where: {
-          kodeAgen: kodeAgen,
-          status: 'sukses',
-          status_fee_agen: 'unpaid'
-        },
+        where: whereConditionPrabayar,
         include: {
           riwayatTransaksi: {
             include: { member: { select: { fullname: true } } }
@@ -273,11 +301,7 @@ export class AgenService {
       });
 
       const trxCetak = await this.prisma.transactionPascabayar.findMany({
-        where: {
-          kodeAgen: kodeAgen,
-          status: 'sukses',
-          status_fee_agen: 'unpaid'
-        },
+        where: whereConditionPascabayar,
         include: {
           riwayatTransaksi: {
             include: { member: { select: { fullname: true } } }
@@ -335,14 +359,19 @@ export class AgenService {
     }
   }
 
-  async getRiwayatPembayaran(memberId: number) {
+  async getRiwayatPembayaran(memberId: number, search?: string) {
     if (!memberId) {
       return { error: true, error_msg: 'Akses ditolak', list: {} };
     }
 
     try {
+      const whereCondition: any = { memberId: memberId };
+      if (search) {
+        whereCondition.kode = { contains: search };
+      }
+
       const history = await this.prisma.paymentFeeAgenHistory.findMany({
-        where: { memberId: memberId },
+        where: whereCondition,
         orderBy: { createdAt: 'desc' }
       });
 

@@ -11,8 +11,8 @@ class Riwayat_pascabayar_provider with ChangeNotifier {
   String? get errorMsg => _errorMsg;
   Map<String, dynamic>? get list => _list;
 
-  Future<void> getRiwayatPascabayar() async {
-    await Rest_riwayat().getRiwayatPascabayar().then((Model_list e) async {
+  Future<void> getRiwayatPascabayar({String search = ""}) async {
+    await Rest_riwayat().getRiwayatPascabayar(search: search).then((Model_list e) async {
       if (e.error == false) {
         _list = e.list;
       }

@@ -9,13 +9,20 @@ export class TransaksiPascabayarService {
     private pengumumanService: PengumumanService
   ) {}
 
-  async getRiwayatPascabayar(userId: number) {
+  async getRiwayatPascabayar(userId: number, search?: string) {
     try {
       const transactions = await this.prisma.transactionPascabayar.findMany({
         where: {
           riwayatTransaksi: {
             memberId: userId,
           },
+          ...(search ? {
+            OR: [
+              { nomorTujuan: { contains: search } },
+              { kode: { contains: search } },
+              { produkPascabayar: { name: { contains: search } } }
+            ]
+          } : {})
         },
         include: {
           produkPascabayar: true,

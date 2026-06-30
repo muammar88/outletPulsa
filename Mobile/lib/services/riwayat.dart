@@ -22,33 +22,45 @@ class Rest_riwayat {
   final NetworkUtil _netUtil = NetworkUtil();
   final db = SQLHelper();
 
-  Future<Model_list> getRiwayatPrabayar() async {
+  Future<Model_list> getRiwayatPrabayar({String search = ""}) async {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_getRiwayatPrabayar_url!);
+    if (search.isNotEmpty) {
+      url = url.replace(queryParameters: {'search': search});
+    }
     return _netUtil.get(url, headers).then((dynamic res) async {
       return new Model_list.map(res);
     });
   }
 
-  Future<Model_list> getRiwayatPascabayar() async {
+  Future<Model_list> getRiwayatPascabayar({String search = ""}) async {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_getRiwayatPascabayar_url!);
+    if (search.isNotEmpty) {
+      url = url.replace(queryParameters: {'search': search});
+    }
     return _netUtil.get(url, headers).then((dynamic res) async {
       return new Model_list.map(res);
     });
   }
 
-  Future<Model_list> getRiwayatDeposit() async {
+  Future<Model_list> getRiwayatDeposit({String search = ""}) async {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_getRiwayatDeposit_url!);
+    if (search.isNotEmpty) {
+      url = url.replace(queryParameters: {'search': search});
+    }
     return _netUtil.get(url, headers).then((dynamic res) async {
       return new Model_list.map(res);
     });
   }
 
-  Future<Model_list> getRiwayatTransferSaldo() async {
+  Future<Model_list> getRiwayatTransferSaldo({String search = ""}) async {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_getRiwayatTransferSaldo_url!);
+    if (search.isNotEmpty) {
+      url = url.replace(queryParameters: {'search': search});
+    }
     return _netUtil.get(url, headers).then((dynamic res) async {
       return new Model_list.map(res);
     });

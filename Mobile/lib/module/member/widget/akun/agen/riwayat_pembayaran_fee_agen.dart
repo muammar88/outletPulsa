@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,6 +11,7 @@ import 'package:outletpulsa/shared/providers/BerandaProvider.dart';
 import 'package:outletpulsa/shared/widgets/NotFound.dart';
 import 'package:outletpulsa/shared/widgets/skeletonWidget.dart';
 import 'package:outletpulsa/shared/widgets/ErrorStateWidget.dart';
+import 'package:outletpulsa/shared/widgets/FloatingSearchBar.dart';
 
 class Riwayat_pembayaran_fee_agen extends StatefulWidget {
   const Riwayat_pembayaran_fee_agen({super.key});
@@ -23,6 +25,22 @@ class _Riwayat_pembayaran_fee_agenState
     extends State<Riwayat_pembayaran_fee_agen> {
   final config = ConfigApp();
   bool loadData = false;
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
+
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      Provider.of<Agen_provider>(context, listen: false).getDaftarRiwayatPembayaranFeeAgen(search: query.trim());
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _debounce?.cancel();
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() async {
@@ -135,6 +153,11 @@ class _Riwayat_pembayaran_fee_agenState
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
+      floatingActionButton: FloatingSearchBar(
+        controller: _searchController,
+        onChanged: _onSearchChanged,
+        hintText: 'Cari kode klaim',
+      ),
       body: Column(
         children: [
           _buildBrandPanel(compact: true),
@@ -161,11 +184,17 @@ class _Riwayat_pembayaran_fee_agenState
                           onRetry: _fetchData,
                         )
                       : list.list_riwayat_pembayaran!.isEmpty
-                          ? ListView(
+                          ? CustomScrollView(
                               physics: const AlwaysScrollableScrollPhysics(),
-                              children: [
-                                SizedBox(height: MediaQuery.of(context).size.height * 0.2),
-                                NotfoundWidget(config: config, label: "Riwayat Klaim Kosong"),
+                              slivers: [
+                                SliverFillRemaining(
+                                  hasScrollBody: false,
+                                  child: Center(
+                                    child: NotfoundWidget(
+                                        config: config,
+                                        label: "Riwayat Klaim Kosong"),
+                                  ),
+                                ),
                               ],
                             )
                           : ListView.builder(

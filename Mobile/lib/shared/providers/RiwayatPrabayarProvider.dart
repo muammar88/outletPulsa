@@ -10,8 +10,8 @@ class Riwayat_prabayar_provider with ChangeNotifier {
   String? get errorMsg => _errorMsg;
   Map<String, dynamic>? get list => _list;
 
-  Future<void> getRiwayatPrabayar() async {
-    await Rest_riwayat().getRiwayatPrabayar().then((Model_list e) async {
+  Future<void> getRiwayatPrabayar({String search = ""}) async {
+    await Rest_riwayat().getRiwayatPrabayar(search: search).then((Model_list e) async {
       if (e.error == false) {
         _list = e.list;
       }

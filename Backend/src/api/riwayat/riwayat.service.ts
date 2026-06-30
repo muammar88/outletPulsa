@@ -8,7 +8,7 @@ export class RiwayatService {
   /**
    * Mengambil riwayat deposit/saldo member berdasarkan kode member.
    */
-  async getRiwayatDeposit(kode: string, page: number = 1, limit: number = 20) {
+  async getRiwayatDeposit(kode: string, page: number = 1, limit: number = 20, search?: string) {
 
     console.log("-------");
     console.log("kode :",kode);
@@ -35,13 +35,25 @@ export class RiwayatService {
     console.log("-------1");
 
     const skip = (page - 1) * limit;
+    
+    const whereCondition: any = {
+      tipeTransaksi : 'deposit',
+      memberId: member.id,
+    };
+    if (search) {
+      whereCondition.requestDeposits = {
+        some: {
+          kode: { contains: search }
+        }
+      };
+    }
 
     const [total, riwayatTransaksi] = await Promise.all([
       this.prisma.riwayatTransaksi.count({
-        where: { tipeTransaksi : 'deposit', memberId: member.id },
+        where: whereCondition,
       }),
       this.prisma.riwayatTransaksi.findMany({
-        where: { tipeTransaksi : 'deposit', memberId: member.id },
+        where: whereCondition,
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
@@ -134,7 +146,7 @@ export class RiwayatService {
     };
   }
 
-  async getRiwayatTransferSaldo(memberKode: string, page: number = 1, limit: number = 20) {
+  async getRiwayatTransferSaldo(memberKode: string, page: number = 1, limit: number = 20, search?: string) {
     const member = await this.prisma.member.findFirst({
       where: { kode: memberKode },
       select: { id: true },
@@ -150,12 +162,20 @@ export class RiwayatService {
 
     const skip = (page - 1) * limit;
 
+    const whereCondition: any = {
+      member_id: member.id,
+      status: 'transfer_pulsa',
+    };
+    if (search) {
+      whereCondition.ket = { contains: search };
+    }
+
     const [total, riwayatList] = await Promise.all([
       this.prisma.riwayatSaldo.count({
-        where: { member_id: member.id, status: 'transfer_pulsa' },
+        where: whereCondition,
       }),
       this.prisma.riwayatSaldo.findMany({
-        where: { member_id: member.id, status: 'transfer_pulsa' },
+        where: whereCondition,
         orderBy: { created_at: 'desc' },
         skip,
         take: limit,

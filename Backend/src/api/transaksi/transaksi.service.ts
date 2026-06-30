@@ -18,7 +18,7 @@ export class TransaksiService {
     private pengumumanService: PengumumanService
   ) {}
 
-  async getRiwayatPrabayar(userId: number) {
+  async getRiwayatPrabayar(userId: number, search?: string) {
     try {
       const transactions = await this.prisma.transaction.findMany({
         where: {
@@ -26,6 +26,13 @@ export class TransaksiService {
           riwayatTransaksi: {
             memberId: userId,
           },
+          ...(search ? {
+            OR: [
+              { nomorTujuan: { contains: search } },
+              { kode: { contains: search } },
+              { produk: { name: { contains: search } } }
+            ]
+          } : {})
         },
         include: {
           produk: true,

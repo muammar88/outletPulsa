@@ -62,41 +62,51 @@ class _FloatingSearchBarState extends State<FloatingSearchBar> {
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(_isExpanded ? 16 : 28),
-          onTap: _isExpanded ? null : _toggleExpanded,
-          child: _isExpanded
-              ? Row(
-                  children: [
-                    const SizedBox(width: 16),
-                    Icon(TablerIcons.search, color: Colors.white70, size: 20),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextField(
-                        controller: widget.controller,
-                        focusNode: _focusNode,
-                        onChanged: widget.onChanged,
-                        style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
-                        cursorColor: Colors.white,
-                        decoration: InputDecoration(
-                          hintText: widget.hintText,
-                          hintStyle: GoogleFonts.poppins(color: Colors.white70, fontSize: 14),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(_isExpanded ? 16 : 28),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(_isExpanded ? 16 : 28),
+            onTap: _isExpanded ? null : _toggleExpanded,
+            child: _isExpanded
+                ? OverflowBox(
+                    alignment: Alignment.centerLeft,
+                    maxWidth: MediaQuery.of(context).size.width - 32,
+                    minWidth: MediaQuery.of(context).size.width - 32,
+                    maxHeight: 56.0,
+                    minHeight: 56.0,
+                    child: Row(
+                      children: [
+                        const SizedBox(width: 16),
+                        Icon(TablerIcons.search, color: Colors.white70, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextField(
+                            controller: widget.controller,
+                            focusNode: _focusNode,
+                            onChanged: widget.onChanged,
+                            style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
+                            cursorColor: Colors.white,
+                            decoration: InputDecoration(
+                              hintText: widget.hintText,
+                              hintStyle: GoogleFonts.poppins(color: Colors.white70, fontSize: 14),
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
                         ),
-                      ),
+                        IconButton(
+                          icon: const Icon(TablerIcons.x, color: Colors.white, size: 20),
+                          onPressed: _toggleExpanded,
+                        ),
+                      ],
                     ),
-                    IconButton(
-                      icon: const Icon(TablerIcons.x, color: Colors.white, size: 20),
-                      onPressed: _toggleExpanded,
-                    ),
-                  ],
-                )
-              : const Center(
-                  child: Icon(TablerIcons.search, color: Colors.white),
-                ),
+                  )
+                : const Center(
+                    child: Icon(TablerIcons.search, color: Colors.white),
+                  ),
+          ),
         ),
       ),
     );

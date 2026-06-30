@@ -14,10 +14,10 @@ export class RiwayatController {
   // ── Riwayat Deposit ───────────────────────────────
   @UseGuards(JwtApiGuard)
   @Get('riwayat-deposit')
-  getRiwayatDeposit(@Request() req, @Query('page') page?: string, @Query('limit') limit?: string) {
+  getRiwayatDeposit(@Request() req, @Query('page') page?: string, @Query('limit') limit?: string, @Query('search') search?: string) {
     const pageNumber = page ? parseInt(page, 10) : 1;
     const limitNumber = limit ? parseInt(limit, 10) : 20;
-    return this.riwayatService.getRiwayatDeposit(req.user.kode, pageNumber, limitNumber);
+    return this.riwayatService.getRiwayatDeposit(req.user.kode, pageNumber, limitNumber, search);
   }
 
   @UseGuards(JwtApiGuard)
@@ -29,10 +29,10 @@ export class RiwayatController {
   // ── Riwayat Transfer Saldo ────────────────────────
   @UseGuards(JwtApiGuard)
   @Get('riwayat-transfer-saldo')
-  getRiwayatTransferSaldo(@Request() req, @Query('page') page?: string, @Query('limit') limit?: string) {
+  getRiwayatTransferSaldo(@Request() req, @Query('page') page?: string, @Query('limit') limit?: string, @Query('search') search?: string) {
     const pageNumber = page ? parseInt(page, 10) : 1;
     const limitNumber = limit ? parseInt(limit, 10) : 20;
-    return this.riwayatService.getRiwayatTransferSaldo(req.user.kode, pageNumber, limitNumber);
+    return this.riwayatService.getRiwayatTransferSaldo(req.user.kode, pageNumber, limitNumber, search);
   }
 
   // ── Info Belum Baca ───────────────────────────────

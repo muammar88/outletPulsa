@@ -8,10 +8,10 @@ export class AgenController {
   constructor(private readonly agenService: AgenService) {}
 
   @Get('reseller')
-  async getResellers(@Request() req) {
+  async getResellers(@Request() req, @Query('search') search?: string) {
     try {
       // req.user.kode adalah kode_member agen yang sedang login
-      const result = await this.agenService.getResellers(req.user.kode);
+      const result = await this.agenService.getResellers(req.user.kode, search);
       return result;
     } catch (error) {
       if (error instanceof HttpException) {
@@ -26,9 +26,9 @@ export class AgenController {
   }
 
   @Get('transaksi')
-  async getTransaksiReseller(@Request() req) {
+  async getTransaksiReseller(@Request() req, @Query('search') search?: string) {
     try {
-      const result = await this.agenService.getTransaksiReseller(req.user.kode);
+      const result = await this.agenService.getTransaksiReseller(req.user.kode, search);
       return result;
     } catch (error) {
       if (error instanceof HttpException) {
@@ -79,9 +79,9 @@ export class AgenController {
   }
 
   @Get('riwayat-pembayaran')
-  async getRiwayatPembayaran(@Request() req) {
+  async getRiwayatPembayaran(@Request() req, @Query('search') search?: string) {
     try {
-      const result = await this.agenService.getRiwayatPembayaran(req.user.id);
+      const result = await this.agenService.getRiwayatPembayaran(req.user.id, search);
       return result;
     } catch (error) {
       if (error instanceof HttpException) {

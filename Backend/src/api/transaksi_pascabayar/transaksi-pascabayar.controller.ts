@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Request, UseGuards, Query } from '@nestjs/common';
 import { JwtApiGuard } from '../guards/jwt-api.guard';
 import { TransaksiPascabayarService } from './transaksi-pascabayar.service';
 
@@ -8,9 +8,9 @@ export class TransaksiPascabayarController {
   constructor(private readonly transaksiPascabayarService: TransaksiPascabayarService) {}
 
   @Get('riwayat-pascabayar')
-  async getRiwayatPascabayar(@Request() req: any) {
+  async getRiwayatPascabayar(@Request() req: any, @Query('search') search?: string) {
     const memberId = req.user.id;
-    return await this.transaksiPascabayarService.getRiwayatPascabayar(memberId);
+    return await this.transaksiPascabayarService.getRiwayatPascabayar(memberId, search);
   }
 
   @Post('daftar-kategori-pascabayar')

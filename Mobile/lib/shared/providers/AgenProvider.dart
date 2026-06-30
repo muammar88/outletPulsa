@@ -19,8 +19,8 @@ class Agen_provider with ChangeNotifier {
   Map<String, dynamic>? get list_transaksi_reseller => _list_transaksi_reseller;
   Map<String, dynamic>? get statistik => _statistik;
 
-  Future<void> getDaftarAgen() async {
-    await Rest_agen().listAgen().then((Model_agen e) async {
+  Future<void> getDaftarAgen({String search = ""}) async {
+    await Rest_agen().listAgen(search: search).then((Model_agen e) async {
       if (e.error == false) {
         _list_reseller = e.list;
       }
@@ -30,8 +30,8 @@ class Agen_provider with ChangeNotifier {
     });
   }
 
-  Future<void> getDaftarRiwayatPembayaranFeeAgen() async {
-    await Rest_agen().listRiwayatPembayaran().then((Model_agen e) async {
+  Future<void> getDaftarRiwayatPembayaranFeeAgen({String search = ""}) async {
+    await Rest_agen().listRiwayatPembayaran(search: search).then((Model_agen e) async {
       if (e.error == false) {
         _list_riwayat_pembayaran = e.list;
       }
@@ -41,8 +41,8 @@ class Agen_provider with ChangeNotifier {
     });
   }
 
-  Future<void> getTransaksiReseller() async {
-    await Rest_agen().listTransaksiReseller().then((Model_agen e) async {
+  Future<void> getTransaksiReseller({String search = ""}) async {
+    await Rest_agen().listTransaksiReseller(search: search).then((Model_agen e) async {
       if (e.error == false) {
         _list_transaksi_reseller = e.list;
       }

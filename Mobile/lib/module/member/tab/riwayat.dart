@@ -13,6 +13,7 @@ import 'package:outletpulsa/shared/widgets/ErrorStateWidget.dart';
 import 'package:outletpulsa/module/member/widget/beranda/transaksi/detail_deposit.dart';
 import 'package:outletpulsa/module/member/widget/beranda/transaksi/detail_transaksi.dart';
 import 'package:outletpulsa/module/member/widget/beranda/transaksi/detail_transaksi_pascabayar.dart';
+import 'package:outletpulsa/shared/widgets/FloatingSearchBar.dart';
 
 class Riwayat_tab extends StatefulWidget {
   const Riwayat_tab({super.key});
@@ -173,6 +174,15 @@ class Sub_riwayat_deposit extends StatefulWidget {
 class _Sub_riwayat_depositState extends State<Sub_riwayat_deposit> {
   final config = ConfigApp();
   bool loadData = false;
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
+
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      Provider.of<Riwayat_deposit_provider>(context, listen: false).getRiwayatDeposit(search: query.trim());
+    });
+  }
 
   @override
   void didChangeDependencies() {
@@ -194,60 +204,68 @@ class _Sub_riwayat_depositState extends State<Sub_riwayat_deposit> {
 
   @override
   void dispose() {
+    _searchController.dispose();
+    _debounce?.cancel();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final riwayat = Provider.of<Riwayat_deposit_provider>(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: ListView.builder(
-        physics: const BouncingScrollPhysics(),
-        itemCount: riwayat.list != null
-            ? riwayat.list!.length == 0
-                ? 1
-                : riwayat.list!.length
-            : 1,
-        itemBuilder: (BuildContext context, int index) {
-          if (riwayat.error == true) {
-            return ErrorStateWidget(
-              config: config,
-              errorMessage: riwayat.errorMsg ?? "Terjadi kesalahan",
-              onRetry: () {
-                setState(() {
-                  loadData = false;
-                });
-              },
-            );
-          }
-          if (riwayat.list == null || riwayat.list!.length == 0) {
-            return NotfoundWidget(config: config, label: 'Riwayat Deposit');
-          }
-          final item = riwayat.list![index.toString()];
-          return index == 0
-              ? Column(children: [
-                  const SizedBox(height: 16),
-                  BoxListDeposit(
-                    config: config,
-                    tanggal: item['waktuRequest']?.toString() ?? '',
-                    saldo: item['nominal']?.toString() ?? '0',
-                    status: item['status']?.toString() ?? '',
-                    kode: 'DEP#${item['kode']}',
-                    id: item['id']?.toString() ?? '',
-                    index: index,
-                  ),
-                ])
-              : BoxListDeposit(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      floatingActionButton: FloatingSearchBar(
+        controller: _searchController,
+        onChanged: _onSearchChanged,
+        hintText: 'Cari riwayat',
+      ),
+      body: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: riwayat.error == true
+            ? Center(
+                child: ErrorStateWidget(
                   config: config,
-                  tanggal: item['waktuRequest']?.toString() ?? '',
-                  saldo: item['nominal']?.toString() ?? '0',
-                  status: item['status']?.toString() ?? '',
-                  kode: 'DEP#${item['kode']}',
-                  id: item['id']?.toString() ?? '',
-                  index: index,
-                );
-        },
+                  errorMessage: riwayat.errorMsg ?? "Terjadi kesalahan",
+                  onRetry: () {
+                    setState(() {
+                      loadData = false;
+                    });
+                  },
+                ),
+              )
+            : (riwayat.list == null)
+                ? const Center(child: CircularProgressIndicator())
+                : (riwayat.list!.isEmpty)
+                    ? Center(child: NotfoundWidget(config: config, label: 'Riwayat Deposit'))
+                    : ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: riwayat.list!.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          final item = riwayat.list![index.toString()];
+                          return index == 0
+                              ? Column(children: [
+                                  const SizedBox(height: 16),
+                                  BoxListDeposit(
+                                    config: config,
+                                    tanggal: item['waktuRequest']?.toString() ?? '',
+                                    saldo: item['nominal']?.toString() ?? '0',
+                                    status: item['status']?.toString() ?? '',
+                                    kode: 'DEP#${item['kode']}',
+                                    id: item['id']?.toString() ?? '',
+                                    index: index,
+                                  ),
+                                ])
+                              : BoxListDeposit(
+                                  config: config,
+                                  tanggal: item['waktuRequest']?.toString() ?? '',
+                                  saldo: item['nominal']?.toString() ?? '0',
+                                  status: item['status']?.toString() ?? '',
+                                  kode: 'DEP#${item['kode']}',
+                                  id: item['id']?.toString() ?? '',
+                                  index: index,
+                                );
+                        },
+                      ),
       ),
     );
   }
@@ -478,6 +496,22 @@ class Sub_riwayat_pascabayar extends StatefulWidget {
 class _Sub_riwayat_pascabayarState extends State<Sub_riwayat_pascabayar> {
   final config = ConfigApp();
   bool loadData = false;
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
+
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      Provider.of<Riwayat_pascabayar_provider>(context, listen: false).getRiwayatPascabayar(search: query.trim());
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _debounce?.cancel();
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() async {
@@ -493,58 +527,64 @@ class _Sub_riwayat_pascabayarState extends State<Sub_riwayat_pascabayar> {
   @override
   Widget build(BuildContext context) {
     final riwayat = Provider.of<Riwayat_pascabayar_provider>(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: ListView.builder(
-        physics: const BouncingScrollPhysics(),
-        itemCount: riwayat.list != null
-            ? riwayat.list!.length == 0
-                ? 1
-                : riwayat.list!.length
-            : 1,
-        itemBuilder: (BuildContext context, int index) {
-          if (riwayat.error == true) {
-            return ErrorStateWidget(
-              config: config,
-              errorMessage: riwayat.errorMsg ?? "Terjadi kesalahan",
-              onRetry: () {
-                setState(() {
-                  loadData = false;
-                });
-              },
-            );
-          }
-          if (riwayat.list == null || riwayat.list!.length == 0) {
-            return NotfoundWidget(config: config, label: 'Riwayat Transaksi');
-          }
-          final item = riwayat.list![index.toString()];
-          return index == 0
-              ? Column(children: [
-                  const SizedBox(height: 16),
-                  BoxListRiwayatPascabayar(
-                    config: config,
-                    type: 'pascabayar',
-                    kode_transaksi: item['kode_transaksi'],
-                    nama_produk: item['nama_produk'],
-                    nomor_tujuan: item['nomor_tujuan'],
-                    komisi: item['komisi'],
-                    status: item['status'],
-                    transaction_date: item['transaction_date'],
-                    index: index,
-                  ),
-                ])
-              : BoxListRiwayatPascabayar(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      floatingActionButton: FloatingSearchBar(
+        controller: _searchController,
+        onChanged: _onSearchChanged,
+        hintText: 'Cari transaksi',
+      ),
+      body: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: riwayat.error == true
+            ? Center(
+                child: ErrorStateWidget(
                   config: config,
-                  type: 'pascabayar',
-                  kode_transaksi: item['kode_transaksi'],
-                  nama_produk: item['nama_produk'],
-                  nomor_tujuan: item['nomor_tujuan'],
-                  komisi: item['komisi'],
-                  status: item['status'],
-                  transaction_date: item['transaction_date'],
-                  index: index,
-                );
-        },
+                  errorMessage: riwayat.errorMsg ?? "Terjadi kesalahan",
+                  onRetry: () {
+                    setState(() {
+                      loadData = false;
+                    });
+                  },
+                ),
+              )
+            : (riwayat.list == null)
+                ? const Center(child: CircularProgressIndicator())
+                : (riwayat.list!.isEmpty)
+                    ? Center(child: NotfoundWidget(config: config, label: 'Riwayat Transaksi'))
+                    : ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: riwayat.list!.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          final item = riwayat.list![index.toString()];
+                          return index == 0
+                              ? Column(children: [
+                                  const SizedBox(height: 16),
+                                  BoxListRiwayatPascabayar(
+                                    config: config,
+                                    type: 'pascabayar',
+                                    kode_transaksi: item['kode_transaksi'],
+                                    nama_produk: item['nama_produk'],
+                                    nomor_tujuan: item['nomor_tujuan'],
+                                    komisi: item['komisi'],
+                                    status: item['status'],
+                                    transaction_date: item['transaction_date'],
+                                    index: index,
+                                  ),
+                                ])
+                              : BoxListRiwayatPascabayar(
+                                  config: config,
+                                  type: 'pascabayar',
+                                  kode_transaksi: item['kode_transaksi'],
+                                  nama_produk: item['nama_produk'],
+                                  nomor_tujuan: item['nomor_tujuan'],
+                                  komisi: item['komisi'],
+                                  status: item['status'],
+                                  transaction_date: item['transaction_date'],
+                                  index: index,
+                                );
+                        },
+                      ),
       ),
     );
   }
@@ -770,6 +810,22 @@ class Sub_riwayat_prabayar extends StatefulWidget {
 class _Sub_riwayat_prabayarState extends State<Sub_riwayat_prabayar> {
   final config = ConfigApp();
   bool loadData = false;
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
+
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      Provider.of<Riwayat_prabayar_provider>(context, listen: false).getRiwayatPrabayar(search: query.trim());
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _debounce?.cancel();
+    super.dispose();
+  }
 
   @override
   void didChangeDependencies() async {
@@ -787,62 +843,68 @@ class _Sub_riwayat_prabayarState extends State<Sub_riwayat_prabayar> {
   @override
   Widget build(BuildContext context) {
     final riwayat = Provider.of<Riwayat_prabayar_provider>(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: ListView.builder(
-        physics: const BouncingScrollPhysics(),
-        itemCount: riwayat.list != null
-            ? riwayat.list!.length == 0
-                ? 1
-                : riwayat.list!.length
-            : 1,
-        itemBuilder: (BuildContext context, int index) {
-          if (riwayat.error == true) {
-            return ErrorStateWidget(
-              config: config,
-              errorMessage: riwayat.errorMsg ?? "Terjadi kesalahan",
-              onRetry: () {
-                setState(() {
-                  loadData = false;
-                });
-              },
-            );
-          }
-          if (riwayat.list == null || riwayat.list!.length == 0) {
-            return NotfoundWidget(config: config, label: 'Riwayat Transaksi');
-          }
-          final item = riwayat.list![index.toString()];
-          return index == 0
-              ? Column(children: [
-                  const SizedBox(height: 16),
-                  BoxListRiwayat(
-                    config: config,
-                    type: 'prabayar',
-                    waktu: item['transaction_date'],
-                    name: item['name_produk'],
-                    nomor_tujuan: item['nomor_tujuan'],
-                    kode_transaksi: item['kode_transaksi'],
-                    harga: item['selling_price'],
-                    fee_agen: item['fee_agen'],
-                    selling_price_raw: item['selling_price_raw'],
-                    status: item['status'],
-                    index: index,
-                  ),
-                ])
-              : BoxListRiwayat(
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      floatingActionButton: FloatingSearchBar(
+        controller: _searchController,
+        onChanged: _onSearchChanged,
+        hintText: 'Cari transaksi',
+      ),
+      body: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: riwayat.error == true
+            ? Center(
+                child: ErrorStateWidget(
                   config: config,
-                  type: 'prabayar',
-                  waktu: item['transaction_date'],
-                  name: item['name_produk'],
-                  nomor_tujuan: item['nomor_tujuan'],
-                  kode_transaksi: item['kode_transaksi'],
-                  harga: item['selling_price'],
-                  fee_agen: item['fee_agen'],
-                  selling_price_raw: item['selling_price_raw'],
-                  status: item['status'],
-                  index: index,
-                );
-        },
+                  errorMessage: riwayat.errorMsg ?? "Terjadi kesalahan",
+                  onRetry: () {
+                    setState(() {
+                      loadData = false;
+                    });
+                  },
+                ),
+              )
+            : (riwayat.list == null)
+                ? const Center(child: CircularProgressIndicator())
+                : (riwayat.list!.isEmpty)
+                    ? Center(child: NotfoundWidget(config: config, label: 'Riwayat Transaksi'))
+                    : ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: riwayat.list!.length,
+                        itemBuilder: (BuildContext context, int index) {
+                          final item = riwayat.list![index.toString()];
+                          return index == 0
+                              ? Column(children: [
+                                  const SizedBox(height: 16),
+                                  BoxListRiwayat(
+                                    config: config,
+                                    type: 'prabayar',
+                                    waktu: item['transaction_date'],
+                                    name: item['name_produk'],
+                                    nomor_tujuan: item['nomor_tujuan'],
+                                    kode_transaksi: item['kode_transaksi'],
+                                    harga: item['selling_price'],
+                                    fee_agen: item['fee_agen'],
+                                    selling_price_raw: item['selling_price_raw'],
+                                    status: item['status'],
+                                    index: index,
+                                  ),
+                                ])
+                              : BoxListRiwayat(
+                                  config: config,
+                                  type: 'prabayar',
+                                  waktu: item['transaction_date'],
+                                  name: item['name_produk'],
+                                  nomor_tujuan: item['nomor_tujuan'],
+                                  kode_transaksi: item['kode_transaksi'],
+                                  harga: item['selling_price'],
+                                  fee_agen: item['fee_agen'],
+                                  selling_price_raw: item['selling_price_raw'],
+                                  status: item['status'],
+                                  index: index,
+                                );
+                        },
+                      ),
       ),
     );
   }
