@@ -62,6 +62,13 @@ jobs:
             echo "📥 3. Pull image backend terbaru..."
             docker pull muammar88/outletpulsa-backend:1.0.0
 
+
+            echo "🗑️ 2. Menghapus image outletpulsa-frontend lama..."
+            docker rmi muammar88/outletpulsa-frontend:1.0.0 || true
+
+            echo "📥 3. Pull image frontend terbaru..."
+            docker pull muammar88/outletpulsa-frontend:1.0.0
+
             echo "🚀 4. Menjalankan seluruh service..."
             docker compose up -d
 
