@@ -320,7 +320,8 @@ export class WebhookService {
         member.id,
         'Transaksi Berhasil',
         `Pembelian Prabayar dengan kode ${transactionData.kode || transactionData.id} telah sukses. SN: ${sn}`,
-        { transactionKode: transactionData.kode, status: 'sukses' }
+        { reference_id: transactionData.kode || String(transactionData.id), status: 'sukses' },
+        'prabayar'
       ).catch(e => this.logger.error('Failed to send webhook success notif', e));
     }
   }
@@ -341,7 +342,8 @@ export class WebhookService {
       member.id,
       'Transaksi Gagal',
       `Pembelian Prabayar dengan kode ${transactionData.kode || transactionData.id} gagal. Saldo telah dikembalikan.`,
-      { transactionKode: transactionData.kode, status: 'gagal' }
+      { reference_id: transactionData.kode || String(transactionData.id), status: 'gagal' },
+      'prabayar'
     ).catch(e => this.logger.error('Failed to send webhook failed notif', e));
   }
 
@@ -365,7 +367,8 @@ export class WebhookService {
         member.id,
         'Transaksi Pascabayar Berhasil',
         `Pembayaran tagihan dengan ID ${transactionData?.trId || id} sukses. SN: ${sn}`,
-        { transactionKode: transactionData?.trId, status: 'sukses' }
+        { reference_id: transactionData?.trId || String(id), status: 'sukses' },
+        'pascabayar'
       ).catch(e => this.logger.error('Failed to send pasca success notif', e));
     }
   }
@@ -387,7 +390,8 @@ export class WebhookService {
       member.id,
       'Transaksi Pascabayar Gagal',
       `Pembayaran tagihan dengan ID ${transactionData.trId || id} gagal. Saldo dikembalikan.`,
-      { transactionKode: transactionData.trId, status: 'gagal' }
+      { reference_id: transactionData.trId || String(id), status: 'gagal' },
+      'pascabayar'
     ).catch(e => this.logger.error('Failed to send pasca failed notif', e));
   }
 

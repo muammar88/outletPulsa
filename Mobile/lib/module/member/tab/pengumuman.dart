@@ -7,8 +7,11 @@ import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/shared/providers/pengumuman_provider.dart';
 import 'package:outletpulsa/shared/widgets/allBoxLoading.dart';
 import 'package:outletpulsa/shared/widgets/NotFound.dart';
+import 'dart:convert';
 import 'package:outletpulsa/module/member/widget/pengumuman/Detail_pengumuman.dart';
-
+import 'package:outletpulsa/module/member/widget/beranda/transaksi/detail_transaksi.dart';
+import 'package:outletpulsa/module/member/widget/beranda/transaksi/detail_transaksi_pascabayar.dart';
+import 'package:outletpulsa/module/member/widget/beranda/transaksi/detail_deposit.dart';
 class Pengumuman_tab extends StatefulWidget {
   const Pengumuman_tab({super.key});
 
@@ -131,15 +134,40 @@ class _Pengumuman_tabState extends State<Pengumuman_tab> {
               if (!isRead) {
                 provider.markAsRead(item['id']);
               }
-              // Redirect to detail instead of dialog
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Detail_pengumuman(
+              
+              String type = (pengumumanData['pengumuman_type'] ?? 'announcement').toString().toLowerCase();
+              String referenceId = '';
+              
+              if (pengumumanData['payload'] != null && pengumumanData['payload'].toString().isNotEmpty) {
+                 try {
+                    final payloadJson = jsonDecode(pengumumanData['payload']);
+                    referenceId = payloadJson['reference_id']?.toString() ?? '';
+                 } catch(e) {}
+              }
+              
+              Widget destination;
+              switch (type) {
+                case 'prabayar':
+                  destination = Detail_transaksi(kodeTrans: referenceId);
+                  break;
+                case 'pascabayar':
+                  destination = Detail_transaksi_pascabayar(kodeTrans: referenceId);
+                  break;
+                case 'deposit':
+                  destination = Detail_deposit(status: '', id: referenceId);
+                  break;
+                default:
+                  destination = Detail_pengumuman(
                     id: item['id'].toString(),
                     title: pengumumanData['title'] ?? 'No Title',
                     desc: pengumumanData['body'] ?? 'No Content',
-                  )
+                  );
+              }
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => destination
                 ),
               );
             },

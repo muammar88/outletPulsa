@@ -429,9 +429,10 @@ export class TransaksiService {
                    `Transaksi ${statusText}`,
                    `Pembelian ${trx!.produk?.name || ''} untuk ${trx!.nomorTujuan || ''} telah ${statusText.toLowerCase()}.`,
                    { 
-                       transactionKode: trx!.kode, 
+                       reference_id: trx!.kode || String(trx!.id), 
                        status: checkRes!.status 
-                   }
+                   },
+                   'prabayar'
                ).catch(e => this.logger.error('Failed to send pengumuman', e));
            }
         }

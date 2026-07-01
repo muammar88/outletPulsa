@@ -243,7 +243,8 @@ export class TransaksiPascabayarService {
             userId,
             'Pembayaran Pascabayar Berhasil',
             `Pembayaran Pascabayar untuk ${trx.nomorTujuan} telah berhasil.`,
-            { transactionKode: trx.kode, status: 'sukses' }
+            { reference_id: trx.kode || String(trx.id), status: 'sukses' },
+            'pascabayar'
         ).catch(e => console.error('Failed to send pengumuman', e));
 
         return {

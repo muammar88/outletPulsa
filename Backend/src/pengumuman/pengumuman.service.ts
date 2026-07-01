@@ -237,11 +237,11 @@ export class PengumumanService implements OnModuleInit {
   /**
    * Helper for System Events
    */
-  async sendTransactionStatus(memberId: number, title: string, body: string, payload?: any) {
+  async sendTransactionStatus(memberId: number, title: string, body: string, payload?: any, type: string = 'Transaction') {
     return this.sendPengumuman({
       title,
       body,
-      pengumumanType: 'Transaction',
+      pengumumanType: type,
       targetType: 'User',
       targetId: memberId.toString(),
       payload,

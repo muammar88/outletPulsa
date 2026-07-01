@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import '../../main.dart';
 import '../../module/member/widget/pengumuman/Detail_pengumuman.dart';
+import '../../module/member/widget/beranda/transaksi/detail_transaksi.dart';
+import '../../module/member/widget/beranda/transaksi/detail_transaksi_pascabayar.dart';
+import '../../module/member/widget/beranda/transaksi/detail_deposit.dart';
 import '../../core/storage/SecureStorageHelper.dart';
 import 'package:http/http.dart' as http;
 
@@ -84,15 +87,33 @@ class PengumumanProvider extends ChangeNotifier {
     String title = message.notification?.title ?? "Info";
     String body = message.notification?.body ?? "";
     String id = message.data['pengumumanId']?.toString() ?? "";
+    String type = message.data['pengumumanType']?.toString() ?? "announcement";
+    String referenceId = message.data['reference_id']?.toString() ?? "";
     
     if (navigatorKey.currentState != null && id.isNotEmpty) {
-       navigatorKey.currentState!.push(
-         MaterialPageRoute(
-           builder: (_) => Detail_pengumuman(
+       Widget destination;
+       
+       switch (type.toLowerCase()) {
+         case 'prabayar':
+           destination = Detail_transaksi(kodeTrans: referenceId);
+           break;
+         case 'pascabayar':
+           destination = Detail_transaksi_pascabayar(kodeTrans: referenceId);
+           break;
+         case 'deposit':
+           destination = Detail_deposit(status: '', id: referenceId);
+           break;
+         default:
+           destination = Detail_pengumuman(
              id: id,
              title: title,
              desc: body,
-           )
+           );
+       }
+
+       navigatorKey.currentState!.push(
+         MaterialPageRoute(
+           builder: (_) => destination
          )
        );
     }

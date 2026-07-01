@@ -235,10 +235,10 @@ export class DepositService {
       this.pengumumanService.sendPengumuman({
           title: 'Tiket Deposit Berhasil',
           body: `Tiket deposit Rp ${nominal} berhasil dibuat. Silakan transfer sesuai instruksi.`,
-          pengumumanType: 'Deposit',
+          pengumumanType: 'deposit',
           targetType: 'User',
           targetId: memberId.toString(),
-          payload: { kodeTrans, nominal }
+          payload: { reference_id: kodeTrans, nominal }
       }).catch(e => console.error('Failed to send deposit pengumuman', e));
 
       return {
