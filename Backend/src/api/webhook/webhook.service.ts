@@ -200,8 +200,12 @@ export class WebhookService {
     body: DigiflazzCallbackPayload,
     ipAddress: string,
   ): Promise<{ error: boolean; error_msg: string }> {
+    console.log(`\n--- [DIGIFLAZZ SERVICE] handleDigiflazzCallback ---`);
     const webhookSecret = process.env.DIGIFLAZZ_WEBHOOK_SECRET || '';
     const expectedSignature = 'sha1=' + crypto.createHmac('sha1', webhookSecret).update(rawBody).digest('hex');
+    
+    console.log(`[DIGIFLAZZ SERVICE] Expected Signature: ${expectedSignature}`);
+    console.log(`[DIGIFLAZZ SERVICE] Received Signature: ${signature}`);
 
     if (signature !== expectedSignature) {
       await this.logWebhook('DIGIFLAZZ', 'callback', null, body, 'failed', 'Signature tidak valid', ipAddress);
@@ -209,7 +213,9 @@ export class WebhookService {
     }
 
     const data = body?.data;
+    console.log(`[DIGIFLAZZ SERVICE] Payload data:`, JSON.stringify(data));
     if (!data || !data.ref_id) {
+      console.log(`[DIGIFLAZZ SERVICE] Error: Payload tidak valid. data: ${!!data}, ref_id: ${data?.ref_id}`);
       await this.logWebhook('DIGIFLAZZ', 'callback', null, body, 'failed', 'Payload tidak valid', ipAddress);
       throw new HttpException({ error: true, error_msg: 'Payload tidak valid' }, HttpStatus.BAD_REQUEST);
     }
@@ -217,13 +223,17 @@ export class WebhookService {
     const refId = data.ref_id;
     const rc = data.rc;
     const sn = data.sn || '';
+    
+    console.log(`[DIGIFLAZZ SERVICE] refId: ${refId}, rc: ${rc}, sn: ${sn}`);
 
+    console.log(`[DIGIFLAZZ SERVICE] Looking for prabayar transaction with kode: ${refId}`);
     const transaction = await this.prisma.transaction.findFirst({
       where: { kode: refId },
       include: { riwayatTransaksi: { include: { member: true } }, digiflazzTransactions: true },
     });
 
     if (transaction) {
+      console.log(`[DIGIFLAZZ SERVICE] Found prabayar transaction: ${transaction.id}, status: ${transaction.status}`);
       if (transaction.status === 'sukses' || transaction.status === 'gagal') {
         await this.logWebhook('DIGIFLAZZ', 'callback_prabayar', refId, body, 'ignored', `Sudah berstatus ${transaction.status}`, ipAddress);
         return { error: false, error_msg: 'Berhasil' } as any;
@@ -254,12 +264,14 @@ export class WebhookService {
       return { error: false, error_msg: 'Berhasil' };
     }
 
+    console.log(`[DIGIFLAZZ SERVICE] Prabayar transaction not found, looking for pascabayar transaction with trId: ${refId}`);
     const transactionPasca = await this.prisma.transactionPascabayar.findFirst({
       where: { trId: refId },
       include: { riwayatTransaksi: { include: { member: true } } },
     });
 
     if (transactionPasca) {
+      console.log(`[DIGIFLAZZ SERVICE] Found pascabayar transaction: ${transactionPasca.id}, status: ${transactionPasca.status}`);
       if (transactionPasca.status === 'sukses' || transactionPasca.status === 'gagal') {
         await this.logWebhook('DIGIFLAZZ', 'callback_pascabayar', refId, body, 'ignored', `Sudah berstatus ${transactionPasca.status}`, ipAddress);
         return { error: false, error_msg: 'Berhasil' } as any;
@@ -277,6 +289,7 @@ export class WebhookService {
       return { error: false, error_msg: 'Berhasil' };
     }
 
+    console.log(`[DIGIFLAZZ SERVICE] Transaction not found anywhere for refId: ${refId}`);
     await this.logWebhook('DIGIFLAZZ', 'callback', refId, body, 'ignored', 'Transaksi tidak ditemukan', ipAddress);
     throw new HttpException({ error: true, error_msg: 'Transaksi tidak ditemukan' }, HttpStatus.NOT_FOUND);
   }

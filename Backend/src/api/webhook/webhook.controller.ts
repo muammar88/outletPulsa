@@ -115,6 +115,11 @@ export class WebhookController {
   ) {
     const ipAddress = req.ip || req.socket?.remoteAddress || 'unknown';
     this.logger.log(`[DIGIFLAZZ] Webhook received from IP: ${ipAddress}`);
+    console.log(`\n\n=== [DIGIFLAZZ WEBHOOK INCOMING] ===`);
+    console.log(`[DIGIFLAZZ] Webhook received from IP: ${ipAddress}`);
+    console.log(`[DIGIFLAZZ] Signature Header: ${signature}`);
+    console.log(`[DIGIFLAZZ] Raw Body:`, req.rawBody ? req.rawBody.toString('utf-8') : 'null');
+    console.log(`[DIGIFLAZZ] Parsed Body:`, JSON.stringify(body));
 
     // Untuk validasi HMAC, kita butuh raw body (string mentah, bukan parsed JSON)
     // NestJS secara default sudah parse JSON. Kita perlu rawBody.
