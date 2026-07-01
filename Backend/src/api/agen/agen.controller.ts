@@ -1,4 +1,4 @@
-import { Controller, Get, Post, UseGuards, Request, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, UseGuards, Request, HttpException, HttpStatus, Query } from '@nestjs/common';
 import { AgenService } from './agen.service';
 import { JwtApiGuard } from '../guards/jwt-api.guard';
 

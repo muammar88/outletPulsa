@@ -13,9 +13,9 @@ export interface Kategori {
 }
 
 export const kategoriService = {
-  getAll: async (searchQuery = '', limit = 10, page = 1) => {
+  getAll: async (searchQuery = '', limit = 10, page = 1, type = '') => {
     return await api.get(`/administrator/kategori`, {
-      params: { search: searchQuery, limit, page },
+      params: { search: searchQuery, limit, page, type },
     });
   },
 

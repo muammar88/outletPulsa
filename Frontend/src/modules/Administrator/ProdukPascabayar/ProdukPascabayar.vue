@@ -221,7 +221,7 @@ const formatCurrency = (value: number) => {
 
 const fetchKategoris = async () => {
   try {
-    const response = await kategoriService.getAll('', 1000, 1);
+    const response = await kategoriService.getAll('', 1000, 1, 'pascabayar');
     let Kategoris = response.data.data.list || response.data.data;
     listKategori.value = Kategoris.sort((a: any, b: any) => a.name.localeCompare(b.name));
   } catch (error) {
