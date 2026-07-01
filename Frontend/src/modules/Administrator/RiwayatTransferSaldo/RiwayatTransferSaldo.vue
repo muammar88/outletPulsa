@@ -221,6 +221,7 @@ onUnmounted(() => {
       >
         <template #filters>
           <div class="flex flex-wrap gap-3">
+            <!-- Group 1: Search & Status -->
             <div class="inline-flex rounded-xl shadow-sm" role="group">
               <input
                 type="text"
@@ -233,7 +234,7 @@ onUnmounted(() => {
               <select
                 v-model="filterStatus"
                 @change="applyFilter"
-                class="relative block w-40 px-4 py-2.5 text-sm text-gray-800 bg-white border-y border-r border-gray-200 hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200 cursor-pointer"
+                class="relative block w-40 px-4 py-2.5 text-sm text-gray-800 bg-white border-y border-r border-gray-200 rounded-e-xl hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200 cursor-pointer"
               >
                 <option value="">Semua Status</option>
                 <option value="SUCCESS">Sukses</option>
@@ -242,19 +243,24 @@ onUnmounted(() => {
               </select>
             </div>
 
-            <div class="inline-flex items-center gap-2">
+            <!-- Group 2: Date Range -->
+            <div class="inline-flex rounded-xl shadow-sm" role="group">
               <input
                 type="date"
                 v-model="filterStartDate"
                 @change="applyFilter"
-                class="block w-40 px-4 py-2.5 text-sm text-gray-800 bg-white border border-gray-200 rounded-xl hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200"
+                title="Tanggal Mulai"
+                class="relative block w-40 px-4 py-2.5 text-sm text-gray-800 bg-white border border-gray-200 rounded-s-xl hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200 cursor-pointer"
               />
-              <span class="text-gray-500 font-medium text-sm">s/d</span>
+              <span class="relative flex items-center px-4 py-2.5 text-sm text-gray-500 bg-gray-50 border-y border-r border-gray-200">
+                s/d
+              </span>
               <input
                 type="date"
                 v-model="filterEndDate"
                 @change="applyFilter"
-                class="block w-40 px-4 py-2.5 text-sm text-gray-800 bg-white border border-gray-200 rounded-xl hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200"
+                title="Tanggal Akhir"
+                class="relative block w-40 px-4 py-2.5 text-sm text-gray-800 bg-white border-y border-r border-gray-200 rounded-e-xl hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200 cursor-pointer"
               />
             </div>
           </div>
