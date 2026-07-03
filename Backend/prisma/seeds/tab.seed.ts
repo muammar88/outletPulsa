@@ -250,7 +250,23 @@ export default async function tabSeed(prisma: PrismaClient) {
         desc: 'Pengumuman',
         created_at: new Date(),
         updated_at: new Date(),
-      }
+      },
+      {
+        name: 'Laporan Umum',
+        icon: 'IconChartPie',
+        path: 'laporan_umum',
+        desc: 'Laporan Umum',
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        name: 'Laporan Pendaftaran',
+        icon: 'IconUsers',
+        path: 'laporan_pendaftaran',
+        desc: 'Laporan Pendaftaran',
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
     ],
     skipDuplicates: true,
   });
