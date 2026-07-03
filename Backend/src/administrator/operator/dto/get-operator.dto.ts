@@ -12,4 +12,12 @@ export class GetOperatorDto {
   @IsOptional()
   @IsString()
   limit?: string;
+
+  @IsOptional()
+  @IsString()
+  kategoriId?: string;
+
+  @IsOptional()
+  @IsString()
+  status?: string;
 }

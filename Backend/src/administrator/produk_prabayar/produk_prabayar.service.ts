@@ -26,6 +26,16 @@ export class ProdukPrabayarService {
         { kode: { contains: search, mode: 'insensitive' } },
       ];
     }
+    
+    // Ensure that if a product is connected to an operator, the operator must be active
+    where.AND = [
+      {
+        OR: [
+          { operator: { status: 'active' } },
+          { operatorId: null }
+        ]
+      }
+    ];
 
     if (status) {
       where.status = status;

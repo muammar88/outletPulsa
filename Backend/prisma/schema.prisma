@@ -134,12 +134,18 @@ model Operator {
   kategoriId Int?
   kode       String?
   name       String?
+  status     OperatorStatus @default(active)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   kategori Kategori? @relation(fields: [kategoriId], references: [id])
   produks  Produk[]
   prefixes Prefix[]
+}
+
+enum OperatorStatus {
+  active
+  non_active
 }
 
 model Prefix {

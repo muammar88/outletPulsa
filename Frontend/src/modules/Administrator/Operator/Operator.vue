@@ -19,6 +19,7 @@ import LightButton from '@/components/Button/LightButton.vue';
 import IconDelete from '@/components/Icons/IconDelete.vue';
 import IconEdit from '@/components/Icons/IconEdit.vue';
 import { operatorService, type Operator } from '@/service/administrator/operator';
+import { kategoriService, type Kategori } from '@/service/administrator/kategori';
 
 const {
   showConfirmation,
@@ -63,6 +64,12 @@ const tableColumns = [
     cellClass: 'text-center',
   },
   {
+    key: 'status',
+    label: 'Status',
+    headerClass: 'text-center w-[10%]',
+    cellClass: 'text-center',
+  },
+  {
     key: 'action',
     label: 'Aksi',
     headerClass: 'text-center w-[15%]',
@@ -73,6 +80,8 @@ const tableColumns = [
 const dataOperator = ref<Operator[]>([]);
 const isLoading = ref(false);
 const searchQuery = ref('');
+const filterKategori = ref('');
+const categories = ref<Kategori[]>([]);
 
 // Form State
 const showFormModal = ref(false);
@@ -93,7 +102,7 @@ const fetchData = async (keyword?: string | Event) => {
 
   isLoading.value = true;
   try {
-    const response = await operatorService.getAll(searchQuery.value, perPage.value, currentPage.value);
+    const response = await operatorService.getAll(searchQuery.value, perPage.value, currentPage.value, filterKategori.value);
     dataOperator.value = response.data.data.list;
     totalRow.value = response.data.data.total;
   } catch (error) {
@@ -101,6 +110,24 @@ const fetchData = async (keyword?: string | Event) => {
   } finally {
     isLoading.value = false;
   }
+};
+
+const fetchCategories = async () => {
+  try {
+    const res = await kategoriService.getAll('', 1000, 1);
+    categories.value = res.data.data.list;
+  } catch (error) {
+    console.error('Gagal memuat daftar kategori', error);
+  }
+};
+
+const onSearch = () => {
+  applyFilter();
+};
+
+const applyFilter = () => {
+  currentPage.value = 1;
+  fetchData();
 };
 
 const paginationProps = ref({
@@ -141,7 +168,28 @@ const handleDelete = (row: Operator) => {
   );
 };
 
+const toggleStatus = async (row: Operator) => {
+  if (!row.id) return;
+  const newStatus = row.status === 'active' ? 'non_active' : 'active';
+  const originalStatus = row.status;
+  
+  // Optimistic update
+  row.status = newStatus;
+  
+  try {
+    await operatorService.update(row.id, { status: newStatus });
+    displayNotification(`Status operator berhasil diubah menjadi ${newStatus === 'active' ? 'Aktif' : 'Non Aktif'}`, 'success');
+  } catch (error: any) {
+    // Revert on error
+    row.status = originalStatus;
+    const errMessage = error.response?.data?.message || 'Gagal mengubah status operator';
+    displayNotification(errMessage, 'error');
+    console.error('Error saat mengubah status operator:', error);
+  }
+};
+
 onMounted(() => {
+  fetchCategories();
   fetchData();
 });
 </script>
@@ -172,7 +220,29 @@ onMounted(() => {
         @page-change="pageNow"
         :showNumbering="false"
         :showActions="false"
+        :showSearch="false"
       >
+        <template #filters>
+          <div class="inline-flex rounded-xl shadow-sm" role="group">
+            <input
+              type="text"
+              v-model="searchQuery"
+              @input="onSearch"
+              placeholder="Cari operator (kode, nama)..."
+              class="relative block w-64 px-4 py-2 text-sm text-gray-800 bg-white border border-gray-200 rounded-s-xl hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200"
+            />
+            <select
+              v-model="filterKategori"
+              @change="applyFilter"
+              class="relative block w-48 px-4 py-2 text-sm text-gray-800 bg-white border-y border-r border-gray-200 rounded-e-xl hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200 cursor-pointer"
+            >
+              <option value="">Semua Kategori</option>
+              <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+                {{ cat.name }} ({{ cat.type }})
+              </option>
+            </select>
+          </div>
+        </template>
         <template #cell-kode="{ row }">
           <span class="font-semibold text-slate-700">{{ row.kode }}</span>
         </template>
@@ -196,6 +266,25 @@ onMounted(() => {
             <span class="px-2.5 py-1 bg-indigo-50 text-indigo-700 font-bold text-xs rounded-lg border border-indigo-100 shadow-sm whitespace-nowrap">
               {{ row._count?.produks || 0 }} Produk
             </span>
+          </div>
+        </template>
+        
+        <template #cell-status="{ row }">
+          <div class="flex justify-center items-center h-full">
+            <button 
+              @click="toggleStatus(row)"
+              type="button" 
+              class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full focus:outline-none focus:ring-2 focus:ring-[#0f2155] focus:ring-offset-2 transition-colors duration-200 ease-in-out"
+              :class="row.status === 'active' ? 'bg-emerald-500' : 'bg-gray-200'"
+              :aria-pressed="row.status === 'active'"
+            >
+              <span class="sr-only">Toggle status</span>
+              <span 
+                aria-hidden="true" 
+                class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                :class="row.status === 'active' ? 'translate-x-2' : '-translate-x-2'"
+              />
+            </button>
           </div>
         </template>
 

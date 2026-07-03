@@ -6,6 +6,7 @@ export interface Operator {
   kategoriId?: number | null;
   kode: string;
   name: string;
+  status?: string;
   createdAt?: string;
   updatedAt?: string;
   kategori?: Kategori;
@@ -15,9 +16,9 @@ export interface Operator {
 }
 
 export const operatorService = {
-  getAll: async (searchQuery = '', limit = 10, page = 1) => {
+  getAll: async (searchQuery = '', limit = 10, page = 1, kategoriId?: string | number, status?: string) => {
     return await api.get(`/administrator/operator`, {
-      params: { search: searchQuery, limit, page },
+      params: { search: searchQuery, limit, page, kategoriId, status },
     });
   },
 

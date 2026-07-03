@@ -12,4 +12,8 @@ export class CreateOperatorDto {
   @IsNumber()
   @IsOptional()
   kategoriId?: number;
+
+  @IsString()
+  @IsOptional()
+  status?: 'active' | 'non_active';
 }

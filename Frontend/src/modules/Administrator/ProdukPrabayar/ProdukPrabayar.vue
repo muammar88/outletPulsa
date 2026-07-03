@@ -225,7 +225,7 @@ const formatCurrency = (value: number) => {
 
 const fetchOperators = async () => {
   try {
-    const response = await operatorService.getAll('', 1000, 1);
+    const response = await operatorService.getAll('', 1000, 1, undefined, 'active');
     let operators = response.data.data.list || response.data.data;
     listOperator.value = operators.sort((a: any, b: any) => a.name.localeCompare(b.name));
   } catch (error) {

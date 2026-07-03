@@ -21,6 +21,14 @@ export class OperatorService {
         { name: { contains: search, mode: 'insensitive' } },
       ];
     }
+    
+    if (query.kategoriId) {
+      where.kategoriId = parseInt(query.kategoriId, 10);
+    }
+
+    if (query.status) {
+      where.status = query.status;
+    }
 
     const [list, total] = await Promise.all([
       this.prisma.operator.findMany({

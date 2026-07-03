@@ -35,6 +35,7 @@ const kategoriOptions = ref<{ id: number; name: string }[]>([]);
 const defaultForm = (): Operator => ({
   kode: '',
   name: '',
+  status: 'active',
   kategoriId: null,
 });
 
@@ -66,6 +67,7 @@ const loadFormData = async () => {
       form.value = {
         kode: data.kode || '',
         name: data.name || '',
+        status: data.status || 'active',
         kategoriId: data.kategoriId || null,
       };
     } catch (error) {
@@ -177,6 +179,16 @@ const handleSubmit = async () => {
           label="Kategori"
           :options="kategoriOptions"
           :error="errors?.kategoriId"
+        />
+        <SelectField
+          v-model="form.status"
+          id="status"
+          label="Status Operator"
+          :options="[
+            { id: 'active', name: 'Aktif' },
+            { id: 'non_active', name: 'Non Aktif' }
+          ]"
+          :error="errors?.status"
         />
       </div>
     </div>

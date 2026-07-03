@@ -1,4 +1,5 @@
 import { IsOptional, IsString, IsEnum } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ProdukType } from '@prisma/client';
 
 export class GetKategoriDto {
@@ -15,6 +16,7 @@ export class GetKategoriDto {
   limit?: string;
   
   @IsOptional()
+  @Transform(({ value }) => value === '' ? undefined : value)
   @IsEnum(ProdukType)
   type?: ProdukType;
 }
