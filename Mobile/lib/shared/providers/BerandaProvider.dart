@@ -2,9 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:outletpulsa/services/beranda.dart';
 import 'package:outletpulsa/models/model_beranda.dart';
+import 'package:intl/intl.dart';
+import 'package:outletpulsa/core/socket/socket_service.dart';
 
 class Beranda_provider with ChangeNotifier {
   bool isLogin = false;
+
+  Beranda_provider() {
+    SocketService().onBalanceUpdated.listen((data) {
+      if (data['newBalance'] != null) {
+        _saldo = data['newBalance'].toString();
+        notifyListeners();
+      }
+    });
+  }
 
   void updateIsLogin(bool value) {
     isLogin = value;
@@ -21,7 +32,7 @@ class Beranda_provider with ChangeNotifier {
 
   String? get name => _name ?? 'Tidak ada nama';
   String? get nomor_whatsapp => _nomor_whatsapp ?? 'Tidak ada nomor whatsapp';
-  String? get saldo => _saldo ?? 'Rp 0,-';
+  String? get saldo => _saldo ?? '0';
   String? get kode => _kode ?? '-';
   bool? get status_deposit => _status_deposit ?? false;
   String? get kode_agen => _kode_agen;

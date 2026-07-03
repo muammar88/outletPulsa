@@ -6,7 +6,8 @@ import 'package:outletpulsa/models/model_login.dart';
 import 'package:outletpulsa/models/model_void.dart';
 import 'package:outletpulsa/core/storage/ModelSQL.dart';
 import 'package:outletpulsa/core/storage/SQLHelper.dart';
-
+import 'package:outletpulsa/core/socket/socket_service.dart';
+import 'package:outletpulsa/core/constants/config.dart';
 class Authentication_provider with ChangeNotifier {
   bool _isLogin = false;
   bool get isLogin => _isLogin;
@@ -25,6 +26,7 @@ class Authentication_provider with ChangeNotifier {
     final db = SQLHelper();
     await db.deleteDataProfil('1');
     _isLogin = false;
+    SocketService().disconnect();
     notifyListeners();
   }
 
@@ -52,6 +54,7 @@ class Authentication_provider with ChangeNotifier {
             id: '1', kode: e.kode!, username: nomor_whatsapp, token: e.token!);
         await db.insertDataProfil(dataProfil);
         _isLogin = true;
+        SocketService().connect(ConfigApp().socket_url!, e.token!);
         notifyListeners();
         return new Model_void.map({'error': false, 'error_msg': e.errorMsg});
       }
@@ -73,6 +76,7 @@ class Authentication_provider with ChangeNotifier {
             notifyListeners();
           } else {
             _isLogin = true;
+            SocketService().connect(ConfigApp().socket_url!, dataProfils!['token']);
             notifyListeners();
           }
         });

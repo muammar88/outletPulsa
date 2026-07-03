@@ -105,7 +105,7 @@ export class RiwayatService {
       return { error: true, message: 'Member tidak valid', data: null };
     }
 
-    const deposit = await this.prisma.requestDeposit.findFirst({
+    let deposit = await this.prisma.requestDeposit.findFirst({
       where: {
         id: depositId,
         riwayatTransaksi: {
@@ -122,7 +122,36 @@ export class RiwayatService {
     });
 
     if (!deposit) {
-      return { error: true, message: 'Detail deposit tidak ditemukan', data: null };
+      // Check if it's a manual deposit (using riwayatTransaksi ID)
+      const riwayatSaldo = await this.prisma.riwayatSaldo.findFirst({
+        where: {
+          riwayat_transaksi_id: depositId,
+          member_id: member.id,
+          status: 'deposit',
+        }
+      });
+      
+      if (!riwayatSaldo) {
+        return { error: true, message: 'Detail deposit tidak ditemukan', data: null };
+      }
+
+      return {
+        error: false,
+        message: 'Sukses',
+        data: {
+          list: {
+            kode: riwayatSaldo.kode,
+            nominal: riwayatSaldo.nominal.toString(),
+            bank_tujuan_transfer: '-',
+            nomor_rekening_akun: '-',
+            nama_akun: '-',
+            status_deposit: riwayatSaldo.status,
+            status_kirim: 'SUDAH_KIRIM',
+            alasan_penolakan: '-',
+            waktu_kirim: riwayatSaldo.created_at?.toISOString() || '',
+          }
+        }
+      };
     }
 
     const nominalVal = (deposit.nominal || 0) + (deposit.nominalTambahan || 0);

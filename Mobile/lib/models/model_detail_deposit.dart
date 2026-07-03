@@ -33,14 +33,16 @@ class Model_detail_deposit {
     }
     _errorMsg = obj['message'] ?? obj['error_msg'];
     var data = obj['data'] ?? obj;
-    _kode = data['list']['kode'];
-    _nominal = data['list']['nominal'];
-    _bank_tujuan_transfer = data['list']['bank_tujuan_transfer'];
-    _nomor_rekening_akun = data['list']['nomor_rekening_akun'];
-    _nama_akun = data['list']['nama_akun'];
-    _status_deposit = data['list']['status_deposit'];
-    _status_kirim = data['list']['status_kirim'];
-    _alasan_penolakan = data['list']['alasan_penolakan'];
-    _waktu_kirim = data['list']['waktu_kirim'];
+    if (data['list'] != null) {
+      _kode = data['list']['kode'];
+      _nominal = data['list']['nominal'];
+      _bank_tujuan_transfer = data['list']['bank_tujuan_transfer'];
+      _nomor_rekening_akun = data['list']['nomor_rekening_akun'];
+      _nama_akun = data['list']['nama_akun'];
+      _status_deposit = data['list']['status_deposit'];
+      _status_kirim = data['list']['status_kirim'];
+      _alasan_penolakan = data['list']['alasan_penolakan'];
+      _waktu_kirim = data['list']['waktu_kirim'];
+    }
   }
 }

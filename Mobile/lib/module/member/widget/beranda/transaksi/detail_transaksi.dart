@@ -11,6 +11,8 @@ import 'package:outletpulsa/shared/providers/RiwayatPrabayarProvider.dart';
 import 'package:outletpulsa/shared/providers/loadProvider.dart';
 import 'package:outletpulsa/core/utils/print.dart';
 import 'package:outletpulsa/shared/widgets/CircularProgressWidget.dart';
+import 'package:outletpulsa/notifier/realtime_notifier.dart';
+
 
 class Detail_transaksi extends StatefulWidget {
   const Detail_transaksi({super.key, required this.kodeTrans});
@@ -32,6 +34,7 @@ class _Detail_transaksiState extends State<Detail_transaksi> with SingleTickerPr
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
+  RealtimeNotifier? _realtimeNotifier;
 
   @override
   void initState() {
@@ -47,6 +50,28 @@ class _Detail_transaksiState extends State<Detail_transaksi> with SingleTickerPr
       CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
     );
     _animController.forward();
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _realtimeNotifier = Provider.of<RealtimeNotifier>(context, listen: false);
+        _realtimeNotifier?.addListener(_onRealtimeUpdate);
+      }
+    });
+  }
+
+  void _onRealtimeUpdate() {
+    if (!mounted) return;
+    final lastTx = _realtimeNotifier?.lastTransaction;
+    if (lastTx != null && lastTx['transactionId']?.toString() == widget.kodeTrans) {
+      final loader = Provider.of<Load_provider>(context, listen: false);
+      loader.isLoad = true;
+      Provider.of<Detail_provider>(context, listen: false).detailTransaksi(widget.kodeTrans).then((_) {
+        Provider.of<Riwayat_prabayar_provider>(context, listen: false).getRiwayatPrabayar();
+        if (mounted) loader.isLoad = false;
+      }).catchError((e) {
+        if (mounted) loader.isLoad = false;
+      });
+    }
   }
 
   @override
@@ -68,6 +93,7 @@ class _Detail_transaksiState extends State<Detail_transaksi> with SingleTickerPr
 
   @override
   void dispose() {
+    _realtimeNotifier?.removeListener(_onRealtimeUpdate);
     _animController.dispose();
     super.dispose();
   }

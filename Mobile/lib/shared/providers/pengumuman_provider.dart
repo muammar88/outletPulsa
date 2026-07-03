@@ -9,8 +9,12 @@ import '../../module/member/widget/beranda/transaksi/detail_deposit.dart';
 import '../../core/storage/SecureStorageHelper.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:provider/provider.dart';
 import '../../core/constants/config.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/socket/socket_service.dart';
+import 'BerandaProvider.dart';
 
 class PengumumanProvider extends ChangeNotifier {
   FirebaseMessaging? _firebaseMessaging;
@@ -18,10 +22,14 @@ class PengumumanProvider extends ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
+  bool _initialized = false;
+
   List<dynamic> _listPengumuman = [];
   List<dynamic> get listPengumuman => _listPengumuman;
 
   Future<void> initPengumuman() async {
+    if (_initialized) return;
+    _initialized = true;
     try {
       _firebaseMessaging = FirebaseMessaging.instance;
       
@@ -51,10 +59,30 @@ class PengumumanProvider extends ChangeNotifier {
         }
       });
 
+      // Listen to Socket.IO real-time updates for Pengumuman
+      SocketService().onAnnouncement.listen((data) {
+        debugPrint('Got announcement from Socket.IO: $data');
+        fetchMobileHistory();
+      });
+
       // Handle when app is opened from a terminated state
-      FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
+      FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) async {
         if (message != null) {
           debugPrint('Opened from terminated state with message: ${message.data}');
+          
+          final prefs = await SharedPreferences.getInstance();
+          final lastId = prefs.getString('last_handled_fcm_id');
+          final currentId = message.messageId;
+
+          if (currentId != null && currentId == lastId) {
+             debugPrint('Ignoring already handled initial message on hot restart');
+             return;
+          }
+
+          if (currentId != null) {
+             await prefs.setString('last_handled_fcm_id', currentId);
+          }
+
           _handlePengumumanClick(message);
         }
       });
@@ -109,6 +137,13 @@ class PengumumanProvider extends ChangeNotifier {
              title: title,
              desc: body,
            );
+       }
+
+       // Refresh beranda state since app might have missed socket event while in background
+       try {
+         Provider.of<Beranda_provider>(navigatorKey.currentContext!, listen: false).get_data_beranda();
+       } catch (e) {
+         debugPrint('Could not refresh Beranda: $e');
        }
 
        navigatorKey.currentState!.push(

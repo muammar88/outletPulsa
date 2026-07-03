@@ -4,6 +4,7 @@ import { CreateDepositDto } from './dto/create-deposit.dto';
 import { UpdateDepositDto } from './dto/update-deposit.dto';
 import { GetDepositDto } from './dto/get-deposit.dto';
 import { PengumumanService } from '../../pengumuman/pengumuman.service';
+import { SocketService } from '../../socket/socket.service';
 
 @Injectable()
 export class DepositService {
@@ -11,7 +12,8 @@ export class DepositService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly pengumumanService: PengumumanService
+    private readonly pengumumanService: PengumumanService,
+    private readonly socketService: SocketService,
   ) {}
 
   async findAll(query: GetDepositDto) {
@@ -74,32 +76,13 @@ export class DepositService {
     console.log('riwayatTransaksiList : ', riwayatTransaksiList);
     console.log('+++++++++');
 
-    const reversedList = riwayatTransaksiList.slice().sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-    const processEstimates = new Map<number, { sebelum: number, sesudah: number }>();
-    const estimatedBalances = new Map<number, number>();
-
-    for (const riwayat of reversedList) {
-      const deposit = riwayat.requestDeposits?.[0];
-      if (deposit && deposit.status === 'proses') {
-        const memberId = riwayat.member?.id;
-        if (memberId) {
-          let currentSaldo = estimatedBalances.get(memberId) ?? riwayat.member?.saldo ?? 0;
-          const nominalVal = (deposit.nominal || 0) + (deposit.nominalTambahan || 0);
-          
-          const saldoSebelum = currentSaldo;
-          const saldoSesudah = currentSaldo + nominalVal;
-          
-          processEstimates.set(riwayat.id, { sebelum: saldoSebelum, sesudah: saldoSesudah });
-          estimatedBalances.set(memberId, saldoSesudah);
-        }
-      }
-    }
-
     const list = riwayatTransaksiList.map((riwayat) => {
       const deposit = riwayat.requestDeposits?.[0];
       const manualDeposit = riwayat.riwayatSaldos?.[0];
       
       const isManual = !deposit && manualDeposit;
+      
+      const currentMemberSaldo = riwayat.member?.saldo ?? 0;
 
       if (isManual) {
         return {
@@ -107,10 +90,10 @@ export class DepositService {
           kode: manualDeposit.kode,
           nominal: manualDeposit.nominal,
           kategori: manualDeposit.status,
-          saldo_sebelumnya: manualDeposit.saldo_sebelumnya,
-          saldo_setelahnya: manualDeposit.saldo_setelahnya,
-          saldo_sebelum: manualDeposit.saldo_sebelumnya,
-          saldo_sesudah: manualDeposit.saldo_setelahnya,
+          saldo_sebelumnya: currentMemberSaldo,
+          saldo_setelahnya: currentMemberSaldo + (manualDeposit.nominal || 0),
+          saldo_sebelum: currentMemberSaldo,
+          saldo_sesudah: currentMemberSaldo + (manualDeposit.nominal || 0),
           ket: manualDeposit.ket || 'Deposit Manual',
           created_at: riwayat.createdAt,
           member: riwayat.member || null,
@@ -124,21 +107,15 @@ export class DepositService {
 
       const nominalVal = deposit ? ((deposit.nominal || 0) + (deposit.nominalTambahan || 0)) : 0;
       
-      let saldoSebelum = 0;
-      let saldoSesudah = 0;
+      let saldoSebelum = currentMemberSaldo;
+      let saldoSesudah = currentMemberSaldo;
 
       if (deposit?.status === 'proses') {
-        const est = processEstimates.get(riwayat.id);
-        if (est) {
-          saldoSebelum = est.sebelum;
-          saldoSesudah = est.sesudah;
-        }
+        saldoSesudah = currentMemberSaldo + nominalVal;
+      } else if (deposit?.status === 'sukses') {
+        saldoSesudah = riwayat.riwayatSaldos?.[0]?.saldo_setelahnya ?? currentMemberSaldo;
       } else {
-        const riwayatSaldoTerkait = riwayat.riwayatSaldos?.[0];
-        if (riwayatSaldoTerkait) {
-          saldoSebelum = riwayatSaldoTerkait.saldo_sebelumnya;
-          saldoSesudah = riwayatSaldoTerkait.saldo_setelahnya;
-        }
+        saldoSesudah = currentMemberSaldo;
       }
       
       return {
@@ -225,6 +202,12 @@ export class DepositService {
         data: { saldo: saldoBaru },
       });
 
+      // Beritahu frontend via Socket.IO
+      this.socketService.emitBalanceUpdated(member.id, {
+        newBalance: saldoBaru,
+        timestamp: new Date(),
+      });
+
       return newRecord;
     });
   }
@@ -276,6 +259,22 @@ export class DepositService {
         where: { id: member.id },
         data: { saldo: saldoBaru },
       });
+
+      // Beritahu frontend via Socket.IO
+      this.socketService.emitBalanceUpdated(member.id, {
+        newBalance: saldoBaru,
+        timestamp: new Date(),
+      });
+
+      // Beritahu frontend via FCM
+      this.pengumumanService.sendPengumuman({
+        title: 'Deposit Berhasil',
+        body: `Deposit manual sebesar Rp ${dto.nominal} telah ditambahkan ke saldo Anda.`,
+        pengumumanType: 'Deposit',
+        targetType: 'User',
+        targetId: member.id.toString(),
+        payload: { reference_id: riwayatTransaksi.id.toString() }
+      }).catch(e => this.logger.error('Failed to send deposit success notif', e));
 
       return { riwayatTransaksi, riwayatSaldo };
     });
@@ -355,7 +354,14 @@ export class DepositService {
           pengumumanType: 'Deposit',
           targetType: 'User',
           targetId: member.id.toString(),
+          payload: { reference_id: requestDeposit.id.toString() }
         }).catch(e => this.logger.error('Failed to send deposit success notif', e));
+
+        // Beritahu frontend via Socket.IO
+        this.socketService.emitBalanceUpdated(member.id, {
+          newBalance: saldoBaru,
+          timestamp: new Date(),
+        });
 
         return updatedRequest;
 
@@ -381,6 +387,7 @@ export class DepositService {
             pengumumanType: 'Deposit',
             targetType: 'User',
             targetId: member.id.toString(),
+            payload: { reference_id: requestDeposit.id.toString() }
           }).catch(e => this.logger.error('Failed to send deposit rejected notif', e));
         }
 

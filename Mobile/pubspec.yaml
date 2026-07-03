@@ -43,7 +43,7 @@ dependencies:
   sqflite: ^2.0.2+1
   http: ^1.1.0
   flutter_html: ^3.0.0-beta.2
-  provider: ^6.0.2
+  provider: ^6.1.5+1
   text_scroll: ^0.2.0
   flash: ^3.0.5+1
   url_launcher: ^6.1.2
@@ -66,6 +66,7 @@ dependencies:
   flutter_secure_storage: ^10.3.1
   firebase_core: ^4.7.0
   firebase_messaging: ^16.2.0
+  socket_io_client: ^3.1.6
 
 dev_dependencies:
   flutter_test:

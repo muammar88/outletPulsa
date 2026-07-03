@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleInit, NotFoundException, ForbiddenException
 import { initializeApp, cert, applicationDefault, getApps } from 'firebase-admin/app';
 import { getMessaging } from 'firebase-admin/messaging';
 import { PrismaService } from '../prisma.service';
+import { SocketService } from '../socket/socket.service';
 
 interface SendPengumumanDto {
   title: string;
@@ -18,7 +19,10 @@ interface SendPengumumanDto {
 export class PengumumanService implements OnModuleInit {
   private readonly logger = new Logger(PengumumanService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private socketService: SocketService
+  ) {}
 
   onModuleInit() {
     if (!getApps().length) {
@@ -78,6 +82,21 @@ export class PengumumanService implements OnModuleInit {
         data: { status: 'Success', sent_at: new Date() },
       });
       this.logger.log(`Pengumuman ${pengumuman.id} processed successfully`);
+
+      // Emit via Socket.IO for realtime updates in Flutter Info tab
+      const announcementData = {
+        id: pengumuman.id,
+        title: pengumuman.title,
+        content: pengumuman.body,
+        createdAt: pengumuman.createdAt,
+      };
+
+      if (dto.targetType === 'All') {
+         this.socketService.emitAnnouncement(announcementData);
+      } else if (dto.targetType === 'User' && dto.targetId) {
+         this.socketService.emitAnnouncement(announcementData, parseInt(dto.targetId));
+      }
+
     } catch (error) {
       await this.prisma.pengumuman.update({
         where: { id: pengumuman.id },
@@ -252,18 +271,43 @@ export class PengumumanService implements OnModuleInit {
     const whereClause: any = {
       OR: [
         { member_id: memberId }
-      ]
+      ],
+      pengumuman: {
+        pengumuman_type: {
+          notIn: ['Deposit', 'Transaction', 'System', 'deposit']
+        }
+      }
     };
     
     if (deviceCode) {
       whereClause.OR.push({ device_code: deviceCode });
     }
 
-    return this.prisma.pengumumanRecipient.findMany({
+    const recipients = await this.prisma.pengumumanRecipient.findMany({
       where: whereClause,
       include: { pengumuman: true },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [
+        { createdAt: 'desc' },
+        { id: 'desc' }
+      ],
     });
+
+    const map = new Map();
+    for (const rec of recipients) {
+      if (!map.has(rec.pengumuman_id)) {
+        map.set(rec.pengumuman_id, rec);
+      } else {
+        // If we already have a record, replace it ONLY if the current one matches this deviceCode
+        if (rec.device_code === deviceCode) {
+          map.set(rec.pengumuman_id, rec);
+        }
+      }
+    }
+
+    const deduplicated = Array.from(map.values());
+    deduplicated.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+    return deduplicated;
   }
 
   async markAsRead(recipientId: number, memberId: number, deviceCode?: string) {

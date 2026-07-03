@@ -134,6 +134,13 @@ class ConfigApp {
     _color_shadow = const Color(0xFF0F1F6E).withOpacity(0.15);
   }
 
+  String? get socket_url {
+    if (_mainurl != null && _mainurl!.endsWith('/api')) {
+      return _mainurl!.substring(0, _mainurl!.length - 4);
+    }
+    return _mainurl;
+  }
+
   String? get mainUrl => _mainurl;
   String? get login_url => _login_url!;
   String? get check_login_url => _check_login_url!;

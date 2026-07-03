@@ -11,6 +11,8 @@ import 'package:outletpulsa/shared/providers/DetailPascabayarProvider.dart';
 import 'package:outletpulsa/shared/providers/RiwayatPascabayarProvider.dart';
 import 'package:outletpulsa/shared/providers/loadProvider.dart';
 import 'package:outletpulsa/shared/widgets/CircularProgressWidget.dart';
+import 'package:outletpulsa/notifier/realtime_notifier.dart';
+
 
 class Detail_transaksi_pascabayar extends StatefulWidget {
   const Detail_transaksi_pascabayar({super.key, required this.kodeTrans});
@@ -33,6 +35,7 @@ class _Detail_transaksi_pascabayarState extends State<Detail_transaksi_pascabaya
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
+  RealtimeNotifier? _realtimeNotifier;
 
   @override
   void initState() {
@@ -48,6 +51,28 @@ class _Detail_transaksi_pascabayarState extends State<Detail_transaksi_pascabaya
       CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
     );
     _animController.forward();
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _realtimeNotifier = Provider.of<RealtimeNotifier>(context, listen: false);
+        _realtimeNotifier?.addListener(_onRealtimeUpdate);
+      }
+    });
+  }
+
+  void _onRealtimeUpdate() {
+    if (!mounted) return;
+    final lastTx = _realtimeNotifier?.lastTransaction;
+    if (lastTx != null && lastTx['transactionId']?.toString() == widget.kodeTrans) {
+      final loader = Provider.of<Load_provider>(context, listen: false);
+      loader.isLoad = true;
+      Provider.of<Detail_pascabayar_provider>(context, listen: false).detailTransaksiPascabayar(widget.kodeTrans).then((_) {
+        Provider.of<Riwayat_pascabayar_provider>(context, listen: false).getRiwayatPascabayar();
+        if (mounted) loader.isLoad = false;
+      }).catchError((e) {
+        if (mounted) loader.isLoad = false;
+      });
+    }
   }
 
   @override
@@ -69,6 +94,7 @@ class _Detail_transaksi_pascabayarState extends State<Detail_transaksi_pascabaya
 
   @override
   void dispose() {
+    _realtimeNotifier?.removeListener(_onRealtimeUpdate);
     _animController.dispose();
     super.dispose();
   }

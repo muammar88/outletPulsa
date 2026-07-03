@@ -30,6 +30,8 @@ import { SchedulerModule } from './scheduler/scheduler.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { PengumumanModule } from './pengumuman/pengumuman.module';
 
+import { SocketModule } from './socket/socket.module';
+
 @Module({
   imports: [
     ServeStaticModule.forRoot({
@@ -40,7 +42,7 @@ import { PengumumanModule } from './pengumuman/pengumuman.module';
       ttl: 60000,
       limit: 100,
     }]),
-    ProvidersModule, AdministratorModule, AuthModule, BerandaModule, RiwayatModule, StubModule, AkunModule, ProdukModule, TransaksiModule, AgenModule, TransaksiPascabayarModule, WebhookModule, DepositModule, HealthModule, DeviceModule, SchedulerModule.register(), EventEmitterModule.forRoot(), PengumumanModule],
+    ProvidersModule, AdministratorModule, AuthModule, BerandaModule, RiwayatModule, StubModule, AkunModule, ProdukModule, TransaksiModule, AgenModule, TransaksiPascabayarModule, WebhookModule, DepositModule, HealthModule, DeviceModule, SchedulerModule.register(), EventEmitterModule.forRoot(), PengumumanModule, SocketModule],
   controllers: [AppController, MemberController, ApiController],
   providers: [
     {
