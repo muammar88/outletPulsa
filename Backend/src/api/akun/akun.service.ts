@@ -4,10 +4,14 @@ import { UpdateNamaDto } from './dto/update-nama.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import * as bcrypt from 'bcryptjs';
 import { TransferSaldoDto } from './dto/transfer-saldo.dto';
+import { SocketService } from '../../socket/socket.service';
 
 @Injectable()
 export class AkunService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly socketService: SocketService
+  ) {}
 
   async updateNama(memberKode: string, dto: UpdateNamaDto) {
     try {
@@ -168,6 +172,16 @@ export class AkunService {
             status: 'transfer_pulsa', // Sesuaikan enum
             ket: `Terima transfer saldo dari ${sender.fullname} (${sender.whatsappnumber})`
           }
+        });
+
+        // 9. Beritahu frontend via Socket.IO untuk pembaruan saldo secara realtime
+        this.socketService.emitBalanceUpdated(sender.id, {
+          newBalance: updatedSender.saldo || 0,
+          timestamp: new Date(),
+        });
+        this.socketService.emitBalanceUpdated(receiver.id, {
+          newBalance: updatedReceiver.saldo || 0,
+          timestamp: new Date(),
         });
 
         // Ingat format respons sesuai permintaan user: error: boolean, message: string

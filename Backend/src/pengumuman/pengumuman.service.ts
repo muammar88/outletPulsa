@@ -274,7 +274,7 @@ export class PengumumanService implements OnModuleInit {
       ],
       pengumuman: {
         pengumuman_type: {
-          notIn: ['Deposit', 'Transaction', 'System', 'deposit']
+          notIn: ['Deposit', 'Transaction', 'System', 'deposit', 'prabayar', 'pascabayar']
         }
       }
     };
