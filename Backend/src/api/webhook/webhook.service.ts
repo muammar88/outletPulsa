@@ -1,6 +1,7 @@
 import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
 import { PengumumanService } from '../../pengumuman/pengumuman.service';
+import { SocketService } from '../../socket/socket.service';
 import * as crypto from 'crypto';
 
 interface IakCallbackPayload {
@@ -43,7 +44,8 @@ export class WebhookService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly pengumumanService: PengumumanService
+    private readonly pengumumanService: PengumumanService,
+    private readonly socketService: SocketService
   ) {}
 
   async handleIakCallback(
@@ -316,6 +318,12 @@ export class WebhookService {
 
     const member = transactionData.riwayatTransaksi?.member;
     if (member) {
+      this.socketService.emitTransactionUpdated(member.id, {
+        transactionId: transactionData.kode || transactionData.id,
+        status: 'sukses',
+        sn: sn,
+        updatedAt: new Date(),
+      });
       this.pengumumanService.sendTransactionStatus(
         member.id,
         'Transaksi Berhasil',
@@ -336,6 +344,12 @@ export class WebhookService {
     await this.prisma.$transaction(async (tx) => {
       await tx.member.update({ where: { id: member.id }, data: { saldo: { increment: totalRefund } } });
       await tx.transaction.update({ where: { id: transactionData.id }, data: { status: 'gagal' } });
+    });
+
+    this.socketService.emitTransactionUpdated(member.id, {
+      transactionId: transactionData.kode || transactionData.id,
+      status: 'gagal',
+      updatedAt: new Date(),
     });
 
     this.pengumumanService.sendTransactionStatus(
@@ -363,6 +377,12 @@ export class WebhookService {
 
     const member = transactionData?.riwayatTransaksi?.member;
     if (member) {
+      this.socketService.emitTransactionUpdated(member.id, {
+        transactionId: transactionData?.trId || id,
+        status: 'sukses',
+        sn: sn,
+        updatedAt: new Date(),
+      });
       this.pengumumanService.sendTransactionStatus(
         member.id,
         'Transaksi Pascabayar Berhasil',
@@ -384,6 +404,12 @@ export class WebhookService {
     await this.prisma.$transaction(async (tx) => {
       await tx.member.update({ where: { id: member.id }, data: { saldo: { increment: totalRefund } } });
       await tx.transactionPascabayar.update({ where: { id }, data: { status: 'gagal' } });
+    });
+
+    this.socketService.emitTransactionUpdated(member.id, {
+      transactionId: transactionData.trId || id,
+      status: 'gagal',
+      updatedAt: new Date(),
     });
 
     this.pengumumanService.sendTransactionStatus(

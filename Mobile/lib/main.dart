@@ -29,6 +29,8 @@ import 'shared/providers/UpdateAkunProvider.dart';
 import 'shared/providers/UpdateStatusBacaProvider.dart';
 import 'shared/providers/loadProvider.dart';
 import 'shared/providers/pengumuman_provider.dart';
+import 'notifier/realtime_notifier.dart';
+
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Handle background messages
@@ -131,6 +133,9 @@ class _MyAppState extends State<MyApp> {
         ),
         ChangeNotifierProvider<PengumumanProvider>(
           create: (context) => PengumumanProvider(),
+        ),
+        ChangeNotifierProvider<RealtimeNotifier>(
+          create: (context) => RealtimeNotifier(),
         ),
       ],
       child: MaterialApp(
