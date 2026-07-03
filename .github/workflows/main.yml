@@ -84,6 +84,6 @@ jobs:
             docker exec -i outletpulsa_backend npx prisma generate
 
             echo "🌱 9. Menjalankan Seed Produk Pascabayar..."
-            docker exec -i outletpulsa_backend npx ts-node prisma/execution/run_produk_pascabayar_seed.ts
+            docker exec -i outletpulsa_backend npx ts-node prisma/seeds/sync_menu.seed.ts
 
             echo "✅ Deployment selesai!"
