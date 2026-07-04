@@ -16,9 +16,9 @@ export interface Operator {
 }
 
 export const operatorService = {
-  getAll: async (searchQuery = '', limit = 10, page = 1, kategoriId?: string | number, status?: string) => {
+  getAll: async (searchQuery = '', limit = 10, page = 1, kategoriId?: string | number, status?: string, tipe?: string) => {
     return await api.get(`/administrator/operator`, {
-      params: { search: searchQuery, limit, page, kategoriId, status },
+      params: { search: searchQuery, limit, page, kategoriId, status, tipe },
     });
   },
 

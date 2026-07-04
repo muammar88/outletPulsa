@@ -2,7 +2,7 @@
 import { useConfirmation } from '@/composables/useConfirmation';
 import { useNotification } from '@/composables/useNotification';
 import { usePagination } from '@/composables/usePaginations';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 
 // Modal Page
 import OperatorFormModal from '@/modules/Administrator/Operator/components/OperatorFormModal.vue';
@@ -81,7 +81,19 @@ const dataOperator = ref<Operator[]>([]);
 const isLoading = ref(false);
 const searchQuery = ref('');
 const filterKategori = ref('');
+const filterTipe = ref('');
 const categories = ref<Kategori[]>([]);
+
+const filteredCategories = computed(() => {
+  if (!filterTipe.value) return categories.value;
+  return categories.value.filter(cat => cat.type === filterTipe.value);
+});
+
+const onTipeChange = () => {
+  filterKategori.value = '';
+  currentPage.value = 1;
+  fetchData();
+};
 
 // Form State
 const showFormModal = ref(false);
@@ -102,7 +114,7 @@ const fetchData = async (keyword?: string | Event) => {
 
   isLoading.value = true;
   try {
-    const response = await operatorService.getAll(searchQuery.value, perPage.value, currentPage.value, filterKategori.value);
+    const response = await operatorService.getAll(searchQuery.value, perPage.value, currentPage.value, filterKategori.value, undefined, filterTipe.value);
     dataOperator.value = response.data.data.list;
     totalRow.value = response.data.data.total;
   } catch (error) {
@@ -232,13 +244,22 @@ onMounted(() => {
               class="relative block w-64 px-4 py-2 text-sm text-gray-800 bg-white border border-gray-200 rounded-s-xl hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200"
             />
             <select
+              v-model="filterTipe"
+              @change="onTipeChange"
+              class="relative block w-40 px-4 py-2 text-sm text-gray-800 bg-white border-y border-gray-200 hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200 cursor-pointer"
+            >
+              <option value="">Semua Tipe</option>
+              <option value="prabayar">Prabayar</option>
+              <option value="pascabayar">Pascabayar</option>
+            </select>
+            <select
               v-model="filterKategori"
               @change="applyFilter"
               class="relative block w-48 px-4 py-2 text-sm text-gray-800 bg-white border-y border-r border-gray-200 rounded-e-xl hover:border-gray-300 focus:z-10 focus:border-[#0f2155] focus:ring-[3px] focus:ring-[#0f2155]/10 focus:outline-none transition-all duration-200 cursor-pointer"
             >
               <option value="">Semua Kategori</option>
-              <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-                {{ cat.name }} ({{ cat.type }})
+              <option v-for="cat in filteredCategories" :key="cat.id" :value="cat.id">
+                {{ cat.name }} <template v-if="!filterTipe">({{ cat.type }})</template>
               </option>
             </select>
           </div>

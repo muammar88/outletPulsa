@@ -20,4 +20,8 @@ export class GetOperatorDto {
   @IsOptional()
   @IsString()
   status?: string;
+
+  @IsOptional()
+  @IsString()
+  tipe?: string;
 }

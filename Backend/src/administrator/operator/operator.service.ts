@@ -30,6 +30,10 @@ export class OperatorService {
       where.status = query.status;
     }
 
+    if (query.tipe) {
+      where.kategori = { type: query.tipe as any };
+    }
+
     const [list, total] = await Promise.all([
       this.prisma.operator.findMany({
         where,
