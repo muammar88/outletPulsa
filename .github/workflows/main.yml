@@ -77,8 +77,8 @@ jobs:
             # echo "🔧 6. Resolve migration refactor_pengumuman jika sebelumnya gagal..."
             # docker exec -i outletpulsa_backend npx prisma migrate resolve --rolled-back "20260629160000_refactor_pengumuman" || true
 
-            # echo "📜 7. Menjalankan semua migration yang belum diterapkan..."
-            # docker exec -i outletpulsa_backend npx prisma migrate deploy
+            echo "📜 7. Menjalankan semua migration yang belum diterapkan..."
+            docker exec -i outletpulsa_backend npx prisma migrate deploy
 
             # echo "🔄 8. Generate Prisma Client..."
             docker exec -i outletpulsa_backend npx prisma generate
