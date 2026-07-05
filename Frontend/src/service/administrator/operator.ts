@@ -13,6 +13,7 @@ export interface Operator {
   _count?: {
     produks?: number;
   };
+  prefixes?: { id: number; prefix: string; }[];
 }
 
 export const operatorService = {

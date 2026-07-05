@@ -6,6 +6,7 @@ import { onMounted, ref, computed } from 'vue';
 
 // Modal Page
 import OperatorFormModal from '@/modules/Administrator/Operator/components/OperatorFormModal.vue';
+import PrefixFormModal from '@/modules/Administrator/Operator/components/PrefixFormModal.vue';
 
 // Table
 import BaseTable from '@/components/Table/BaseTable.vue';
@@ -18,16 +19,17 @@ import LightButton from '@/components/Button/LightButton.vue';
 // Icon
 import IconDelete from '@/components/Icons/IconDelete.vue';
 import IconEdit from '@/components/Icons/IconEdit.vue';
+import IconTags from '@/components/Icons/IconTags.vue';
 import { operatorService, type Operator } from '@/service/administrator/operator';
 import { kategoriService, type Kategori } from '@/service/administrator/kategori';
 
 const {
-  showConfirmation,
-  confirmationTitle,
-  confirmationMessage,
+  showConfirmDialog,
+  confirmTitle,
+  confirmMessage,
   displayConfirmation,
-  hideConfirmation,
-  confirmAction,
+  cancel,
+  confirm,
 } = useConfirmation();
 
 const {
@@ -40,27 +42,27 @@ const {
 
 const tableColumns = [
   {
-    key: 'kode',
-    label: 'Kode',
-    headerClass: 'text-left w-[15%] pl-4',
-    cellClass: 'text-left pl-4 font-mono font-bold tracking-wide text-slate-700',
+    key: 'operator',
+    label: 'Operator',
+    headerClass: 'text-center w-[30%]',
+    cellClass: 'text-center',
   },
   {
-    key: 'name',
-    label: 'Nama Operator',
-    headerClass: 'text-left w-[30%]',
-    cellClass: 'text-left font-bold text-gray-800',
+    key: 'prefix',
+    label: 'Prefix',
+    headerClass: 'text-center w-[15%]',
+    cellClass: 'text-center',
   },
   {
     key: 'kategori',
     label: 'Kategori',
-    headerClass: 'text-left w-[25%]',
-    cellClass: 'text-left',
+    headerClass: 'text-center w-[20%]',
+    cellClass: 'text-center',
   },
   {
     key: 'produk_count',
-    label: 'Jumlah Produk',
-    headerClass: 'text-center w-[15%]',
+    label: 'JumlahProduk',
+    headerClass: 'text-center w-[10%]',
     cellClass: 'text-center',
   },
   {
@@ -97,8 +99,10 @@ const onTipeChange = () => {
 
 // Form State
 const showFormModal = ref(false);
+const showPrefixModal = ref(false);
 const formMode = ref<'add' | 'edit'>('add');
 const selectedOperator = ref<Operator | null>(null);
+const selectedOperatorForPrefix = ref<Operator | null>(null);
 
 // Pagination
 const { currentPage, totalPages, pages, totalRow, pageNow, perPage } = usePagination(
@@ -160,6 +164,11 @@ const handleEdit = (row: Operator) => {
   formMode.value = 'edit';
   selectedOperator.value = { ...row };
   showFormModal.value = true;
+};
+
+const handleManagePrefix = (row: Operator) => {
+  selectedOperatorForPrefix.value = { ...row };
+  showPrefixModal.value = true;
 };
 
 const handleDelete = (row: Operator) => {
@@ -264,13 +273,23 @@ onMounted(() => {
             </select>
           </div>
         </template>
-        <template #cell-kode="{ row }">
-          <span class="font-semibold text-slate-700">{{ row.kode }}</span>
-        </template>
-
-        <template #cell-name="{ row }">
+        <template #cell-operator="{ row }">
           <div class="flex flex-col">
             <span class="text-sm font-semibold text-gray-800">{{ row.name }}</span>
+            <span class="text-xs font-mono font-bold tracking-wide text-slate-500">{{ row.kode }}</span>
+          </div>
+        </template>
+        
+        <template #cell-prefix="{ row }">
+          <div class="w-full flex flex-col gap-2 px-4" v-if="row.prefixes && row.prefixes.length > 0">
+            <div class="grid grid-cols-3 gap-1.5 w-full">
+              <span v-for="p in row.prefixes" :key="p.id" class="w-full py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono text-xs font-bold text-center rounded-md shadow-sm transition-colors hover:bg-indigo-100 cursor-default">
+                {{ p.prefix }}
+              </span>
+            </div>
+          </div>
+          <div v-else class="flex flex-col items-center gap-1">
+            <span class="px-2 py-1 bg-gray-50 text-gray-400 text-xs font-medium rounded-md border border-gray-100 italic">Belum ada</span>
           </div>
         </template>
         
@@ -312,6 +331,9 @@ onMounted(() => {
         <!-- Kolom Action -->
         <template #cell-action="{ row }">
           <div class="flex justify-center gap-2">
+            <LightButton @click="handleManagePrefix(row)" title="Kelola Prefix">
+              <IconTags />
+            </LightButton>
             <LightButton @click="handleEdit(row)" title="Edit Operator">
               <IconEdit></IconEdit>
             </LightButton>
@@ -335,13 +357,21 @@ onMounted(() => {
       "
     />
 
+    <!-- Prefix Form Modal -->
+    <PrefixFormModal
+      :show="showPrefixModal"
+      :operator="selectedOperatorForPrefix"
+      @close="showPrefixModal = false"
+      @saved="fetchData"
+    />
+
     <!-- Confirmation Modal -->
     <Confirmation
-      :show="showConfirmation"
-      :title="confirmationTitle"
-      :message="confirmationMessage"
-      @cancel="hideConfirmation"
-      @confirm="confirmAction"
+      :show="showConfirmDialog"
+      :title="confirmTitle"
+      :message="confirmMessage"
+      @cancel="cancel"
+      @confirm="confirm"
     />
 
     <!-- Notification Modal -->

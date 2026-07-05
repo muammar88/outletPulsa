@@ -104,7 +104,7 @@ class _Daftar_operatorState extends State<Daftar_operator> {
                   children: [
                     const SizedBox(height: 16),
                     Text(
-                      'Pilih Paket', // 'Pilih Kategori Paket' from title? wait, we can just use widget.title if there is one. Wait, in daftar_operator it's usually 'Pilih Kategori Paket', but I'll use widget.title if it exists or hardcode 'Pilih Paket'
+                      widget.title.isNotEmpty ? widget.title : 'Pilih Paket',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.outfit(
                         fontSize: compact ? 26 : 36,

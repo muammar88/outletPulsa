@@ -44,7 +44,8 @@ export class OperatorService {
           kategori: true,
           _count: {
             select: { produks: true }
-          }
+          },
+          prefixes: true,
         },
       }),
       this.prisma.operator.count({ where }),
@@ -66,7 +67,8 @@ export class OperatorService {
         kategori: true,
         _count: {
           select: { produks: true }
-        }
+        },
+        prefixes: true,
       },
     });
 
@@ -116,9 +118,19 @@ export class OperatorService {
        if (!kategori) throw new BadRequestException('Kategori tidak ditemukan');
     }
 
+    const { prefixes, ...operatorData } = updateOperatorDto;
+
     return this.prisma.operator.update({
       where: { id },
-      data: updateOperatorDto,
+      data: {
+        ...operatorData,
+        ...(prefixes !== undefined ? {
+          prefixes: {
+            deleteMany: {},
+            create: prefixes.map(p => ({ prefix: p }))
+          }
+        } : {})
+      },
       include: {
         kategori: true,
       }
