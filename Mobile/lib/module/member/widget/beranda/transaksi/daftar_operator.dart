@@ -9,7 +9,7 @@ import 'package:outletpulsa/shared/widgets/ErrorStateWidget.dart';
 import 'package:outletpulsa/shared/widgets/FloatingSearchBar.dart';
 import 'package:outletpulsa/shared/widgets/NotFound.dart';
 import 'package:outletpulsa/shared/widgets/skeletonWidget.dart';
-import 'daftar_produk_data.dart';
+import 'daftar_produk.dart';
 
 class Daftar_operator extends StatefulWidget {
   Daftar_operator(
@@ -45,14 +45,7 @@ class _Daftar_operatorState extends State<Daftar_operator> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && !_isFetching) {
-        _isFetching = true;
-        final provider = Provider.of<Transaction_provider>(context, listen: false);
-        provider.resetListOperator();
-        provider.getDaftarOperator(widget.nomor_tujuan, widget.path, widget.prefix);
-      }
-    });
+    // No need to fetch from API, data is already in Transaction_provider (trans.operators or trans.operatorCode)
   }
 
   @override
@@ -140,20 +133,28 @@ class _Daftar_operatorState extends State<Daftar_operator> {
     final trans = Provider.of<Transaction_provider>(context);
 
     // Filter lokal berdasarkan search query
-    Map<String, dynamic>? filteredOperator;
-    if (trans.list_operator != null && _searchQuery.isNotEmpty) {
-      int idx = 0;
-      filteredOperator = {};
-      trans.list_operator!.forEach((key, value) {
-        final name = (value['name'] ?? '').toString().toLowerCase();
-        final kode = (value['kode'] ?? '').toString().toLowerCase();
-        if (name.contains(_searchQuery) || kode.contains(_searchQuery)) {
-          filteredOperator![idx.toString()] = value;
-          idx++;
-        }
-      });
-    } else {
-      filteredOperator = trans.list_operator;
+    Map<String, dynamic>? filteredOperator = {};
+    int idx = 0;
+    
+    // Construct list from trans.operators (for PD) or trans.operatorCode (for PTP, etc)
+    List<String> availableOperators = [];
+    if (trans.operators != null && trans.operators!.isNotEmpty) {
+      availableOperators = trans.operators!;
+    } else if (trans.operatorCode != null) {
+      availableOperators = [trans.operatorCode!];
+    }
+
+    for (String opCode in availableOperators) {
+      final name = opCode.toLowerCase();
+      final kode = opCode.toLowerCase();
+      if (_searchQuery.isEmpty || name.contains(_searchQuery) || kode.contains(_searchQuery)) {
+        filteredOperator[idx.toString()] = {
+          'id': '',
+          'kode': opCode,
+          'name': opCode
+        };
+        idx++;
+      }
     }
 
     return Scaffold(
@@ -167,30 +168,7 @@ class _Daftar_operatorState extends State<Daftar_operator> {
         children: [
           _buildBrandPanel(compact: true),
           Expanded(
-            child: trans.list_operator == null
-                // null = loading ATAU network error
-                ? (trans.error == true
-                    ? ErrorStateWidget(
-                        config: config,
-                        errorMessage: trans.errorMsg ?? 'Terjadi kesalahan sistem',
-                        onRetry: () {
-                          trans.getDaftarOperator(
-                              widget.nomor_tujuan, widget.path, widget.prefix);
-                        },
-                      )
-                    : ListView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                        itemCount: 8,
-                        itemBuilder: (context, index) {
-                          return const Padding(
-                            padding: EdgeInsets.only(bottom: 12.0),
-                            child: SkeletonWidget(height: 80, width: double.infinity, radius: 16),
-                          );
-                        },
-                      ))
-                // tidak null tapi kosong = data tidak ada
-                : filteredOperator!.isEmpty
+            child: filteredOperator.isEmpty
                     ? NotfoundWidget(config: config, label: "Operator tidak ditemukan")
                     : ListView.builder(
                         physics: const BouncingScrollPhysics(),
@@ -202,10 +180,12 @@ class _Daftar_operatorState extends State<Daftar_operator> {
                             padding: const EdgeInsets.only(bottom: 12.0),
                             child: _BoxOperator(
                               index: index,
-                              id: filteredOperator![index.toString()]['id'],
-                              kode: filteredOperator![index.toString()]['kode'],
-                              name: filteredOperator![index.toString()]['name'],
+                              id: filteredOperator[index.toString()]['id'] ?? '',
+                              kode: filteredOperator[index.toString()]['kode'] ?? '',
+                              name: filteredOperator[index.toString()]['name'] ?? '',
                               nomor_tujuan: widget.nomor_tujuan,
+                              label: widget.label,
+                              tipe: widget.tipe,
                             ),
                           );
                         },
@@ -243,6 +223,8 @@ class _BoxOperator extends StatelessWidget {
     required this.kode,
     required this.name,
     required this.nomor_tujuan,
+    required this.label,
+    required this.tipe,
   });
 
   final int index;
@@ -250,6 +232,8 @@ class _BoxOperator extends StatelessWidget {
   final String kode;
   final String name;
   final String nomor_tujuan;
+  final String label;
+  final String tipe;
 
   // Gradient palettes for accent color per card (cycles through)
   static const List<List<Color>> _gradients = [
@@ -305,11 +289,13 @@ class _BoxOperator extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => Daftar_produk_data(
-                    id: id,
-                    kode: kode,
-                    name: name,
+                  builder: (context) => Daftar_produk(
                     nomor_tujuan: nomor_tujuan,
+                    label: label,
+                    path: kode,
+                    title: name,
+                    tipe: tipe,
+                    prefix: true,
                   ),
                 ),
               );

@@ -24,6 +24,8 @@ class Transaction_provider with ChangeNotifier {
       _list_kategori_pascabayar;
   String? _operatorCode;
   String? get operatorCode => _operatorCode;
+  List<String>? _operators;
+  List<String>? get operators => _operators;
 
   int _currentPage = 1;
   bool _hasNextPage = true;
@@ -74,6 +76,7 @@ class Transaction_provider with ChangeNotifier {
       _error = e.error;
       _errorMsg = e.errorMsg;
       _operatorCode = e.operatorCode;
+      _operators = e.operators;
       notifyListeners();
     });
   }

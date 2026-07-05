@@ -194,31 +194,61 @@ export class ProdukService {
       if (needPrefix.includes(kode)) {
         const prefix = nomor_tujuan.substring(0, 4);
         
-        const validPrefix = await this.prisma.prefix.findFirst({
-          where: {
-            prefix: prefix,
-            operator: {
-              kategori: {
-                kode: kode
+        if (kode === "PD") {
+          const validPrefixes = await this.prisma.prefix.findMany({
+            where: {
+              prefix: prefix,
+              operator: {
+                kategori: {
+                  kode: kode
+                }
               }
+            },
+            include: {
+              operator: true
             }
-          },
-          include: {
-            operator: true
-          }
-        });
+          });
 
-        if (!validPrefix) {
-          return { error: true, message: 'Format Nomor Tujuan Tidak Sesuai.', data: {} };
+          if (!validPrefixes || validPrefixes.length === 0) {
+            return { error: true, message: 'Format Nomor Tujuan Tidak Sesuai.', data: {} };
+          }
+
+          const operators = [...new Set(validPrefixes.map(vp => vp.operator?.kode).filter(Boolean))].sort();
+
+          return {
+            error: false,
+            message: "Berhasil ditemukan",
+            data: {
+              operators
+            }
+          };
+        } else {
+          const validPrefix = await this.prisma.prefix.findFirst({
+            where: {
+              prefix: prefix,
+              operator: {
+                kategori: {
+                  kode: kode
+                }
+              }
+            },
+            include: {
+              operator: true
+            }
+          });
+
+          if (!validPrefix) {
+            return { error: true, message: 'Format Nomor Tujuan Tidak Sesuai.', data: {} };
+          }
+
+          return {
+            error: false,
+            message: "Berhasil ditemukan",
+            data: {
+              operator: validPrefix.operator?.kode
+            }
+          };
         }
-
-        return {
-          error: false,
-          message: "Berhasil ditemukan",
-          data: {
-            operator: validPrefix.operator?.kode
-          }
-        };
       }
 
       return {
