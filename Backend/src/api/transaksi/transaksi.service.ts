@@ -296,67 +296,110 @@ export class TransaksiService {
           providerResponse.rc === '62' && 
           providerResponse.raw_response?.data?.message?.includes('Seller sedang mengalami gangguan')
         ) {
-           this.logger.warn(`Produk ${produk.kode} (DIGI) dinonaktifkan karena gangguan seller.`);
-           await this.prisma.produk.update({
-             where: { id: produk.id },
-             data: { status: 'inactive' }
-           });
-
-           // Cari produk alternatif dengan nominal sama yang lebih mahal
-           const alternativeProduct = await this.prisma.produk.findFirst({
-             where: {
-                operatorId: produk.operatorId,
-                name: produk.name,
-                status: 'active',
-                purchase_price: { gt: produk.purchase_price || 0 }
-             },
-             orderBy: { purchase_price: 'asc' },
-             include: { server: true }
-           }) as any; // Cast as any to resolve strict Prisma relation typing for 'server'
-
-           if (alternativeProduct) {
-             this.logger.log(`Mengalihkan transaksi ${kodeTransaksi} ke produk alternatif ${alternativeProduct.kode}`);
-             
-             let newProviderProductCode = '';
-             let alternativeServerCode = alternativeProduct.server?.kode;
-             
-             if (alternativeServerCode === 'IAK') {
-                const iakMapping = await this.prisma.iakPrabayarProduk.findFirst({ where: { produkId: alternativeProduct.id } });
-                newProviderProductCode = iakMapping?.kode || '';
-             } else if (alternativeServerCode === 'TRI') {
-                const triMapping = await this.prisma.tripayPrabayarProduk.findFirst({ where: { produkId: alternativeProduct.id } });
-                newProviderProductCode = triMapping?.kode || '';
-             } else if (alternativeServerCode === 'DIGI') {
-                const digiMapping = await this.prisma.digiflazzProduct.findFirst({ where: { produkId: alternativeProduct.id } });
-                newProviderProductCode = digiMapping?.selectedSellerBuyerSkuKode || '';
-             }
-
-             if (newProviderProductCode) {
-                 // Update transaksi dengan ID produk baru
-                 await this.prisma.transaction.update({
-                   where: { id: newTrxId },
-                   data: { 
-                     produkId: alternativeProduct.id,
-                     purchase_price: alternativeProduct.purchase_price,
-                     serverId: alternativeProduct.serverId
-                   }
+           const failedSku = providerResponse.raw_response?.data?.buyer_sku_code;
+           if (failedSku) {
+              this.logger.warn(`Seller Digiflazz ${failedSku} dinonaktifkan karena gangguan.`);
+              await this.prisma.digiflazzSellerProduct.updateMany({
+                where: { buyerSkuKode: failedSku },
+                data: { sellerProductStatus: false }
+              });
+              
+              const digiflazzProduct = await this.prisma.digiflazzProduct.findFirst({
+                 where: { produkId: produk.id }
+              });
+              
+              if (digiflazzProduct) {
+                 const nextCheapestSeller = await this.prisma.digiflazzSellerProduct.findFirst({
+                   where: {
+                     productDigiflazzId: digiflazzProduct.id,
+                     sellerProductStatus: true,
+                     digiflazzSeller: { status: 'unbanned' }
+                   },
+                   orderBy: { price: 'asc' }
                  });
-
-                 this.logger.log(`Hit ulang API Provider ke ${alternativeServerCode} dengan kode ${newProviderProductCode}`);
-                 // Hit ulang API Provider
-                 if (alternativeServerCode === 'IAK') {
-                    providerResponse = await this.iakService.topUp(kodeTransaksi, dto.nomor_tujuan, newProviderProductCode);
-                 } else if (alternativeServerCode === 'TRI') {
-                    const isPln = dto.kode_produk.toUpperCase().includes('PLN') || newProviderProductCode.toUpperCase().includes('PLN');
-                    providerResponse = await this.tripayService.topUp(kodeTransaksi, dto.nomor_tujuan, newProviderProductCode, isPln);
-                 } else if (alternativeServerCode === 'DIGI') {
-                    providerResponse = await this.digiflazzService.topUp(kodeTransaksi, dto.nomor_tujuan, newProviderProductCode);
+                 
+                 if (nextCheapestSeller) {
+                   await this.prisma.digiflazzProduct.update({
+                     where: { id: digiflazzProduct.id },
+                     data: {
+                       selectedSellerBuyerSkuKode: nextCheapestSeller.buyerSkuKode,
+                       selectedSellerPrice: nextCheapestSeller.price,
+                       status: 'active'
+                     }
+                   });
+                 } else {
+                   await this.prisma.digiflazzProduct.update({
+                     where: { id: digiflazzProduct.id },
+                     data: { status: 'inactive' }
+                   });
                  }
-             } else {
-                 this.logger.warn(`Mapping provider produk alternatif tidak ditemukan untuk ${alternativeProduct.kode}`);
+              }
+           }
+
+           const masterProduk = await this.prisma.produk.findUnique({
+             where: { id: produk.id },
+             include: {
+               iakPrabayarProduks: true,
+               tripayPrabayarProduks: true,
+               digiflazzProducts: true,
              }
+           });
+           
+           const activeServersData = await this.prisma.server.findMany({ where: { status: 'active' } });
+           const activeServerIds = activeServersData.map(s => s.id);
+           
+           const alternatives: any[] = [];
+           if (masterProduk) {
+             if (activeServerIds.includes(1) && masterProduk.iakPrabayarProduks.length > 0) {
+               const iak = masterProduk.iakPrabayarProduks[0];
+               if (iak.status === 'active' && iak.price) alternatives.push({ serverId: 1, serverCode: 'IAK', price: iak.price, providerCode: iak.kode });
+             }
+             if (activeServerIds.includes(2) && masterProduk.tripayPrabayarProduks.length > 0) {
+               const tri = masterProduk.tripayPrabayarProduks[0];
+               if (tri.status?.toLowerCase() === 'active' && tri.price) alternatives.push({ serverId: 2, serverCode: 'TRI', price: tri.price, providerCode: tri.kode });
+             }
+             if (activeServerIds.includes(3) && masterProduk.digiflazzProducts.length > 0) {
+               const digi = masterProduk.digiflazzProducts[0];
+               if (digi.status === 'active' && digi.selectedSellerPrice) alternatives.push({ serverId: 3, serverCode: 'DIGI', price: digi.selectedSellerPrice, providerCode: digi.selectedSellerBuyerSkuKode });
+             }
+           }
+
+           alternatives.sort((a, b) => a.price - b.price);
+
+           if (alternatives.length > 0) {
+              const selected = alternatives[0];
+              this.logger.log(`Mengalihkan transaksi ${kodeTransaksi} ke server alternatif ${selected.serverCode} dengan kode ${selected.providerCode} (Harga: ${selected.price})`);
+              
+              await this.prisma.transaction.update({
+                where: { id: newTrxId },
+                data: {
+                  purchase_price: selected.price,
+                  serverId: selected.serverId
+                }
+              });
+
+              await this.prisma.produk.update({
+                where: { id: produk.id },
+                data: {
+                  serverId: selected.serverId,
+                  purchase_price: selected.price
+                }
+              });
+
+              if (selected.serverCode === 'IAK') {
+                 providerResponse = await this.iakService.topUp(kodeTransaksi, dto.nomor_tujuan, selected.providerCode);
+              } else if (selected.serverCode === 'TRI') {
+                 const isPln = dto.kode_produk.toUpperCase().includes('PLN') || selected.providerCode.toUpperCase().includes('PLN');
+                 providerResponse = await this.tripayService.topUp(kodeTransaksi, dto.nomor_tujuan, selected.providerCode, isPln);
+              } else if (selected.serverCode === 'DIGI') {
+                 providerResponse = await this.digiflazzService.topUp(kodeTransaksi, dto.nomor_tujuan, selected.providerCode);
+              }
            } else {
-             this.logger.warn(`Tidak ada produk alternatif untuk ${produk.kode}. Transaksi dilanjutkan dengan respon error asli.`);
+              this.logger.warn(`Tidak ada produk/server alternatif untuk ${produk.kode}. Transaksi dilanjutkan dengan respon error asli.`);
+              await this.prisma.produk.update({
+                where: { id: produk.id },
+                data: { status: 'inactive', serverId: null }
+              });
            }
         }
       } else {
