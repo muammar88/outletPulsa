@@ -195,7 +195,7 @@ export class ProdukPrabayarService {
     let countNoConnection = 0;
     let countFailed = 0;
 
-    //purchase_price
+    const updateOperations: any[] = [];
 
     for (const p of produks) {
       try {
@@ -210,10 +210,12 @@ export class ProdukPrabayarService {
         if (iakProducts.length === 0 && tripayProducts.length === 0 && digiProducts.length === 0) {
           // No connection or all inactive
           if (p.status !== 'inactive' || p.serverId !== null) {
-            await this.prisma.produk.update({
-              where: { id: p.id },
-              data: { status: 'inactive', serverId: null },
-            });
+            updateOperations.push(
+              this.prisma.produk.update({
+                where: { id: p.id },
+                data: { status: 'inactive', serverId: null },
+              })
+            );
             countDeactivated++;
           } else {
             countNoConnection++;
@@ -252,26 +254,47 @@ export class ProdukPrabayarService {
         }
 
         if (selectedServerId !== null) {
-          await this.prisma.produk.update({
-            where: { id: p.id },
-            data: {
-              serverId: selectedServerId,
-              purchase_price: cheapestPrice,
-              status: 'active',
-            },
-          });
+          if (p.serverId !== selectedServerId || p.purchase_price !== cheapestPrice || p.status !== 'active') {
+            updateOperations.push(
+              this.prisma.produk.update({
+                where: { id: p.id },
+                data: {
+                  serverId: selectedServerId,
+                  purchase_price: cheapestPrice,
+                  status: 'active',
+                },
+              })
+            );
+          }
           countSuccess++;
         } else {
-          // Fallback if somehow no server selected (should not happen due to length check)
-          await this.prisma.produk.update({
-            where: { id: p.id },
-            data: { status: 'inactive', serverId: null },
-          });
+          // Fallback if somehow no server selected
+          if (p.status !== 'inactive' || p.serverId !== null) {
+            updateOperations.push(
+              this.prisma.produk.update({
+                where: { id: p.id },
+                data: { status: 'inactive', serverId: null },
+              })
+            );
+          }
           countDeactivated++;
         }
       } catch (err) {
-        console.error(`Error updating produk ID ${p.id}:`, err);
+        console.error(`Error processing produk ID ${p.id}:`, err);
         countFailed++;
+      }
+    }
+
+    if (updateOperations.length > 0) {
+      const chunkSize = 500;
+      for (let i = 0; i < updateOperations.length; i += chunkSize) {
+        const chunk = updateOperations.slice(i, i + chunkSize);
+        try {
+          await this.prisma.$transaction(chunk);
+        } catch (err) {
+          console.error('Error executing chunk transaction:', err);
+          countFailed += chunk.length;
+        }
       }
     }
 
