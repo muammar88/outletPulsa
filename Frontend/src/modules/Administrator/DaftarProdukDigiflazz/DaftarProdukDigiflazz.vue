@@ -454,6 +454,7 @@ onMounted(() => {
       :show="showSellersModal"
       :produk="selectedProduk"
       @close="showSellersModal = false"
+      @saved="fetchData"
     />
 
     <DaftarProdukDigiflazzKoneksiModal

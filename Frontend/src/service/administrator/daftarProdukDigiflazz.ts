@@ -51,5 +51,9 @@ export const daftarProdukDigiflazzService = {
 
   toggleStatus: (id: number) => {
     return api.post(`/administrator/daftar-produk-digiflazz/${id}/toggle-status`);
+  },
+
+  selectSellerManual: (id: number, sellerProductId: number) => {
+    return api.post(`/administrator/daftar-produk-digiflazz/${id}/select-seller`, { sellerProductId });
   }
 };

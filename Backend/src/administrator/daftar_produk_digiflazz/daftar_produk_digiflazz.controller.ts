@@ -94,4 +94,18 @@ export class DaftarProdukDigiflazzController {
       data,
     };
   }
+
+  @Post(':id/select-seller')
+  async selectSellerManual(
+    @Param('id') id: string,
+    @Body('sellerProductId') sellerProductId: number,
+  ) {
+    if (!sellerProductId) throw new Error('sellerProductId is required');
+    const data = await this.service.selectSellerManual(+id, sellerProductId);
+    return {
+      message: 'Seller berhasil dipilih secara manual',
+      error: null,
+      data,
+    };
+  }
 }

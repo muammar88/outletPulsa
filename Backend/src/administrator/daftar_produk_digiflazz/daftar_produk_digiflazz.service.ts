@@ -273,4 +273,25 @@ export class DaftarProdukDigiflazzService {
       data: { status: newStatus },
     });
   }
+  async selectSellerManual(id: number, sellerProductId: number) {
+    const sellerProduct = await this.prisma.digiflazzSellerProduct.findUnique({
+      where: { id: sellerProductId }
+    });
+
+    if (!sellerProduct) {
+      throw new Error('Produk seller tidak ditemukan');
+    }
+
+    if (sellerProduct.productDigiflazzId !== id) {
+      throw new Error('Produk seller tidak cocok dengan produk Digiflazz ini');
+    }
+
+    return this.prisma.digiflazzProduct.update({
+      where: { id },
+      data: {
+        selectedSellerBuyerSkuKode: sellerProduct.buyerSkuKode,
+        selectedSellerPrice: sellerProduct.price,
+      },
+    });
+  }
 }

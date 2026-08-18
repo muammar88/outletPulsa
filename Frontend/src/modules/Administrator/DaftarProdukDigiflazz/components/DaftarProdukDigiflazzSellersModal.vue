@@ -13,7 +13,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'saved']);
 
 const {
   showNotification,
@@ -60,6 +60,29 @@ watch(
   },
   { immediate: true }
 );
+
+const selectSeller = async (seller: any) => {
+  if (!props.produk?.id) return;
+  isLoading.value = true;
+  try {
+    await daftarProdukDigiflazzService.selectSellerManual(props.produk.id, seller.id);
+    displayNotification('Seller berhasil dipilih', 'success');
+    
+    // Update the local prop object so it reflects immediately if modal stays open
+    if (props.produk) {
+      props.produk.selectedSellerBuyerSkuKode = seller.buyerSkuKode;
+      props.produk.selectedSellerPrice = seller.price;
+    }
+    
+    emit('saved');
+  } catch (error: any) {
+    console.error('Gagal memilih seller', error);
+    const errMessage = error.response?.data?.message || 'Gagal memilih seller';
+    displayNotification(Array.isArray(errMessage) ? errMessage[0] : errMessage, 'error');
+  } finally {
+    isLoading.value = false;
+  }
+};
 </script>
 
 <template>
@@ -89,11 +112,12 @@ watch(
           <thead class="bg-gray-50">
             <tr>
               <th scope="col" class="px-4 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[5%]">No</th>
-              <th scope="col" class="px-4 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[25%]">Nama Seller</th>
-              <th scope="col" class="px-4 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[20%]">SKU Buyer</th>
-              <th scope="col" class="px-4 py-3 text-right text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[20%]">Harga Seller</th>
+              <th scope="col" class="px-4 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[20%]">Nama Seller</th>
+              <th scope="col" class="px-4 py-3 text-left text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[15%]">SKU Buyer</th>
+              <th scope="col" class="px-4 py-3 text-right text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[15%]">Harga Seller</th>
               <th scope="col" class="px-4 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[15%]">Status Produk</th>
               <th scope="col" class="px-4 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[15%]">Status Seller</th>
+              <th scope="col" class="px-4 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[15%]">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 bg-white">
@@ -151,6 +175,20 @@ watch(
                   }"
                 >
                   {{ seller.digiflazzSeller?.status === 'banned' ? 'BANNED' : 'UNBANNED' }}
+                </span>
+              </td>
+
+              <td class="px-4 py-3 whitespace-nowrap text-center">
+                <button
+                  v-if="seller.buyerSkuKode !== produk?.selectedSellerBuyerSkuKode"
+                  @click="selectSeller(seller)"
+                  :disabled="isLoading"
+                  class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold py-1 px-3 rounded shadow-sm transition-colors disabled:opacity-50"
+                >
+                  Pilih
+                </button>
+                <span v-else class="text-[10px] font-bold text-gray-400 italic">
+                  -
                 </span>
               </td>
             </tr>
