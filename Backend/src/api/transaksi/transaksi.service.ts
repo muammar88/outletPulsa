@@ -289,6 +289,76 @@ export class TransaksiService {
         console.log("---------DIGI--------9");
         console.log(providerResponse);
         console.log("---------DIGI--------9");
+
+        // Penanganan error "Seller sedang mengalami gangguan"
+        if (
+          providerResponse.status_success === false && 
+          providerResponse.rc === '62' && 
+          providerResponse.raw_response?.data?.message?.includes('Seller sedang mengalami gangguan')
+        ) {
+           this.logger.warn(`Produk ${produk.kode} (DIGI) dinonaktifkan karena gangguan seller.`);
+           await this.prisma.produk.update({
+             where: { id: produk.id },
+             data: { status: 'inactive' }
+           });
+
+           // Cari produk alternatif dengan nominal sama yang lebih mahal
+           const alternativeProduct = await this.prisma.produk.findFirst({
+             where: {
+                operatorId: produk.operatorId,
+                name: produk.name,
+                status: 'active',
+                purchase_price: { gt: produk.purchase_price || 0 }
+             },
+             orderBy: { purchase_price: 'asc' },
+             include: { server: true }
+           }) as any; // Cast as any to resolve strict Prisma relation typing for 'server'
+
+           if (alternativeProduct) {
+             this.logger.log(`Mengalihkan transaksi ${kodeTransaksi} ke produk alternatif ${alternativeProduct.kode}`);
+             
+             let newProviderProductCode = '';
+             let alternativeServerCode = alternativeProduct.server?.kode;
+             
+             if (alternativeServerCode === 'IAK') {
+                const iakMapping = await this.prisma.iakPrabayarProduk.findFirst({ where: { produkId: alternativeProduct.id } });
+                newProviderProductCode = iakMapping?.kode || '';
+             } else if (alternativeServerCode === 'TRI') {
+                const triMapping = await this.prisma.tripayPrabayarProduk.findFirst({ where: { produkId: alternativeProduct.id } });
+                newProviderProductCode = triMapping?.kode || '';
+             } else if (alternativeServerCode === 'DIGI') {
+                const digiMapping = await this.prisma.digiflazzProduct.findFirst({ where: { produkId: alternativeProduct.id } });
+                newProviderProductCode = digiMapping?.selectedSellerBuyerSkuKode || '';
+             }
+
+             if (newProviderProductCode) {
+                 // Update transaksi dengan ID produk baru
+                 await this.prisma.transaction.update({
+                   where: { id: newTrxId },
+                   data: { 
+                     produkId: alternativeProduct.id,
+                     purchase_price: alternativeProduct.purchase_price,
+                     serverId: alternativeProduct.serverId
+                   }
+                 });
+
+                 this.logger.log(`Hit ulang API Provider ke ${alternativeServerCode} dengan kode ${newProviderProductCode}`);
+                 // Hit ulang API Provider
+                 if (alternativeServerCode === 'IAK') {
+                    providerResponse = await this.iakService.topUp(kodeTransaksi, dto.nomor_tujuan, newProviderProductCode);
+                 } else if (alternativeServerCode === 'TRI') {
+                    const isPln = dto.kode_produk.toUpperCase().includes('PLN') || newProviderProductCode.toUpperCase().includes('PLN');
+                    providerResponse = await this.tripayService.topUp(kodeTransaksi, dto.nomor_tujuan, newProviderProductCode, isPln);
+                 } else if (alternativeServerCode === 'DIGI') {
+                    providerResponse = await this.digiflazzService.topUp(kodeTransaksi, dto.nomor_tujuan, newProviderProductCode);
+                 }
+             } else {
+                 this.logger.warn(`Mapping provider produk alternatif tidak ditemukan untuk ${alternativeProduct.kode}`);
+             }
+           } else {
+             this.logger.warn(`Tidak ada produk alternatif untuk ${produk.kode}. Transaksi dilanjutkan dengan respon error asli.`);
+           }
+        }
       } else {
         // Fallback jika tidak dikenali
         providerResponse = { status_success: false, trx_id: '' };
