@@ -18,6 +18,18 @@ const router = createRouter({
       },
     },
     {
+      path: '/account-deletion-policy',
+      name: 'account-deletion-policy',
+      component: () => import('@/views/public/AccountDeletionPolicy.vue'),
+      meta: {
+        title: 'Kebijakan Penghapusan Akun || Aplikasi Outlet Pulsa',
+        description:
+          'Informasi dan panduan mengenai kebijakan penghapusan akun serta retensi data pada Aplikasi Outlet Pulsa.',
+        layout: 'landing-page',
+        authType: 'landing-page',
+      },
+    },
+    {
       path: '/login',
       name: 'member-login-page',
       component: () => import('@/views/member/Login-page.vue'),
