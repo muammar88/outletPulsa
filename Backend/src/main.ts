@@ -27,6 +27,7 @@ async function bootstrap() {
     'http://localhost:3000', // Swagger lokal
     // Tambahkan domain production web Anda di sini nantinya:
     'https://outletpulsa.com', 
+    // 'https://api.outletpulsa.com/administrator/auth'
     // 'https://admin.outletpulsa.com'
   ];
 
