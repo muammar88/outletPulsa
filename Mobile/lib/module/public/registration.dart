@@ -9,6 +9,7 @@ import 'package:outletpulsa/shared/providers/RegistrasiProvider.dart';
 import 'package:outletpulsa/shared/providers/loadProvider.dart';
 import 'package:outletpulsa/shared/widgets/CircularProgressWidget.dart';
 import 'package:outletpulsa/module/public/login.dart'; // import for AuthInput
+import 'package:url_launcher/url_launcher.dart';
 
 const _kPrimary = Color(0xFF0F1F6E);
 const _kPrimaryLight = Color(0xFF1A3DB5);
@@ -104,7 +105,26 @@ class _Register_pageState extends State<Register_page>
     final reg = Provider.of<Registrasi_provider>(context, listen: false);
     final feedBack = await reg.getOTP(nomor_whatsapp!);
     loader.isLoad = false;
-    _showSnackBar(feedBack.errorMsg ?? '', isSuccess: feedBack.error == false);
+    
+    if (feedBack.error == false) {
+      _showSnackBar(feedBack.errorMsg ?? 'Silahkan kirim pesan verifikasi ke WhatsApp', isSuccess: true);
+      
+      if (feedBack.data != null) {
+        final verificationCode = feedBack.data!['verification_code'];
+        final botWhatsapp = feedBack.data!['bot_whatsapp'];
+        
+        if (verificationCode != null && botWhatsapp != null) {
+          final url = Uri.parse('https://wa.me/$botWhatsapp?text=$verificationCode');
+          if (await canLaunchUrl(url)) {
+            await launchUrl(url, mode: LaunchMode.externalApplication);
+          } else {
+            _showSnackBar('Tidak dapat membuka WhatsApp', isSuccess: false);
+          }
+        }
+      }
+    } else {
+      _showSnackBar(feedBack.errorMsg ?? 'Gagal meminta OTP', isSuccess: false);
+    }
   }
 
   // ── Submit Registrasi ─────────────────────────
@@ -349,7 +369,7 @@ class _Register_pageState extends State<Register_page>
                         ),
                       ),
                       child: Text(
-                        'Kirim OTP',
+                        'Verifikasi WA',
                         style: GoogleFonts.poppins(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,

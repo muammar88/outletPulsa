@@ -34,6 +34,7 @@ class Rest_registrasi {
     return _netUtil
         .post(url, _publicHeaders, jsonEncode({"whatsapp": nomor_tujuan, "device_code": deviceCode}))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_void.map(res);
     });
   }
@@ -43,6 +44,7 @@ class Rest_registrasi {
     return _netUtil
         .post(url, _publicHeaders, jsonEncode({"nomor_tujuan": nomor_tujuan}))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_void.map(res);
     });
   }
@@ -68,6 +70,7 @@ class Rest_registrasi {
               "device_code": deviceCode
             }))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_void.map(res);
     });
   }
@@ -83,6 +86,7 @@ class Rest_registrasi {
               "otp": otp,
             }))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_void.map(res);
     });
   }

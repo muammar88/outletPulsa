@@ -35,6 +35,13 @@ class NetworkUtil {
   }
 
   dynamic _processResponse(http.Response response, Uri url) {
+    print("\x1B[31m-------Response API Debug\x1B[0m");
+    print("\x1B[31mURL Target: ${response.request?.url}\x1B[0m");
+    print("\x1B[31m$response\x1B[0m");
+    print(response.statusCode);
+    print(response.body);
+    print("\x1B[31m-------Response API Debug\x1B[0m");
+    
     final String res = response.body;
     final int statusCode = response.statusCode;
     debugPrint('📥 RESPONSE [$statusCode] $url\nData: $res\n==============================');

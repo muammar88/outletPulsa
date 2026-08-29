@@ -774,13 +774,14 @@ model TabMenu {
 }
 
 model OtpRegister {
-  id          Int      @id @default(autoincrement())
-  device_code String
-  whatsapp    String
-  otp         String
-  status      String   @default("active")
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  id                Int      @id @default(autoincrement())
+  device_code       String
+  whatsapp          String
+  otp               String
+  verification_code String?  @unique
+  status            String   @default("active")
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
 
   @@index([device_code])
   @@index([whatsapp])
@@ -822,6 +823,9 @@ model PengaturanUmum {
   telepon       String?
   alamat           String?  @db.Text
   bullmq_schedules String?  @db.Text
+  wa_api_url    String?  @db.Text
+  wa_api_key    String?  @db.Text
+  wa_device_key String?  @db.Text
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }

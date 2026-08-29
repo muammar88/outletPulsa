@@ -7,11 +7,7 @@ class Registrasi_provider with ChangeNotifier {
     return await Rest_registrasi()
         .getOTP(nomor_whatsapp)
         .then((Model_void e) async {
-      if (e.error == true) {
-        return new Model_void.map({'error': true, 'error_msg': e.errorMsg});
-      } else {
-        return new Model_void.map({'error': false, 'error_msg': e.errorMsg});
-      }
+      return e;
     });
   }
 

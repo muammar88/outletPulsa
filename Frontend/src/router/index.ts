@@ -77,6 +77,17 @@ const router = createRouter({
       },
     },
     {
+      path: '/privacy-policy',
+      name: 'privacy-policy-page',
+      component: () => import('@/views/public/Privacy-page.vue'),
+      meta: {
+        title: 'Kebijakan Privasi || Aplikasi Outlet Pulsa',
+        description: 'Kebijakan privasi dan perlindungan data pengguna Aplikasi Outlet Pulsa.',
+        layout: 'privacy-page',
+        authType: 'privacy-page',    
+      },
+    },
+    {
       path: '/login-backbone',
       name: 'login-backbone',
       component: () => import('@/views/administrator/Login-page.vue'),

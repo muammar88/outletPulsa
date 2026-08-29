@@ -130,8 +130,10 @@ export class AuthService {
         throw new BadRequestException('Perangkat ini sudah melakukan permintaan OTP registrasi dalam 24 jam terakhir.\nSilakan coba kembali besok.');
       }
 
-      // 3. Generate OTP statis untuk pengembangan awal
-      const otp = '1234';
+      // 3. Generate OTP and Verification Code
+      const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate random 6-digit OTP
+      const randomChars = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const verification_code = `REG-${randomChars}`;
 
       // 4. Simpan ke database
       await prisma.otpRegister.create({
@@ -139,11 +141,21 @@ export class AuthService {
           device_code: dto.device_code,
           whatsapp: dto.whatsapp,
           otp: otp,
+          verification_code: verification_code,
           status: 'active',
         },
       });
 
-      return { message: 'OTP berhasil dikirim', data: { success: true } };
+      const botWhatsappNumber = process.env.BOT_WHATSAPP_NUMBER || '6281234567890';
+
+      return { 
+        message: 'Silahkan kirim pesan verifikasi ke WhatsApp Bot', 
+        data: { 
+          success: true,
+          verification_code: verification_code,
+          bot_whatsapp: botWhatsappNumber 
+        } 
+      };
     });
   }
 
@@ -234,5 +246,60 @@ export class AuthService {
 
       return { message: 'Registrasi berhasil', data: { success: true } };
     });
+  }
+
+  /**
+   * Memproses Webhook dari WhatsApp untuk verifikasi OTP
+   */
+  async processWhatsappWebhook(sender: string, message: string) {
+    if (!sender || !message) {
+      return { success: false, message: 'Invalid payload' };
+    }
+
+    // Ekstrak REG-XXXXX dari pesan
+    const match = message.match(/REG-[A-Z0-9]+/i);
+    if (!match) {
+       return { success: false, message: 'Not a verification message' };
+    }
+    const verificationCode = match[0].toUpperCase();
+    
+    // Normalisasi nomor pengirim
+    let normalizedSender = sender.replace(/\D/g, '');
+    if (normalizedSender.startsWith('0')) {
+        normalizedSender = '62' + normalizedSender.substring(1);
+    } else if (normalizedSender.startsWith('8')) {
+        normalizedSender = '62' + normalizedSender;
+    }
+
+    // Cari di DB
+    const otpRecord = await this.prisma.otpRegister.findFirst({
+        where: {
+            verification_code: verificationCode,
+            status: 'active'
+        }
+    });
+
+    if (!otpRecord) {
+        return { success: false, message: 'Verification code not found or inactive' };
+    }
+
+    // Opsional: Validasi nomor pengirim dengan nomor yang direquest (bisa disesuaikan dengan kebutuhan)
+    let dbWhatsapp = otpRecord.whatsapp.replace(/\D/g, '');
+    if (dbWhatsapp.startsWith('0')) {
+        dbWhatsapp = '62' + dbWhatsapp.substring(1);
+    } else if (dbWhatsapp.startsWith('8')) {
+        dbWhatsapp = '62' + dbWhatsapp;
+    }
+
+    // Jika valid, panggil API Provider WhatsApp untuk membalas pesan berisi OTP
+    const otpMessage = `Kode OTP OutletPulsa Anda adalah: *${otpRecord.otp}*. JANGAN berikan kode ini kepada siapapun.`;
+    
+    // TODO: Integrasikan dengan fungsi API pengirim pesan WhatsApp yang Anda gunakan
+    // Contoh: await this.whatsappService.sendMessage(normalizedSender, otpMessage);
+    console.log(`[SIMULASI] Mengirim WhatsApp ke ${normalizedSender}: ${otpMessage}`);
+
+    // Update log/status bila perlu (opsional), di sini dibiarkan 'active' agar bisa divalidasi saat /register
+    
+    return { success: true, message: 'Webhook processed successfully' };
   }
 }

@@ -75,12 +75,22 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<bool> _checkHealth() async {
     try {
-      final response = await http.get(Uri.parse(config.health_url!)).timeout(const Duration(seconds: 10));
+      final response = await http
+          .get(Uri.parse(config.health_url!))
+          .timeout(const Duration(seconds: 10));
+      print("\x1B[31m-------Response API Debug\x1B[0m");
+      print("\x1B[31mURL Target: ${response.request?.url}\x1B[0m");
+      print("\x1B[31m$response\x1B[0m");
+      print(response.statusCode);
+      print(response.body);
+      print("\x1B[31m-------Response API Debug\x1B[0m");
       if (response.statusCode == 200) {
         var body = jsonDecode(response.body);
         return body['data'] != null && body['data']['success'] == true;
       }
     } catch (e) {
+      print("\x1B[31m-----Health Check Failed: $e\x1B[0m");
+      print("\x1B[31mURL Target: ${config.health_url}\x1B[0m");
       debugPrint("Health Check Failed: $e");
     }
     return false;
@@ -89,7 +99,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<Map<String, String>> _getDeviceInfo() async {
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    
+
     String deviceName = 'Unknown';
     String deviceBrand = 'Unknown';
     String deviceModel = 'Unknown';
@@ -127,11 +137,20 @@ class _SplashScreenState extends State<SplashScreen> {
       if (existingDeviceCode != null) {
         deviceInfo["device_code"] = existingDeviceCode;
       }
-      final response = await http.post(
-        Uri.parse(config.device_register_url!),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(deviceInfo),
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .post(
+            Uri.parse(config.device_register_url!),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode(deviceInfo),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      print("\x1B[31m-------Response API Debug\x1B[0m");
+      print("\x1B[31mURL Target: ${response.request?.url}\x1B[0m");
+      print("\x1B[31m$response\x1B[0m");
+      print(response.statusCode);
+      print(response.body);
+      print("\x1B[31m-------Response API Debug\x1B[0m");
 
       if (response.statusCode == 201 || response.statusCode == 200) {
         var data = jsonDecode(response.body);
@@ -145,11 +164,20 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<bool> _validateDevice(String deviceCode) async {
     try {
-      final response = await http.post(
-        Uri.parse(config.device_validate_url!),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({"device_code": deviceCode}),
-      ).timeout(const Duration(seconds: 15));
+      final response = await http
+          .post(
+            Uri.parse(config.device_validate_url!),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({"device_code": deviceCode}),
+          )
+          .timeout(const Duration(seconds: 15));
+
+      print("\x1B[31m-------Response API Debug\x1B[0m");
+      print("\x1B[31mURL Target: ${response.request?.url}\x1B[0m");
+      print("\x1B[31m$response\x1B[0m");
+      print(response.statusCode);
+      print(response.body);
+      print("\x1B[31m-------Response API Debug\x1B[0m");
 
       if (response.statusCode == 200) {
         var body = jsonDecode(response.body);
@@ -179,12 +207,14 @@ class _SplashScreenState extends State<SplashScreen> {
   void _checkAuth() async {
     final auth = Provider.of<Authentication_provider>(context, listen: false);
     await auth.check_login();
-    
+
     if (!mounted) return;
     if (auth.isLogin) {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => Home_page()));
+      Navigator.of(context)
+          .pushReplacement(MaterialPageRoute(builder: (_) => Home_page()));
     } else {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => Login_page()));
+      Navigator.of(context)
+          .pushReplacement(MaterialPageRoute(builder: (_) => Login_page()));
     }
   }
 
@@ -240,9 +270,9 @@ class _SplashScreenState extends State<SplashScreen> {
                       fit: BoxFit.contain,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 56),
-                  
+
                   // Loader
                   TweenAnimationBuilder<double>(
                     tween: Tween<double>(begin: 0.0, end: 1.0),
@@ -280,7 +310,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 ],
               ),
             ),
-            
+
             // App Version at bottom
             Positioned(
               bottom: 30,

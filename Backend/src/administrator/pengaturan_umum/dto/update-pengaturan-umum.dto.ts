@@ -28,4 +28,16 @@ export class UpdatePengaturanUmumDto {
   @IsOptional()
   @IsString()
   bullmq_schedules?: string;
+
+  @IsOptional()
+  @IsString()
+  wa_api_url?: string;
+
+  @IsOptional()
+  @IsString()
+  wa_api_key?: string;
+
+  @IsOptional()
+  @IsString()
+  wa_device_key?: string;
 }

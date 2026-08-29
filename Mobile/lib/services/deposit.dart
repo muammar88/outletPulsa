@@ -34,6 +34,7 @@ class Rest_deposit {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_info_deposit_url!);
     return _netUtil.get(url, headers).then((dynamic res) async {
+      print('response: $res');
       return new Model_info_deposit.map(res);
     });
   }
@@ -51,6 +52,7 @@ class Rest_deposit {
               "bank_tujuan_transfer": bank_tujuan_transfer
             }))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_void.map(res);
     });
   }
@@ -59,6 +61,7 @@ class Rest_deposit {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_info_konfirmasi_deposit_url!);
     return _netUtil.get(url, headers).then((dynamic res) async {
+      print('response: $res');
       return new Model_konfirmasi_deposit.map(res);
     });
   }
@@ -67,6 +70,7 @@ class Rest_deposit {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_delete_konfirmasi_deposit_url!);
     return _netUtil.get(url, headers).then((dynamic res) async {
+      print('response: $res');
       return new Model_void.map(res);
     });
   }
@@ -75,6 +79,7 @@ class Rest_deposit {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_konfirmasi_deposit_url!);
     return _netUtil.get(url, headers).then((dynamic res) async {
+      print('response: $res');
       return new Model_void.map(res);
     });
   }
@@ -85,6 +90,7 @@ class Rest_deposit {
     return _netUtil
         .post(url, headers, jsonEncode({"id": id}))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_detail_deposit.map(res);
     });
   }

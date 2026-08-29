@@ -26,6 +26,7 @@ class Rest_info {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_getInfoBelumBaca_url!);
     return _netUtil.get(url, headers).then((dynamic res) async {
+      print('response: $res');
       return new Model_list.map(res);
     });
   }
@@ -34,6 +35,7 @@ class Rest_info {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_getInfoSudahBaca_url!);
     return _netUtil.get(url, headers).then((dynamic res) async {
+      print('response: $res');
       return new Model_list.map(res);
     });
   }
@@ -44,6 +46,7 @@ class Rest_info {
     return _netUtil
         .post(url, headers, jsonEncode({"id": id}))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_void.map(res);
     });
   }

@@ -29,6 +29,7 @@ class Rest_beranda {
       'Authorization': 'Bearer $token',
     };
     return _netUtil.get(url, headers).then((dynamic res) async {
+      print('response: $res');
       return new Model_beranda.map(res);
     });
   }

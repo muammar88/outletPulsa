@@ -35,5 +35,6 @@ export const tabComponents: Record<string, any> = {
   daftar_device: defineAsyncComponent(() => import('@/modules/Administrator/DaftarDevice/DaftarDevice.vue')),
   pengumuman: defineAsyncComponent(() => import('@/modules/Administrator/Pengumuman/Pengumuman.vue')),
   laporan_umum: defineAsyncComponent(() => import('@/modules/Administrator/LaporanUmum/LaporanUmum.vue')),
+  whatsapp: defineAsyncComponent(() => import('@/modules/Administrator/PengaturanWhatsapp/PengaturanWhatsapp.vue')),
   notFound: defineAsyncComponent(() => import('@/views/errors/NotFoundView.vue')),
 };

@@ -55,7 +55,8 @@
     <div class="relative z-10 border-t border-gray-200/60 bg-white/50 backdrop-blur-md">
       <div class="max-w-6xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
         <div class="text-sm text-gray-500 font-medium">
-          © 2026 Outlet Pulsa. All rights reserved.
+          © 2026 Outlet Pulsa. All rights reserved. <br class="md:hidden" />
+          <span class="md:ml-2">Developed by <a href="https://www.deepeazy.com" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 font-bold hover:underline transition-colors">deepeazy.com</a></span>
         </div>
         <div class="flex items-center gap-1.5 text-sm font-medium text-gray-600 bg-blue-50 px-4 py-2 rounded-full border border-blue-100 shadow-sm">
           Dibuat dengan

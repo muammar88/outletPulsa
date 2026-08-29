@@ -28,6 +28,7 @@ class Rest_akun {
     return _netUtil
         .post(url, headers, jsonEncode({"nama": name}))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_void.map(res);
     });
   }
@@ -50,6 +51,7 @@ class Rest_akun {
               "konfirmasiPassword": konfirmasiPasswordBaru,
             }))
         .then((dynamic res) async {
+      print('response: $res');
       if (res['error'] == false) {
         var dataProfil =
             ModelSQL(id: '1', kode: kode, username: username, token: token);
@@ -66,6 +68,7 @@ class Rest_akun {
         .post(url, headers,
             jsonEncode({"nomor_tujuan": nomor_tujuan, "nominal": nominal, "password": password}))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_void.map(res);
     });
   }

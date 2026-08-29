@@ -52,6 +52,7 @@ class Rest_transaction {
         .post(url, headers,
             jsonEncode({"nomor_tujuan": nomorTujuan, "kode": kodeKategori}))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_prefix.map(res);
     });
   }
@@ -70,6 +71,7 @@ class Rest_transaction {
               "prefixStatus": prefix
             }))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_list_operator.map(res);
     });
   }
@@ -93,6 +95,7 @@ class Rest_transaction {
         Uri.parse(_getDaftarProduk_url!).replace(queryParameters: queryParams);
 
     return _netUtil.get(url, headers).then((dynamic res) async {
+      print('response: $res');
       return new Model_list_produk.map(res);
     });
   }
@@ -112,6 +115,7 @@ class Rest_transaction {
               "name": name,
             }))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_list_produk.map(res);
     });
   }
@@ -124,6 +128,7 @@ class Rest_transaction {
     return _netUtil
         .post(url, headers, jsonEncode({"kode": kodeKategori}))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_list_kategori.map(res);
     });
   }
@@ -136,6 +141,7 @@ class Rest_transaction {
     return _netUtil
         .post(url, headers, jsonEncode({"kode": kodeKategori}))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_list_kategori.map(res);
     });
   }
@@ -151,6 +157,7 @@ class Rest_transaction {
             jsonEncode(
                 {"nomor_tujuan": nomor_tujuan, "kode_produk": kode_produk}))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_transaction.map(res);
     });
   }
@@ -161,6 +168,7 @@ class Rest_transaction {
     return _netUtil
         .post(url, headers, jsonEncode({"kode_transaksi": kode_transaksi}))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_detail_transaksi.map(res);
     });
   }
@@ -176,6 +184,7 @@ class Rest_transaction {
             jsonEncode(
                 {"product_code": product_code, "nomor_tujuan": nomor_tujuan}))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_inquiry_pascabayar.map(res);
     });
   }
@@ -186,6 +195,7 @@ class Rest_transaction {
     return _netUtil
         .post(url, headers, jsonEncode({"tr_id": trId}))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_void.map(res);
     });
   }
@@ -197,6 +207,7 @@ class Rest_transaction {
     return _netUtil
         .post(url, headers, jsonEncode({"kode_transaksi": kode_transaksi}))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_detail_transaksi_pascabayar.map(res);
     });
   }

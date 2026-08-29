@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
 class ConfigApp {
   String? _mainurl;
@@ -66,9 +67,11 @@ class ConfigApp {
   ConfigApp() {
     // Gunakan 10.0.2.2 jika Anda mengetes melalui Android Emulator (karena ini adalah alias untuk localhost host PC Anda).
     // Jika mengetes di HP asli (koneksi satu WiFi), baru gunakan IP LAN seperti 10.94.252.166
-    // _mainurl = "http://10.94.252.166:3005/api";
-    //_mainurl = "http://10.94.252.166:3005/api";
-    _mainurl = "https://api.outletpulsa.com/api";
+    if (kReleaseMode) {
+      _mainurl = "https://api.outletpulsa.com/api";
+    } else {
+      _mainurl = "http://10.253.113.166:3005/api";
+    }
     _login_url = '$_mainurl/auth/login';
     _check_login_url = '$_mainurl/auth/check-login';
     _health_url = '$_mainurl/health';

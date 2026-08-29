@@ -267,6 +267,22 @@ export default async function tabSeed(prisma: PrismaClient) {
         created_at: new Date(),
         updated_at: new Date(),
       },
+      {
+        name: 'Pesan Whatsapp',
+        icon: 'IconDeviceMessage',
+        path: 'pesan_whatsapp',
+        desc: 'Pesan Whatsapp',
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+      {
+        name: 'Pengaturan Whatsapp',
+        icon: 'IconDeviceMessage',
+        path: 'pengaturan_whatsapp',
+        desc: 'Pengaturan Whatsapp',
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
     ],
     skipDuplicates: true,
   });

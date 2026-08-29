@@ -32,6 +32,7 @@ class Rest_agen {
       url = url.replace(queryParameters: {'search': search});
     }
     return _netUtil.get(url, headers).then((dynamic res) async {
+      print('response: $res');
       return new Model_agen.map(res);
     });
   }
@@ -43,6 +44,7 @@ class Rest_agen {
       url = url.replace(queryParameters: {'search': search});
     }
     return _netUtil.get(url, headers).then((dynamic res) async {
+      print('response: $res');
       return new Model_agen.map(res);
     });
   }
@@ -51,6 +53,7 @@ class Rest_agen {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_statistikAgen_url!);
     return _netUtil.get(url, headers).then((dynamic res) async {
+      print('response: $res');
       return new Model_agen.map(res);
     });
   }
@@ -60,6 +63,7 @@ class Rest_agen {
     Uri url = Uri.parse(_klaimAgen_url!);
     // Body harus berupa JSON string (bukan Map mentah) ketika Content-Type: application/json
     return _netUtil.post(url, headers, jsonEncode({})).then((dynamic res) async {
+      print('response: $res');
       return new Model_agen.map(res);
     });
   }
@@ -71,6 +75,7 @@ class Rest_agen {
       url = url.replace(queryParameters: {'search': search});
     }
     return _netUtil.get(url, headers).then((dynamic res) async {
+      print('response: $res');
       return new Model_agen.map(res);
     });
   }

@@ -26,6 +26,7 @@ class Rest_login {
       "password": password,
       "device_code": device_code,
     }).then((dynamic res) async {
+      print('response: $res');
       return new Model_login.map(res);
     });
   }
@@ -44,6 +45,7 @@ class Rest_login {
               "token": token,
             }))
         .then((dynamic res) async {
+      print('response: $res');
       return new Model_void.map(res);
     });
   }

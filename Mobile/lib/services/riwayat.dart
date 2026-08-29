@@ -29,6 +29,7 @@ class Rest_riwayat {
       url = url.replace(queryParameters: {'search': search});
     }
     return _netUtil.get(url, headers).then((dynamic res) async {
+      print('response: $res');
       return new Model_list.map(res);
     });
   }
@@ -40,6 +41,7 @@ class Rest_riwayat {
       url = url.replace(queryParameters: {'search': search});
     }
     return _netUtil.get(url, headers).then((dynamic res) async {
+      print('response: $res');
       return new Model_list.map(res);
     });
   }
@@ -51,6 +53,7 @@ class Rest_riwayat {
       url = url.replace(queryParameters: {'search': search});
     }
     return _netUtil.get(url, headers).then((dynamic res) async {
+      print('response: $res');
       return new Model_list.map(res);
     });
   }
@@ -62,6 +65,7 @@ class Rest_riwayat {
       url = url.replace(queryParameters: {'search': search});
     }
     return _netUtil.get(url, headers).then((dynamic res) async {
+      print('response: $res');
       return new Model_list.map(res);
     });
   }
