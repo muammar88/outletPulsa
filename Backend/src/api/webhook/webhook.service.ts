@@ -41,6 +41,7 @@ interface DigiflazzCallbackPayload {
 @Injectable()
 export class WebhookService {
   private readonly logger = new Logger(WebhookService.name);
+  private static webhookSequence = 0;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -53,6 +54,9 @@ export class WebhookService {
     body: IakCallbackPayload,
     ipAddress: string,
   ): Promise<{ error: boolean; error_msg: string }> {
+    WebhookService.webhookSequence++;
+    console.log(`[Webhook Sequence: ${WebhookService.webhookSequence}] Menerima Webhook IAK. Data:`, JSON.stringify(body));
+
     const expectedKey = process.env.IAK_CALLBACK_KEY || '';
     if (kodeVerifikasi !== expectedKey) {
       await this.logWebhook('IAK', 'callback', null, body, 'failed', 'Kode verifikasi tidak valid', ipAddress);
@@ -121,6 +125,9 @@ export class WebhookService {
     body: TripayCallbackItem[] | TripayCallbackItem,
     ipAddress: string,
   ): Promise<{ error: boolean; error_msg: string }> {
+    WebhookService.webhookSequence++;
+    console.log(`[Webhook Sequence: ${WebhookService.webhookSequence}] Menerima Webhook TRIPAY. Data:`, JSON.stringify(body));
+
     const expectedSecret = process.env.TRIPAY_CALLBACK_SECRET || '';
     if (callbackSecret !== expectedSecret) {
       await this.logWebhook('TRIPAY', 'callback', null, body, 'failed', 'Secret tidak valid', ipAddress);
@@ -202,7 +209,10 @@ export class WebhookService {
     body: DigiflazzCallbackPayload,
     ipAddress: string,
   ): Promise<{ error: boolean; error_msg: string }> {
-    console.log(`\n--- [DIGIFLAZZ SERVICE] handleDigiflazzCallback ---`);
+    WebhookService.webhookSequence++;
+    console.log(`\n--- [DIGIFLAZZ SERVICE] handleDigiflazzCallback [Sequence: ${WebhookService.webhookSequence}] ---`);
+    console.log(`[Webhook Sequence: ${WebhookService.webhookSequence}] Menerima Webhook DIGIFLAZZ. Data:`, JSON.stringify(body));
+
     const webhookSecret = process.env.DIGIFLAZZ_WEBHOOK_SECRET || '';
     const expectedSignature = 'sha1=' + crypto.createHmac('sha1', webhookSecret).update(rawBody).digest('hex');
     

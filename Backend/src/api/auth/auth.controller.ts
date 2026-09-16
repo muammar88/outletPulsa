@@ -30,10 +30,4 @@ export class AuthController {
   async register(@Body() dto: RegisterDto) {
     return this.authService.register(dto);
   }
-
-  @Post('webhook-whatsapp')
-  @HttpCode(HttpStatus.OK)
-  async webhookWhatsapp(@Body() body: any) {
-    return this.authService.processWhatsappWebhook(body);
-  }
 }

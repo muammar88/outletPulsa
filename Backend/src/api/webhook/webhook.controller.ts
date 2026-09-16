@@ -1,6 +1,7 @@
 import { Controller, Post, Param, Body, Headers, Req, Logger, HttpCode, HttpStatus } from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
 import { WebhookService } from './webhook.service';
+import { AuthService } from '../auth/auth.service';
 import type { Request } from 'express';
 
 /**
@@ -15,12 +16,16 @@ import type { Request } from 'express';
  * - POST /webhook/iak/:kode_verifikasi  → Callback dari IAK
  * - POST /webhook/tripay                → Callback dari Tripay
  * - POST /webhook/digiflazz             → Callback dari Digiflazz
+ * - POST /webhook/wapisender            → Callback dari WAPISender (WhatsApp)
  */
 @Controller('webhook')
 export class WebhookController {
   private readonly logger = new Logger(WebhookController.name);
 
-  constructor(private readonly webhookService: WebhookService) {}
+  constructor(
+    private readonly webhookService: WebhookService,
+    private readonly authService: AuthService
+  ) {}
 
   /**
    * Endpoint: POST /webhook/iak/:kode_verifikasi
@@ -134,5 +139,16 @@ export class WebhookController {
       body,
       ipAddress,
     );
+  }
+
+  /**
+   * Endpoint: POST /webhook/wapisender
+   *
+   * Digunakan untuk menerima pesan masuk dari WAPISender.
+   */
+  @Post('wapisender')
+  @HttpCode(HttpStatus.OK)
+  async webhookWapisender(@Body() body: any) {
+    return this.authService.processWhatsappWebhook(body);
   }
 }

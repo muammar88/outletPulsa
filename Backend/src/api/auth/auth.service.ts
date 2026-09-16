@@ -115,24 +115,11 @@ export class AuthService {
         throw new BadRequestException('Nomor WhatsApp sudah digunakan dan tidak dapat didaftarkan kembali.');
       }
 
-      // 2. Cek apakah device_code sudah pernah dipakai untuk request dalam 24 jam terakhir
-      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      const recentDeviceOtp = await prisma.otpRegister.findFirst({
-        where: { 
-          device_code: dto.device_code,
-          created_at: {
-            gte: twentyFourHoursAgo
-          }
-        },
-      });
 
-      if (recentDeviceOtp) {
-        throw new BadRequestException('Perangkat ini sudah melakukan permintaan OTP registrasi dalam 24 jam terakhir.\nSilakan coba kembali besok.');
-      }
 
       // 3. Generate OTP and Verification Code
       const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate random 6-digit OTP
-      const randomChars = Math.random().toString(36).substring(2, 8).toUpperCase();
+      const randomChars = (Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10) + Math.random().toString(36).substring(2, 10)).toUpperCase();
       const verification_code = `OP-${randomChars}`;
 
       // Hash password
@@ -151,8 +138,9 @@ export class AuthService {
           status: 'active',
         },
       });
-
-      const botWhatsappNumber = process.env.BOT_WHATSAPP_NUMBER || '6281234567890';
+      // Ambil nomor whatsapp bot dari pengaturan umum
+      const pengaturan = await prisma.pengaturanUmum.findFirst();
+      const botWhatsappNumber = pengaturan?.telepon || process.env.BOT_WHATSAPP_NUMBER || '6281234567890';
 
       return { 
         message: 'Silahkan kirim pesan verifikasi ke WhatsApp Bot', 
@@ -254,10 +242,15 @@ export class AuthService {
     });
   }
 
+  private static waWebhookSequence = 0;
+
   /**
    * Memproses Webhook dari WhatsApp untuk verifikasi OTP
    */
   async processWhatsappWebhook(payload: any) {
+    AuthService.waWebhookSequence++;
+    console.log(`[Webhook Sequence: ${AuthService.waWebhookSequence}] Menerima Webhook WAPISender (WhatsApp). Data:`, JSON.stringify(payload));
+
     if (!payload || typeof payload !== 'object') {
       return { success: false, message: 'Invalid payload' };
     }

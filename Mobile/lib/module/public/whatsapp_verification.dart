@@ -56,11 +56,22 @@ class _WhatsappVerificationPageState extends State<WhatsappVerificationPage>
   }
 
   void _openWhatsapp() async {
-    final url = Uri.parse(
-        'https://wa.me/${widget.botWhatsapp}?text=${widget.verificationCode}');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url, mode: LaunchMode.externalApplication);
-    } else {
+    final phone = widget.botWhatsapp.replaceAll(RegExp(r'[^0-9]'), '');
+    final text = Uri.encodeComponent(widget.verificationCode);
+    
+    final whatsappUrl = Uri.parse('whatsapp://send?phone=$phone&text=$text');
+    final webUrl = Uri.parse('https://wa.me/$phone?text=$text');
+
+    try {
+      if (await canLaunchUrl(whatsappUrl)) {
+        await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+      } else if (await canLaunchUrl(webUrl)) {
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+      } else {
+        // Fallback: try launching webUrl anyway
+        await launchUrl(webUrl, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Tidak dapat membuka WhatsApp')),

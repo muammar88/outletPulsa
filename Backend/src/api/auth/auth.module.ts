@@ -17,5 +17,6 @@ import { PengumumanModule } from '../../pengumuman/pengumuman.module';
   ],
   controllers: [AuthController],
   providers: [AuthService, PrismaService],
+  exports: [AuthService],
 })
 export class AuthModule {}
