@@ -777,7 +777,10 @@ model OtpRegister {
   id                Int      @id @default(autoincrement())
   device_code       String
   whatsapp          String
-  otp               String
+  otp               String?
+  fullname          String?
+  password          String?
+  kode_agen         String?
   verification_code String?  @unique
   status            String   @default("active")
   created_at        DateTime @default(now())

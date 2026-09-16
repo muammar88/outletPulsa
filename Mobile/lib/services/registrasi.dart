@@ -28,11 +28,24 @@ class Rest_registrasi {
     'Accept': 'application/json',
   };
 
-  Future<Model_void> getOTP(String nomor_tujuan) async {
+  Future<Model_void> initRegister(
+      String nama_pengguna,
+      String nomor_whatsapp,
+      String password,
+      String kode_referal) async {
     Uri url = Uri.parse(_get_otp_url!);
     String deviceCode = await SQLHelper().getDeviceCode() ?? '';
     return _netUtil
-        .post(url, _publicHeaders, jsonEncode({"whatsapp": nomor_tujuan, "device_code": deviceCode}))
+        .post(
+            url,
+            _publicHeaders,
+            jsonEncode({
+              "nama_pengguna": nama_pengguna,
+              "whatsapp": nomor_whatsapp,
+              "password": password,
+              "kode_referal": kode_referal,
+              "device_code": deviceCode
+            }))
         .then((dynamic res) async {
       print('response: $res');
       return new Model_void.map(res);

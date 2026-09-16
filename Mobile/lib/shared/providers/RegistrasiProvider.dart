@@ -3,9 +3,14 @@ import 'package:outletpulsa/services/registrasi.dart';
 import 'package:outletpulsa/models/model_void.dart';
 
 class Registrasi_provider with ChangeNotifier {
-  Future<Model_void> getOTP(String nomor_whatsapp) async {
+  Future<Model_void> initRegister(
+      String nama_pengguna,
+      String nomor_whatsapp,
+      String password,
+      String kode_referal) async {
     return await Rest_registrasi()
-        .getOTP(nomor_whatsapp)
+        .initRegister(
+            nama_pengguna, nomor_whatsapp, password, kode_referal)
         .then((Model_void e) async {
       return e;
     });

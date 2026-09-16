@@ -70,8 +70,7 @@ class ConfigApp {
     if (kReleaseMode) {
       _mainurl = "https://api.outletpulsa.com/api";
     } else {
-      _mainurl = "https://api.outletpulsa.com/api";
-      // _mainurl = "http://10.160.34.166:3005/api";
+      _mainurl = "http://10.120.102.166:3005/api";
     }
     _login_url = '$_mainurl/auth/login';
     _check_login_url = '$_mainurl/auth/check-login';

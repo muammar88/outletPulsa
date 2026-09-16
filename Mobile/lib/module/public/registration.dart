@@ -9,7 +9,7 @@ import 'package:outletpulsa/shared/providers/RegistrasiProvider.dart';
 import 'package:outletpulsa/shared/providers/loadProvider.dart';
 import 'package:outletpulsa/shared/widgets/CircularProgressWidget.dart';
 import 'package:outletpulsa/module/public/login.dart'; // import for AuthInput
-import 'package:url_launcher/url_launcher.dart';
+import 'package:outletpulsa/module/public/whatsapp_verification.dart';
 
 const _kPrimary = Color(0xFF0F1F6E);
 const _kPrimaryLight = Color(0xFF1A3DB5);
@@ -31,7 +31,6 @@ class _Register_pageState extends State<Register_page>
   String? nomor_whatsapp;
   String? nama_pengguna;
   String? kode_referal;
-  String? otp;
   String? password;
   String? konf_password;
 
@@ -95,38 +94,6 @@ class _Register_pageState extends State<Register_page>
     );
   }
 
-  // ── Get OTP ──────────────────────────────────
-  Future<void> _getOTP(Load_provider loader) async {
-    if (nomor_whatsapp == null || nomor_whatsapp!.isEmpty) {
-      _showSnackBar('Nomor WhatsApp tidak boleh kosong', isSuccess: false);
-      return;
-    }
-    loader.isLoad = true;
-    final reg = Provider.of<Registrasi_provider>(context, listen: false);
-    final feedBack = await reg.getOTP(nomor_whatsapp!);
-    loader.isLoad = false;
-    
-    if (feedBack.error == false) {
-      _showSnackBar(feedBack.errorMsg ?? 'Silahkan kirim pesan verifikasi ke WhatsApp', isSuccess: true);
-      
-      if (feedBack.data != null) {
-        final verificationCode = feedBack.data!['verification_code'];
-        final botWhatsapp = feedBack.data!['bot_whatsapp'];
-        
-        if (verificationCode != null && botWhatsapp != null) {
-          final url = Uri.parse('https://wa.me/$botWhatsapp?text=$verificationCode');
-          if (await canLaunchUrl(url)) {
-            await launchUrl(url, mode: LaunchMode.externalApplication);
-          } else {
-            _showSnackBar('Tidak dapat membuka WhatsApp', isSuccess: false);
-          }
-        }
-      }
-    } else {
-      _showSnackBar(feedBack.errorMsg ?? 'Gagal meminta OTP', isSuccess: false);
-    }
-  }
-
   // ── Submit Registrasi ─────────────────────────
   Future<void> _doRegister(Load_provider loader) async {
     if (_formKey.currentState == null || !_formKey.currentState!.validate()) {
@@ -138,17 +105,33 @@ class _Register_pageState extends State<Register_page>
 
     loader.isLoad = true;
     final reg = Provider.of<Registrasi_provider>(context, listen: false);
-    final feedBack = await reg.registrasiMember(
+    final feedBack = await reg.initRegister(
       nama_pengguna!,
       nomor_whatsapp!,
-      otp!,
       password!,
       kode_referal!,
     );
     loader.isLoad = false;
 
-    _showSnackBar(feedBack.errorMsg ?? '', isSuccess: feedBack.error == false);
-    if (feedBack.error == false) Navigator.of(context).pop();
+    if (feedBack.error == false && feedBack.data != null) {
+      final verificationCode = feedBack.data!['verification_code'];
+      final botWhatsapp = feedBack.data!['bot_whatsapp'];
+      
+      if (verificationCode != null && botWhatsapp != null) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => WhatsappVerificationPage(
+              verificationCode: verificationCode,
+              botWhatsapp: botWhatsapp,
+            ),
+          ),
+        );
+      } else {
+        _showSnackBar('Gagal mendapatkan kode verifikasi', isSuccess: false);
+      }
+    } else {
+      _showSnackBar(feedBack.errorMsg ?? 'Registrasi gagal', isSuccess: false);
+    }
   }
 
   // ─── Brand Panel (kiri pada wide layout) ───────────────────────
@@ -320,67 +303,6 @@ class _Register_pageState extends State<Register_page>
             ),
             const SizedBox(height: 18),
 
-            // ── OTP Row ──
-            _FieldLabel('Kode OTP'),
-            const SizedBox(height: 8),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: AuthInput(
-                    hintText: 'Masukkan kode OTP',
-                    icon: TablerIcons.message_2,
-                    keyboardType: TextInputType.number,
-                    onChanged: (v) => setState(() => otp = v),
-                    onSaved: (v) => otp = v!,
-                    validator: (v) => (v == null || v.isEmpty)
-                        ? 'OTP tidak boleh kosong'
-                        : null,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                // Tombol Get OTP
-                SizedBox(
-                  height: 52,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [_kPrimary, _kPrimaryLight],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: _kPrimary.withOpacity(0.3),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: ElevatedButton(
-                      onPressed: () => _getOTP(loader),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: Text(
-                        'Verifikasi WA',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
             const SizedBox(height: 18),
 
             // ── Kode Referal ──

@@ -133,14 +133,20 @@ export class AuthService {
       // 3. Generate OTP and Verification Code
       const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate random 6-digit OTP
       const randomChars = Math.random().toString(36).substring(2, 8).toUpperCase();
-      const verification_code = `REG-${randomChars}`;
+      const verification_code = `OP-${randomChars}`;
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(dto.password, 10);
 
       // 4. Simpan ke database
       await prisma.otpRegister.create({
         data: {
           device_code: dto.device_code,
           whatsapp: dto.whatsapp,
-          otp: otp,
+          otp: otp, // Optional, can be removed or kept as a fallback
+          fullname: dto.nama_pengguna,
+          password: hashedPassword,
+          kode_agen: dto.kode_referal,
           verification_code: verification_code,
           status: 'active',
         },
@@ -251,13 +257,29 @@ export class AuthService {
   /**
    * Memproses Webhook dari WhatsApp untuk verifikasi OTP
    */
-  async processWhatsappWebhook(sender: string, message: string) {
-    if (!sender || !message) {
+  async processWhatsappWebhook(payload: any) {
+    if (!payload || typeof payload !== 'object') {
       return { success: false, message: 'Invalid payload' };
     }
 
-    // Ekstrak REG-XXXXX dari pesan
-    const match = message.match(/REG-[A-Z0-9]+/i);
+    // 1. Validasi event type
+    if (payload.event !== 'message') {
+      return { status: 'ignored', message: 'Not a message event' };
+    }
+
+    const sender = payload.phone;
+    const message = payload.message;
+    const eventId = payload.event_id; // Bisa digunakan untuk log
+
+    if (!sender || !message) {
+      return { success: false, message: 'Missing phone or message in payload' };
+    }
+
+    console.log(`[Webhook] Received message event ${eventId} from ${sender}`);
+
+    // Ekstrak OP-XXXXX dari pesan dengan membersihkan whitespace
+    const cleanMessage = message.trim();
+    const match = cleanMessage.match(/OP-[A-Z0-9]+/i);
     if (!match) {
        return { success: false, message: 'Not a verification message' };
     }
@@ -271,35 +293,94 @@ export class AuthService {
         normalizedSender = '62' + normalizedSender;
     }
 
-    // Cari di DB
-    const otpRecord = await this.prisma.otpRegister.findFirst({
-        where: {
-            verification_code: verificationCode,
-            status: 'active'
-        }
+    return await this.prisma.$transaction(async (prisma) => {
+      // Cari di DB yang statusnya masih active (sekaligus sebagai mekanisme idempotency)
+      const otpRecord = await prisma.otpRegister.findFirst({
+          where: {
+              verification_code: verificationCode,
+              status: 'active'
+          }
+      });
+
+      if (!otpRecord) {
+          // Jika kode tidak ada atau sudah nonactive, abaikan (bisa karena webhook duplicate atau kode salah)
+          return { success: false, message: 'Verification code not found or already verified' };
+      }
+
+      // Validasi nomor pengirim dengan nomor yang direquest
+      let dbWhatsapp = otpRecord.whatsapp.replace(/\D/g, '');
+      if (dbWhatsapp.startsWith('0')) {
+          dbWhatsapp = '62' + dbWhatsapp.substring(1);
+      } else if (dbWhatsapp.startsWith('8')) {
+          dbWhatsapp = '62' + dbWhatsapp;
+      }
+
+      if (normalizedSender !== dbWhatsapp) {
+          return { success: false, message: 'Sender does not match registered whatsapp' };
+      }
+
+      // Cek ulang duplikasi nomor WA
+      const existingMember = await prisma.member.findUnique({
+        where: { whatsappnumber: otpRecord.whatsapp },
+      });
+
+      if (existingMember) {
+        return { success: false, message: 'Nomor WhatsApp sudah terdaftar.' };
+      }
+
+      // Validasi Kode Referal (Jika ada)
+      let referralAgent: any = null;
+      if (otpRecord.kode_agen && otpRecord.kode_agen.trim() !== '') {
+        referralAgent = await prisma.member.findFirst({
+          where: { kode: otpRecord.kode_agen.trim() },
+        });
+      }
+
+      // Lanjutkan proses registrasi
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      const kodeMember = `OP${randomSuffix}`;
+
+      // Menyimpan data member baru
+      const newMember = await prisma.member.create({
+        data: {
+          kode: kodeMember,
+          fullname: otpRecord.fullname || 'Member Baru',
+          whatsappnumber: otpRecord.whatsapp,
+          password: otpRecord.password || '',
+          kode_agen: referralAgent ? referralAgent.kode : null,
+          status: 'verfied',
+        },
+      });
+
+      // Ubah status OTP menjadi nonactive (sebagai mekanisme single-use dan idempotency)
+      await prisma.otpRegister.update({
+        where: { id: otpRecord.id },
+        data: { status: 'nonactive' },
+      });
+
+      // Update DeviceConnected dengan ID member yang baru
+      const device = await prisma.deviceConnected.findFirst({
+        where: { device_code: otpRecord.device_code },
+        orderBy: { createdAt: 'desc' }
+      });
+      
+      if (device) {
+        await prisma.deviceConnected.update({
+          where: { id: device.id },
+          data: { member_id: newMember.id },
+        });
+      }
+
+      // Kirim notifikasi selamat datang
+      this.pengumumanService.sendPengumuman({
+          title: 'Selamat Datang di OutletPulsa!',
+          body: `Halo ${newMember.fullname}, akun Anda berhasil didaftarkan. Nikmati kemudahan transaksi bersama kami.`,
+          pengumumanType: 'System',
+          targetType: 'User',
+          targetId: newMember.id.toString(),
+      }).catch(e => console.error('Failed to send welcome pengumuman', e));
+
+      return { success: true, message: 'Webhook processed successfully, member created' };
     });
-
-    if (!otpRecord) {
-        return { success: false, message: 'Verification code not found or inactive' };
-    }
-
-    // Opsional: Validasi nomor pengirim dengan nomor yang direquest (bisa disesuaikan dengan kebutuhan)
-    let dbWhatsapp = otpRecord.whatsapp.replace(/\D/g, '');
-    if (dbWhatsapp.startsWith('0')) {
-        dbWhatsapp = '62' + dbWhatsapp.substring(1);
-    } else if (dbWhatsapp.startsWith('8')) {
-        dbWhatsapp = '62' + dbWhatsapp;
-    }
-
-    // Jika valid, panggil API Provider WhatsApp untuk membalas pesan berisi OTP
-    const otpMessage = `Kode OTP OutletPulsa Anda adalah: *${otpRecord.otp}*. JANGAN berikan kode ini kepada siapapun.`;
-    
-    // TODO: Integrasikan dengan fungsi API pengirim pesan WhatsApp yang Anda gunakan
-    // Contoh: await this.whatsappService.sendMessage(normalizedSender, otpMessage);
-    console.log(`[SIMULASI] Mengirim WhatsApp ke ${normalizedSender}: ${otpMessage}`);
-
-    // Update log/status bila perlu (opsional), di sini dibiarkan 'active' agar bisa divalidasi saat /register
-    
-    return { success: true, message: 'Webhook processed successfully' };
   }
 }

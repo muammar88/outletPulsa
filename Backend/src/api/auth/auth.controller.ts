@@ -34,9 +34,6 @@ export class AuthController {
   @Post('webhook-whatsapp')
   @HttpCode(HttpStatus.OK)
   async webhookWhatsapp(@Body() body: any) {
-    // Note: Parameter mapping will depend on the WhatsApp Gateway Provider used
-    const sender = body?.sender || body?.phone || body?.from;
-    const message = body?.message || body?.text || body?.body;
-    return this.authService.processWhatsappWebhook(sender, message);
+    return this.authService.processWhatsappWebhook(body);
   }
 }

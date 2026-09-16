@@ -8,6 +8,18 @@ export class GetOtpRegisterDto {
   @IsNotEmpty({ message: 'device_code wajib diisi' })
   @IsString()
   device_code: string;
+
+  @IsNotEmpty({ message: 'Nama Pengguna wajib diisi' })
+  @IsString()
+  nama_pengguna: string;
+
+  @IsNotEmpty({ message: 'Password wajib diisi' })
+  @IsString()
+  password: string;
+
+  @IsOptional()
+  @IsString()
+  kode_referal?: string;
 }
 
 export class RegisterDto {
