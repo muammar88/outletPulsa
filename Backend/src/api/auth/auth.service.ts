@@ -245,6 +245,32 @@ export class AuthService {
   private static waWebhookSequence = 0;
 
   /**
+   * Fungsi untuk mengirim pesan WhatsApp (reply)
+   */
+  private async sendWhatsappMessage(phone: string, message: string) {
+    const url = process.env.WAPISENDER_URL;
+    if (!url) {
+      console.warn(`[WAPISENDER] URL API tidak dikonfigurasi di .env (WAPISENDER_URL). Abaikan pesan ke ${phone}`);
+      return;
+    }
+    
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, message })
+      });
+      if (!response.ok) {
+         console.error(`[WAPISENDER] Gagal mengirim pesan ke ${phone}. HTTP Status: ${response.status}`);
+      } else {
+         console.log(`[WAPISENDER] Berhasil mengirim pesan balasan ke ${phone}`);
+      }
+    } catch (error: any) {
+      console.error(`[WAPISENDER] Error mengirim pesan ke ${phone}:`, error.message);
+    }
+  }
+
+  /**
    * Memproses Webhook dari WhatsApp untuk verifikasi OTP
    */
   async processWhatsappWebhook(payload: any) {
@@ -297,6 +323,7 @@ export class AuthService {
 
       if (!otpRecord) {
           // Jika kode tidak ada atau sudah nonactive, abaikan (bisa karena webhook duplicate atau kode salah)
+          await this.sendWhatsappMessage(normalizedSender, 'Mohon maaf, kode verifikasi tidak ditemukan atau sudah kedaluwarsa. Silakan request ulang dari aplikasi.');
           return { success: false, message: 'Verification code not found or already verified' };
       }
 
@@ -309,6 +336,7 @@ export class AuthService {
       }
 
       if (normalizedSender !== dbWhatsapp) {
+          await this.sendWhatsappMessage(normalizedSender, 'Mohon maaf, nomor WhatsApp pengirim tidak cocok dengan nomor yang didaftarkan di aplikasi.');
           return { success: false, message: 'Sender does not match registered whatsapp' };
       }
 
@@ -318,6 +346,7 @@ export class AuthService {
       });
 
       if (existingMember) {
+        await this.sendWhatsappMessage(normalizedSender, 'Pendaftaran gagal. Nomor WhatsApp Anda sudah terdaftar sebelumnya.');
         return { success: false, message: 'Nomor WhatsApp sudah terdaftar.' };
       }
 
@@ -350,6 +379,9 @@ export class AuthService {
         where: { id: otpRecord.id },
         data: { status: 'nonactive' },
       });
+
+      // Kirim pesan sukses
+      await this.sendWhatsappMessage(normalizedSender, `Selamat! Registrasi Anda berhasil diproses.\n\nKode Member: *${kodeMember}*\nNama: ${newMember.fullname}\n\nSilakan kembali ke aplikasi untuk melanjutkan.`);
 
       // Update DeviceConnected dengan ID member yang baru
       const device = await prisma.deviceConnected.findFirst({
