@@ -79,10 +79,13 @@ jobs:
             # IF NOT EXISTS di SQL memastikan tidak ada data yang berubah/terhapus
             docker exec outletpulsa_backend npx prisma migrate deploy
 
-            echo "🔄 7. Restart backend agar schema terbaru terbaca..."
+            echo "🔄 7. Sinkronisasi (Delete & Re-seed) data menu, submenu, dan tab..."
+            docker exec outletpulsa_backend npx ts-node prisma/seeds/sync_menu.seed.ts
+
+            echo "🔄 8. Restart backend agar schema terbaru terbaca..."
             docker restart outletpulsa_backend
 
-            echo "⏳ 8. Menunggu backend restart selesai (10 detik)..."
+            echo "⏳ 9. Menunggu backend restart selesai (10 detik)..."
             sleep 10
 
             echo "✅ Deployment selesai!"

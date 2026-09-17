@@ -20,7 +20,7 @@ import iakPrabayarSeed from './seeds/iak_prabayar.seed';
 import iakPascabayarSeed from './seeds/iak_pascabayar.seed';
 import webhookDummySeed from './seeds/webhook_dummy.seed';
 import bankSeed from './seeds/bank.seed';
-import bankMenuSeed from './seeds/bank_menu.seed';
+
 const prisma = new PrismaClient();
 
 async function main() {
@@ -85,8 +85,7 @@ async function main() {
 
   await bankSeed(prisma);
 
-  console.log('Seeding Bank Menu Tab and SubMenu...');
-  await bankMenuSeed(prisma);
+
 
   console.log('Seeding completed successfully.');
 }

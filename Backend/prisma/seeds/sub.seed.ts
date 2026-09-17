@@ -6,7 +6,7 @@ export default async function subSeed(prisma: PrismaClient) {
 
   if (menus.length === 0) return;
 
-  // Ambil semua tab dari TabAdmin
+  // Ambil semua tab dari TabMenu
   const tabs = await prisma.tabMenu.findMany({
     select: { id: true, path: true },
   });
@@ -16,25 +16,29 @@ export default async function subSeed(prisma: PrismaClient) {
   if (tabs.length === 0) return;
 
   const subMenusData = [
-    { menu_name: 'Transaksi', name: 'Transaksi Pulsa', icon: 'IconDeviceMobile', path: 'transaksi_pulsa', tab: JSON.stringify([{ id: tabs[1].id } ]) },
-    { menu_name: 'Transaksi', name: 'Transaksi Deposit', icon: 'IconWallet', path: 'transaksi_deposit', tab: JSON.stringify([{ id: tabs[9].id } ]) },
-    { menu_name: 'Transaksi', name: 'Transfer Saldo', icon: 'IconWallet', path: 'transfer_saldo', tab: JSON.stringify([{ id: tabs[27].id } ]) },
-    { menu_name: 'Membership', name: 'Membership', icon: 'IconUsers', path: 'membership', tab: JSON.stringify([{ id: tabs[2].id }, { id: tabs[6].id } ]) },
-    { menu_name: 'Membership', name: 'Notifikasi', icon: 'IconNotifications', path: 'notifikasi', tab: JSON.stringify([{ id: tabs[30].id } ]) },
-    { menu_name: 'Produk', name: 'Daftar Produk', icon: 'IconBox', path: 'daftar_produk', tab: JSON.stringify([{ id: tabs[3].id }, { id: tabs[19].id } ]) },
-    { menu_name: 'Produk', name: 'Daftar Produk Tripay', icon: 'IconBox', path: 'daftar_produk_tripay', tab: JSON.stringify([{ id: tabs[13].id },{ id: tabs[20].id },{ id: tabs[14].id },{ id: tabs[15].id },{ id: tabs[23].id },{ id: tabs[22].id } ]) },
-    { menu_name: 'Produk', name: 'Daftar Produk IAK', icon: 'IconBox', path: 'daftar_produk_iak', tab: JSON.stringify([{ id: tabs[16].id },{ id: tabs[21].id },{ id: tabs[17].id },{ id: tabs[18].id } ]) },
-    { menu_name: 'Produk', name: 'Daftar Produk DigiFlazz', icon: 'IconBox', path: 'daftar_produk_digiflazz', tab: JSON.stringify([{ id: tabs[24].id },{ id: tabs[25].id },{ id: tabs[26].id } ]) },
-    { menu_name: 'Produk', name: 'Daftar Server', icon: 'IconServer', path: 'daftar_server', tab: JSON.stringify([{ id: tabs[5].id } ]) },
-    { menu_name: 'Master Data', name: 'Kategori', icon: 'IconCategory', path: 'kategori', tab: JSON.stringify([{ id: tabs[7].id } ]) },
-    { menu_name: 'Master Data', name: 'Operator', icon: 'IconAntenna', path: 'operator', tab: JSON.stringify([{ id: tabs[8].id } ]) },
-    { menu_name: 'Keuangan', name: 'Keuangan', path: 'keuangan', icon: 'IconWallet', tab: JSON.stringify([{ id: tabs[28].id}]) },
-    { menu_name: 'Keuangan', name: 'Laporan', path: 'laporan', icon: 'IconReport', tab: JSON.stringify([{ id: tabs[31].id },{ id: tabs[32].id }]) },
-    { menu_name: 'Pengaturan', name: 'Pengaturan Umum', icon: 'IconSettings', path: 'pengaturan', tab: JSON.stringify([{ id: tabs[4].id }, { id: tabs[29].id }]) },
-    { menu_name: 'Pengaturan', name: 'Whatsapp', icon: 'IconDeviceMessage', path: 'whatsapp', tab: JSON.stringify([{ id: tabs[33].id }, { id: tabs[34].id }]) },
-    { menu_name: 'Pengaturan', name: 'Daftar Grup', icon: 'IconUsersGroup', path: 'daftar_grup', tab: JSON.stringify([{ id: tabs[11].id } ]) },
-    { menu_name: 'Pengaturan', name: 'Daftar Pengguna', icon: 'IconUserShield', path: 'daftar_pengguna', tab: JSON.stringify([{ id: tabs[12].id } ]) },
-    { menu_name: 'Pengaturan', name: 'Log', icon: 'IconHistory', path: 'log', tab: JSON.stringify([{ id: tabs[10].id } ]) },
+    { menu_name: 'Transaksi', name: 'Transaksi Pulsa', icon: 'IconDeviceMobile', path: 'transaksi_pulsa', tab: JSON.stringify([getTabId('transaksi_pulsa')].filter(Boolean).map(id => ({ id }))) },
+    { menu_name: 'Transaksi', name: 'Transaksi Deposit', icon: 'IconWallet', path: 'transaksi_deposit', tab: JSON.stringify([getTabId('deposit')].filter(Boolean).map(id => ({ id }))) },
+    { menu_name: 'Transaksi', name: 'Transfer Saldo', icon: 'IconWallet', path: 'transfer_saldo', tab: JSON.stringify([getTabId('riwayat_transfer_saldo')].filter(Boolean).map(id => ({ id }))) },
+    { menu_name: 'Membership', name: 'Membership', icon: 'IconUsers', path: 'membership', tab: JSON.stringify([getTabId('daftar_member'), getTabId('daftar_agen')].filter(Boolean).map(id => ({ id }))) },
+    { menu_name: 'Membership', name: 'Notifikasi', icon: 'IconNotifications', path: 'notifikasi', tab: JSON.stringify([getTabId('pengumuman')].filter(Boolean).map(id => ({ id }))) },
+    { menu_name: 'Produk', name: 'Daftar Produk', icon: 'IconBox', path: 'daftar_produk', tab: JSON.stringify([getTabId('produk_prabayar'), getTabId('produk_pascabayar')].filter(Boolean).map(id => ({ id }))) },
+    { menu_name: 'Produk', name: 'Daftar Produk Tripay', icon: 'IconBox', path: 'daftar_produk_tripay', tab: JSON.stringify([getTabId('daftar_produk_prabayar_tripay'), getTabId('daftar_produk_pascabayar_tripay'), getTabId('daftar_operator_prabayar_tripay'), getTabId('daftar_kategori_prabayar_tripay'), getTabId('daftar_operator_pascabayar_tripay'), getTabId('daftar_kategori_pascabayar_tripay')].filter(Boolean).map(id => ({ id }))) },
+    { menu_name: 'Produk', name: 'Daftar Produk IAK', icon: 'IconBox', path: 'daftar_produk_iak', tab: JSON.stringify([getTabId('daftar_produk_prabayar_iak'), getTabId('daftar_produk_pascabayar_iak'), getTabId('daftar_operator_iak'), getTabId('daftar_type_iak')].filter(Boolean).map(id => ({ id }))) },
+    { menu_name: 'Produk', name: 'Daftar Produk DigiFlazz', icon: 'IconBox', path: 'daftar_produk_digiflazz', tab: JSON.stringify([getTabId('daftar_produk_digiflazz'), getTabId('daftar_produk_seller_digiflazz'), getTabId('daftar_seller_digiflazz')].filter(Boolean).map(id => ({ id }))) },
+    { menu_name: 'Produk', name: 'Daftar Server', icon: 'IconServer', path: 'daftar_server', tab: JSON.stringify([getTabId('daftar_server')].filter(Boolean).map(id => ({ id }))) },
+    { menu_name: 'Master Data', name: 'Kategori', icon: 'IconCategory', path: 'kategori', tab: JSON.stringify([getTabId('kategori')].filter(Boolean).map(id => ({ id }))) },
+    { menu_name: 'Master Data', name: 'Operator', icon: 'IconAntenna', path: 'operator', tab: JSON.stringify([getTabId('operator')].filter(Boolean).map(id => ({ id }))) },
+    
+    // Bank Menus (from bank_menu.seed.ts)
+    { menu_name: 'Master Data', name: 'Bank', icon: 'IconBuildingBank', path: 'bank', tab: JSON.stringify([getTabId('daftar_bank_transfer'), getTabId('daftar_bank')].filter(Boolean).map(id => ({ id }))) },
+
+    { menu_name: 'Keuangan', name: 'Keuangan', path: 'keuangan', icon: 'IconWallet', tab: JSON.stringify([getTabId('laba_diambil')].filter(Boolean).map(id => ({ id }))) },
+    { menu_name: 'Keuangan', name: 'Laporan', path: 'laporan', icon: 'IconReport', tab: JSON.stringify([getTabId('laporan_umum'), getTabId('laporan_pendaftaran')].filter(Boolean).map(id => ({ id }))) },
+    { menu_name: 'Pengaturan', name: 'Pengaturan Umum', icon: 'IconSettings', path: 'pengaturan', tab: JSON.stringify([getTabId('pengaturan_umum'), getTabId('daftar_device')].filter(Boolean).map(id => ({ id }))) },
+    { menu_name: 'Pengaturan', name: 'Whatsapp', icon: 'IconDeviceMessage', path: 'whatsapp', tab: JSON.stringify([getTabId('pesan_whatsapp'), getTabId('pengaturan_whatsapp')].filter(Boolean).map(id => ({ id }))) },
+    { menu_name: 'Pengaturan', name: 'Daftar Grup', icon: 'IconUsersGroup', path: 'daftar_grup', tab: JSON.stringify([getTabId('daftar_grup')].filter(Boolean).map(id => ({ id }))) },
+    { menu_name: 'Pengaturan', name: 'Daftar Pengguna', icon: 'IconUserShield', path: 'daftar_pengguna', tab: JSON.stringify([getTabId('daftar_pengguna')].filter(Boolean).map(id => ({ id }))) },
+    { menu_name: 'Pengaturan', name: 'Log', icon: 'IconHistory', path: 'log', tab: JSON.stringify([getTabId('log')].filter(Boolean).map(id => ({ id }))) },
   ];
 
   for (const sub of subMenusData) {
@@ -50,4 +54,16 @@ export default async function subSeed(prisma: PrismaClient) {
       await prisma.subMenu.update({ where: { id: existing.id }, data: { ...subData, menu_id, updated_at: new Date() } });
     }
   }
+
+  // Pruning logic: Delete any submenu not found in the current seed data
+  const validNames = subMenusData.map(s => s.name).filter(Boolean) as string[];
+  const deletedSubMenus = await prisma.subMenu.deleteMany({
+    where: { name: { notIn: validNames } },
+  });
+  
+  if (deletedSubMenus.count > 0) {
+    console.log(`  🗑️  Pruned ${deletedSubMenus.count} obsolete submenus.`);
+  }
+
+  console.log('  ✅ SubMenus seeded');
 }

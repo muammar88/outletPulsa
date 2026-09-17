@@ -529,23 +529,47 @@ export class WebhookService {
   // --- WAPISENDER WEBHOOK ---
   private static waWebhookSequence = 0;
 
-  private async sendWhatsappMessage(phone: string, message: string) {
-    const url = process.env.WAPISENDER_URL;
-    if (!url) {
-      this.logger.warn(`[WAPISENDER] URL API tidak dikonfigurasi di .env (WAPISENDER_URL). Abaikan pesan ke ${phone}`);
+  private async sendWhatsappMessage(phone: string, message: string, webhookPayload?: any) {
+    const url = process.env.WAPISENDER_URL || 'https://wapisender.id/api/message/send';
+    const apiKey = process.env.WAPISENDER_API_KEY;
+    const deviceKey = webhookPayload?.device_id || process.env.WAPISENDER_DEVICE_KEY;
+
+    if (!apiKey || !deviceKey) {
+      this.logger.warn(`[WAPISENDER] Kredensial tidak lengkap di .env (WAPISENDER_API_KEY, WAPISENDER_DEVICE_KEY). Abaikan pesan ke ${phone}`);
       return;
     }
     
     try {
+      const payloadObj: any = {
+        api_key: apiKey,
+        device_key: deviceKey,
+        message: message,
+        is_priority: true
+      };
+
+      if (webhookPayload?.is_group) {
+          payloadObj.group = webhookPayload?.chat_jid;
+      } else {
+          payloadObj.to = phone;
+      }
+
+      if (webhookPayload?.message_id) {
+          payloadObj.quoted_id = webhookPayload.message_id;
+          payloadObj.quoted_participant = webhookPayload.sender_jid;
+      }
+
       const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone, message })
+        body: JSON.stringify(payloadObj)
       });
+      
+      const responseText = await response.text();
+      
       if (!response.ok) {
-         this.logger.error(`[WAPISENDER] Gagal mengirim pesan ke ${phone}. HTTP Status: ${response.status}`);
+         this.logger.error(`[WAPISENDER] Gagal mengirim pesan ke ${phone}. HTTP Status: ${response.status}. Response: ${responseText}`);
       } else {
-         this.logger.log(`[WAPISENDER] Berhasil mengirim pesan balasan ke ${phone}`);
+         this.logger.log(`[WAPISENDER] Berhasil mengirim pesan balasan ke ${phone}. Response: ${responseText}`);
       }
     } catch (error: any) {
       this.logger.error(`[WAPISENDER] Error mengirim pesan ke ${phone}: ${error.message}`);
@@ -574,13 +598,6 @@ export class WebhookService {
 
     this.logger.log(`[Webhook] Received message event ${eventId} from ${sender}`);
 
-    const cleanMessage = message.trim();
-    const match = cleanMessage.match(/OP-[A-Z0-9]+/i);
-    if (!match) {
-       return { success: false, message: 'Not a verification message' };
-    }
-    const verificationCode = match[0].toUpperCase();
-    
     let normalizedSender = sender.replace(/\D/g, '');
     if (normalizedSender.startsWith('0')) {
         normalizedSender = '62' + normalizedSender.substring(1);
@@ -588,13 +605,21 @@ export class WebhookService {
         normalizedSender = '62' + normalizedSender;
     }
 
+    const cleanMessage = message.trim();
+    const match = cleanMessage.match(/OP-[A-Z0-9]+/i);
+    if (!match) {
+       await this.sendWhatsappMessage(normalizedSender, 'Mohon maaf, format pesan tidak dikenali. Pastikan Anda mengirimkan kode verifikasi yang benar (contoh: OP-1234).', payload);
+       return { success: false, message: 'Not a verification message' };
+    }
+    const verificationCode = match[0].toUpperCase();
+
     return await this.prisma.$transaction(async (prisma) => {
       const otpRecord = await prisma.otpRegister.findFirst({
           where: { verification_code: verificationCode, status: 'active' }
       });
 
       if (!otpRecord) {
-          await this.sendWhatsappMessage(normalizedSender, 'Mohon maaf, kode verifikasi tidak ditemukan atau sudah kedaluwarsa. Silakan request ulang dari aplikasi.');
+          await this.sendWhatsappMessage(normalizedSender, 'Mohon maaf, kode verifikasi tidak ditemukan atau sudah kedaluwarsa. Silakan request ulang dari aplikasi.', payload);
           return { success: false, message: 'Verification code not found or already verified' };
       }
 
@@ -606,7 +631,7 @@ export class WebhookService {
       }
 
       if (normalizedSender !== dbWhatsapp) {
-          await this.sendWhatsappMessage(normalizedSender, 'Mohon maaf, nomor WhatsApp pengirim tidak cocok dengan nomor yang didaftarkan di aplikasi.');
+          await this.sendWhatsappMessage(normalizedSender, 'Mohon maaf, nomor WhatsApp pengirim tidak cocok dengan nomor yang didaftarkan di aplikasi.', payload);
           return { success: false, message: 'Sender does not match registered whatsapp' };
       }
 
@@ -615,7 +640,7 @@ export class WebhookService {
       });
 
       if (existingMember) {
-        await this.sendWhatsappMessage(normalizedSender, 'Pendaftaran gagal. Nomor WhatsApp Anda sudah terdaftar sebelumnya.');
+        await this.sendWhatsappMessage(normalizedSender, 'Pendaftaran gagal. Nomor WhatsApp Anda sudah terdaftar sebelumnya.', payload);
         return { success: false, message: 'Nomor WhatsApp sudah terdaftar.' };
       }
 
@@ -645,7 +670,7 @@ export class WebhookService {
         data: { status: 'nonactive' },
       });
 
-      await this.sendWhatsappMessage(normalizedSender, `Selamat! Registrasi Anda berhasil diproses.\n\nKode Member: *${kodeMember}*\nNama: ${newMember.fullname}\n\nSilakan kembali ke aplikasi untuk melanjutkan.`);
+      await this.sendWhatsappMessage(normalizedSender, `Selamat! Registrasi Anda berhasil diproses.\n\nKode Member: *${kodeMember}*\nNama: ${newMember.fullname}\n\nSilakan kembali ke aplikasi untuk melanjutkan.`, payload);
 
       const device = await prisma.deviceConnected.findFirst({
         where: { device_code: otpRecord.device_code },
