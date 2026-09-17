@@ -29,11 +29,5 @@ export class TripayController {
     };
   }
 
-  // Webhook for Tripay Callback
-  @Post('callback')
-  async handleCallback(@Body() body: any, @Req() req: Request) {
-    const signature = req.headers['x-callback-signature'] as string;
-    const result = await this.tripayService.handleCallback(body, signature);
-    return result;
-  }
+
 }

@@ -456,4 +456,209 @@ export class WebhookService {
       });
     } catch (err: unknown) {}
   }
+
+  // --- TRIPAY PAYMENT GATEWAY WEBHOOK ---
+  async handleTripayPaymentCallback(body: any, signature: string) {
+    const jsonBody = JSON.stringify(body);
+    const privateKey = process.env.TRIPAY_PRIVATE_KEY || '';
+    const expectedSignature = crypto.createHmac('sha256', privateKey)
+      .update(jsonBody)
+      .digest('hex');
+
+    if (signature !== expectedSignature) {
+      this.logger.warn('Invalid Tripay signature received');
+      return { success: false, message: 'Invalid signature' };
+    }
+
+    if (body.status === 'PAID') {
+      const deposit = await this.prisma.requestDeposit.findUnique({
+        where: { tripayReference: body.reference },
+        include: { riwayatTransaksi: { include: { member: true } } }
+      });
+
+      if (deposit && deposit.status !== 'sukses') {
+        await this.prisma.$transaction(async (prisma) => {
+          await prisma.requestDeposit.update({
+            where: { id: deposit.id },
+            data: { status: 'sukses', waktuKirim: new Date() }
+          });
+
+          if (deposit.riwayatTransaksi && deposit.riwayatTransaksi.member) {
+            const member = deposit.riwayatTransaksi.member;
+            const nominal = deposit.nominal || 0;
+            const saldoSebelumnya = member.saldo || 0;
+            const saldoSetelahnya = saldoSebelumnya + nominal;
+
+            await prisma.member.update({
+              where: { id: member.id },
+              data: { saldo: saldoSetelahnya }
+            });
+
+            await prisma.riwayatSaldo.create({
+              data: {
+                kode: deposit.kode || `DEP-${Date.now()}`,
+                member_id: member.id,
+                nominal: nominal,
+                saldo_sebelumnya: saldoSebelumnya,
+                saldo_setelahnya: saldoSetelahnya,
+                status: 'deposit',
+                ket: `Deposit via Tripay (${deposit.tripayMethod}) Sukses`
+              }
+            });
+          }
+        });
+        
+        this.logger.log(`Deposit ${body.reference} successfully paid and saldo updated`);
+      }
+    } else if (body.status === 'EXPIRED' || body.status === 'FAILED') {
+      const deposit = await this.prisma.requestDeposit.findUnique({
+        where: { tripayReference: body.reference }
+      });
+
+      if (deposit && deposit.status === 'proses') {
+        await this.prisma.requestDeposit.update({
+          where: { id: deposit.id },
+          data: { status: body.status === 'EXPIRED' ? 'expired' : 'gagal' }
+        });
+      }
+    }
+
+    return { success: true };
+  }
+
+  // --- WAPISENDER WEBHOOK ---
+  private static waWebhookSequence = 0;
+
+  private async sendWhatsappMessage(phone: string, message: string) {
+    const url = process.env.WAPISENDER_URL;
+    if (!url) {
+      this.logger.warn(`[WAPISENDER] URL API tidak dikonfigurasi di .env (WAPISENDER_URL). Abaikan pesan ke ${phone}`);
+      return;
+    }
+    
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, message })
+      });
+      if (!response.ok) {
+         this.logger.error(`[WAPISENDER] Gagal mengirim pesan ke ${phone}. HTTP Status: ${response.status}`);
+      } else {
+         this.logger.log(`[WAPISENDER] Berhasil mengirim pesan balasan ke ${phone}`);
+      }
+    } catch (error: any) {
+      this.logger.error(`[WAPISENDER] Error mengirim pesan ke ${phone}: ${error.message}`);
+    }
+  }
+
+  async processWhatsappWebhook(payload: any) {
+    WebhookService.waWebhookSequence++;
+    this.logger.log(`[Webhook Sequence: ${WebhookService.waWebhookSequence}] Menerima Webhook WAPISender (WhatsApp). Data: ${JSON.stringify(payload)}`);
+
+    if (!payload || typeof payload !== 'object') {
+      return { success: false, message: 'Invalid payload' };
+    }
+
+    if (payload.event !== 'message') {
+      return { status: 'ignored', message: 'Not a message event' };
+    }
+
+    const sender = payload.phone;
+    const message = payload.message;
+    const eventId = payload.event_id;
+
+    if (!sender || !message) {
+      return { success: false, message: 'Missing phone or message in payload' };
+    }
+
+    this.logger.log(`[Webhook] Received message event ${eventId} from ${sender}`);
+
+    const cleanMessage = message.trim();
+    const match = cleanMessage.match(/OP-[A-Z0-9]+/i);
+    if (!match) {
+       return { success: false, message: 'Not a verification message' };
+    }
+    const verificationCode = match[0].toUpperCase();
+    
+    let normalizedSender = sender.replace(/\D/g, '');
+    if (normalizedSender.startsWith('0')) {
+        normalizedSender = '62' + normalizedSender.substring(1);
+    } else if (normalizedSender.startsWith('8')) {
+        normalizedSender = '62' + normalizedSender;
+    }
+
+    return await this.prisma.$transaction(async (prisma) => {
+      const otpRecord = await prisma.otpRegister.findFirst({
+          where: { verification_code: verificationCode, status: 'active' }
+      });
+
+      if (!otpRecord) {
+          await this.sendWhatsappMessage(normalizedSender, 'Mohon maaf, kode verifikasi tidak ditemukan atau sudah kedaluwarsa. Silakan request ulang dari aplikasi.');
+          return { success: false, message: 'Verification code not found or already verified' };
+      }
+
+      let dbWhatsapp = otpRecord.whatsapp.replace(/\D/g, '');
+      if (dbWhatsapp.startsWith('0')) {
+          dbWhatsapp = '62' + dbWhatsapp.substring(1);
+      } else if (dbWhatsapp.startsWith('8')) {
+          dbWhatsapp = '62' + dbWhatsapp;
+      }
+
+      if (normalizedSender !== dbWhatsapp) {
+          await this.sendWhatsappMessage(normalizedSender, 'Mohon maaf, nomor WhatsApp pengirim tidak cocok dengan nomor yang didaftarkan di aplikasi.');
+          return { success: false, message: 'Sender does not match registered whatsapp' };
+      }
+
+      const existingMember = await prisma.member.findUnique({
+        where: { whatsappnumber: otpRecord.whatsapp },
+      });
+
+      if (existingMember) {
+        await this.sendWhatsappMessage(normalizedSender, 'Pendaftaran gagal. Nomor WhatsApp Anda sudah terdaftar sebelumnya.');
+        return { success: false, message: 'Nomor WhatsApp sudah terdaftar.' };
+      }
+
+      let referralAgent: any = null;
+      if (otpRecord.kode_agen && otpRecord.kode_agen.trim() !== '') {
+        referralAgent = await prisma.member.findFirst({
+          where: { kode: otpRecord.kode_agen.trim() },
+        });
+      }
+
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      const kodeMember = `OP${randomSuffix}`;
+
+      const newMember = await prisma.member.create({
+        data: {
+          kode: kodeMember,
+          fullname: otpRecord.fullname || 'Member Baru',
+          whatsappnumber: otpRecord.whatsapp,
+          password: otpRecord.password || '',
+          kode_agen: referralAgent ? referralAgent.kode : null,
+          status: 'verfied',
+        },
+      });
+
+      await prisma.otpRegister.update({
+        where: { id: otpRecord.id },
+        data: { status: 'nonactive' },
+      });
+
+      await this.sendWhatsappMessage(normalizedSender, `Selamat! Registrasi Anda berhasil diproses.\n\nKode Member: *${kodeMember}*\nNama: ${newMember.fullname}\n\nSilakan kembali ke aplikasi untuk melanjutkan.`);
+
+      const device = await prisma.deviceConnected.findFirst({
+        where: { device_code: otpRecord.device_code },
+      });
+
+      if (device) {
+        await prisma.deviceConnected.update({
+          where: { id: device.id },
+          data: { member_id: newMember.id },
+        });
+      }
+
+      return { message: 'Registrasi berhasil', data: { success: true } };
+    });
+  }
 }

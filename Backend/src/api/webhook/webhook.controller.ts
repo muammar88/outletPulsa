@@ -1,7 +1,7 @@
 import { Controller, Post, Param, Body, Headers, Req, Logger, HttpCode, HttpStatus } from '@nestjs/common';
 import type { RawBodyRequest } from '@nestjs/common';
 import { WebhookService } from './webhook.service';
-import { AuthService } from '../auth/auth.service';
+
 import type { Request } from 'express';
 
 /**
@@ -23,8 +23,7 @@ export class WebhookController {
   private readonly logger = new Logger(WebhookController.name);
 
   constructor(
-    private readonly webhookService: WebhookService,
-    private readonly authService: AuthService
+    private readonly webhookService: WebhookService
   ) {}
 
   /**
@@ -142,6 +141,21 @@ export class WebhookController {
   }
 
   /**
+   * Endpoint: POST /webhook/tripay-payment
+   * 
+   * Webhook callback untuk Tripay Payment Gateway (Top Up Saldo)
+   */
+  @Post('tripay-payment')
+  @HttpCode(HttpStatus.OK)
+  async callbackTripayPayment(
+    @Headers('x-callback-signature') signature: string,
+    @Body() body: any,
+  ) {
+    this.logger.log(`[TRIPAY PAYMENT] Webhook received`);
+    return this.webhookService.handleTripayPaymentCallback(body, signature || '');
+  }
+
+  /**
    * Endpoint: POST /webhook/wapisender
    *
    * Digunakan untuk menerima pesan masuk dari WAPISender.
@@ -149,6 +163,6 @@ export class WebhookController {
   @Post('wapisender')
   @HttpCode(HttpStatus.OK)
   async webhookWapisender(@Body() body: any) {
-    return this.authService.processWhatsappWebhook(body);
+    return this.webhookService.processWhatsappWebhook(body);
   }
 }
