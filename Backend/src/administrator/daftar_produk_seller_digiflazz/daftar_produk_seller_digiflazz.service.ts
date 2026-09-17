@@ -61,6 +61,15 @@ export class DaftarProdukSellerDigiflazzService {
     });
   }
 
+  async resetTempStatus() {
+    this.logger.log(`[DIGIFLAZZ SYNC] Mereset status temp_status semua produk seller menjadi unbanned...`);
+    const result = await this.prisma.digiflazzSellerProduct.updateMany({
+      data: { temp_status: 'unbanned' }
+    });
+    this.logger.log(`[DIGIFLAZZ SYNC] Berhasil mereset status ${result.count} produk seller.`);
+    return result;
+  }
+
   async syncProducts(adminId: number) {
     this.logger.log(`[DIGIFLAZZ SYNC] Memulai sinkronisasi Digiflazz.`);
     

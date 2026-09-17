@@ -16,6 +16,7 @@ const tableColumns = [
   { key: 'seller', label: 'Nama Seller', headerClass: 'text-left w-[20%]', cellClass: 'text-left font-medium text-gray-800' },
   { key: 'price', label: 'Harga Seller', headerClass: 'text-right w-[15%]', cellClass: 'text-right font-semibold text-emerald-600' },
   { key: 'status', label: 'Status Produk', headerClass: 'text-center w-[15%] pr-4', cellClass: 'text-center pr-4' },
+  { key: 'temp_status', label: 'Status Sistem', headerClass: 'text-center w-[10%] pr-4', cellClass: 'text-center pr-4' },
 ];
 
 const dataProdukSeller = ref<any[]>([]);
@@ -218,6 +219,18 @@ onMounted(() => {
             }"
           >
             {{ row.sellerProductStatus ? 'TERSEDIA' : 'KOSONG' }}
+          </span>
+        </template>
+
+        <template #cell-temp_status="{ row }">
+          <span
+            class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider"
+            :class="{
+              'bg-emerald-50 text-emerald-700 border border-emerald-200/60': row.temp_status === 'unbanned',
+              'bg-red-100 text-red-800 border border-red-300': row.temp_status === 'banned'
+            }"
+          >
+            {{ row.temp_status === 'banned' ? 'BANNED' : 'UNBANNED' }}
           </span>
         </template>
       </BaseTable>

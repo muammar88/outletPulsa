@@ -110,6 +110,7 @@ export class DaftarProdukDigiflazzService {
         digiflazzSellerProducts: {
           where: {
             sellerProductStatus: true,
+            temp_status: 'unbanned',
             digiflazzSeller: {
               status: 'unbanned',
             },
@@ -167,6 +168,53 @@ export class DaftarProdukDigiflazzService {
       totalUpdated,
       totalSkipped,
     };
+  }
+
+  async selectCheapestSellerByProductId(productId: number) {
+    this.logger.log(`Mencari seller termurah alternatif untuk produk Digiflazz ID: ${productId}`);
+    
+    const product = await this.prisma.digiflazzProduct.findUnique({
+      where: { id: productId },
+      include: {
+        digiflazzSellerProducts: {
+          where: {
+            sellerProductStatus: true,
+            temp_status: 'unbanned',
+            digiflazzSeller: {
+              status: 'unbanned',
+            },
+          },
+          orderBy: {
+            price: 'asc',
+          },
+          take: 1,
+        },
+      },
+    });
+
+    if (!product || product.digiflazzSellerProducts.length === 0) {
+      this.logger.warn(`Tidak ditemukan seller alternatif yang tersedia untuk produk ID ${productId}`);
+      return false;
+    }
+
+    const cheapestSellerProduct = product.digiflazzSellerProducts[0];
+    
+    if (
+      product.selectedSellerBuyerSkuKode !== cheapestSellerProduct.buyerSkuKode ||
+      product.selectedSellerPrice !== cheapestSellerProduct.price
+    ) {
+      await this.prisma.digiflazzProduct.update({
+        where: { id: product.id },
+        data: {
+          selectedSellerBuyerSkuKode: cheapestSellerProduct.buyerSkuKode,
+          selectedSellerPrice: cheapestSellerProduct.price,
+        },
+      });
+      this.logger.log(`Berhasil mengubah seller produk ID ${productId} ke SKU ${cheapestSellerProduct.buyerSkuKode}`);
+      return true;
+    }
+    
+    return false;
   }
 
   async getInternalOperators(search: string = '') {
@@ -284,6 +332,10 @@ export class DaftarProdukDigiflazzService {
 
     if (sellerProduct.productDigiflazzId !== id) {
       throw new Error('Produk seller tidak cocok dengan produk Digiflazz ini');
+    }
+
+    if (sellerProduct.temp_status === 'banned') {
+      throw new Error('Produk seller ini sedang dinonaktifkan sementara (BANNED) hari ini karena gangguan');
     }
 
     return this.prisma.digiflazzProduct.update({

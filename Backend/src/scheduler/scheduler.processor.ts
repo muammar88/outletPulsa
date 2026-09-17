@@ -35,6 +35,11 @@ export class SchedulerProcessor extends WorkerHost {
       await this.digiflazzSellerService.syncProducts(systemAdminId);
     });
 
+    // Langkah 1.5: Reset Status Seller Banned Harian
+    await this.runStep('1.5. Reset Temp Status Seller Banned', async () => {
+      await this.digiflazzSellerService.resetTempStatus();
+    });
+
     // Langkah 2: Pilih seller termurah Digiflazz
     await this.runStep('2. Pilih Seller Termurah Digiflazz', async () => {
       await this.digiflazzService.selectCheapestSeller();

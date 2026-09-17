@@ -117,7 +117,8 @@ const selectSeller = async (seller: any) => {
               <th scope="col" class="px-4 py-3 text-right text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[15%]">Harga Seller</th>
               <th scope="col" class="px-4 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[15%]">Status Produk</th>
               <th scope="col" class="px-4 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[15%]">Status Seller</th>
-              <th scope="col" class="px-4 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[15%]">Aksi</th>
+              <th scope="col" class="px-4 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[10%]">Status Sistem</th>
+              <th scope="col" class="px-4 py-3 text-center text-[11px] font-bold text-gray-500 uppercase tracking-wider w-[10%]">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100 bg-white">
@@ -179,11 +180,24 @@ const selectSeller = async (seller: any) => {
               </td>
 
               <td class="px-4 py-3 whitespace-nowrap text-center">
+                <span
+                  class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider"
+                  :class="{
+                    'bg-emerald-50 text-emerald-700 border border-emerald-200': seller.temp_status === 'unbanned',
+                    'bg-red-100 text-red-800 border border-red-300': seller.temp_status === 'banned',
+                  }"
+                  :title="seller.temp_status === 'banned' ? 'Dinonaktifkan sementara hari ini karena gangguan' : 'Normal'"
+                >
+                  {{ seller.temp_status === 'banned' ? 'BANNED' : 'UNBANNED' }}
+                </span>
+              </td>
+
+              <td class="px-4 py-3 whitespace-nowrap text-center">
                 <button
                   v-if="seller.buyerSkuKode !== produk?.selectedSellerBuyerSkuKode"
                   @click="selectSeller(seller)"
-                  :disabled="isLoading"
-                  class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold py-1 px-3 rounded shadow-sm transition-colors disabled:opacity-50"
+                  :disabled="isLoading || seller.temp_status === 'banned' || seller.digiflazzSeller?.status === 'banned' || !seller.sellerProductStatus"
+                  class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold py-1 px-3 rounded shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Pilih
                 </button>

@@ -2,6 +2,7 @@ import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
 import { PengumumanService } from '../../pengumuman/pengumuman.service';
 import { SocketService } from '../../socket/socket.service';
+import { DaftarProdukDigiflazzService } from '../../administrator/daftar_produk_digiflazz/daftar_produk_digiflazz.service';
 import * as crypto from 'crypto';
 
 interface IakCallbackPayload {
@@ -46,7 +47,8 @@ export class WebhookService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly pengumumanService: PengumumanService,
-    private readonly socketService: SocketService
+    private readonly socketService: SocketService,
+    private readonly daftarProdukDigiflazzService: DaftarProdukDigiflazzService
   ) {}
 
   async handleIakCallback(
@@ -269,6 +271,20 @@ export class WebhookService {
             where: { transactionId: transaction.id },
             data: { status: 'gagal', responseTime: now, updatedAt: now },
           });
+
+          // Ban the seller for today and pick a new cheapest seller
+          const dfTrx = transaction.digiflazzTransactions[0];
+          if (dfTrx.productDigiflazzId && dfTrx.sellerId && dfTrx.buyerSkuCode) {
+            await this.prisma.digiflazzSellerProduct.updateMany({
+              where: {
+                productDigiflazzId: dfTrx.productDigiflazzId,
+                sellerId: dfTrx.sellerId,
+                buyerSkuKode: dfTrx.buyerSkuCode,
+              },
+              data: { temp_status: 'banned' },
+            });
+            await this.daftarProdukDigiflazzService.selectCheapestSellerByProductId(dfTrx.productDigiflazzId);
+          }
         }
         await this.updateFailedTransaction(transaction);
         await this.logWebhook('DIGIFLAZZ', 'callback_prabayar', refId, body, 'success', `Transaksi gagal (rc=${rc}), saldo dikembalikan`, ipAddress);

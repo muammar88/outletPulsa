@@ -592,6 +592,7 @@ model DigiflazzSellerProduct {
   sellerProductStatus Boolean?
   startCutOff         DateTime? @db.Time
   endCutOff           DateTime? @db.Time
+  temp_status         DigiflazzSellerStatus? @default(unbanned)
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
