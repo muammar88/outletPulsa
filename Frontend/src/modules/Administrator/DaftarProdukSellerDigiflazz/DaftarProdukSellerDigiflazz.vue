@@ -16,8 +16,7 @@ const tableColumns = [
   { key: 'seller', label: 'Nama Seller', headerClass: 'text-left w-[20%]', cellClass: 'text-left font-medium text-gray-800' },
   { key: 'price', label: 'Harga Seller', headerClass: 'text-right w-[15%]', cellClass: 'text-right font-semibold text-emerald-600' },
   { key: 'status', label: 'Status Produk', headerClass: 'text-center w-[15%] pr-4', cellClass: 'text-center pr-4' },
-  { key: 'temp_status', label: 'Status Sistem', headerClass: 'text-center w-[10%] pr-4', cellClass: 'text-center pr-4' },
-  { key: 'aksi', label: 'Aksi', headerClass: 'text-center w-[5%] pr-4', cellClass: 'text-center pr-4' },
+  { key: 'temp_status', label: 'Status Sistem', headerClass: 'text-center w-[15%] pr-4', cellClass: 'text-center pr-4' },
 ];
 
 const dataProdukSeller = ref<any[]>([]);
@@ -113,25 +112,34 @@ const handleSync = () => {
   );
 };
 
+const handleKoneksiSaved = () => {
+  // Not used in this component, but keeping pattern
+};
+
+const loadingStatusId = ref<number | null>(null);
+
 const handleToggleStatus = (row: any) => {
-  confirmButtonText.value = 'Ya, Ubah Status';
-  confirmButtonClass.value = row.temp_status === 'banned' ? 'bg-emerald-600 hover:bg-emerald-700 shadow-[0_0_15px_rgba(5,150,105,0.5)]' : 'bg-red-600 hover:bg-red-700 shadow-[0_0_15px_rgba(220,38,38,0.5)]';
+  const isCurrentlyUnbanned = row.temp_status === 'unbanned';
+  const targetStatus = isCurrentlyUnbanned ? 'banned' : 'unbanned';
+  const targetStatusText = isCurrentlyUnbanned ? 'MENONAKTIFKAN' : 'MENGAKTIFKAN KEMBALI';
   
-  const actionText = row.temp_status === 'banned' ? 'MENGAKTIFKAN KEMBALI' : 'MENONAKTIFKAN';
+  confirmButtonText.value = 'Ya, Ubah Status';
+  confirmButtonClass.value = isCurrentlyUnbanned ? 'bg-red-600 hover:bg-red-700 shadow-sm' : 'bg-emerald-600 hover:bg-emerald-700 shadow-sm';
   
   displayConfirmation(
     'Ubah Status Sistem Seller',
-    `Apakah Anda yakin ingin ${actionText} produk seller ini?`,
+    `Apakah Anda yakin ingin ${targetStatusText} produk seller ini?`,
     async () => {
-      isLoading.value = true;
+      loadingStatusId.value = row.id;
       try {
         const response = await daftarProdukSellerDigiflazzService.toggleTempStatus(row.id);
         displayNotification(response.data.message || 'Status berhasil diubah', 'success');
-        fetchData(); // Refresh data
+        // Update state locally
+        row.temp_status = targetStatus;
       } catch (error: any) {
         displayNotification(error.response?.data?.message || 'Gagal mengubah status', 'error');
       } finally {
-        isLoading.value = false;
+        loadingStatusId.value = null;
       }
     }
   );
@@ -248,30 +256,32 @@ onMounted(() => {
         </template>
 
         <template #cell-temp_status="{ row }">
-          <span
-            class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider"
-            :class="{
-              'bg-emerald-50 text-emerald-700 border border-emerald-200/60': row.temp_status === 'unbanned',
-              'bg-red-100 text-red-800 border border-red-300': row.temp_status === 'banned'
-            }"
-          >
-            {{ row.temp_status === 'banned' ? 'BANNED' : 'UNBANNED' }}
-          </span>
-        </template>
-
-        <template #cell-aksi="{ row }">
-          <button
-            @click="handleToggleStatus(row)"
-            :disabled="isLoading"
-            class="text-[10px] font-bold px-2 py-1 rounded border transition-colors shadow-sm disabled:opacity-50"
-            :class="{
-              'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100': row.temp_status === 'banned',
-              'bg-red-50 text-red-700 border-red-300 hover:bg-red-100': row.temp_status === 'unbanned'
-            }"
-            :title="row.temp_status === 'banned' ? 'Aktifkan kembali' : 'Nonaktifkan sementara'"
-          >
-            {{ row.temp_status === 'banned' ? 'Pulihkan' : 'Blokir' }}
-          </button>
+          <div class="flex flex-col items-center justify-center gap-1.5">
+            <button
+              type="button"
+              @click="handleToggleStatus(row)"
+              class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              :class="row.temp_status === 'unbanned' ? 'bg-emerald-500' : 'bg-gray-300'"
+              :disabled="loadingStatusId === row.id"
+              :title="row.temp_status === 'unbanned' ? 'Nonaktifkan Produk' : 'Aktifkan Produk'"
+            >
+              <span
+                class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out flex items-center justify-center"
+                :class="row.temp_status === 'unbanned' ? 'translate-x-4' : 'translate-x-0'"
+              >
+                <svg v-if="loadingStatusId === row.id" class="animate-spin h-3 w-3 text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </span>
+            </button>
+            <span
+              class="text-[10px] font-bold uppercase tracking-wider"
+              :class="row.temp_status === 'unbanned' ? 'text-emerald-600' : 'text-rose-600'"
+            >
+              {{ row.temp_status === 'unbanned' ? 'UNBANNED' : 'BANNED' }}
+            </span>
+          </div>
         </template>
       </BaseTable>
     </div>
