@@ -3,7 +3,10 @@ import { DaftarProdukSellerDigiflazzController } from './daftar_produk_seller_di
 import { DaftarProdukSellerDigiflazzService } from './daftar_produk_seller_digiflazz.service';
 import { PrismaService } from '../../prisma.service';
 
+import { DaftarProdukDigiflazzModule } from '../daftar_produk_digiflazz/daftar_produk_digiflazz.module';
+
 @Module({
+  imports: [DaftarProdukDigiflazzModule],
   controllers: [DaftarProdukSellerDigiflazzController],
   providers: [DaftarProdukSellerDigiflazzService, PrismaService],
   exports: [DaftarProdukSellerDigiflazzService],

@@ -2,6 +2,7 @@ import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
 import { GetProdukSellerDigiflazzDto } from './dto/get-produk-seller-digiflazz.dto';
 import { DigiflazzService } from '../../providers/digiflazz.service';
+import { DaftarProdukDigiflazzService } from '../daftar_produk_digiflazz/daftar_produk_digiflazz.service';
 
 @Injectable()
 export class DaftarProdukSellerDigiflazzService {
@@ -9,7 +10,8 @@ export class DaftarProdukSellerDigiflazzService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly digiflazzService: DigiflazzService
+    private readonly digiflazzService: DigiflazzService,
+    private readonly daftarProdukDigiflazzService: DaftarProdukDigiflazzService
   ) {}
 
   async findAll(query: GetProdukSellerDigiflazzDto) {
@@ -68,6 +70,39 @@ export class DaftarProdukSellerDigiflazzService {
     });
     this.logger.log(`[DIGIFLAZZ SYNC] Berhasil mereset status ${result.count} produk seller.`);
     return result;
+  }
+
+  async toggleTempStatus(id: number, adminId: number) {
+    const product = await this.prisma.digiflazzSellerProduct.findUnique({
+      where: { id }
+    });
+    
+    if (!product) {
+      throw new BadRequestException('Produk seller tidak ditemukan');
+    }
+
+    const newStatus = product.temp_status === 'banned' ? 'unbanned' : 'banned';
+    
+    const updated = await this.prisma.digiflazzSellerProduct.update({
+      where: { id },
+      data: { temp_status: newStatus }
+    });
+
+    // Re-evaluate cheapest seller
+    if (product.productDigiflazzId) {
+      await this.daftarProdukDigiflazzService.selectCheapestSellerByProductId(product.productDigiflazzId);
+    }
+
+    await this.prisma.activityLog.create({
+      data: {
+        userId: adminId,
+        action: 'UPDATE_STATUS_SELLER',
+        entity: 'DigiflazzSellerProduct',
+        description: `Mengubah status sistem seller product ID ${id} menjadi ${newStatus}`,
+      }
+    });
+
+    return updated;
   }
 
   async syncProducts(adminId: number) {

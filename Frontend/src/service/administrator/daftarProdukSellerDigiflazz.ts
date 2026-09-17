@@ -11,5 +11,8 @@ export const daftarProdukSellerDigiflazzService = {
   },
   sync: async () => {
     return await api.post(`/administrator/daftar-produk-seller-digiflazz/sync`);
+  },
+  toggleTempStatus: async (id: number | string) => {
+    return await api.post(`/administrator/daftar-produk-seller-digiflazz/${id}/toggle-temp-status`);
   }
 };

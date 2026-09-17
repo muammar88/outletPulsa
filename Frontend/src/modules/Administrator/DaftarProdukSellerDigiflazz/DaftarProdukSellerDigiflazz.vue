@@ -17,6 +17,7 @@ const tableColumns = [
   { key: 'price', label: 'Harga Seller', headerClass: 'text-right w-[15%]', cellClass: 'text-right font-semibold text-emerald-600' },
   { key: 'status', label: 'Status Produk', headerClass: 'text-center w-[15%] pr-4', cellClass: 'text-center pr-4' },
   { key: 'temp_status', label: 'Status Sistem', headerClass: 'text-center w-[10%] pr-4', cellClass: 'text-center pr-4' },
+  { key: 'aksi', label: 'Aksi', headerClass: 'text-center w-[5%] pr-4', cellClass: 'text-center pr-4' },
 ];
 
 const dataProdukSeller = ref<any[]>([]);
@@ -105,6 +106,30 @@ const handleSync = () => {
         fetchData();
       } catch (error: any) {
         displayNotification(error.response?.data?.message || 'Gagal melakukan sinkronisasi', 'error');
+      } finally {
+        isLoading.value = false;
+      }
+    }
+  );
+};
+
+const handleToggleStatus = (row: any) => {
+  confirmButtonText.value = 'Ya, Ubah Status';
+  confirmButtonClass.value = row.temp_status === 'banned' ? 'bg-emerald-600 hover:bg-emerald-700 shadow-[0_0_15px_rgba(5,150,105,0.5)]' : 'bg-red-600 hover:bg-red-700 shadow-[0_0_15px_rgba(220,38,38,0.5)]';
+  
+  const actionText = row.temp_status === 'banned' ? 'MENGAKTIFKAN KEMBALI' : 'MENONAKTIFKAN';
+  
+  displayConfirmation(
+    'Ubah Status Sistem Seller',
+    `Apakah Anda yakin ingin ${actionText} produk seller ini?`,
+    async () => {
+      isLoading.value = true;
+      try {
+        const response = await daftarProdukSellerDigiflazzService.toggleTempStatus(row.id);
+        displayNotification(response.data.message || 'Status berhasil diubah', 'success');
+        fetchData(); // Refresh data
+      } catch (error: any) {
+        displayNotification(error.response?.data?.message || 'Gagal mengubah status', 'error');
       } finally {
         isLoading.value = false;
       }
@@ -232,6 +257,21 @@ onMounted(() => {
           >
             {{ row.temp_status === 'banned' ? 'BANNED' : 'UNBANNED' }}
           </span>
+        </template>
+
+        <template #cell-aksi="{ row }">
+          <button
+            @click="handleToggleStatus(row)"
+            :disabled="isLoading"
+            class="text-[10px] font-bold px-2 py-1 rounded border transition-colors shadow-sm disabled:opacity-50"
+            :class="{
+              'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100': row.temp_status === 'banned',
+              'bg-red-50 text-red-700 border-red-300 hover:bg-red-100': row.temp_status === 'unbanned'
+            }"
+            :title="row.temp_status === 'banned' ? 'Aktifkan kembali' : 'Nonaktifkan sementara'"
+          >
+            {{ row.temp_status === 'banned' ? 'Pulihkan' : 'Blokir' }}
+          </button>
         </template>
       </BaseTable>
     </div>

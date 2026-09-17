@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards, Post, Request } from '@nestjs/common';
+import { Controller, Get, Query, UseGuards, Post, Request, Param } from '@nestjs/common';
 import { DaftarProdukSellerDigiflazzService } from './daftar_produk_seller_digiflazz.service';
 import { GetProdukSellerDigiflazzDto } from './dto/get-produk-seller-digiflazz.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -34,6 +34,17 @@ export class DaftarProdukSellerDigiflazzController {
     const data = await this.service.getSellers();
     return {
       message: 'Success',
+      error: null,
+      data,
+    };
+  }
+
+  @Post(':id/toggle-temp-status')
+  async toggleTempStatus(@Request() req: any, @Param('id') id: string) {
+    const adminId = req.user?.id || 0;
+    const data = await this.service.toggleTempStatus(Number(id), adminId);
+    return {
+      message: 'Status sistem berhasil diubah',
       error: null,
       data,
     };
