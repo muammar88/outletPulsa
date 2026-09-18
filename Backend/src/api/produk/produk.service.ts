@@ -194,71 +194,45 @@ export class ProdukService {
       if (needPrefix.includes(kode)) {
         const prefix = nomor_tujuan.substring(0, 4);
         
-        if (kode === "PD") {
-          const validPrefixes = await this.prisma.prefix.findMany({
-            where: {
-              prefix: prefix,
-              operator: {
-                kategori: {
-                  kode: kode
-                }
+        const validPrefixes = await this.prisma.prefix.findMany({
+          where: {
+            prefix: prefix,
+            operator: {
+              kategori: {
+                kode: kode
               }
-            },
-            include: {
-              operator: true
             }
-          });
-
-          if (!validPrefixes || validPrefixes.length === 0) {
-            return { error: true, message: 'Format Nomor Tujuan Tidak Sesuai.', data: {} };
+          },
+          include: {
+            operator: true
           }
+        });
 
-          const operatorMap = new Map();
-          validPrefixes.forEach(vp => {
-            if (vp.operator && vp.operator.kode) {
-              if (!operatorMap.has(vp.operator.kode)) {
-                operatorMap.set(vp.operator.kode, { kode: vp.operator.kode, name: vp.operator.name || vp.operator.kode });
-              }
-            }
-          });
-          
-          const operators = Array.from(operatorMap.values()).sort((a, b) => a.kode.localeCompare(b.kode));
-
-          return {
-            error: false,
-            message: "Berhasil ditemukan",
-            data: {
-              operators
-            }
-          };
-        } else {
-          const validPrefix = await this.prisma.prefix.findFirst({
-            where: {
-              prefix: prefix,
-              operator: {
-                kategori: {
-                  kode: kode
-                }
-              }
-            },
-            include: {
-              operator: true
-            }
-          });
-
-          if (!validPrefix) {
-            return { error: true, message: 'Format Nomor Tujuan Tidak Sesuai.', data: {} };
-          }
-
-          return {
-            error: false,
-            message: "Berhasil ditemukan",
-            data: {
-              operator: validPrefix.operator?.kode,
-              operatorName: validPrefix.operator?.name || validPrefix.operator?.kode
-            }
-          };
+        if (!validPrefixes || validPrefixes.length === 0) {
+          return { error: true, message: 'Format Nomor Tujuan Tidak Sesuai.', data: {} };
         }
+
+        const operatorMap = new Map();
+        validPrefixes.forEach(vp => {
+          if (vp.operator && vp.operator.kode) {
+            if (!operatorMap.has(vp.operator.kode)) {
+              operatorMap.set(vp.operator.kode, { kode: vp.operator.kode, name: vp.operator.name || vp.operator.kode });
+            }
+          }
+        });
+        
+        const operators = Array.from(operatorMap.values()).sort((a, b) => a.kode.localeCompare(b.kode));
+        const firstOperator = operators[0];
+
+        return {
+          error: false,
+          message: "Berhasil ditemukan",
+          data: {
+            operator: firstOperator?.kode,
+            operatorName: firstOperator?.name,
+            operators
+          }
+        };
       }
 
       return {
