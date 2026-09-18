@@ -133,7 +133,8 @@ const fetchData = async (keyword?: string | Event) => {
       perPage.value,
       currentPage.value,
       statusFilter.value,
-      filterOperatorId.value
+      filterOperatorId.value,
+      filterKategori.value
     );
     dataProduk.value = response.data.data.list;
     totalRow.value = response.data.data.total;

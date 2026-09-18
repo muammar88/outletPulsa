@@ -7,14 +7,16 @@ export const ProdukPrabayarService = {
     limit = 10,
     page = 1,
     status = '',
-    operatorId = ''
+    operatorId = '',
+    kategori = ''
   ) {
     const params = new URLSearchParams({
       search,
       limit: limit.toString(),
       page: page.toString(),
       status,
-      operatorId
+      operatorId,
+      kategori
     });
     
     return await api.get(`/administrator/produk-prabayar?${params.toString()}`);

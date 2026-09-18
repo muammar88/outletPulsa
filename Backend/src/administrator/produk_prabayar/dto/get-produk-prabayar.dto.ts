@@ -20,4 +20,8 @@ export class GetProdukPrabayarDto {
   @IsOptional()
   @IsString()
   operatorId?: string;
+
+  @IsOptional()
+  @IsString()
+  kategori?: string;
 }

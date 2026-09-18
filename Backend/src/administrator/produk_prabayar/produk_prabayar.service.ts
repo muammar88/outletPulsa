@@ -15,6 +15,7 @@ export class ProdukPrabayarService {
     const search = query.search || '';
     const status = query.status as ProdukStatus | undefined;
     const operatorId = query.operatorId ? parseInt(query.operatorId, 10) : undefined;
+    const kategori = query.kategori;
 
     const skip = (page - 1) * limit;
 
@@ -28,10 +29,15 @@ export class ProdukPrabayarService {
     }
     
     // Ensure that if a product is connected to an operator, the operator must be active
+    const operatorCondition: any = { status: 'active' };
+    if (kategori) {
+      operatorCondition.kategori = { name: kategori };
+    }
+
     where.AND = [
       {
         OR: [
-          { operator: { status: 'active' } },
+          { operator: operatorCondition },
           { operatorId: null }
         ]
       }
