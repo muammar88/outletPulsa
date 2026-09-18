@@ -1,17 +1,16 @@
 import { Controller, Get, Delete, Param, Query, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { RegistrationService } from './registration.service';
 import { GetRegistrationDto } from './dto/get-registration.dto';
-import { AdminAuthGuard } from '../../auth/guards/admin.guard';
-import { ResponseData } from 'src/common/interfaces/response.interface';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { Temp_registrasi } from '@prisma/client';
 
 @Controller('administrator/registration')
-@UseGuards(AdminAuthGuard)
+@UseGuards(JwtAuthGuard)
 export class RegistrationController {
   constructor(private readonly registrationService: RegistrationService) {}
 
   @Get()
-  async findAll(@Query() query: GetRegistrationDto): Promise<ResponseData<any>> {
+  async findAll(@Query() query: GetRegistrationDto) {
     const data = await this.registrationService.findAll(query);
     return {
       status: true,
@@ -21,7 +20,7 @@ export class RegistrationController {
   }
 
   @Delete(':id')
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<ResponseData<Temp_registrasi>> {
+  async remove(@Param('id', ParseIntPipe) id: number) {
     const data = await this.registrationService.remove(id);
     return {
       status: true,
