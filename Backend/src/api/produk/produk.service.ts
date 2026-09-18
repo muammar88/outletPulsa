@@ -213,7 +213,16 @@ export class ProdukService {
             return { error: true, message: 'Format Nomor Tujuan Tidak Sesuai.', data: {} };
           }
 
-          const operators = [...new Set(validPrefixes.map(vp => vp.operator?.kode).filter(Boolean))].sort();
+          const operatorMap = new Map();
+          validPrefixes.forEach(vp => {
+            if (vp.operator && vp.operator.kode) {
+              if (!operatorMap.has(vp.operator.kode)) {
+                operatorMap.set(vp.operator.kode, { kode: vp.operator.kode, name: vp.operator.name || vp.operator.kode });
+              }
+            }
+          });
+          
+          const operators = Array.from(operatorMap.values()).sort((a, b) => a.kode.localeCompare(b.kode));
 
           return {
             error: false,
@@ -245,7 +254,8 @@ export class ProdukService {
             error: false,
             message: "Berhasil ditemukan",
             data: {
-              operator: validPrefix.operator?.kode
+              operator: validPrefix.operator?.kode,
+              operatorName: validPrefix.operator?.name || validPrefix.operator?.kode
             }
           };
         }

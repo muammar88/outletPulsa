@@ -136,22 +136,28 @@ class _Daftar_operatorState extends State<Daftar_operator> {
     Map<String, dynamic>? filteredOperator = {};
     int idx = 0;
     
-    // Construct list from trans.operators (for PD) or trans.operatorCode (for PTP, etc)
-    List<String> availableOperators = [];
-    if (trans.operators != null && trans.operators!.isNotEmpty) {
-      availableOperators = trans.operators!;
+    // Construct list from trans.operatorsData (for PD) or trans.operatorCode (for PTP, etc)
+    List<Map<String, dynamic>> availableOperators = [];
+    if (trans.operatorsData != null && trans.operatorsData!.isNotEmpty) {
+      availableOperators = trans.operatorsData!;
     } else if (trans.operatorCode != null) {
-      availableOperators = [trans.operatorCode!];
+      availableOperators = [{
+        'kode': trans.operatorCode!,
+        'name': trans.operatorName ?? trans.operatorCode!
+      }];
+    } else if (trans.operators != null && trans.operators!.isNotEmpty) {
+      // Fallback just in case backend has not been updated
+      availableOperators = trans.operators!.map((e) => {'kode': e, 'name': e}).toList();
     }
 
-    for (String opCode in availableOperators) {
-      final name = opCode.toLowerCase();
-      final kode = opCode.toLowerCase();
+    for (var op in availableOperators) {
+      final name = op['name'].toString().toLowerCase();
+      final kode = op['kode'].toString().toLowerCase();
       if (_searchQuery.isEmpty || name.contains(_searchQuery) || kode.contains(_searchQuery)) {
         filteredOperator[idx.toString()] = {
           'id': '',
-          'kode': opCode,
-          'name': opCode
+          'kode': op['kode'],
+          'name': op['name']
         };
         idx++;
       }

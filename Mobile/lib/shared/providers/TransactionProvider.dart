@@ -23,9 +23,13 @@ class Transaction_provider with ChangeNotifier {
   Map<String, dynamic>? get list_kategori_pascabayar =>
       _list_kategori_pascabayar;
   String? _operatorCode;
+  String? _operatorName;
   String? get operatorCode => _operatorCode;
+  String? get operatorName => _operatorName;
   List<String>? _operators;
+  List<Map<String, dynamic>>? _operatorsData;
   List<String>? get operators => _operators;
+  List<Map<String, dynamic>>? get operatorsData => _operatorsData;
 
   int _currentPage = 1;
   bool _hasNextPage = true;
@@ -76,7 +80,9 @@ class Transaction_provider with ChangeNotifier {
       _error = e.error;
       _errorMsg = e.errorMsg;
       _operatorCode = e.operatorCode;
+      _operatorName = e.operatorName;
       _operators = e.operators;
+      _operatorsData = e.operatorsData;
       notifyListeners();
     });
   }
