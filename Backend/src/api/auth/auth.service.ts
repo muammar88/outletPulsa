@@ -125,17 +125,16 @@ export class AuthService {
       // Hash password
       const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-      // 4. Simpan ke database
-      await prisma.otpRegister.create({
+      // 4. Simpan ke database (ke tabel Temp_registrasi)
+      await prisma.temp_registrasi.create({
         data: {
           device_code: dto.device_code,
           whatsapp: dto.whatsapp,
-          otp: otp, // Optional, can be removed or kept as a fallback
           fullname: dto.nama_pengguna,
           password: hashedPassword,
           kode_agen: dto.kode_referal,
           verification_code: verification_code,
-          status: 'active',
+          status: 'unregistrated',
         },
       });
       // Ambil nomor whatsapp bot dari pengaturan umum

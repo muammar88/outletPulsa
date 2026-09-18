@@ -614,16 +614,16 @@ export class WebhookService {
     const verificationCode = match[0].toUpperCase();
 
     return await this.prisma.$transaction(async (prisma) => {
-      const otpRecord = await prisma.otpRegister.findFirst({
-          where: { verification_code: verificationCode, status: 'active' }
+      const tempRecord = await prisma.temp_registrasi.findFirst({
+          where: { verification_code: verificationCode, status: 'unregistrated' }
       });
 
-      if (!otpRecord) {
-          await this.sendWhatsappMessage(normalizedSender, 'Mohon maaf, kode verifikasi tidak ditemukan atau sudah kedaluwarsa. Silakan request ulang dari aplikasi.', payload);
+      if (!tempRecord) {
+          await this.sendWhatsappMessage(normalizedSender, 'Mohon maaf, kode verifikasi tidak ditemukan atau sudah diverifikasi. Silakan request ulang dari aplikasi.', payload);
           return { success: false, message: 'Verification code not found or already verified' };
       }
 
-      let dbWhatsapp = otpRecord.whatsapp.replace(/\D/g, '');
+      let dbWhatsapp = tempRecord.whatsapp.replace(/\D/g, '');
       if (dbWhatsapp.startsWith('0')) {
           dbWhatsapp = '62' + dbWhatsapp.substring(1);
       } else if (dbWhatsapp.startsWith('8')) {
@@ -636,7 +636,7 @@ export class WebhookService {
       }
 
       const existingMember = await prisma.member.findUnique({
-        where: { whatsappnumber: otpRecord.whatsapp },
+        where: { whatsappnumber: tempRecord.whatsapp },
       });
 
       if (existingMember) {
@@ -645,9 +645,9 @@ export class WebhookService {
       }
 
       let referralAgent: any = null;
-      if (otpRecord.kode_agen && otpRecord.kode_agen.trim() !== '') {
+      if (tempRecord.kode_agen && tempRecord.kode_agen.trim() !== '') {
         referralAgent = await prisma.member.findFirst({
-          where: { kode: otpRecord.kode_agen.trim() },
+          where: { kode: tempRecord.kode_agen.trim() },
         });
       }
 
@@ -657,23 +657,23 @@ export class WebhookService {
       const newMember = await prisma.member.create({
         data: {
           kode: kodeMember,
-          fullname: otpRecord.fullname || 'Member Baru',
-          whatsappnumber: otpRecord.whatsapp,
-          password: otpRecord.password || '',
+          fullname: tempRecord.fullname || 'Member Baru',
+          whatsappnumber: tempRecord.whatsapp,
+          password: tempRecord.password || '',
           kode_agen: referralAgent ? referralAgent.kode : null,
           status: 'verfied',
         },
       });
 
-      await prisma.otpRegister.update({
-        where: { id: otpRecord.id },
-        data: { status: 'nonactive' },
+      await prisma.temp_registrasi.update({
+        where: { id: tempRecord.id },
+        data: { status: 'regitrated' },
       });
 
       await this.sendWhatsappMessage(normalizedSender, `Selamat! Registrasi Anda berhasil diproses.\n\nKode Member: *${kodeMember}*\nNama: ${newMember.fullname}\n\nSilakan kembali ke aplikasi untuk melanjutkan.`, payload);
 
       const device = await prisma.deviceConnected.findFirst({
-        where: { device_code: otpRecord.device_code },
+        where: { device_code: tempRecord.device_code },
       });
 
       if (device) {

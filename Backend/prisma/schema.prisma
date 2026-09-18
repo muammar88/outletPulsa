@@ -21,11 +21,11 @@ model User {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  group        Group?        @relation(fields: [groupId], references: [id])
-  activityLogs ActivityLog[]
+  group                 Group?                       @relation(fields: [groupId], references: [id])
+  activityLogs          ActivityLog[]
   riwayatTransferSaldos RiwayatTransferSaldoServer[]
   riwayatSaldos         RiwayatSaldo[]
-  pengumuman          Pengumuman[]
+  pengumuman            Pengumuman[]
 }
 
 model Group {
@@ -130,13 +130,13 @@ model Kategori {
 }
 
 model Operator {
-  id         Int      @id @default(autoincrement())
+  id         Int            @id @default(autoincrement())
   kategoriId Int?
   kode       String?
   name       String?
   status     OperatorStatus @default(active)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
 
   kategori Kategori? @relation(fields: [kategoriId], references: [id])
   produks  Produk[]
@@ -166,14 +166,13 @@ model Server {
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
-  transactions           Transaction[]
-  transactionsPascabayar TransactionPascabayar[]
-  produks                Produk[]
-  produkPascabayars      ProdukPascabayar[]
+  transactions               Transaction[]
+  transactionsPascabayar     TransactionPascabayar[]
+  produks                    Produk[]
+  produkPascabayars          ProdukPascabayar[]
   riwayatTransferSaldoAsal   RiwayatTransferSaldoServer[] @relation("ServerAsal")
   riwayatTransferSaldoTujuan RiwayatTransferSaldoServer[] @relation("ServerTujuan")
 }
-
 
 enum ServerStatus {
   active
@@ -460,7 +459,6 @@ model RiwayatTransferSaldoServer {
   user         User   @relation(fields: [userId], references: [id])
 }
 
-
 model Notif {
   id          Int      @id @default(autoincrement())
   title       String?  @db.Text
@@ -584,17 +582,17 @@ enum DigiflazzSellerStatus {
 }
 
 model DigiflazzSellerProduct {
-  id                  Int       @id @default(autoincrement())
+  id                  Int                    @id @default(autoincrement())
   productDigiflazzId  Int?
   sellerId            Int?
   buyerSkuKode        String?
   price               Int?
   sellerProductStatus Boolean?
-  startCutOff         DateTime? @db.Time
-  endCutOff           DateTime? @db.Time
+  startCutOff         DateTime?              @db.Time
+  endCutOff           DateTime?              @db.Time
   temp_status         DigiflazzSellerStatus? @default(unbanned)
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
 
   digiflazzProduct DigiflazzProduct? @relation(fields: [productDigiflazzId], references: [id])
   digiflazzSeller  DigiflazzSeller?  @relation(fields: [sellerId], references: [id])
@@ -819,19 +817,19 @@ enum UserType {
 }
 
 model PengaturanUmum {
-  id            Int      @id @default(autoincrement())
-  nama_aplikasi String?  @default("Outlet Pulsa")
-  deskripsi     String?  @db.Text
-  logo          String?  @db.Text
-  email         String?
-  telepon       String?
+  id               Int      @id @default(autoincrement())
+  nama_aplikasi    String?  @default("Outlet Pulsa")
+  deskripsi        String?  @db.Text
+  logo             String?  @db.Text
+  email            String?
+  telepon          String?
   alamat           String?  @db.Text
   bullmq_schedules String?  @db.Text
-  wa_api_url    String?  @db.Text
-  wa_api_key    String?  @db.Text
-  wa_device_key String?  @db.Text
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  wa_api_url       String?  @db.Text
+  wa_api_key       String?  @db.Text
+  wa_device_key    String?  @db.Text
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model RiwayatSaldo {
@@ -916,13 +914,13 @@ model TripayPascabayarProduk {
 
 model WebhookLog {
   id             Int      @id @default(autoincrement())
-  provider       String   // Nilai: 'IAK', 'TRIPAY', atau 'DIGIFLAZZ'
-  event          String?  // Deskripsi event, misal: 'callback_prabayar'
-  transactionRef String?  // Kode referensi transaksi (ref_id, trx_id, atau kode)
+  provider       String // Nilai: 'IAK', 'TRIPAY', atau 'DIGIFLAZZ'
+  event          String? // Deskripsi event, misal: 'callback_prabayar'
+  transactionRef String? // Kode referensi transaksi (ref_id, trx_id, atau kode)
   payload        String?  @db.Text // Seluruh isi body request dalam format JSON string
-  status         String?  // Hasil proses: 'success', 'failed', 'ignored', 'error'
+  status         String? // Hasil proses: 'success', 'failed', 'ignored', 'error'
   message        String?  @db.Text // Pesan tambahan atau error message
-  ipAddress      String?  // IP address pengirim webhook
+  ipAddress      String? // IP address pengirim webhook
   createdAt      DateTime @default(now())
 }
 
@@ -950,48 +948,71 @@ model DeviceConnected {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  member                Member?                 @relation(fields: [member_id], references: [id])
-  pengumumanRecipients  PengumumanRecipient[]
+  member               Member?               @relation(fields: [member_id], references: [id])
+  pengumumanRecipients PengumumanRecipient[]
 }
 
 model Pengumuman {
-  @@map("Notification")
-  id                Int       @id @default(autoincrement())
-  title             String
-  body              String    @db.Text
-  image_url         String?   @db.Text
-  payload           String?   @db.Text // Format JSON string
-  pengumuman_type   String    @map("notification_type") // cth: 'Promo', 'Transaction', 'System', 'Broadcast'
-  target_type       String    // cth: 'All', 'User', 'Device'
-  target_id         String?   // User ID atau Device Code
-  created_by        Int?      // Admin User ID
-  status            String    @default("Draft") // Draft, Sending, Success, Failed
-  sent_at           DateTime?
-  start_date        DateTime?
-  end_date          DateTime?
-  priority          String?   @default("Normal")
-  is_active         Boolean   @default(true)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-
-  creator           User?     @relation(fields: [created_by], references: [id])
-  recipients        PengumumanRecipient[]
-}
-
-model PengumumanRecipient {
-  @@map("NotificationRecipient")
   id              Int       @id @default(autoincrement())
-  pengumuman_id   Int       @map("notification_id")
-  member_id       Int?
-  device_code     String?
-  status          String    @default("Pending") // Pending, Delivered, Failed, Read
-  delivered_at    DateTime?
-  read_at         DateTime?
-  error_message   String?   @db.Text
+  title           String
+  body            String    @db.Text
+  image_url       String?   @db.Text
+  payload         String?   @db.Text // Format JSON string
+  pengumuman_type String    @map("notification_type") // cth: 'Promo', 'Transaction', 'System', 'Broadcast'
+  target_type     String // cth: 'All', 'User', 'Device'
+  target_id       String? // User ID atau Device Code
+  created_by      Int? // Admin User ID
+  status          String    @default("Draft") // Draft, Sending, Success, Failed
+  sent_at         DateTime?
+  start_date      DateTime?
+  end_date        DateTime?
+  priority        String?   @default("Normal")
+  is_active       Boolean   @default(true)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  pengumuman      Pengumuman       @relation(fields: [pengumuman_id], references: [id], onDelete: Cascade)
-  member          Member?          @relation(fields: [member_id], references: [id], onDelete: Cascade)
-  device          DeviceConnected? @relation(fields: [device_code], references: [device_code], onDelete: Cascade)
+  creator    User?                 @relation(fields: [created_by], references: [id])
+  recipients PengumumanRecipient[]
+
+  @@map("Notification")
+}
+
+model PengumumanRecipient {
+  id            Int       @id @default(autoincrement())
+  pengumuman_id Int       @map("notification_id")
+  member_id     Int?
+  device_code   String?
+  status        String    @default("Pending") // Pending, Delivered, Failed, Read
+  delivered_at  DateTime?
+  read_at       DateTime?
+  error_message String?   @db.Text
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  pengumuman Pengumuman       @relation(fields: [pengumuman_id], references: [id], onDelete: Cascade)
+  member     Member?          @relation(fields: [member_id], references: [id], onDelete: Cascade)
+  device     DeviceConnected? @relation(fields: [device_code], references: [device_code], onDelete: Cascade)
+
+  @@map("NotificationRecipient")
+}
+
+model Temp_registrasi {
+  id                Int                  @id @default(autoincrement())
+  device_code       String
+  whatsapp          String
+  fullname          String?
+  password          String?
+  kode_agen         String?
+  verification_code String?              @unique
+  status            TempRegistrasiStatus @default(unregistrated)
+  created_at        DateTime             @default(now())
+  updated_at        DateTime             @updatedAt
+
+  @@index([device_code])
+  @@index([whatsapp])
+}
+
+enum TempRegistrasiStatus {
+  unregistrated
+  regitrated
 }
