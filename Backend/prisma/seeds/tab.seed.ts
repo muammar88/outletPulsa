@@ -40,6 +40,7 @@ export default async function tabSeed(prisma: PrismaClient) {
     // Bank Tabs
     { name: 'Daftar Bank Transfer', icon: 'IconBuildingBank', path: 'daftar_bank_transfer', desc: 'Daftar Bank Transfer' },
     { name: 'Daftar Bank', icon: 'IconBuildingBank', path: 'daftar_bank', desc: 'Daftar Bank' },
+    { name: 'Registration', icon: 'IconUserPlus', path: 'registration', desc: 'Registration' },
   ];
 
   for (const tab of tabsData) {
