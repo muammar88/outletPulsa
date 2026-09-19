@@ -14,6 +14,7 @@ import 'package:outletpulsa/shared/providers/loadProvider.dart';
 import 'package:outletpulsa/shared/widgets/CircularProgressWidget.dart';
 import 'package:intl/intl.dart';
 import 'konfirmasi_deposit_saldo.dart';
+import 'payment_method_screen.dart';
 
 class NumericTextFormatter extends TextInputFormatter {
   @override
@@ -45,9 +46,7 @@ class Form_input_deposit extends StatefulWidget {
 
 class _Form_input_depositState extends State<Form_input_deposit> with SingleTickerProviderStateMixin {
   final config = ConfigApp();
-  final List<String> defaultBank = ['0:Bank Belum Didefinisi'];
   bool loadData = false;
-  String? selectedBank;
   var nominalController = TextEditingController();
 
   final NumericTextFormatter _numericFormatter = NumericTextFormatter();
@@ -123,42 +122,19 @@ class _Form_input_depositState extends State<Form_input_deposit> with SingleTick
   }
 
   Future<void> _submitForm(Load_provider loader) async {
-    var err = false;
-    var errMsg = '';
-
     if (nominalController.text.isEmpty) {
-      errMsg += 'Nominal Tidak Boleh Kosong.\n';
-      err = true;
-    }
-    if (selectedBank == null || selectedBank == '0') {
-      errMsg += 'Anda Wajib Memilih Salah Satu Bank Tujuan Transfer.';
-      err = true;
+      _showSnackBar('Nominal Tidak Boleh Kosong.', isSuccess: false);
+      return;
     }
 
-    if (!err) {
-      loader.isLoad = true;
-      final deposit = Provider.of<Deposit_provider>(context, listen: false);
-      
-      var cleanNominal = nominalController.text.replaceAll(RegExp(r'[^\d]'), '');
-      var feedBack = await deposit.depositSaldo(cleanNominal, selectedBank!);
-      
-      loader.isLoad = false;
-      
-      if (feedBack.error == false) {
-        await Provider.of<Beranda_provider>(context, listen: false).get_data_beranda();
-
-        _showSnackBar(feedBack.errorMsg ?? 'Berhasil ambil tiket', isSuccess: true);
-        
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const Konfirmasi_deposit_saldo()),
-        );
-      } else {
-        _showSnackBar(feedBack.errorMsg ?? 'Gagal mengambil tiket deposit', isSuccess: false);
-      }
-    } else {
-      _showSnackBar(errMsg, isSuccess: false);
-    }
+    var cleanNominal = nominalController.text.replaceAll(RegExp(r'[^\d]'), '');
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PaymentMethodScreen(nominal: int.parse(cleanNominal)),
+      ),
+    );
   }
 
   Widget _buildBrandPanel({bool compact = false}) {
@@ -374,80 +350,6 @@ class _Form_input_depositState extends State<Form_input_deposit> with SingleTick
             ),
           ),
           
-          const SizedBox(height: 24),
-          
-          Row(
-            children: [
-              Icon(TablerIcons.building_bank, color: _kPrimary.withOpacity(0.7), size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Bank Tujuan Transfer',
-                style: GoogleFonts.poppins(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: _kPrimary,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField2<String>(
-            isExpanded: true,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: const Color(0xFFF8F9FA),
-              contentPadding: const EdgeInsets.symmetric(vertical: 18.0),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: const BorderSide(color: _kPrimary, width: 2),
-              ),
-            ),
-            hint: Text(
-              'Pilih Bank Tujuan Transfer',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: Colors.grey[400],
-              ),
-            ),
-            iconStyleData: IconStyleData(
-              icon: Padding(
-                padding: const EdgeInsets.only(right: 16.0),
-                child: Icon(TablerIcons.chevron_down, color: Colors.grey[500]),
-              ),
-              iconSize: 22,
-            ),
-            dropdownStyleData: DropdownStyleData(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                color: Colors.white,
-              ),
-              elevation: 4,
-            ),
-            items: (Provider.of<Info_add_deposit_provider>(context).list_select_bank ?? defaultBank)
-                .map((item) => DropdownMenuItem<String>(
-                      value: item.split(':')[0],
-                      child: Text(
-                        'Bank ${item.split(':')[1]}',
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: const Color(0xFF1A1A2E),
-                        ),
-                      ),
-                    ))
-                .toList(),
-            value: selectedBank,
-            onChanged: (value) {
-              setState(() {
-                selectedBank = value;
-              });
-            },
-          ),
-          
           const SizedBox(height: 36),
           
           GestureDetector(
@@ -490,7 +392,7 @@ class _Form_input_depositState extends State<Form_input_deposit> with SingleTick
                     const Icon(TablerIcons.receipt, size: 22, color: Colors.white),
                   const SizedBox(width: 10),
                   Text(
-                    loader.isLoad == true ? "Memproses..." : "Ambil Tiket Deposit",
+                    loader.isLoad == true ? "Memproses..." : "Lanjutkan",
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

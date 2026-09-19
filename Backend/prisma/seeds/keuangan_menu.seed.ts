@@ -11,7 +11,7 @@ export default async function keuanganMenuSeed(prisma: PrismaClient) {
         name: 'Laba Diambil',
         icon: 'IconWallet',
         path: 'laba-diambil',
-        desc: 'Data Laba Diambil'
+        desc: 'Melihat ringkasan laba yang sudah ditarik atau diproses, memantau sisa laba bersih dari setiap transaksi pengguna.'
       }
     });
     console.log('Berhasil menambahkan TabMenu Laba Diambil');

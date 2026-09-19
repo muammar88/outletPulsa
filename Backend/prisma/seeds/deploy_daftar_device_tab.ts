@@ -17,7 +17,7 @@ async function main() {
         name: 'Daftar Device',
         icon: 'IconDeviceMobile',
         path: 'daftar_device',
-        desc: 'Daftar Device',
+        desc: 'Mengelola daftar perangkat atau device (WhatsApp/Telegram bot) yang diizinkan untuk terhubung ke dalam sistem aplikasi.',
         created_at: new Date(),
         updated_at: new Date(),
       }
@@ -31,7 +31,7 @@ async function main() {
       data: {
         name: 'Daftar Device',
         icon: 'IconDeviceMobile',
-        desc: 'Daftar Device',
+        desc: 'Mengelola daftar perangkat atau device (WhatsApp/Telegram bot) yang diizinkan untuk terhubung ke dalam sistem aplikasi.',
         updated_at: new Date(),
       }
     });

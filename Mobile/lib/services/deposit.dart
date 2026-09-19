@@ -15,6 +15,8 @@ class Rest_deposit {
   String? _delete_konfirmasi_deposit_url;
   String? _konfirmasi_deposit_url;
   String? _detail_deposit_saldo_url;
+  String? _deposit_linkqu_payment_methods_url;
+  String? _deposit_linkqu_process_url;
 
   // constructor
   Rest_deposit() {
@@ -25,6 +27,8 @@ class Rest_deposit {
     _delete_konfirmasi_deposit_url = config.delete_konfirmasi_deposit_url;
     _konfirmasi_deposit_url = config.konfirmasi_deposit_url;
     _detail_deposit_saldo_url = config.detail_deposit_saldo_url;
+    _deposit_linkqu_payment_methods_url = config.deposit_linkqu_payment_methods_url;
+    _deposit_linkqu_process_url = config.deposit_linkqu_process_url;
   }
 
   final NetworkUtil _netUtil = NetworkUtil();
@@ -84,7 +88,51 @@ class Rest_deposit {
     });
   }
 
-  Future<Model_detail_deposit> getDetailDeposit(id) async {
+  Future<Model_void> getLinkquPaymentMethods() async {
+    final headers = await ApiHeaders.getHeaders();
+    Uri url = Uri.parse(_deposit_linkqu_payment_methods_url!);
+    return _netUtil.get(url, headers).then((dynamic res) {
+      if (res['error'] == false) {
+        return Model_void.map({
+          'error': false,
+          'error_msg': res['error_msg'],
+          'data': {'items': res['data']}
+        });
+      } else {
+        return Model_void.map({
+          'error': true,
+          'error_msg': res['error_msg']
+        });
+      }
+    });
+  }
+
+  Future<Model_void> processLinkquDeposit(int nominal, String paymentMethod, String? bankCode) async {
+    final headers = await ApiHeaders.getHeaders();
+    Uri url = Uri.parse(_deposit_linkqu_process_url!);
+    final payload = {
+      'nominal': nominal,
+      'payment_method': paymentMethod,
+    };
+    if (bankCode != null) payload['bank_code'] = bankCode;
+
+    return _netUtil.post(url, headers, jsonEncode(payload)).then((dynamic res) {
+      if (res['error'] == false) {
+        return Model_void.map({
+          'error': false,
+          'error_msg': res['error_msg'],
+          'data': res['data']
+        });
+      } else {
+        return Model_void.map({
+          'error': true,
+          'error_msg': res['error_msg']
+        });
+      }
+    });
+  }
+
+  Future<Model_detail_deposit> getDetailDeposit(String id) async {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_detail_deposit_saldo_url!);
     return _netUtil

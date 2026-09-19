@@ -43,9 +43,12 @@ import { LabaDiambilModule } from './laba_diambil/laba_diambil.module';
 import { DaftarDeviceModule } from './daftar_device/daftar_device.module';
 
 import { RegistrationModule } from './registration/registration.module';
+import { EmoneyLinkquModule } from './emoney_linkqu/emoney_linkqu.module';
+import { BankLinkquModule } from './bank_linkqu/bank_linkqu.module';
+import { TransaksiLinkquModule } from './transaksi_linkqu/transaksi_linkqu.module';
 
 @Module({
-  imports: [AuthModule, MenuModule, DaftarMemberModule, DaftarAgenModule, TransaksiPulsaModule, ProdukPrabayarModule, ProdukPascabayarModule, SemuaServerModule, PengaturanUmumModule, AdminPengumumanModule, KategoriModule, OperatorModule, DepositModule, LogModule, DaftarGrupModule, DaftarPenggunaModule, TripayModule, DaftarProdukPrabayarTripayModule, DaftarProdukPascabayarTripayModule, KategoriPrabayarTripayModule, OperatorPrabayarTripayModule, KategoriPascabayarTripayModule, OperatorPascabayarTripayModule, DaftarTypeIakModule, DaftarOperatorIakModule, DaftarProdukPrabayarIakModule, DaftarProdukPascabayarIakModule, DaftarSellerDigiflazzModule, DaftarProdukSellerDigiflazzModule, DaftarProdukDigiflazzModule, DashboardModule, RiwayatTransferSaldoModule, BankModule, BankTransferOutletModule, LabaDiambilModule, DaftarDeviceModule, LaporanUmumModule, RegistrationModule],
+  imports: [AuthModule, MenuModule, DaftarMemberModule, DaftarAgenModule, TransaksiPulsaModule, ProdukPrabayarModule, ProdukPascabayarModule, SemuaServerModule, PengaturanUmumModule, AdminPengumumanModule, KategoriModule, OperatorModule, DepositModule, LogModule, DaftarGrupModule, DaftarPenggunaModule, TripayModule, DaftarProdukPrabayarTripayModule, DaftarProdukPascabayarTripayModule, KategoriPrabayarTripayModule, OperatorPrabayarTripayModule, KategoriPascabayarTripayModule, OperatorPascabayarTripayModule, DaftarTypeIakModule, DaftarOperatorIakModule, DaftarProdukPrabayarIakModule, DaftarProdukPascabayarIakModule, DaftarSellerDigiflazzModule, DaftarProdukSellerDigiflazzModule, DaftarProdukDigiflazzModule, DashboardModule, RiwayatTransferSaldoModule, BankModule, BankTransferOutletModule, LabaDiambilModule, DaftarDeviceModule, LaporanUmumModule, RegistrationModule, EmoneyLinkquModule, BankLinkquModule, TransaksiLinkquModule],
   controllers: [AdministratorController],
   providers: [AdministratorService],
 })

@@ -686,4 +686,124 @@ export class WebhookService {
       return { message: 'Registrasi berhasil', data: { success: true } };
     });
   }
+
+  async handleLinkQuCallback(payload: any, req?: any) {
+    console.log('\n=========================================================');
+    console.log('🔗 MENERIMA CALLBACK DARI LINKQU');
+    console.log('=========================================================');
+    if (req) {
+      console.log(`🔗 Client URL Hit : ${req.protocol}://${req.get('host')}${req.originalUrl}`);
+      console.log(`🔗 Client IP      : ${req.ip}`);
+    }
+    console.log('---------------------------------------------------------');
+    console.log('🔗 Data Payload   :');
+    console.log(JSON.stringify(payload, null, 2));
+    console.log('=========================================================\n');
+
+    try {
+      const partnerReff = payload.partner_reff || payload.partner_ref || payload.partnerReff;
+      const status = (payload.status || payload.status_trx || '').toUpperCase();
+      const responseCode = payload.response_code || payload.rc;
+
+      if (!partnerReff) {
+        throw new HttpException('partner_reff is required in callback payload', HttpStatus.BAD_REQUEST);
+      }
+
+      const tx = await this.prisma.paymentGatewayTransaction.findUnique({
+        where: { partner_reff: partnerReff },
+        include: { requestDeposit: { include: { riwayatTransaksi: { include: { member: true } } } } }
+      });
+
+      if (!tx) {
+        this.logger.warn(`Transaction not found for partner_reff: ${partnerReff}`);
+        return { response: '00', message: 'Transaction not found' };
+      }
+
+      if (tx.status === 'SUCCESS') {
+        this.logger.log(`Transaction ${partnerReff} is already marked as SUCCESS`);
+        return { response: '00' };
+      }
+
+      if (tx.status === 'FAILED' && (status === 'FAILED' || status === 'EXPIRED')) {
+        this.logger.log(`Transaction ${partnerReff} is already marked as FAILED`);
+        return { response: '00' };
+      }
+
+      if (tx.status === 'EXPIRED' && status === 'EXPIRED') {
+        this.logger.log(`Transaction ${partnerReff} is already marked as EXPIRED`);
+        return { response: '00' };
+      }
+
+      let newStatus = tx.status;
+      
+      if (status === 'SUCCESS' || responseCode === '00') {
+        newStatus = 'SUCCESS';
+        
+        await this.prisma.paymentGatewayTransaction.update({
+          where: { id: tx.id },
+          data: { status: newStatus }
+        });
+
+        if (tx.reference_type === 'DEPOSIT' && tx.requestDeposit) {
+          const deposit = tx.requestDeposit;
+          if (deposit.status !== 'sukses') {
+            await this.prisma.$transaction(async (prisma) => {
+              await prisma.requestDeposit.update({
+                where: { id: deposit.id },
+                data: { status: 'sukses', waktuKirim: new Date() }
+              });
+
+              if (deposit.riwayatTransaksi && deposit.riwayatTransaksi.member) {
+                const member = deposit.riwayatTransaksi.member;
+                const nominal = deposit.nominal || 0;
+                const saldoSebelumnya = member.saldo || 0;
+                const saldoSetelahnya = Number(saldoSebelumnya) + Number(nominal);
+
+                await prisma.member.update({
+                  where: { id: member.id },
+                  data: { saldo: saldoSetelahnya }
+                });
+
+                await prisma.riwayatSaldo.create({
+                  data: {
+                    kode: deposit.kode || `DEP-${Date.now()}`,
+                    member_id: member.id,
+                    nominal: nominal,
+                    saldo_sebelumnya: saldoSebelumnya,
+                    saldo_setelahnya: saldoSetelahnya,
+                    status: 'deposit',
+                    ket: `Deposit via LinkQu (${tx.payment_method}) Sukses`
+                  }
+                });
+              }
+            });
+            this.logger.log(`Deposit ${partnerReff} successfully paid and saldo updated`);
+          }
+        }
+      } else if (status === 'FAILED' || responseCode !== '00') {
+        newStatus = status === 'EXPIRED' ? 'EXPIRED' : 'FAILED';
+        
+        await this.prisma.paymentGatewayTransaction.update({
+          where: { id: tx.id },
+          data: { status: newStatus }
+        });
+
+        if (tx.reference_type === 'DEPOSIT' && tx.requestDeposit) {
+          const deposit = tx.requestDeposit;
+          if (deposit.status !== 'gagal' && deposit.status !== 'sukses') {
+            await this.prisma.requestDeposit.update({
+              where: { id: deposit.id },
+              data: { status: 'gagal', alasanPenolakan: 'Payment Failed or Expired via LinkQu' }
+            });
+          }
+        }
+      }
+
+      return { response: '00' };
+
+    } catch (error: any) {
+      this.logger.error('Error handling LinkQu Callback:', error);
+      return { response: '01', message: error.message };
+    }
+  }
 }

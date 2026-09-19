@@ -165,4 +165,16 @@ export class WebhookController {
   async webhookWapisender(@Body() body: any) {
     return this.webhookService.processWhatsappWebhook(body);
   }
+
+  /**
+   * Endpoint: POST /webhook/linkqu
+   * 
+   * Webhook callback untuk LinkQu Payment Gateway
+   */
+  @Post(['linkqu', 'linkqu/va', 'linkqu/qris', 'linkqu/ewallet'])
+  @HttpCode(HttpStatus.OK)
+  async handleLinkquCallback(@Body() payload: any, @Req() req: Request) {
+    this.logger.log('LinkQu Callback Hit');
+    return this.webhookService.handleLinkQuCallback(payload, req);
+  }
 }

@@ -343,9 +343,10 @@ model RequestDeposit {
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
-  riwayatTransaksi   RiwayatTransaksi?   @relation(fields: [riwayatTransaksiId], references: [id])
-  bankTransferOutlet BankTransferOutlet? @relation(fields: [bankTransferId], references: [id])
-  riwayatMutasis     RiwayatMutasi[]
+  riwayatTransaksi          RiwayatTransaksi?          @relation(fields: [riwayatTransaksiId], references: [id])
+  bankTransferOutlet        BankTransferOutlet?        @relation(fields: [bankTransferId], references: [id])
+  riwayatMutasis            RiwayatMutasi[]
+  paymentGatewayTransaction PaymentGatewayTransaction?
 }
 
 enum StatusKirim {
@@ -817,19 +818,32 @@ enum UserType {
 }
 
 model PengaturanUmum {
-  id               Int      @id @default(autoincrement())
-  nama_aplikasi    String?  @default("Outlet Pulsa")
-  deskripsi        String?  @db.Text
-  logo             String?  @db.Text
-  email            String?
-  telepon          String?
-  alamat           String?  @db.Text
-  bullmq_schedules String?  @db.Text
-  wa_api_url       String?  @db.Text
-  wa_api_key       String?  @db.Text
-  wa_device_key    String?  @db.Text
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                     Int      @id @default(autoincrement())
+  nama_aplikasi          String?  @default("Outlet Pulsa")
+  deskripsi              String?  @db.Text
+  logo                   String?  @db.Text
+  email                  String?
+  telepon                String?
+  alamat                 String?  @db.Text
+  bullmq_schedules       String?  @db.Text
+  wa_api_url             String?  @db.Text
+  wa_api_key             String?  @db.Text
+  wa_device_key          String?  @db.Text
+  // LinkQu Integration
+  linkqu_is_active       Boolean? @default(false)
+  linkqu_base_url_dev    String?  @db.Text
+  linkqu_base_url_prod   String?  @db.Text
+  linkqu_client_id       String?  @db.Text
+  linkqu_client_secret   String?  @db.Text
+  linkqu_pin             String?
+  linkqu_merchant_code   String?
+  linkqu_signature_key   String?  @db.Text
+  linkqu_is_sandbox      Boolean? @default(true)
+  linkqu_payment_va      Boolean? @default(true)
+  linkqu_payment_ewallet Boolean? @default(true)
+  linkqu_payment_qris    Boolean? @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 }
 
 model RiwayatSaldo {
@@ -1016,3 +1030,56 @@ enum TempRegistrasiStatus {
   unregistrated
   regitrated
 }
+
+model EmoneyLinkqu {
+  id           Int       @id @default(autoincrement())
+  name         String
+  kode         String
+  image        String?
+  status       Boolean   @default(false)
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @default(now()) @updatedAt
+
+  @@map("emoney_linkqus")
+}
+
+model BankLinkqu {
+  id           Int       @id @default(autoincrement())
+  name         String
+  kode         String
+  image        String?
+  status       Boolean   @default(false)
+  urutan       Int       @default(0)
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @default(now()) @updatedAt
+
+  @@map("bank_linkqus")
+}
+
+
+model PaymentGatewayTransaction {
+  id              Int       @id @default(autoincrement())
+  uuid            String    @unique @default(uuid())
+  reference_id    String? 
+  reference_type  String? 
+  partner_reff    String    @unique
+  payment_method  String 
+  bank_code       String?
+  bank_name       String?
+  virtual_account String?
+  amount          Decimal   @db.Decimal(20, 2)
+  fee_admin       Decimal   @default(0) @db.Decimal(20, 2)
+  total_amount    Decimal   @db.Decimal(20, 2)
+  expired_at      DateTime?
+  status          String    @default("PENDING") // PENDING, SUCCESS, FAILED, EXPIRED
+  provider        String    @default("LINKQU")
+  metadata        String?   @db.Text
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+
+  requestDepositId Int?     @unique
+  requestDeposit   RequestDeposit? @relation(fields: [requestDepositId], references: [id], onDelete: SetNull)
+
+  @@map("payment_gateway_transactions")
+}
+

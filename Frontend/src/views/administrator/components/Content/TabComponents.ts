@@ -36,6 +36,10 @@ export const tabComponents: Record<string, any> = {
   pengumuman: defineAsyncComponent(() => import('@/modules/Administrator/Pengumuman/Pengumuman.vue')),
   laporan_umum: defineAsyncComponent(() => import('@/modules/Administrator/LaporanUmum/LaporanUmum.vue')),
   whatsapp: defineAsyncComponent(() => import('@/modules/Administrator/PengaturanWhatsapp/PengaturanWhatsapp.vue')),
+  pengaturan_linkqu: defineAsyncComponent(() => import('@/modules/Administrator/PengaturanLinkqu/PengaturanLinkqu.vue')),
+  emoney_linkqu: defineAsyncComponent(() => import('@/modules/Administrator/EmoneyLinkqu/EmoneyLinkqu.vue')),
+  bank_linkqu: defineAsyncComponent(() => import('@/modules/Administrator/BankLinkqu/BankLinkqu.vue')),
+  transaksi_linkqu: defineAsyncComponent(() => import('@/modules/Administrator/TransaksiLinkqu/TransaksiLinkqu.vue')),
   registration: defineAsyncComponent(() => import('@/modules/Administrator/Regitration/Registration.vue')),
   notFound: defineAsyncComponent(() => import('@/views/errors/NotFoundView.vue')),
 };

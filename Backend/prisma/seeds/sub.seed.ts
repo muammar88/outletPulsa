@@ -36,6 +36,7 @@ export default async function subSeed(prisma: PrismaClient) {
     { menu_name: 'Keuangan', name: 'Keuangan', path: 'keuangan', icon: 'IconWallet', tab: JSON.stringify([getTabId('laba_diambil')].filter(Boolean).map(id => ({ id }))) },
     { menu_name: 'Keuangan', name: 'Laporan', path: 'laporan', icon: 'IconReport', tab: JSON.stringify([getTabId('laporan_umum'), getTabId('laporan_pendaftaran')].filter(Boolean).map(id => ({ id }))) },
     { menu_name: 'Pengaturan', name: 'Pengaturan Umum', icon: 'IconSettings', path: 'pengaturan', tab: JSON.stringify([getTabId('pengaturan_umum'), getTabId('daftar_device')].filter(Boolean).map(id => ({ id }))) },
+    { menu_name: 'Pengaturan', name: 'Linkqu', icon: 'IconSettings', path: 'linkqu', tab: JSON.stringify([getTabId('transaksi_linkqu'), getTabId('bank_linkqu'), getTabId('emoney_linkqu'),getTabId('pengaturan_linkqu')].filter(Boolean).map(id => ({ id }))) }, 
     { menu_name: 'Pengaturan', name: 'Whatsapp', icon: 'IconDeviceMessage', path: 'whatsapp', tab: JSON.stringify([getTabId('pesan_whatsapp'), getTabId('pengaturan_whatsapp')].filter(Boolean).map(id => ({ id }))) },
     { menu_name: 'Pengaturan', name: 'Daftar Grup', icon: 'IconUsersGroup', path: 'daftar_grup', tab: JSON.stringify([getTabId('daftar_grup')].filter(Boolean).map(id => ({ id }))) },
     { menu_name: 'Pengaturan', name: 'Daftar Pengguna', icon: 'IconUserShield', path: 'daftar_pengguna', tab: JSON.stringify([getTabId('daftar_pengguna')].filter(Boolean).map(id => ({ id }))) },

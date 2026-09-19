@@ -41,6 +41,18 @@ class Deposit_provider with ChangeNotifier {
     });
   }
 
+  Future<Model_void> getLinkquPaymentMethods() async {
+    return await Rest_deposit().getLinkquPaymentMethods();
+  }
+
+  Future<Model_void> processLinkquDeposit({
+    required int nominal, 
+    required String paymentMethod, 
+    String? bankCode
+  }) async {
+    return await Rest_deposit().processLinkquDeposit(nominal, paymentMethod, bankCode);
+  }
+
   Future<void> getDetailDeposit(String id) async {
     return await Rest_deposit()
         .getDetailDeposit(id)
