@@ -5,7 +5,7 @@ export const bankLinkquService = {
   getAll: () => {
     return api.get('/administrator/bank-linkqu');
   },
-
+/// A
   updateStatus: (id: number, status: boolean) => {
     return api.patch(`/administrator/bank-linkqu/${id}/status`, { status });
   },
