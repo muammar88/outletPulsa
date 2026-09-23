@@ -29,6 +29,7 @@ class ConfigApp {
   String? _deposit_saldo_url;
   String? _deposit_linkqu_payment_methods_url;
   String? _deposit_linkqu_process_url;
+  String? _deposit_linkqu_detail_url;
   String? _info_konfirmasi_deposit_url;
   String? _delete_konfirmasi_deposit_url;
   String? _konfirmasi_deposit_url;
@@ -101,6 +102,7 @@ class ConfigApp {
     _deposit_saldo_url = '$_mainurl/deposit-saldo';
     _deposit_linkqu_payment_methods_url = '$_mainurl/deposit-linkqu/payment-methods';
     _deposit_linkqu_process_url = '$_mainurl/deposit-linkqu/process';
+    _deposit_linkqu_detail_url = '$_mainurl/deposit-linkqu/detail';
     _info_konfirmasi_deposit_url = '$_mainurl/deposit-info-konfirmasi';
     _delete_konfirmasi_deposit_url = '$_mainurl/deposit-delete-konfirmasi';
     _konfirmasi_deposit_url = '$_mainurl/deposit-konfirmasi';
@@ -177,6 +179,7 @@ class ConfigApp {
   String? get deposit_saldo_url => _deposit_saldo_url!;
   String? get deposit_linkqu_payment_methods_url => _deposit_linkqu_payment_methods_url!;
   String? get deposit_linkqu_process_url => _deposit_linkqu_process_url!;
+  String? get deposit_linkqu_detail_url => _deposit_linkqu_detail_url!;
   String? get info_konfirmasi_deposit_url => _info_konfirmasi_deposit_url!;
   String? get delete_konfirmasi_deposit_url => _delete_konfirmasi_deposit_url!;
   String? get konfirmasi_deposit_url => _konfirmasi_deposit_url!;

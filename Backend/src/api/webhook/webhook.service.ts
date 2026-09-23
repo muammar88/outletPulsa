@@ -3,7 +3,11 @@ import { PrismaService } from '../../prisma.service';
 import { PengumumanService } from '../../pengumuman/pengumuman.service';
 import { SocketService } from '../../socket/socket.service';
 import { DaftarProdukDigiflazzService } from '../../administrator/daftar_produk_digiflazz/daftar_produk_digiflazz.service';
+import { TransaksiFinalizerService } from '../transaksi/transaksi-finalizer.service';
 import * as crypto from 'crypto';
+import { WapisenderService } from '../../providers/wapisender.service';
+import { verifyLinkQuCallbackPayload } from './linkqu-verifier';
+import { LinkquCallbackProcessorService } from './linkqu-callback-processor.service';
 
 interface IakCallbackPayload {
   data: {
@@ -48,7 +52,10 @@ export class WebhookService {
     private readonly prisma: PrismaService,
     private readonly pengumumanService: PengumumanService,
     private readonly socketService: SocketService,
-    private readonly daftarProdukDigiflazzService: DaftarProdukDigiflazzService
+    private readonly daftarProdukDigiflazzService: DaftarProdukDigiflazzService,
+    private readonly transaksiFinalizer: TransaksiFinalizerService,
+    private readonly wapisenderService: WapisenderService,
+    private readonly linkquProcessor: LinkquCallbackProcessorService,
   ) {}
 
   async handleIakCallback(
@@ -81,17 +88,20 @@ export class WebhookService {
     });
 
     if (transaction) {
-      if (transaction.status === 'sukses' || transaction.status === 'gagal') {
-        await this.logWebhook('IAK', 'callback_prabayar', refId, body, 'ignored', `Sudah berstatus ${transaction.status}`, ipAddress);
-        return { error: false, error_msg: 'Berhasil' };
-      }
+      // B2: Hapus early return yang menyembunyikan konflik status.
+      // Alirkan ke finalizer — jika sudah final maka finalizer mencatat konflik ke activityLog.
       const statusCode = Number(status);
+      // B2: Ambil harga aktual dari payload IAK (field 'price') jika tersedia
+      const iakPrice = body?.data?.price;
+      const actualPrice = typeof iakPrice === 'number' && iakPrice > 0 ? iakPrice : undefined;
       if (statusCode === 1 || String(status) === 'SUCCESS') {
-        await this.updateSuccessTransaction(sn, transaction);
+        await this.updateSuccessTransaction(sn, transaction, 'IAK', actualPrice);
         await this.logWebhook('IAK', 'callback_prabayar', refId, body, 'success', `Transaksi sukses. SN: ${sn}`, ipAddress);
       } else if (statusCode === 2 || String(status) === 'FAILED') {
         await this.updateFailedTransaction(transaction);
         await this.logWebhook('IAK', 'callback_prabayar', refId, body, 'success', 'Transaksi gagal, saldo dikembalikan', ipAddress);
+      } else {
+        await this.logWebhook('IAK', 'callback_prabayar', refId, body, 'ignored', `Sudah berstatus ${transaction.status}`, ipAddress);
       }
       return { error: false, error_msg: 'Berhasil' };
     }
@@ -160,16 +170,18 @@ export class WebhookService {
     }
 
     if (transaction) {
-      if (transaction.status === 'sukses' || transaction.status === 'gagal') {
-        await this.logWebhook('TRIPAY', 'callback_prabayar', String(trxId), body, 'ignored', `Sudah berstatus ${transaction.status}`, ipAddress);
-        return { error: false, error_msg: 'Berhasil' };
-      }
+      // B2: Hapus early return yang menyembunyikan konflik status.
+      // B2: Ambil harga aktual dari payload Tripay — field 'harga' (bukan 'price')
+      const tripayHarga = item.harga;
+      const actualPrice = typeof tripayHarga === 'number' && tripayHarga > 0 ? tripayHarga : undefined;
       if (status === 1) {
-        await this.updateSuccessTransaction(token, transaction);
+        await this.updateSuccessTransaction(token, transaction, 'TRIPAY', actualPrice);
         await this.logWebhook('TRIPAY', 'callback_prabayar', String(trxId), body, 'success', `Transaksi sukses. Token: ${token}`, ipAddress);
       } else if (status === 2) {
         await this.updateFailedTransaction(transaction);
         await this.logWebhook('TRIPAY', 'callback_prabayar', String(trxId), body, 'success', 'Transaksi gagal, saldo dikembalikan', ipAddress);
+      } else {
+        await this.logWebhook('TRIPAY', 'callback_prabayar', String(trxId), body, 'ignored', `Sudah berstatus ${transaction.status}`, ipAddress);
       }
       return { error: false, error_msg: 'Berhasil' };
     }
@@ -254,6 +266,9 @@ export class WebhookService {
       }
 
       const now = new Date();
+      // B2: Ambil harga aktual dari payload Digiflazz (field 'price') jika tersedia
+      const digiPrice = data.price;
+      const actualPrice = typeof digiPrice === 'number' && digiPrice > 0 ? digiPrice : undefined;
       if (rc === '00') {
         if (transaction.digiflazzTransactions.length > 0) {
           await this.prisma.digiflazzTransaction.updateMany({
@@ -261,7 +276,7 @@ export class WebhookService {
             data: { status: 'sukses', responseTime: now, updatedAt: now },
           });
         }
-        await this.updateSuccessTransaction(sn, transaction);
+        await this.updateSuccessTransaction(sn, transaction, 'DIGIFLAZZ', actualPrice);
         await this.logWebhook('DIGIFLAZZ', 'callback_prabayar', refId, body, 'success', `Transaksi sukses. SN: ${sn}`, ipAddress);
       } else if (rc === '03') {
         await this.logWebhook('DIGIFLAZZ', 'callback_prabayar', refId, body, 'ignored', 'Masih pending (rc=03)', ipAddress);
@@ -324,67 +339,29 @@ export class WebhookService {
 
   private async updateSuccessTransaction(
     sn: string,
-    transactionData: { id: number; kode?: string | null; purchase_price: number | null; selling_price: number | null; fee_agen: number | null; riwayatTransaksi: { member: { id: number; kode_agen: string | null } | null } | null },
+    transactionData: { id: number; kode?: string | null },
+    provider = 'WEBHOOK',
+    actualPurchasePrice?: number,
   ): Promise<void> {
-    const feeAgen = transactionData.fee_agen || 0;
-    const kodeAgen = transactionData.riwayatTransaksi?.member?.kode_agen || '';
-    const laba = (transactionData.selling_price || 0) - (transactionData.purchase_price || 0) - feeAgen;
-
-    await this.prisma.transaction.update({
-      where: { id: transactionData.id },
-      data: {
-        status: 'sukses',
-        ket: sn,
-        kodeAgen: kodeAgen,
-        laba: laba,
-        fee_agen: feeAgen,
-        serial_number: sn ? String(sn) : undefined,
-      },
+    // B2: Teruskan harga aktual provider ke finalizer untuk audit laba yang benar
+    await this.transaksiFinalizer.finalizeTransaction({
+      transactionId: transactionData.id,
+      targetStatus: 'sukses',
+      sn: sn,
+      actualPurchasePrice,
+      source: `WEBHOOK_${provider}`,
     });
-
-    const member = transactionData.riwayatTransaksi?.member;
-    if (member) {
-      this.socketService.emitTransactionUpdated(member.id, {
-        transactionId: transactionData.kode || transactionData.id,
-        status: 'sukses',
-        sn: sn,
-        updatedAt: new Date(),
-      });
-      this.pengumumanService.sendTransactionStatus(
-        member.id,
-        'Transaksi Berhasil',
-        `Pembelian Prabayar dengan kode ${transactionData.kode || transactionData.id} telah sukses. SN: ${sn}`,
-        { reference_id: transactionData.kode || String(transactionData.id), status: 'sukses' },
-        'prabayar'
-      ).catch(e => this.logger.error('Failed to send webhook success notif', e));
-    }
   }
 
   private async updateFailedTransaction(
-    transactionData: { id: number; kode?: string | null; selling_price: number | null; fee_agen: number | null; riwayatTransaksi: { member: { id: number; saldo: number | null } | null } | null },
+    transactionData: { id: number; kode?: string | null },
+    provider = 'WEBHOOK',
   ): Promise<void> {
-    const member = transactionData.riwayatTransaksi?.member;
-    if (!member) return;
-
-    const totalRefund = (transactionData.selling_price || 0) + (transactionData.fee_agen || 0);
-    await this.prisma.$transaction(async (tx) => {
-      await tx.member.update({ where: { id: member.id }, data: { saldo: { increment: totalRefund } } });
-      await tx.transaction.update({ where: { id: transactionData.id }, data: { status: 'gagal' } });
+    await this.transaksiFinalizer.finalizeTransaction({
+      transactionId: transactionData.id,
+      targetStatus: 'gagal',
+      source: `WEBHOOK_${provider}`,
     });
-
-    this.socketService.emitTransactionUpdated(member.id, {
-      transactionId: transactionData.kode || transactionData.id,
-      status: 'gagal',
-      updatedAt: new Date(),
-    });
-
-    this.pengumumanService.sendTransactionStatus(
-      member.id,
-      'Transaksi Gagal',
-      `Pembelian Prabayar dengan kode ${transactionData.kode || transactionData.id} gagal. Saldo telah dikembalikan.`,
-      { reference_id: transactionData.kode || String(transactionData.id), status: 'gagal' },
-      'prabayar'
-    ).catch(e => this.logger.error('Failed to send webhook failed notif', e));
   }
 
   private async updateSuccessTransactionPascabayar(
@@ -392,14 +369,18 @@ export class WebhookService {
     sn: string,
     transactionData?: { trId?: string | null; riwayatTransaksi: { member: { id: number } | null } | null },
   ): Promise<void> {
-    await this.prisma.transactionPascabayar.update({
-      where: { id },
+    const claim = await this.prisma.transactionPascabayar.updateMany({
+      where: { id, status: 'proses' },
       data: {
         status: 'sukses',
         ket: sn,
         serial_number: sn ? String(sn) : undefined,
       },
     });
+
+    if (claim.count === 0) {
+      return;
+    }
 
     const member = transactionData?.riwayatTransaksi?.member;
     if (member) {
@@ -428,8 +409,19 @@ export class WebhookService {
 
     const totalRefund = transactionData.total || 0;
     await this.prisma.$transaction(async (tx) => {
+      const claim = await tx.transactionPascabayar.updateMany({
+        where: { id, status: 'proses' },
+        data: { status: 'gagal' },
+      });
+      if (claim.count === 0) return;
+
       await tx.member.update({ where: { id: member.id }, data: { saldo: { increment: totalRefund } } });
-      await tx.transactionPascabayar.update({ where: { id }, data: { status: 'gagal' } });
+      await tx.riwayatTransaksi.create({
+        data: {
+          memberId: member.id,
+          tipeTransaksi: 'terima_saldo',
+        },
+      });
     });
 
     this.socketService.emitTransactionUpdated(member.id, {
@@ -529,56 +521,13 @@ export class WebhookService {
   // --- WAPISENDER WEBHOOK ---
   private static waWebhookSequence = 0;
 
-  private async sendWhatsappMessage(phone: string, message: string, webhookPayload?: any) {
-    const url = process.env.WAPISENDER_URL || 'https://wapisender.id/api/message/send';
-    const apiKey = process.env.WAPISENDER_API_KEY;
-    const deviceKey = webhookPayload?.device_id || process.env.WAPISENDER_DEVICE_KEY;
-
-    if (!apiKey || !deviceKey) {
-      this.logger.warn(`[WAPISENDER] Kredensial tidak lengkap di .env (WAPISENDER_API_KEY, WAPISENDER_DEVICE_KEY). Abaikan pesan ke ${phone}`);
-      return;
-    }
-    
-    try {
-      const payloadObj: any = {
-        api_key: apiKey,
-        device_key: deviceKey,
-        message: message,
-        is_priority: true
-      };
-
-      if (webhookPayload?.is_group) {
-          payloadObj.group = webhookPayload?.chat_jid;
-      } else {
-          payloadObj.to = phone;
-      }
-
-      if (webhookPayload?.message_id) {
-          payloadObj.quoted_id = webhookPayload.message_id;
-          payloadObj.quoted_participant = webhookPayload.sender_jid;
-      }
-
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payloadObj)
-      });
-      
-      const responseText = await response.text();
-      
-      if (!response.ok) {
-         this.logger.error(`[WAPISENDER] Gagal mengirim pesan ke ${phone}. HTTP Status: ${response.status}. Response: ${responseText}`);
-      } else {
-         this.logger.log(`[WAPISENDER] Berhasil mengirim pesan balasan ke ${phone}. Response: ${responseText}`);
-      }
-    } catch (error: any) {
-      this.logger.error(`[WAPISENDER] Error mengirim pesan ke ${phone}: ${error.message}`);
-    }
+  private async sendWhatsappMessage(phone: string, message: string) {
+    return this.wapisenderService.sendMessage(phone, message);
   }
 
-  async processWhatsappWebhook(payload: any) {
+  async processWhatsappWebhook(payload: any, ipAddress: string = '') {
     WebhookService.waWebhookSequence++;
-    this.logger.log(`[Webhook Sequence: ${WebhookService.waWebhookSequence}] Menerima Webhook WAPISender (WhatsApp). Data: ${JSON.stringify(payload)}`);
+    this.logger.log(`[Webhook Sequence: ${WebhookService.waWebhookSequence}] Menerima Webhook WAPISender (WhatsApp)`);
 
     if (!payload || typeof payload !== 'object') {
       return { success: false, message: 'Invalid payload' };
@@ -588,103 +537,200 @@ export class WebhookService {
       return { status: 'ignored', message: 'Not a message event' };
     }
 
-    const sender = payload.phone;
-    const message = payload.message;
-    const eventId = payload.event_id;
+    if (payload.from_me === true || payload.from_me === 'true') {
+      return { status: 'ignored', message: 'Ignore message from bot itself' };
+    }
+
+    if (payload.is_group === true || payload.is_group === 'true') {
+      return { status: 'ignored', message: 'Ignore group message' };
+    }
+
+    const sender = typeof payload.phone === 'string' ? payload.phone : (payload.phone ? String(payload.phone) : '');
+    const message = typeof payload.message === 'string' ? payload.message : '';
+    const eventId = payload.event_id ? String(payload.event_id) : '';
 
     if (!sender || !message) {
       return { success: false, message: 'Missing phone or message in payload' };
     }
 
-    this.logger.log(`[Webhook] Received message event ${eventId} from ${sender}`);
+    if (eventId) {
+      const existingLog = await this.prisma.webhookLog.findFirst({
+        where: {
+          provider: 'WAPISENDER',
+          transactionRef: eventId,
+          status: 'success',
+        },
+      });
+      if (existingLog) {
+        this.logger.warn(`[WapiSender] Event ${eventId} already processed, ignoring duplicate.`);
+        return { status: 'ignored', message: 'Duplicate event already processed' };
+      }
+    }
 
-    let normalizedSender = sender.replace(/\D/g, '');
-    if (normalizedSender.startsWith('0')) {
-        normalizedSender = '62' + normalizedSender.substring(1);
-    } else if (normalizedSender.startsWith('8')) {
-        normalizedSender = '62' + normalizedSender;
+    const normalizedSender = this.wapisenderService.normalizePhone(sender);
+    if (!normalizedSender || normalizedSender.length < 10) {
+      return { success: false, message: 'Invalid sender phone format' };
     }
 
     const cleanMessage = message.trim();
     const match = cleanMessage.match(/OP-[A-Z0-9]+/i);
     if (!match) {
-       await this.sendWhatsappMessage(normalizedSender, 'Mohon maaf, format pesan tidak dikenali. Pastikan Anda mengirimkan kode verifikasi yang benar (contoh: OP-1234).', payload);
-       return { success: false, message: 'Not a verification message' };
+      await this.wapisenderService.sendMessage(
+        normalizedSender,
+        'Mohon maaf, format pesan tidak dikenali. Pastikan Anda mengirimkan kode verifikasi yang benar (contoh: OP-1234).',
+      );
+      return { success: false, message: 'Not a verification message' };
     }
     const verificationCode = match[0].toUpperCase();
 
-    return await this.prisma.$transaction(async (prisma) => {
-      const tempRecord = await prisma.temp_registrasi.findFirst({
-          where: { verification_code: verificationCode, status: 'unregistrated' }
-      });
-
-      if (!tempRecord) {
-          await this.sendWhatsappMessage(normalizedSender, 'Mohon maaf, kode verifikasi tidak ditemukan atau sudah diverifikasi. Silakan request ulang dari aplikasi.', payload);
-          return { success: false, message: 'Verification code not found or already verified' };
-      }
-
-      let dbWhatsapp = tempRecord.whatsapp.replace(/\D/g, '');
-      if (dbWhatsapp.startsWith('0')) {
-          dbWhatsapp = '62' + dbWhatsapp.substring(1);
-      } else if (dbWhatsapp.startsWith('8')) {
-          dbWhatsapp = '62' + dbWhatsapp;
-      }
-
-      if (normalizedSender !== dbWhatsapp) {
-          await this.sendWhatsappMessage(normalizedSender, 'Mohon maaf, nomor WhatsApp pengirim tidak cocok dengan nomor yang didaftarkan di aplikasi.', payload);
-          return { success: false, message: 'Sender does not match registered whatsapp' };
-      }
-
-      const existingMember = await prisma.member.findUnique({
-        where: { whatsappnumber: tempRecord.whatsapp },
-      });
-
-      if (existingMember) {
-        await this.sendWhatsappMessage(normalizedSender, 'Pendaftaran gagal. Nomor WhatsApp Anda sudah terdaftar sebelumnya.', payload);
-        return { success: false, message: 'Nomor WhatsApp sudah terdaftar.' };
-      }
-
-      let referralAgent: any = null;
-      if (tempRecord.kode_agen && tempRecord.kode_agen.trim() !== '') {
-        referralAgent = await prisma.member.findFirst({
-          where: { kode: tempRecord.kode_agen.trim() },
-        });
-      }
-
-      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-      const kodeMember = `OP${randomSuffix}`;
-
-      const newMember = await prisma.member.create({
-        data: {
-          kode: kodeMember,
-          fullname: tempRecord.fullname || 'Member Baru',
-          whatsappnumber: tempRecord.whatsapp,
-          password: tempRecord.password || '',
-          kode_agen: referralAgent ? referralAgent.kode : null,
-          status: 'verfied',
-        },
-      });
-
-      await prisma.temp_registrasi.update({
-        where: { id: tempRecord.id },
-        data: { status: 'regitrated' },
-      });
-
-      await this.sendWhatsappMessage(normalizedSender, `Selamat! Registrasi Anda berhasil diproses.\n\nKode Member: *${kodeMember}*\nNama: ${newMember.fullname}\n\nSilakan kembali ke aplikasi untuk melanjutkan.`, payload);
-
-      const device = await prisma.deviceConnected.findFirst({
-        where: { device_code: tempRecord.device_code },
-      });
-
-      if (device) {
-        await prisma.deviceConnected.update({
-          where: { id: device.id },
-          data: { member_id: newMember.id },
-        });
-      }
-
-      return { message: 'Registrasi berhasil', data: { success: true } };
+    const tempRecord = await this.prisma.temp_registrasi.findFirst({
+      where: { verification_code: verificationCode, status: 'unregistrated' },
     });
+
+    if (!tempRecord) {
+      await this.wapisenderService.sendMessage(
+        normalizedSender,
+        'Mohon maaf, kode verifikasi tidak ditemukan atau sudah diverifikasi. Silakan request ulang dari aplikasi.',
+      );
+      return { success: false, message: 'Verification code not found or already verified' };
+    }
+
+    const dbWhatsapp = this.wapisenderService.normalizePhone(tempRecord.whatsapp);
+    if (normalizedSender !== dbWhatsapp) {
+      await this.wapisenderService.sendMessage(
+        normalizedSender,
+        'Mohon maaf, nomor WhatsApp pengirim tidak cocok dengan nomor yang didaftarkan di aplikasi.',
+      );
+      return { success: false, message: 'Sender does not match registered whatsapp' };
+    }
+
+    const existingMember = await this.prisma.member.findFirst({
+      where: {
+        OR: [
+          { whatsappnumber: tempRecord.whatsapp },
+          { whatsappnumber: normalizedSender },
+          { whatsappnumber: dbWhatsapp },
+        ],
+      },
+    });
+
+    if (existingMember) {
+      await this.wapisenderService.sendMessage(
+        normalizedSender,
+        'Pendaftaran gagal. Nomor WhatsApp Anda sudah terdaftar sebelumnya.',
+      );
+      return { success: false, message: 'Nomor WhatsApp sudah terdaftar.' };
+    }
+
+    let registeredMember: { id: number; kode: string; fullname: string } | null = null;
+
+    try {
+      registeredMember = await this.prisma.$transaction(async (prisma) => {
+        // Atomic claim on temp_registrasi
+        const claimResult = await prisma.temp_registrasi.updateMany({
+          where: { id: tempRecord.id, status: 'unregistrated' },
+          data: { status: 'regitrated' },
+        });
+
+        if (claimResult.count === 0) {
+          throw new Error('VERIFICATION_CODE_CLAIMED');
+        }
+
+        // Generate collision-safe kode member
+        let kodeMember = '';
+        for (let i = 0; i < 5; i++) {
+          const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+          const candidate = `OP${randomSuffix}`;
+          const exists = await prisma.member.findFirst({ where: { kode: candidate } });
+          if (!exists) {
+            kodeMember = candidate;
+            break;
+          }
+        }
+        if (!kodeMember) {
+          kodeMember = `OP${Date.now().toString().slice(-6)}`;
+        }
+
+        let referralAgent: any = null;
+        if (tempRecord.kode_agen && tempRecord.kode_agen.trim() !== '') {
+          referralAgent = await prisma.member.findFirst({
+            where: { kode: tempRecord.kode_agen.trim() },
+          });
+        }
+
+        const newMember = await prisma.member.create({
+          data: {
+            kode: kodeMember,
+            fullname: tempRecord.fullname || 'Member Baru',
+            whatsappnumber: tempRecord.whatsapp,
+            password: tempRecord.password || '',
+            kode_agen: referralAgent ? referralAgent.kode : null,
+            status: 'verfied',
+          },
+        });
+
+        if (tempRecord.device_code) {
+          const device = await prisma.deviceConnected.findFirst({
+            where: { device_code: tempRecord.device_code },
+          });
+          if (device) {
+            await prisma.deviceConnected.update({
+              where: { id: device.id },
+              data: { member_id: newMember.id },
+            });
+          }
+        }
+
+        await prisma.webhookLog.create({
+          data: {
+            provider: 'WAPISENDER',
+            event: 'registration_verified',
+            transactionRef: eventId || verificationCode,
+            payload: JSON.stringify({
+              sender: normalizedSender,
+              verification_code: verificationCode,
+              event_id: eventId,
+            }),
+            status: 'success',
+            message: `Member ${kodeMember} registered successfully`,
+            ipAddress: ipAddress || '',
+          },
+        });
+
+        return {
+          id: newMember.id,
+          kode: kodeMember,
+          fullname: newMember.fullname,
+        };
+      });
+    } catch (err: any) {
+      if (err.message === 'VERIFICATION_CODE_CLAIMED') {
+        return { status: 'ignored', message: 'Verification code already claimed by another request' };
+      }
+      this.logger.error(`[WapiSender] Gagal registrasi member via DB transaction:`, err);
+      return { success: false, message: 'Gagal memproses registrasi' };
+    }
+
+    if (registeredMember) {
+      try {
+        await this.wapisenderService.sendMessage(
+          normalizedSender,
+          `Selamat! Registrasi Anda berhasil diproses.\n\nKode Member: *${registeredMember.kode}*\nNama: ${registeredMember.fullname}\n\nSilakan kembali ke aplikasi untuk melanjutkan.`,
+        );
+      } catch (sendErr: any) {
+        this.logger.warn(`[WapiSender] Gagal mengirim pesan selamat registrasi ke ${normalizedSender}: ${sendErr.message}`);
+      }
+
+      return {
+        message: 'Registrasi berhasil',
+        data: {
+          success: true,
+          kode: registeredMember.kode,
+        },
+      };
+    }
+
+    return { success: false, message: 'Registrasi gagal diproses' };
   }
 
   async handleLinkQuCallback(payload: any, req?: any) {
@@ -701,106 +747,30 @@ export class WebhookService {
     console.log('=========================================================\n');
 
     try {
-      const partnerReff = payload.partner_reff || payload.partner_ref || payload.partnerReff;
-      const status = (payload.status || payload.status_trx || '').toUpperCase();
-      const responseCode = payload.response_code || payload.rc;
+      const pengaturan = await this.prisma.pengaturanUmum.findFirst();
+      const signatureKey = pengaturan?.linkqu_signature_key || process.env.LINKQU_SIGNATURE_KEY;
+      const configuredClientId = pengaturan?.linkqu_client_id ?? undefined;
 
-      if (!partnerReff) {
-        throw new HttpException('partner_reff is required in callback payload', HttpStatus.BAD_REQUEST);
+      // 1. Verifikasi Ketat Payload LinkQu (Fail-Closed)
+      const verification = verifyLinkQuCallbackPayload(
+        payload,
+        signatureKey,
+        configuredClientId,
+        req?.headers,
+      );
+
+      if (!verification.isValid || !verification.data) {
+        this.logger.warn(`[LinkQu] Rejected callback: ${verification.message}`);
+        return { response: '01', message: verification.message };
       }
 
-      const tx = await this.prisma.paymentGatewayTransaction.findUnique({
-        where: { partner_reff: partnerReff },
-        include: { requestDeposit: { include: { riwayatTransaksi: { include: { member: true } } } } }
-      });
-
-      if (!tx) {
-        this.logger.warn(`Transaction not found for partner_reff: ${partnerReff}`);
-        return { response: '00', message: 'Transaction not found' };
-      }
-
-      if (tx.status === 'SUCCESS') {
-        this.logger.log(`Transaction ${partnerReff} is already marked as SUCCESS`);
-        return { response: '00' };
-      }
-
-      if (tx.status === 'FAILED' && (status === 'FAILED' || status === 'EXPIRED')) {
-        this.logger.log(`Transaction ${partnerReff} is already marked as FAILED`);
-        return { response: '00' };
-      }
-
-      if (tx.status === 'EXPIRED' && status === 'EXPIRED') {
-        this.logger.log(`Transaction ${partnerReff} is already marked as EXPIRED`);
-        return { response: '00' };
-      }
-
-      let newStatus = tx.status;
-      
-      if (status === 'SUCCESS' || responseCode === '00') {
-        newStatus = 'SUCCESS';
-        
-        await this.prisma.paymentGatewayTransaction.update({
-          where: { id: tx.id },
-          data: { status: newStatus }
-        });
-
-        if (tx.reference_type === 'DEPOSIT' && tx.requestDeposit) {
-          const deposit = tx.requestDeposit;
-          if (deposit.status !== 'sukses') {
-            await this.prisma.$transaction(async (prisma) => {
-              await prisma.requestDeposit.update({
-                where: { id: deposit.id },
-                data: { status: 'sukses', waktuKirim: new Date() }
-              });
-
-              if (deposit.riwayatTransaksi && deposit.riwayatTransaksi.member) {
-                const member = deposit.riwayatTransaksi.member;
-                const nominal = deposit.nominal || 0;
-                const saldoSebelumnya = member.saldo || 0;
-                const saldoSetelahnya = Number(saldoSebelumnya) + Number(nominal);
-
-                await prisma.member.update({
-                  where: { id: member.id },
-                  data: { saldo: saldoSetelahnya }
-                });
-
-                await prisma.riwayatSaldo.create({
-                  data: {
-                    kode: deposit.kode || `DEP-${Date.now()}`,
-                    member_id: member.id,
-                    nominal: nominal,
-                    saldo_sebelumnya: saldoSebelumnya,
-                    saldo_setelahnya: saldoSetelahnya,
-                    status: 'deposit',
-                    ket: `Deposit via LinkQu (${tx.payment_method}) Sukses`
-                  }
-                });
-              }
-            });
-            this.logger.log(`Deposit ${partnerReff} successfully paid and saldo updated`);
-          }
-        }
-      } else if (status === 'FAILED' || responseCode !== '00') {
-        newStatus = status === 'EXPIRED' ? 'EXPIRED' : 'FAILED';
-        
-        await this.prisma.paymentGatewayTransaction.update({
-          where: { id: tx.id },
-          data: { status: newStatus }
-        });
-
-        if (tx.reference_type === 'DEPOSIT' && tx.requestDeposit) {
-          const deposit = tx.requestDeposit;
-          if (deposit.status !== 'gagal' && deposit.status !== 'sukses') {
-            await this.prisma.requestDeposit.update({
-              where: { id: deposit.id },
-              data: { status: 'gagal', alasanPenolakan: 'Payment Failed or Expired via LinkQu' }
-            });
-          }
-        }
-      }
-
-      return { response: '00' };
-
+      // Delegate ke processor
+      return await this.linkquProcessor.ingestCallback(
+        verification.data,
+        payload,
+        req?.headers,
+        configuredClientId,
+      );
     } catch (error: any) {
       this.logger.error('Error handling LinkQu Callback:', error);
       return { response: '01', message: error.message };

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, UseGuards, Request, Body } from '@nestjs/common';
+import { Controller, Get, Post, UseGuards, Request, Body, Param } from '@nestjs/common';
 import { JwtApiGuard } from '../guards/jwt-api.guard';
 import { DepositService } from './deposit.service';
 import { DepositSaldoDto } from './dto/deposit-saldo.dto';
@@ -12,12 +12,6 @@ export class DepositController {
   @Post('deposit-saldo')
   async depositSaldo(@Request() req: any, @Body() body: DepositSaldoDto) {
     const memberId = req.user?.id;
-
-    console.log('_____________________');
-    console.log(req.user);
-    console.log(memberId);
-    console.log('_____________________');
-    
     return this.depositService.depositSaldo(memberId, body);
   }
 
@@ -47,5 +41,12 @@ export class DepositController {
   async processLinkquDeposit(@Request() req: any, @Body() body: DepositLinkquDto) {
     const memberId = req.user?.id;
     return this.depositService.processLinkquDeposit(memberId, body);
+  }
+
+  @UseGuards(JwtApiGuard)
+  @Get('deposit-linkqu/detail/:id')
+  async getPaymentGatewayDetail(@Request() req: any, @Param('id') id: string) {
+    const memberId = req.user?.id;
+    return this.depositService.getPaymentGatewayDetail(memberId, id);
   }
 }

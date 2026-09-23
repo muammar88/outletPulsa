@@ -11,4 +11,8 @@ export class DepositLinkquDto {
   @IsOptional()
   @IsString()
   bank_code?: string;
+
+  @IsOptional()
+  @IsString()
+  idempotency_key?: string;
 }

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateTransaksiPrabayarDto {
   @IsNotEmpty()
@@ -8,4 +8,8 @@ export class CreateTransaksiPrabayarDto {
   @IsNotEmpty()
   @IsString()
   nomor_tujuan: string;
+
+  @IsOptional()
+  @IsString()
+  idempotency_key?: string;
 }

@@ -252,9 +252,10 @@ class Transaction_provider with ChangeNotifier {
   }
 
   Future<Model_transaction> prabayarTransaction(
-      String nomor_tujuan, String kode_produk) async {
+      String nomor_tujuan, String kode_produk, {String? idempotency_key}) async {
     return await Rest_transaction()
-        .prabayarTransaction(nomor_tujuan, kode_produk)
+        .prabayarTransaction(nomor_tujuan, kode_produk,
+            idempotency_key: idempotency_key)
         .then((Model_transaction e) async {
       if (e.error == false) {
         return new Model_transaction.map({

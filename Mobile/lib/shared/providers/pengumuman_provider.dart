@@ -29,7 +29,6 @@ class PengumumanProvider extends ChangeNotifier {
 
   Future<void> initPengumuman() async {
     if (_initialized) return;
-    _initialized = true;
     try {
       _firebaseMessaging = FirebaseMessaging.instance;
       
@@ -106,7 +105,9 @@ class PengumumanProvider extends ChangeNotifier {
         updateFcmToken(newToken);
       });
 
+      _initialized = true;
     } catch (e) {
+      _initialized = false;
       debugPrint('Error init Pengumuman: $e');
     }
   }
@@ -204,7 +205,7 @@ class PengumumanProvider extends ChangeNotifier {
       
       debugPrint('==== DEBUG API PENGUMUMAN ====');
       debugPrint('URL: $url');
-      debugPrint('HEADERS: { Authorization: Bearer $token, x-device-code: $deviceCode }');
+      debugPrint('HEADERS: { Authorization: Bearer [REDACTED], x-device-code: $deviceCode }');
 
       var response = await http.get(
         url,

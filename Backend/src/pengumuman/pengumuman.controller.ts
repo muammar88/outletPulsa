@@ -14,12 +14,9 @@ export class PengumumanController {
             return { status: false, message: 'Device code missing' };
         }
 
-        await this.pengumumanService.updateFcmToken(deviceCode, body.fcm_token);
+        const result = await this.pengumumanService.updateFcmToken(deviceCode, body.fcm_token, req.user?.id);
         
-        return {
-            status: true,
-            message: 'FCM Token updated successfully'
-        };
+        return result;
     }
 
     @UseGuards(JwtApiGuard)

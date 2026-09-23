@@ -68,20 +68,23 @@ export class PengumumanService implements OnModuleInit {
       },
     });
 
+    let stats = { total: 0, success: 0, failed: 0 };
     try {
       if (dto.targetType === 'Device' && dto.targetId) {
-        await this.sendToDevice(pengumuman, dto.targetId);
+        stats = await this.sendToDevice(pengumuman, dto.targetId);
       } else if (dto.targetType === 'User' && dto.targetId) {
-        await this.sendToUser(pengumuman, parseInt(dto.targetId));
+        stats = await this.sendToUser(pengumuman, parseInt(dto.targetId));
       } else if (dto.targetType === 'All') {
-        await this.sendBroadcast(pengumuman);
+        const bStats = await this.sendBroadcast(pengumuman);
+        stats = { total: bStats.total, success: bStats.success, failed: bStats.failed };
       }
 
+      const finalStatus = stats.success > 0 ? 'Success' : 'Failed';
       await this.prisma.pengumuman.update({
         where: { id: pengumuman.id },
-        data: { status: 'Success', sent_at: new Date() },
+        data: { status: finalStatus, sent_at: new Date() },
       });
-      this.logger.log(`Pengumuman ${pengumuman.id} processed successfully`);
+      this.logger.log(`Pengumuman ${pengumuman.id} processed with status: ${finalStatus} (Success: ${stats.success}, Failed: ${stats.failed})`);
 
       // Emit via Socket.IO for realtime updates in Flutter Info tab
       const announcementData = {
@@ -97,33 +100,52 @@ export class PengumumanService implements OnModuleInit {
          this.socketService.emitAnnouncement(announcementData, parseInt(dto.targetId));
       }
 
+      return { pengumumanId: pengumuman.id, status: finalStatus, stats };
+
     } catch (error) {
       await this.prisma.pengumuman.update({
         where: { id: pengumuman.id },
         data: { status: 'Failed', sent_at: new Date() },
       });
       this.logger.error(`Failed to process pengumuman ${pengumuman.id}:`, error);
+      return { pengumumanId: pengumuman.id, status: 'Failed', stats };
     }
   }
 
-  public async sendToDevice(pengumuman: any, deviceCode: string) {
+  public async sendToDevice(pengumuman: any, deviceCode: string): Promise<{ total: number; success: number; failed: number }> {
     const device = await this.prisma.deviceConnected.findUnique({
       where: { device_code: deviceCode },
     });
 
-    if (!device) return;
+    if (!device) {
+      return { total: 0, success: 0, failed: 1 };
+    }
 
-    await this.processRecipientAndSend(pengumuman, device);
+    const isSuccess = await this.processRecipientAndSend(pengumuman, device);
+    return {
+      total: 1,
+      success: isSuccess ? 1 : 0,
+      failed: isSuccess ? 0 : 1,
+    };
   }
 
-  public async sendToUser(pengumuman: any, memberId: number) {
+  public async sendToUser(pengumuman: any, memberId: number): Promise<{ total: number; success: number; failed: number }> {
     const devices = await this.prisma.deviceConnected.findMany({
       where: { member_id: memberId },
     });
 
-    for (const device of devices) {
-      await this.processRecipientAndSend(pengumuman, device);
+    if (devices.length === 0) {
+      return { total: 0, success: 0, failed: 1 };
     }
+
+    let success = 0;
+    let failed = 0;
+    for (const device of devices) {
+      const isSuccess = await this.processRecipientAndSend(pengumuman, device);
+      if (isSuccess) success++; else failed++;
+    }
+
+    return { total: devices.length, success, failed };
   }
 
   public async sendBroadcast(pengumuman: any) {
@@ -226,7 +248,7 @@ export class PengumumanService implements OnModuleInit {
 
       await this.prisma.pengumumanRecipient.update({
         where: { id: recipientId },
-        data: { status: 'Delivered', delivered_at: new Date() },
+        data: { status: 'Sent', delivered_at: new Date() },
       });
       return true;
     } catch (error) {
@@ -336,10 +358,32 @@ export class PengumumanService implements OnModuleInit {
     });
   }
 
-  async updateFcmToken(deviceCode: string, fcmToken: string) {
-      return this.prisma.deviceConnected.update({
-          where: { device_code: deviceCode },
-          data: { fcm_token: fcmToken }
-      });
+  async updateFcmToken(deviceCode: string, fcmToken: string, memberId?: number) {
+    if (!fcmToken || typeof fcmToken !== 'string' || fcmToken.trim() === '') {
+      return { status: false, message: 'FCM Token tidak boleh kosong' };
+    }
+
+    const device = await this.prisma.deviceConnected.findUnique({
+      where: { device_code: deviceCode },
+    });
+
+    if (!device) {
+      return { status: false, message: 'Device tidak ditemukan' };
+    }
+
+    // Verify ownership: if device is bound to another member, reject
+    if (memberId && device.member_id && device.member_id !== memberId) {
+      throw new ForbiddenException('Akses ditolak: Device ini tidak terikat pada akun Anda');
+    }
+
+    const updated = await this.prisma.deviceConnected.update({
+      where: { device_code: deviceCode },
+      data: {
+        fcm_token: fcmToken.trim(),
+        ...(memberId ? { member_id: memberId } : {}),
+      },
+    });
+
+    return { status: true, message: 'FCM Token updated successfully', data: updated };
   }
 }

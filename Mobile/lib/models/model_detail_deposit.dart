@@ -10,6 +10,7 @@ class Model_detail_deposit {
   String? _status_kirim;
   String? _alasan_penolakan;
   String? _waktu_kirim;
+  Map<String, dynamic>? _payment_gateway;
 
   Model_detail_deposit(this._error, this._errorMsg);
 
@@ -24,6 +25,7 @@ class Model_detail_deposit {
   String? get status_kirim => _status_kirim;
   String? get alasan_penolakan => _alasan_penolakan;
   String? get waktu_kirim => _waktu_kirim;
+  Map<String, dynamic>? get payment_gateway => _payment_gateway;
 
   Model_detail_deposit.map(dynamic obj) {
     if (obj['error'] != null && obj['error'] != '') {
@@ -43,6 +45,9 @@ class Model_detail_deposit {
       _status_kirim = data['list']['status_kirim'];
       _alasan_penolakan = data['list']['alasan_penolakan'];
       _waktu_kirim = data['list']['waktu_kirim'];
+      if (data['list']['payment_gateway'] != null && data['list']['payment_gateway'] is Map) {
+        _payment_gateway = Map<String, dynamic>.from(data['list']['payment_gateway']);
+      }
     }
   }
 }

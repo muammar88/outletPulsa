@@ -38,10 +38,13 @@ class _Konfirmasi_pembelianState extends State<Konfirmasi_pembelian> with Single
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
   late Animation<Offset> _slideAnim;
+  late String _idempotencyKey;
+  bool _isSubmitting = false;
 
   @override
   void initState() {
     super.initState();
+    _idempotencyKey = 'IDEMP_${DateTime.now().millisecondsSinceEpoch}_${widget.kode}_${widget.nomor_tujuan.replaceAll(RegExp(r'\s+'), '')}';
     _animController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
@@ -90,25 +93,44 @@ class _Konfirmasi_pembelianState extends State<Konfirmasi_pembelian> with Single
   }
 
   Future<void> _submitForm(Load_provider loader) async {
+    if (_isSubmitting) return;
+    setState(() {
+      _isSubmitting = true;
+    });
     loader.isLoad = true;
 
-    final trans = Provider.of<Transaction_provider>(context, listen: false);
+    try {
+      final trans = Provider.of<Transaction_provider>(context, listen: false);
 
-    var feedBack = await trans.prabayarTransaction(
-        widget.nomor_tujuan.replaceAll(RegExp(r'\s+'), ''), widget.kode);
+      var feedBack = await trans.prabayarTransaction(
+          widget.nomor_tujuan.replaceAll(RegExp(r'\s+'), ''),
+          widget.kode,
+          idempotency_key: _idempotencyKey);
 
-    loader.isLoad = false;
+      if (!mounted) return;
 
-    if (feedBack.error == false) {
-      _showSnackBar(feedBack.errorMsg ?? 'Transaksi Berhasil', isSuccess: true);
+      if (feedBack.error == false) {
+        _showSnackBar(feedBack.errorMsg ?? 'Transaksi Berhasil', isSuccess: true);
 
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => Detail_transaksi(
-                  kodeTrans: feedBack.kodeTransaksi!)));
-    } else {
-      _showSnackBar(feedBack.errorMsg ?? 'Terjadi kesalahan', isSuccess: false);
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => Detail_transaksi(
+                    kodeTrans: feedBack.kodeTransaksi!)));
+      } else {
+        _showSnackBar(feedBack.errorMsg ?? 'Terjadi kesalahan', isSuccess: false);
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackBar('Terjadi kesalahan koneksi. Silakan cek riwayat transaksi.', isSuccess: false);
+      }
+    } finally {
+      loader.isLoad = false;
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
     }
   }
 
@@ -285,20 +307,20 @@ class _Konfirmasi_pembelianState extends State<Konfirmasi_pembelian> with Single
           const SizedBox(height: 36),
           
           GestureDetector(
-            onTap: loader.isLoad == true ? null : () => _submitForm(loader),
+            onTap: (loader.isLoad == true || _isSubmitting) ? null : () => _submitForm(loader),
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 18),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: loader.isLoad == true
+                  colors: (loader.isLoad == true || _isSubmitting)
                       ? [Colors.grey.shade400, Colors.grey.shade500]
                       : [_kPrimary, _kPrimaryLight],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: loader.isLoad == true
+                boxShadow: (loader.isLoad == true || _isSubmitting)
                     ? null
                     : [
                         BoxShadow(
@@ -311,7 +333,7 @@ class _Konfirmasi_pembelianState extends State<Konfirmasi_pembelian> with Single
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (loader.isLoad == true)
+                  if (loader.isLoad == true || _isSubmitting)
                     const SizedBox(
                       width: 22,
                       height: 22,
@@ -324,7 +346,7 @@ class _Konfirmasi_pembelianState extends State<Konfirmasi_pembelian> with Single
                     const Icon(TablerIcons.check, size: 22, color: Colors.white),
                   const SizedBox(width: 10),
                   Text(
-                    loader.isLoad == true ? "Memproses..." : "Konfirmasi Pembelian",
+                    (loader.isLoad == true || _isSubmitting) ? "Memproses..." : "Konfirmasi Pembelian",
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

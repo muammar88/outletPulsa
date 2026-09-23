@@ -17,6 +17,7 @@ class Rest_deposit {
   String? _detail_deposit_saldo_url;
   String? _deposit_linkqu_payment_methods_url;
   String? _deposit_linkqu_process_url;
+  String? _deposit_linkqu_detail_url;
 
   // constructor
   Rest_deposit() {
@@ -29,6 +30,7 @@ class Rest_deposit {
     _detail_deposit_saldo_url = config.detail_deposit_saldo_url;
     _deposit_linkqu_payment_methods_url = config.deposit_linkqu_payment_methods_url;
     _deposit_linkqu_process_url = config.deposit_linkqu_process_url;
+    _deposit_linkqu_detail_url = config.deposit_linkqu_detail_url;
   }
 
   final NetworkUtil _netUtil = NetworkUtil();
@@ -92,16 +94,16 @@ class Rest_deposit {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_deposit_linkqu_payment_methods_url!);
     return _netUtil.get(url, headers).then((dynamic res) {
-      if (res['error'] == false) {
+      if (res != null && res['error'] == false) {
         return Model_void.map({
           'error': false,
-          'error_msg': res['error_msg'],
+          'error_msg': res['error_msg'] ?? res['message'],
           'data': {'items': res['data']}
         });
       } else {
         return Model_void.map({
           'error': true,
-          'error_msg': res['error_msg']
+          'error_msg': res != null ? (res['error_msg'] ?? res['message'] ?? 'Gagal memuat metode pembayaran') : 'Gagal terhubung ke server'
         });
       }
     });
@@ -117,16 +119,35 @@ class Rest_deposit {
     if (bankCode != null) payload['bank_code'] = bankCode;
 
     return _netUtil.post(url, headers, jsonEncode(payload)).then((dynamic res) {
-      if (res['error'] == false) {
+      if (res != null && res['error'] == false) {
         return Model_void.map({
           'error': false,
-          'error_msg': res['error_msg'],
+          'error_msg': res['error_msg'] ?? res['message'],
           'data': res['data']
         });
       } else {
         return Model_void.map({
           'error': true,
-          'error_msg': res['error_msg']
+          'error_msg': res != null ? (res['error_msg'] ?? res['message'] ?? 'Gagal memproses deposit') : 'Gagal terhubung ke server'
+        });
+      }
+    });
+  }
+
+  Future<Model_void> getPaymentGatewayDetail(String transactionId) async {
+    final headers = await ApiHeaders.getHeaders();
+    Uri url = Uri.parse('$_deposit_linkqu_detail_url/$transactionId');
+    return _netUtil.get(url, headers).then((dynamic res) {
+      if (res != null && res['error'] == false) {
+        return Model_void.map({
+          'error': false,
+          'error_msg': res['error_msg'] ?? res['message'],
+          'data': res['data']
+        });
+      } else {
+        return Model_void.map({
+          'error': true,
+          'error_msg': res != null ? (res['error_msg'] ?? res['message'] ?? 'Gagal mengambil detail pembayaran') : 'Gagal terhubung ke server'
         });
       }
     });

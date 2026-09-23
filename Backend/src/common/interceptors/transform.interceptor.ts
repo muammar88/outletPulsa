@@ -9,6 +9,12 @@ import { map } from 'rxjs/operators';
 @Injectable()
 export class TransformInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler) {
+    const req = context.switchToHttp().getRequest();
+    const isWebhook = req?.url?.includes('/webhook') || context.getClass().name === 'WebhookController';
+    if (isWebhook) {
+      return next.handle();
+    }
+
     const response = context.switchToHttp().getResponse();
 
     return next.handle().pipe(

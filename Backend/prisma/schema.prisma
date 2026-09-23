@@ -254,6 +254,7 @@ model Transaction {
   status             TransactionStatus? @default(proses)
   trx_id             Int?
   serial_number      String?
+  refund_id          String?            @unique
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
@@ -855,15 +856,17 @@ model RiwayatSaldo {
   saldo_setelahnya Int
   status           RiwayatSaldoStatus
   ket              String?            @db.Text
+  settlement_ref   String?            @unique
   created_at       DateTime           @default(now())
   updated_at       DateTime           @updatedAt
 
   riwayat_transaksi_id Int?
   admin_id             Int?
 
-  member            Member            @relation(fields: [member_id], references: [id])
-  riwayat_transaksi RiwayatTransaksi? @relation(fields: [riwayat_transaksi_id], references: [id])
-  admin             User?             @relation(fields: [admin_id], references: [id])
+  member                    Member                     @relation(fields: [member_id], references: [id])
+  riwayat_transaksi         RiwayatTransaksi?          @relation(fields: [riwayat_transaksi_id], references: [id])
+  admin                     User?                      @relation(fields: [admin_id], references: [id])
+  paymentGatewayTransaction PaymentGatewayTransaction? @relation("PaymentGatewaySettlementLedger")
 
   @@index([member_id])
   @@map("riwayat_saldo")
@@ -1074,12 +1077,41 @@ model PaymentGatewayTransaction {
   status          String    @default("PENDING") // PENDING, SUCCESS, FAILED, EXPIRED
   provider        String    @default("LINKQU")
   metadata        String?   @db.Text
+  settlement_ref  String?   @unique
+  settlement_ledger_id Int? @unique
   created_at      DateTime  @default(now())
   updated_at      DateTime  @updatedAt
 
   requestDepositId Int?     @unique
   requestDeposit   RequestDeposit? @relation(fields: [requestDepositId], references: [id], onDelete: SetNull)
+  settlementLedger RiwayatSaldo?   @relation("PaymentGatewaySettlementLedger", fields: [settlement_ledger_id], references: [id], onDelete: SetNull)
 
   @@map("payment_gateway_transactions")
+}
+
+model PaymentGatewayCallbackInbox {
+  id            Int       @id @default(autoincrement())
+  provider      String    @default("LINKQU")
+  merchant_id   String?
+  partner_reff  String
+  event_hash    String    @unique
+  event_type    String?   @default("callback")
+  status        String    @default("PENDING") // PENDING, PROCESSING, PROCESSED, CONFLICT, FAILED, MANUAL_REVIEW, PENDING_CONTRACT_VERIFICATION
+  payload       String    @db.Text
+  headers       String?   @db.Text
+  signature     String?
+  locked_until  DateTime?
+  locked_by     String?
+  retry_count   Int       @default(0)
+  max_retries   Int       @default(5)
+  next_retry_at DateTime  @default(now())
+  last_error    String?   @db.Text
+  processed_at  DateTime?
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  @@index([partner_reff])
+  @@index([status, next_retry_at])
+  @@map("payment_gateway_callback_inbox")
 }
 

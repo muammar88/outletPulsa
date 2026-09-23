@@ -15,6 +15,7 @@ class Deposit_provider with ChangeNotifier {
   String? _status_kirim;
   String? _alasan_penolakan;
   String? _waktu_kirim;
+  Map<String, dynamic>? _payment_gateway;
 
   bool? get error => _error;
   String? get errorMsg => _errorMsg;
@@ -27,6 +28,7 @@ class Deposit_provider with ChangeNotifier {
   String? get status_kirim => _status_kirim;
   String? get alasan_penolakan => _alasan_penolakan;
   String? get waktu_kirim => _waktu_kirim;
+  Map<String, dynamic>? get payment_gateway => _payment_gateway;
 
   Future<Model_void> depositSaldo(
       String nominal, String bank_tujuan_transfer) async {
@@ -53,6 +55,10 @@ class Deposit_provider with ChangeNotifier {
     return await Rest_deposit().processLinkquDeposit(nominal, paymentMethod, bankCode);
   }
 
+  Future<Model_void> getPaymentGatewayDetail(String transactionId) async {
+    return await Rest_deposit().getPaymentGatewayDetail(transactionId);
+  }
+
   Future<void> getDetailDeposit(String id) async {
     return await Rest_deposit()
         .getDetailDeposit(id)
@@ -70,6 +76,7 @@ class Deposit_provider with ChangeNotifier {
         _status_kirim = e.status_kirim;
         _alasan_penolakan = e.alasan_penolakan;
         _waktu_kirim = e.waktu_kirim;
+        _payment_gateway = e.payment_gateway;
       }
       _error = e.error;
       _errorMsg = e.errorMsg;

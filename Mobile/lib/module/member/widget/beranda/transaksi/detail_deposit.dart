@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import 'package:outletpulsa/core/constants/config.dart';
 import 'package:outletpulsa/shared/providers/DepositProvider.dart';
+import 'package:outletpulsa/module/member/widget/beranda/deposit/payment_instruction_screen.dart';
 
 class Detail_deposit extends StatefulWidget {
   const Detail_deposit({super.key, required this.status, required this.id});
@@ -425,6 +426,41 @@ class _Detail_depositState extends State<Detail_deposit> with SingleTickerProvid
           const SizedBox(height: 36),
           Column(
             children: [
+              if (deposit.payment_gateway != null && (deposit.status_deposit?.toLowerCase() == 'proses' || deposit.payment_gateway?['status']?.toString().toUpperCase() == 'PENDING')) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PaymentInstructionScreen(
+                            transactionData: deposit.payment_gateway!,
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(TablerIcons.receipt_2, color: Colors.white, size: 20),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2E7D32),
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 4,
+                      shadowColor: const Color(0xFF2E7D32).withOpacity(0.4),
+                    ),
+                    label: Text(
+                      "LIHAT INSTRUKSI PEMBAYARAN",
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

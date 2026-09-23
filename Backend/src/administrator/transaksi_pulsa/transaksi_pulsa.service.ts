@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ConflictException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
 import { GetTransaksiDto } from './dto/get-transaksi.dto';
 import { UpdateStatusDto } from './dto/update-status.dto';
 import { IakService } from '../../providers/iak.service';
 import { DigiflazzService } from '../../providers/digiflazz.service';
 import { TripayService } from '../../providers/tripay.service';
+import { TransaksiFinalizerService } from '../../api/transaksi/transaksi-finalizer.service';
 
 @Injectable()
 export class TransaksiPulsaService {
@@ -15,6 +16,7 @@ export class TransaksiPulsaService {
     private readonly iakService: IakService,
     private readonly digiflazzService: DigiflazzService,
     private readonly tripayService: TripayService,
+    private readonly transaksiFinalizer: TransaksiFinalizerService,
   ) {}
 
   async findAll(query: GetTransaksiDto) {
@@ -159,24 +161,49 @@ export class TransaksiPulsaService {
 
     let statusProvider = 'proses';
     let sn = '';
+    // B2: Harga aktual dari provider untuk audit laba yang benar
+    let actualPurchasePrice: number | undefined;
 
     if (!transaksi.serverId || !transaksi.server) {
       statusProvider = 'gagal';
       sn = 'Tanpa Provider / Server belum dikonfigurasi';
     } else {
+      const serverCode = transaksi.server.kode?.toUpperCase() || '';
       const serverName = transaksi.server.name?.toLowerCase() || '';
-      if (serverName.includes('iak')) {
+
+      if (serverCode === 'IAK' || serverName.includes('iak')) {
         const res = await this.iakService.checkStatus(transaksi.kode || '');
         statusProvider = res.status;
         sn = res.sn;
-      } else if (serverName.includes('digiflazz')) {
-        const res = await this.digiflazzService.checkStatus(transaksi.kode || '', transaksi.nomorTujuan || '', transaksi.produk?.kode || '');
+        // B2: Ambil harga aktual dari raw response IAK
+        const iakRawPrice = res.raw?.data?.price;
+        if (typeof iakRawPrice === 'number' && iakRawPrice > 0) actualPurchasePrice = iakRawPrice;
+      } else if (serverCode === 'DIGI' || serverName.includes('digiflazz')) {
+        let sku = '';
+        const match = transaksi.ket?.match(/\[SNAPSHOT:(\{.*?\})\]/);
+        if (match) {
+          try {
+            const snap = JSON.parse(match[1]);
+            sku = snap.sku || '';
+          } catch {}
+        }
+        if (!sku) {
+          const digiMapping = await this.prisma.digiflazzProduct.findFirst({ where: { produkId: transaksi.produkId } });
+          sku = digiMapping?.selectedSellerBuyerSkuKode || transaksi.produk?.kode || '';
+        }
+        const res = await this.digiflazzService.checkStatus(transaksi.kode || '', transaksi.nomorTujuan || '', sku);
         statusProvider = res.status;
         sn = res.sn;
-      } else if (serverName.includes('tripay')) {
+        // B2: Ambil harga aktual dari raw response Digiflazz
+        const digiRawPrice = res.raw?.data?.price;
+        if (typeof digiRawPrice === 'number' && digiRawPrice > 0) actualPurchasePrice = digiRawPrice;
+      } else if (serverCode === 'TRI' || serverName.includes('tripay')) {
         const res = await this.tripayService.checkStatus(transaksi.trx_id?.toString() || '', transaksi.kode || '');
         statusProvider = res.status;
         sn = res.sn;
+        // B2: Ambil harga aktual dari raw response Tripay
+        const triRawPrice = res.raw?.data?.price;
+        if (typeof triRawPrice === 'number' && triRawPrice > 0) actualPurchasePrice = triRawPrice;
       } else {
         statusProvider = 'gagal';
         sn = 'Provider tidak dikenali';
@@ -187,69 +214,16 @@ export class TransaksiPulsaService {
       return { message: `Transaksi #${id} masih dalam status proses di server.` };
     }
 
-    await this.prisma.$transaction(async (prisma) => {
-      // Re-fetch untuk lock
-      const currentTrx = await prisma.transaction.findUnique({
-         where: { id }
-      });
-
-      if (!currentTrx || currentTrx.status !== 'proses') {
-         return; 
-      }
-
-      if (statusProvider === 'sukses') {
-         await prisma.transaction.update({
-           where: { id },
-           data: {
-             status: 'sukses',
-             ket: sn ? `SN: ${sn}` : currentTrx.ket,
-             serial_number: sn ? String(sn) : undefined,
-           }
-         });
-      } else if (statusProvider === 'gagal') {
-         await prisma.transaction.update({
-           where: { id },
-           data: {
-             status: 'gagal',
-             ket: sn ? `Gagal: ${sn}` : 'Gagal dari server provider',
-             serial_number: sn ? String(sn) : undefined,
-           }
-         });
-
-         const isRefundEligible = currentTrx.saldo_sebelum !== null && currentTrx.saldo_sesudah !== null;
-         if (isRefundEligible && transaksi.riwayatTransaksi?.member) {
-            const memberId = transaksi.riwayatTransaksi.member.id;
-            const currentMember = await prisma.member.findUnique({ where: { id: memberId } });
-            
-            if (currentMember) {
-               const sellingPrice = currentTrx.selling_price || 0;
-               const feeAgen = currentTrx.fee_agen || 0;
-               const nominalRefund = sellingPrice + feeAgen;
-               const saldoBaru = (currentMember.saldo || 0) + nominalRefund;
-
-               await prisma.member.update({
-                 where: { id: memberId },
-                 data: { saldo: saldoBaru }
-               });
-
-               await prisma.riwayatSaldo.create({
-                 data: {
-                   kode: `REF-${currentTrx.kode || Date.now()}`,
-                   member_id: memberId,
-                   nominal: nominalRefund,
-                   saldo_sebelumnya: currentMember.saldo || 0,
-                   saldo_setelahnya: saldoBaru,
-                   status: 'deposit',
-                   riwayat_transaksi_id: currentTrx.riwayatTransaksiId,
-                   ket: `Pengembalian dana transaksi gagal ${currentTrx.nomorTujuan} (${currentTrx.kode})`
-                 }
-               });
-            }
-         }
-      }
+    const finalizeRes = await this.transaksiFinalizer.finalizeTransaction({
+      transactionId: id,
+      targetStatus: statusProvider as 'sukses' | 'gagal',
+      sn: sn,
+      // B2: Teruskan harga aktual ke finalizer untuk kalkulasi laba berdasarkan modal riil
+      actualPurchasePrice,
+      source: 'ADMIN_RECHECK',
     });
 
-    return { message: `Pengecekan status untuk transaksi #${id} selesai dengan hasil: ${statusProvider}` };
+    return { message: `Pengecekan status untuk transaksi #${id} selesai dengan hasil: ${finalizeRes.status}` };
   }
 
   async delete(id: number) {
@@ -266,22 +240,77 @@ export class TransaksiPulsaService {
   }
 
   async updateStatus(id: number, updateDto: UpdateStatusDto) {
-    const transaksi = await this.prisma.transaction.findUnique({
+    const targetStatus = updateDto.status;
+    if (targetStatus !== 'sukses' && targetStatus !== 'gagal' && targetStatus !== 'proses') {
+      throw new BadRequestException(`Status '${targetStatus}' tidak valid.`);
+    }
+
+    // 1. Cabang targetStatus === 'proses' (Mencegah membuka status final kembali)
+    if (targetStatus === 'proses') {
+      // Update bersyarat di DB yang HANYA cocok jika status transaksi saat ini masih 'proses'
+      const claim = await this.prisma.transaction.updateMany({
+        where: {
+          id,
+          status: 'proses',
+        },
+        data: {
+          ket: updateDto.keterangan !== undefined ? updateDto.keterangan : undefined,
+          updatedAt: new Date(),
+        },
+      });
+
+      if (claim.count === 0) {
+        const currentTx = await this.prisma.transaction.findUnique({
+          where: { id },
+        });
+
+        if (!currentTx) {
+          throw new NotFoundException('Data transaksi tidak ditemukan');
+        }
+
+        // Transaksi sudah berstatus final (sukses, gagal, expired) tidak boleh dibuka ulang
+        throw new ConflictException(
+          `Transaksi #${id} sudah berstatus final '${currentTx.status}' dan tidak dapat dibuka kembali ke 'proses'`,
+        );
+      }
+
+      return await this.prisma.transaction.findUnique({
+        where: { id },
+      });
+    }
+
+    // 2. Cabang targetStatus === 'sukses' atau 'gagal' (Finalisasi manual oleh admin)
+    const currentTx = await this.prisma.transaction.findUnique({
       where: { id },
     });
 
-    if (!transaksi) {
+    if (!currentTx) {
       throw new NotFoundException('Data transaksi tidak ditemukan');
     }
 
-    const updated = await this.prisma.transaction.update({
-      where: { id },
-      data: {
-        status: updateDto.status as any,
-        ket: updateDto.keterangan || transaksi.ket,
-      },
+    // Cegah konflik jika sudah berstatus final dengan status berbeda
+    if (currentTx.status === 'sukses' || currentTx.status === 'gagal' || currentTx.status === 'expired') {
+      if (currentTx.status !== targetStatus) {
+        throw new ConflictException(
+          `Transaksi #${id} sudah berstatus final '${currentTx.status}' dan tidak dapat diubah menjadi '${targetStatus}'`,
+        );
+      }
+      return currentTx;
+    }
+
+    const finalizeRes = await this.transaksiFinalizer.finalizeTransaction({
+      transactionId: id,
+      targetStatus: targetStatus as 'sukses' | 'gagal',
+      ket: updateDto.keterangan || undefined,
+      source: 'ADMIN_MANUAL_UPDATE',
     });
 
-    return updated;
+    if (finalizeRes.alreadyFinal && finalizeRes.status !== targetStatus) {
+      throw new ConflictException(
+        `Transaksi #${id} sudah berstatus final '${finalizeRes.status}' dan tidak dapat diubah menjadi '${targetStatus}'`,
+      );
+    }
+
+    return finalizeRes.transaction || currentTx;
   }
 }

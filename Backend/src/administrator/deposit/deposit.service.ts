@@ -296,7 +296,10 @@ export class DepositService {
     return await this.prisma.$transaction(async (prisma) => {
       const requestDeposit = await prisma.requestDeposit.findFirst({
         where: { riwayatTransaksiId: id },
-        include: { riwayatTransaksi: { include: { member: true } } }
+        include: {
+          riwayatTransaksi: { include: { member: true } },
+          paymentGatewayTransaction: true,
+        },
       });
 
       if (!requestDeposit) {
@@ -305,6 +308,16 @@ export class DepositService {
 
       if (requestDeposit.status !== 'proses') {
         throw new BadRequestException(`Request Deposit sudah berstatus ${requestDeposit.status} dan tidak bisa diubah lagi`);
+      }
+
+      // C2 Proteksi Admin: Larang finalisasi manual untuk seluruh deposit terkait Payment Gateway
+      if (dto.status === 'sukses' && (requestDeposit.paymentGatewayTransaction || requestDeposit.tripayReference)) {
+        const gwName = requestDeposit.paymentGatewayTransaction?.provider || 'TRIPAY';
+        const gwRef = requestDeposit.paymentGatewayTransaction?.partner_reff || requestDeposit.tripayReference;
+        const gwStatus = requestDeposit.paymentGatewayTransaction?.status || 'UNKNOWN';
+        throw new BadRequestException(
+          `Deposit terkait Payment Gateway (${gwName}: ${gwRef}, status: ${gwStatus}) dilarang difinalisasi manual oleh Admin untuk mencegah double credit dan settlement collision.`,
+        );
       }
 
       if (dto.status === 'sukses') {

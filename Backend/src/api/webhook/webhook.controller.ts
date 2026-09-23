@@ -18,7 +18,7 @@ import type { Request } from 'express';
  * - POST /webhook/digiflazz             → Callback dari Digiflazz
  * - POST /webhook/wapisender            → Callback dari WAPISender (WhatsApp)
  */
-@Controller('webhook')
+@Controller(['webhook', 'api/webhook'])
 export class WebhookController {
   private readonly logger = new Logger(WebhookController.name);
 
@@ -162,8 +162,9 @@ export class WebhookController {
    */
   @Post('wapisender')
   @HttpCode(HttpStatus.OK)
-  async webhookWapisender(@Body() body: any) {
-    return this.webhookService.processWhatsappWebhook(body);
+  async webhookWapisender(@Body() body: any, @Req() req: Request) {
+    const ip = req.ip || (req.headers['x-forwarded-for'] as string) || '';
+    return this.webhookService.processWhatsappWebhook(body, ip);
   }
 
   /**

@@ -147,15 +147,19 @@ class Rest_transaction {
   }
 
   Future<Model_transaction> prabayarTransaction(
-      String nomor_tujuan, String kode_produk) async {
+      String nomor_tujuan, String kode_produk, {String? idempotency_key}) async {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_prabayarTransaction_url!);
     return _netUtil
         .post(
             url,
             headers,
-            jsonEncode(
-                {"nomor_tujuan": nomor_tujuan, "kode_produk": kode_produk}))
+            jsonEncode({
+              "nomor_tujuan": nomor_tujuan,
+              "kode_produk": kode_produk,
+              if (idempotency_key != null && idempotency_key.isNotEmpty)
+                "idempotency_key": idempotency_key,
+            }))
         .then((dynamic res) async {
       print('response: $res');
       return new Model_transaction.map(res);

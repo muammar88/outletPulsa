@@ -5,18 +5,46 @@ import { IakService } from '../../providers/iak.service';
 import { DigiflazzService } from '../../providers/digiflazz.service';
 import { TripayService } from '../../providers/tripay.service';
 import { PengumumanService } from '../../pengumuman/pengumuman.service';
+import { TransaksiFinalizerService } from './transaksi-finalizer.service';
 
 @Injectable()
 export class TransaksiService {
   private readonly logger = new Logger(TransaksiService.name);
+  private idempotencyInFlight = new Map<string, Promise<any>>();
 
   constructor(
     private prisma: PrismaService,
     private iakService: IakService,
     private digiflazzService: DigiflazzService,
     private tripayService: TripayService,
-    private pengumumanService: PengumumanService
+    private pengumumanService: PengumumanService,
+    private transaksiFinalizer: TransaksiFinalizerService,
   ) {}
+
+  private async withTimeout<T>(promise: Promise<T>, timeoutMs = 15000): Promise<T> {
+    let timer: NodeJS.Timeout;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error('PROVIDER_TIMEOUT')), timeoutMs);
+    });
+    try {
+      return await Promise.race([promise, timeoutPromise]);
+    } finally {
+      clearTimeout(timer!);
+    }
+  }
+
+  private parseSnapshot(ket?: string | null): any {
+    if (!ket) return null;
+    const match = ket.match(/\[SNAPSHOT:(\{.*?\})\]/);
+    if (match) {
+      try {
+        return JSON.parse(match[1]);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
 
   async getRiwayatPrabayar(userId: number, search?: string) {
     try {
@@ -54,7 +82,7 @@ export class TransaksiService {
           selling_price_raw: trx.selling_price || 0,
           status: trx.status ?? 'proses',
           transaction_date: trx.createdAt.toISOString().replace(/T/, ' ').replace(/\..+/, ''),
-          ket: trx.ket ?? '',
+          ket: trx.ket && !trx.ket.startsWith('[SNAPSHOT:') ? trx.ket : '',
         };
       });
 
@@ -78,27 +106,63 @@ export class TransaksiService {
   }
 
   async createTransaksiPrabayar(memberId: number, dto: CreateTransaksiPrabayarDto) {
-    try {
+    if (dto.idempotency_key) {
+      const inFlightKey = `${memberId}:${dto.idempotency_key}`;
+      const existingInFlight = this.idempotencyInFlight.get(inFlightKey);
+      if (existingInFlight) {
+        return await existingInFlight;
+      }
+      const execution = this.processCreateTransaksiPrabayar(memberId, dto);
+      this.idempotencyInFlight.set(inFlightKey, execution);
+      try {
+        return await execution;
+      } finally {
+        this.idempotencyInFlight.delete(inFlightKey);
+      }
+    }
+    return this.processCreateTransaksiPrabayar(memberId, dto);
+  }
 
-      console.log("-----------------1");
+  private async processCreateTransaksiPrabayar(memberId: number, dto: CreateTransaksiPrabayarDto) {
+    try {
+      // Step 0: Check idempotency in database
+      if (dto.idempotency_key) {
+        const existingTrx = await this.prisma.transaction.findFirst({
+          where: {
+            riwayatTransaksi: { memberId },
+            ket: { contains: `"idemp":"${dto.idempotency_key}"` },
+          },
+          include: { produk: true },
+        });
+
+        if (existingTrx) {
+          const isSameTarget = existingTrx.nomorTujuan === dto.nomor_tujuan;
+          const isSameProduct = existingTrx.produk?.kode === dto.kode_produk;
+          if (!isSameTarget || !isSameProduct) {
+            return {
+              error: true,
+              error_msg: 'Idempotency key sudah digunakan untuk transaksi berbeda',
+            };
+          }
+          return {
+            error: false,
+            error_msg: 'Proses Pembelian Berhasil Dilakukan',
+            kodeTransaksi: existingTrx.kode,
+          };
+        }
+      }
+
       // 1. Dapatkan informasi produk dan server
       const produk = await this.prisma.produk.findFirst({
         where: { kode: dto.kode_produk, status: 'active' }, 
         include: { server: true }
       });
 
-      console.log("-----------------2");
-      console.log("Produk", produk);
-      console.log("-----------------2");
       if (!produk) {
         return { error: true, error_msg: 'Produk tidak ditemukan atau tidak aktif' };
       }
 
-      console.log("-----------------3");
-      console.log("Produk", produk);
-      console.log("-----------------3");
-
-      // === NEW LOGIC: FIND MAPPING ===
+      // === FIND MAPPING ===
       let providerProductCode = '';
       if (produk.server?.kode === 'IAK') {
         const iakMapping = await this.prisma.iakPrabayarProduk.findFirst({
@@ -127,26 +191,17 @@ export class TransaksiService {
       } else {
         return { error: true, error_msg: 'Server provider tidak dikenali' };
       }
-      
-      console.log("-----------------MAPPING");
-      console.log("Provider Product Code", providerProductCode);
-      console.log("-----------------MAPPING");
 
       // 2. Cek Member
       const member = await this.prisma.member.findUnique({
         where: { id: memberId }
       });
 
-      console.log("-----------------4");
-      console.log("Member", member);
-      console.log("-----------------4");
-
       if (!member) {
         return { error: true, error_msg: 'Member tidak ditemukan' };
       }
 
       const isReseller = !!member.kode_agen;
-
       const hargaModal = produk.purchase_price || 0;
       const markup = produk.markup || 0;
       const hargaJualAsli = hargaModal + markup;
@@ -156,55 +211,43 @@ export class TransaksiService {
         totalBayar += 20;
       }
 
-      console.log("-----------------5");
-      console.log("Harga Modal", hargaModal);
-      console.log("Harga Jual Asli", hargaJualAsli);
-      console.log("Total Bayar", totalBayar);
-      console.log("-----------------5");
-
       // 3. Pengecekan saldo (Optimistic Check)
       const currentSaldo = member.saldo ?? 0;
       if (currentSaldo < totalBayar) {
         return { error: true, error_msg: 'Saldo member tidak mencukupi' };
       }
 
-      const kodeTransaksi = `TRX${Date.now()}`;
+      const kodeTransaksi = `TRX${Date.now()}${Math.floor(1000 + Math.random() * 9000)}`;
 
-      console.log("-----------------6");
-      console.log("Kode Transaksi", kodeTransaksi);
-      console.log("-----------------6");
+      const snapshotData = {
+        idemp: dto.idempotency_key || null,
+        sku: providerProductCode,
+        server: produk.server?.kode,
+        serverId: produk.serverId,
+        nomorTujuan: dto.nomor_tujuan,
+        kodeProduk: dto.kode_produk,
+        createdAt: new Date().toISOString(),
+      };
+      const snapshotTag = `[SNAPSHOT:${JSON.stringify(snapshotData)}]`;
 
       // 4. Proses Transaksi Database (Atomic / Transaction)
-      // Potong saldo, catat ke riwayat, catat transaksi
       let newTrxId: number = 0;
       let newSaldo: number = 0;
       try {
         await this.prisma.$transaction(async (tx) => {
-
-          console.log("-----------------6.1");
-          console.log("Total Bayar", totalBayar);
-          console.log("-----------------6.1");
           // Potong saldo dengan Atomic Decrement
           const updateMember = await tx.member.update({
             where: { id: memberId },
             data: { saldo: { decrement: totalBayar } }
           });
 
-          console.log("-----------------6.2");
-          console.log("updateMember", updateMember);
-          console.log("-----------------6.2");
-
-          // Pengecekan setelah potong saldo (untuk mencegah saldo minus karena race condition)
+          // Pengecekan setelah potong saldo
           const updatedSaldo = updateMember.saldo ?? 0;
           if (updatedSaldo < 0) {
             throw new Error('InsufficientBalance');
           }
 
           newSaldo = updatedSaldo;
-
-          console.log("-----------------6.3");
-          console.log("updatedSaldo", updatedSaldo);
-          console.log("-----------------6.3");
 
           // Catat ke Riwayat Transaksi
           const riwayat = await tx.riwayatTransaksi.create({
@@ -227,6 +270,7 @@ export class TransaksiService {
             saldo_sesudah: updatedSaldo,
             serverId: produk.serverId,
             status: 'proses',
+            ket: snapshotTag,
           };
 
           if (isReseller) {
@@ -240,10 +284,6 @@ export class TransaksiService {
           });
 
           newTrxId = trx.id;
-
-          console.log("-----------------6.4");
-          console.log("trx", trx);
-          console.log("-----------------6.4");
 
           // Jika digiflazz, kita juga mencatat ke digiflazz_transaction
           if (produk.server?.kode === 'DIGI') {
@@ -262,42 +302,27 @@ export class TransaksiService {
         throw err;
       }
 
-      console.log("---------KODE--------~~~");
-      console.log(produk.server?.kode);
-      console.log("---------KODE--------~~~");
-
-      // 5. Hit API Provider
+      // 5. Hit API Provider dengan Timeout 15s
       this.logger.log(`Melakukan top-up ke server ${produk.server?.kode} untuk transaksi ${kodeTransaksi}`);
       let providerResponse: any;
 
-      if (produk.server?.kode === 'IAK') {
-        console.log("---------IAK--------7");
-        providerResponse = await this.iakService.topUp(kodeTransaksi, dto.nomor_tujuan, providerProductCode);
-        console.log("---------IAK--------7");
-        console.log(providerResponse);
-        console.log("---------IAK--------7");
-      } else if (produk.server?.kode === 'TRI') {
-        console.log("---------TRI--------8");
-        const isPln = dto.kode_produk.toUpperCase().includes('PLN') || providerProductCode.toUpperCase().includes('PLN'); // Atur cara cek PLN sesuai struktur data yang fix
-        providerResponse = await this.tripayService.topUp(kodeTransaksi, dto.nomor_tujuan, providerProductCode, isPln);
-        console.log("---------TRI--------8");
-        console.log(providerResponse);
-        console.log("---------TRI--------8");
-      } else if (produk.server?.kode === 'DIGI') {
-        console.log("---------DIGI--------9");
-        providerResponse = await this.digiflazzService.topUp(kodeTransaksi, dto.nomor_tujuan, providerProductCode);
-        console.log("---------DIGI--------9");
-        console.log(providerResponse);
-        console.log("---------DIGI--------9");
+      try {
+        if (produk.server?.kode === 'IAK') {
+          providerResponse = await this.withTimeout(this.iakService.topUp(kodeTransaksi, dto.nomor_tujuan, providerProductCode), 15000);
+        } else if (produk.server?.kode === 'TRI') {
+          const isPln = dto.kode_produk.toUpperCase().includes('PLN') || providerProductCode.toUpperCase().includes('PLN');
+          providerResponse = await this.withTimeout(this.tripayService.topUp(kodeTransaksi, dto.nomor_tujuan, providerProductCode, isPln), 15000);
+        } else if (produk.server?.kode === 'DIGI') {
+          providerResponse = await this.withTimeout(this.digiflazzService.topUp(kodeTransaksi, dto.nomor_tujuan, providerProductCode), 15000);
 
-        // Penanganan error "Seller sedang mengalami gangguan"
-        if (
-          providerResponse.status_success === false && 
-          providerResponse.rc === '62' && 
-          providerResponse.raw_response?.data?.message?.includes('Seller sedang mengalami gangguan')
-        ) {
-           const failedSku = providerResponse.raw_response?.data?.buyer_sku_code;
-           if (failedSku) {
+          // Penanganan error "Seller sedang mengalami gangguan"
+          if (
+            providerResponse.status_success === false && 
+            providerResponse.rc === '62' && 
+            providerResponse.raw_response?.data?.message?.includes('Seller sedang mengalami gangguan')
+          ) {
+            const failedSku = providerResponse.raw_response?.data?.buyer_sku_code;
+            if (failedSku) {
               this.logger.warn(`Seller Digiflazz ${failedSku} dinonaktifkan karena gangguan.`);
               await this.prisma.digiflazzSellerProduct.updateMany({
                 where: { buyerSkuKode: failedSku },
@@ -305,76 +330,89 @@ export class TransaksiService {
               });
               
               const digiflazzProduct = await this.prisma.digiflazzProduct.findFirst({
-                 where: { produkId: produk.id }
+                where: { produkId: produk.id }
               });
               
               if (digiflazzProduct) {
-                 const nextCheapestSeller = await this.prisma.digiflazzSellerProduct.findFirst({
-                   where: {
-                     productDigiflazzId: digiflazzProduct.id,
-                     sellerProductStatus: true,
-                     digiflazzSeller: { status: 'unbanned' }
-                   },
-                   orderBy: { price: 'asc' }
-                 });
-                 
-                 if (nextCheapestSeller) {
-                   await this.prisma.digiflazzProduct.update({
-                     where: { id: digiflazzProduct.id },
-                     data: {
-                       selectedSellerBuyerSkuKode: nextCheapestSeller.buyerSkuKode,
-                       selectedSellerPrice: nextCheapestSeller.price,
-                       status: 'active'
-                     }
-                   });
-                 } else {
-                   await this.prisma.digiflazzProduct.update({
-                     where: { id: digiflazzProduct.id },
-                     data: { status: 'inactive' }
-                   });
-                 }
+                const nextCheapestSeller = await this.prisma.digiflazzSellerProduct.findFirst({
+                  where: {
+                    productDigiflazzId: digiflazzProduct.id,
+                    sellerProductStatus: true,
+                    digiflazzSeller: { status: 'unbanned' }
+                  },
+                  orderBy: { price: 'asc' }
+                });
+                
+                if (nextCheapestSeller) {
+                  await this.prisma.digiflazzProduct.update({
+                    where: { id: digiflazzProduct.id },
+                    data: {
+                      selectedSellerBuyerSkuKode: nextCheapestSeller.buyerSkuKode,
+                      selectedSellerPrice: nextCheapestSeller.price,
+                      status: 'active'
+                    }
+                  });
+                } else {
+                  await this.prisma.digiflazzProduct.update({
+                    where: { id: digiflazzProduct.id },
+                    data: { status: 'inactive' }
+                  });
+                }
               }
-           }
+            }
 
-           const masterProduk = await this.prisma.produk.findUnique({
-             where: { id: produk.id },
-             include: {
-               iakPrabayarProduks: true,
-               tripayPrabayarProduks: true,
-               digiflazzProducts: true,
-             }
-           });
-           
-           const activeServersData = await this.prisma.server.findMany({ where: { status: 'active' } });
-           const activeServerIds = activeServersData.map(s => s.id);
-           
-           const alternatives: any[] = [];
-           if (masterProduk) {
-             if (activeServerIds.includes(1) && masterProduk.iakPrabayarProduks.length > 0) {
-               const iak = masterProduk.iakPrabayarProduks[0];
-               if (iak.status === 'active' && iak.price) alternatives.push({ serverId: 1, serverCode: 'IAK', price: iak.price, providerCode: iak.kode });
-             }
-             if (activeServerIds.includes(2) && masterProduk.tripayPrabayarProduks.length > 0) {
-               const tri = masterProduk.tripayPrabayarProduks[0];
-               if (tri.status?.toLowerCase() === 'active' && tri.price) alternatives.push({ serverId: 2, serverCode: 'TRI', price: tri.price, providerCode: tri.kode });
-             }
-             if (activeServerIds.includes(3) && masterProduk.digiflazzProducts.length > 0) {
-               const digi = masterProduk.digiflazzProducts[0];
-               if (digi.status === 'active' && digi.selectedSellerPrice) alternatives.push({ serverId: 3, serverCode: 'DIGI', price: digi.selectedSellerPrice, providerCode: digi.selectedSellerBuyerSkuKode });
-             }
-           }
+            const masterProduk = await this.prisma.produk.findUnique({
+              where: { id: produk.id },
+              include: {
+                iakPrabayarProduks: true,
+                tripayPrabayarProduks: true,
+                digiflazzProducts: true,
+              }
+            });
+            
+            const activeServersData = await this.prisma.server.findMany({ where: { status: 'active' } });
+            const iakServer = activeServersData.find(s => s.kode === 'IAK');
+            const triServer = activeServersData.find(s => s.kode === 'TRI');
+            const digiServer = activeServersData.find(s => s.kode === 'DIGI');
+            
+            const alternatives: any[] = [];
+            if (masterProduk) {
+              if (iakServer && masterProduk.iakPrabayarProduks.length > 0) {
+                const iak = masterProduk.iakPrabayarProduks[0];
+                if (iak.status === 'active' && iak.price) alternatives.push({ serverId: iakServer.id, serverCode: 'IAK', price: iak.price, providerCode: iak.kode });
+              }
+              if (triServer && masterProduk.tripayPrabayarProduks.length > 0) {
+                const tri = masterProduk.tripayPrabayarProduks[0];
+                if (tri.status?.toLowerCase() === 'active' && tri.price) alternatives.push({ serverId: triServer.id, serverCode: 'TRI', price: tri.price, providerCode: tri.kode });
+              }
+              if (digiServer && masterProduk.digiflazzProducts.length > 0) {
+                const digi = masterProduk.digiflazzProducts[0];
+                if (digi.status === 'active' && digi.selectedSellerPrice) alternatives.push({ serverId: digiServer.id, serverCode: 'DIGI', price: digi.selectedSellerPrice, providerCode: digi.selectedSellerBuyerSkuKode });
+              }
+            }
 
-           alternatives.sort((a, b) => a.price - b.price);
+            alternatives.sort((a, b) => a.price - b.price);
 
-           if (alternatives.length > 0) {
+            if (alternatives.length > 0) {
               const selected = alternatives[0];
               this.logger.log(`Mengalihkan transaksi ${kodeTransaksi} ke server alternatif ${selected.serverCode} dengan kode ${selected.providerCode} (Harga: ${selected.price})`);
               
+              const updatedSnapshot = {
+                ...snapshotData,
+                failover: {
+                  from: 'DIGI',
+                  to: selected.serverCode,
+                  sku: selected.providerCode,
+                  price: selected.price,
+                },
+              };
+
               await this.prisma.transaction.update({
                 where: { id: newTrxId },
                 data: {
                   purchase_price: selected.price,
-                  serverId: selected.serverId
+                  serverId: selected.serverId,
+                  ket: `[SNAPSHOT:${JSON.stringify(updatedSnapshot)}]`,
                 }
               });
 
@@ -387,45 +425,90 @@ export class TransaksiService {
               });
 
               if (selected.serverCode === 'IAK') {
-                 providerResponse = await this.iakService.topUp(kodeTransaksi, dto.nomor_tujuan, selected.providerCode);
+                providerResponse = await this.withTimeout(this.iakService.topUp(kodeTransaksi, dto.nomor_tujuan, selected.providerCode), 15000);
               } else if (selected.serverCode === 'TRI') {
-                 const isPln = dto.kode_produk.toUpperCase().includes('PLN') || selected.providerCode.toUpperCase().includes('PLN');
-                 providerResponse = await this.tripayService.topUp(kodeTransaksi, dto.nomor_tujuan, selected.providerCode, isPln);
+                const isPln = dto.kode_produk.toUpperCase().includes('PLN') || selected.providerCode.toUpperCase().includes('PLN');
+                providerResponse = await this.withTimeout(this.tripayService.topUp(kodeTransaksi, dto.nomor_tujuan, selected.providerCode, isPln), 15000);
               } else if (selected.serverCode === 'DIGI') {
-                 providerResponse = await this.digiflazzService.topUp(kodeTransaksi, dto.nomor_tujuan, selected.providerCode);
+                providerResponse = await this.withTimeout(this.digiflazzService.topUp(kodeTransaksi, dto.nomor_tujuan, selected.providerCode), 15000);
               }
-           } else {
+            } else {
               this.logger.warn(`Tidak ada produk/server alternatif untuk ${produk.kode}. Transaksi dilanjutkan dengan respon error asli.`);
               await this.prisma.produk.update({
                 where: { id: produk.id },
                 data: { status: 'inactive', serverId: null }
               });
-           }
+            }
+          }
+        } else {
+          providerResponse = { status_success: false, trx_id: '' };
         }
-      } else {
-        // Fallback jika tidak dikenali
-        providerResponse = { status_success: false, trx_id: '' };
+      } catch (err: any) {
+        this.logger.error(`Error/timeout saat memanggil provider untuk ${kodeTransaksi}:`, err);
+        providerResponse = { status_success: false, isTimeout: true, trx_id: '', message: err?.message };
       }
-      
-      // Jika top-up sukses di-submit ke provider, simpan trx_id dari provider
-      if (providerResponse.status_success || providerResponse.trx_id) {
-         await this.prisma.transaction.update({
-           where: { id: newTrxId },
-           data: { 
-             trx_id: providerResponse.trx_id ? parseInt(String(providerResponse.trx_id), 10) : undefined,
-             serial_number: providerResponse.sn ? String(providerResponse.sn) : undefined
-           }
-         });
+
+      // Safe trx_id handling (protect against non-numeric or overflow values)
+      const rawTrxId = providerResponse?.trx_id;
+      let safeTrxId: number | null = null;
+      if (rawTrxId !== undefined && rawTrxId !== null && rawTrxId !== '') {
+        const num = Number(rawTrxId);
+        if (Number.isSafeInteger(num) && num > 0 && num <= 2147483647) {
+          safeTrxId = num;
+        }
+      }
+      const snValue = providerResponse?.sn ? String(providerResponse.sn) : (!safeTrxId && rawTrxId ? String(rawTrxId) : undefined);
+
+      // Direct Success Check
+      const isDirectSuccess = 
+        providerResponse?.raw_response?.data?.status === '1' || 
+        providerResponse?.raw_response?.data?.status === 1 ||
+        providerResponse?.rc === '00' ||
+        providerResponse?.raw_response?.data?.status?.toLowerCase?.() === 'sukses';
+
+      // Definitive Failure Check (not timeout, not pending rc 03 / status 0)
+      const isDefinitiveFailure =
+        !providerResponse?.isTimeout &&
+        (
+          providerResponse?.raw_response?.data?.status === '2' ||
+          providerResponse?.raw_response?.data?.status === 2 ||
+          (providerResponse?.rc && providerResponse.rc !== '00' && providerResponse.rc !== '03') ||
+          (providerResponse?.raw_response?.success === false && providerResponse?.raw_response?.data?.status === 2)
+        );
+
+      if (isDirectSuccess) {
+        await this.transaksiFinalizer.finalizeTransaction({
+          transactionId: newTrxId,
+          targetStatus: 'sukses',
+          sn: snValue,
+          actualPurchasePrice: providerResponse?.price ? Number(providerResponse.price) : undefined,
+          source: 'PROVIDER_DIRECT_SUCCESS',
+        });
+      } else if (isDefinitiveFailure) {
+        const failMessage = providerResponse?.raw_response?.data?.message || providerResponse?.raw_response?.message || 'Transaksi ditolak oleh provider';
+        await this.transaksiFinalizer.finalizeTransaction({
+          transactionId: newTrxId,
+          targetStatus: 'gagal',
+          ket: failMessage,
+          source: 'PROVIDER_DIRECT_FAILED',
+        });
       } else {
-         // Jika gagal API call ke provider, sistem tetap menunggu webhook 
-         // atau kita bisa langsung ubah status menjadi gagal jika response mutlak gagal.
-         // Sesuai sistem lama, kita pasrahkan ke webhook.
+        // Pending or Timeout -> remain 'proses'
+        if (safeTrxId || snValue) {
+          await this.prisma.transaction.update({
+            where: { id: newTrxId },
+            data: {
+              trx_id: safeTrxId,
+              serial_number: snValue,
+            },
+          });
+        }
       }
 
       return {
         error: false,
         error_msg: 'Proses Pembelian Berhasil Dilakukan',
-        kodeTransaksi: kodeTransaksi
+        kodeTransaksi: kodeTransaksi,
       };
 
     } catch (error) {
@@ -457,97 +540,47 @@ export class TransaksiService {
         };
       }
 
-      // --- NEW LOGIC: Realtime status check ---
+      const snapshot = this.parseSnapshot(trx.ket);
+      const snapshotSku = snapshot?.sku || '';
+
+      // --- Realtime status check ---
       if (trx.status === 'proses') {
         let checkRes: { status: string; sn: string; raw: any } | null = null;
         
         if (trx.server?.kode === 'IAK') {
-           checkRes = await this.iakService.checkStatus(trx.kode || '');
+          checkRes = await this.iakService.checkStatus(trx.kode || '');
         } else if (trx.server?.kode === 'TRI') {
-           checkRes = await this.tripayService.checkStatus(trx.trx_id?.toString() || '', trx.kode || '');
+          checkRes = await this.tripayService.checkStatus(trx.trx_id?.toString() || '', trx.kode || '');
         } else if (trx.server?.kode === 'DIGI') {
-           let providerProductCode = '';
-           const digiMapping = await this.prisma.digiflazzProduct.findFirst({ where: { produkId: trx.produkId } });
-           if (digiMapping) providerProductCode = digiMapping.selectedSellerBuyerSkuKode || '';
-           checkRes = await this.digiflazzService.checkStatus(trx.kode || '', trx.nomorTujuan || '', providerProductCode);
+          let providerProductCode = snapshotSku;
+          if (!providerProductCode) {
+            const digiMapping = await this.prisma.digiflazzProduct.findFirst({ where: { produkId: trx.produkId } });
+            if (digiMapping) providerProductCode = digiMapping.selectedSellerBuyerSkuKode || '';
+          }
+          checkRes = await this.digiflazzService.checkStatus(trx.kode || '', trx.nomorTujuan || '', providerProductCode);
         }
 
         if (checkRes && checkRes.status !== 'proses') {
-           let newKet = trx.ket;
-           let realPurchasePrice = trx.purchase_price;
-           
-           if (checkRes.status === 'sukses') {
-              if (checkRes.sn) {
-                 const isPlnProduct = trx.produk?.kode?.toUpperCase().includes('PLN') || trx.produk?.name?.toUpperCase().includes('PLN');
-                 if (trx.server?.kode === 'DIGI' && !isPlnProduct) {
-                    newKet = "SN : " + checkRes.sn;
-                 } else {
-                    newKet = checkRes.sn;
-                 }
-              }
+          let realPurchasePrice = trx.purchase_price;
 
-              // Ambil harga modal dari response raw masing-masing provider
-              const rawData = checkRes.raw?.data;
-              if (rawData && rawData.price !== undefined) {
-                 realPurchasePrice = Number(rawData.price);
-              }
-           }
-           
-           let calculatedLaba: number | null = trx.laba;
-           if (checkRes.status === 'sukses') {
-               const sellingPrice = trx.selling_price || 0;
-               calculatedLaba = sellingPrice - (realPurchasePrice || 0);
-           }
+          if (checkRes.status === 'sukses') {
+            const rawData = checkRes.raw?.data;
+            if (rawData && rawData.price !== undefined) {
+              realPurchasePrice = Number(rawData.price);
+            }
+          }
 
-           // Proses update status transaksi, refund (jika gagal), dan update serial_number dalam satu prisma.$transaction()
-           trx = await this.prisma.$transaction(async (tx) => {
-               // Jika status menjadi gagal, kembalikan saldo
-               if (checkRes!.status === 'gagal') {
-                   const feeAgenRefund = trx!.fee_agen || 0;
-                   const refundAmount = (trx!.selling_price || 0) + feeAgenRefund;
-                   await tx.member.update({
-                       where: { id: memberId },
-                       data: { saldo: { increment: refundAmount } }
-                   });
-                   await tx.riwayatTransaksi.create({
-                       data: {
-                          memberId: memberId,
-                          tipeTransaksi: 'terima_saldo',
-                       }
-                   });
-               }
+          const finalizeRes = await this.transaksiFinalizer.finalizeTransaction({
+            transactionId: trx.id,
+            targetStatus: checkRes.status as 'sukses' | 'gagal',
+            sn: checkRes.sn,
+            actualPurchasePrice: realPurchasePrice ?? undefined,
+            source: 'DETAIL_CHECK',
+          });
 
-               return await tx.transaction.update({
-                 where: { id: trx!.id },
-                 data: {
-                   status: checkRes!.status as any,
-                   ket: newKet || trx!.ket,
-                   purchase_price: realPurchasePrice,
-                   laba: calculatedLaba,
-                   serial_number: checkRes!.sn ? String(checkRes!.sn) : undefined,
-                 },
-                 include: {
-                   produk: true,
-                   server: true,
-                   riwayatTransaksi: true,
-                 }
-               }) as any;
-           });
-
-           // Fire pengumuman after db transaction succeeds
-           if (checkRes!.status === 'sukses' || checkRes!.status === 'gagal') {
-               const statusText = checkRes!.status === 'sukses' ? 'Berhasil' : 'Gagal';
-               this.pengumumanService.sendTransactionStatus(
-                   memberId,
-                   `Transaksi ${statusText}`,
-                   `Pembelian ${trx!.produk?.name || ''} untuk ${trx!.nomorTujuan || ''} telah ${statusText.toLowerCase()}.`,
-                   { 
-                       reference_id: trx!.kode || String(trx!.id), 
-                       status: checkRes!.status 
-                   },
-                   'prabayar'
-               ).catch(e => this.logger.error('Failed to send pengumuman', e));
-           }
+          if (finalizeRes.transaction) {
+            trx = finalizeRes.transaction;
+          }
         }
       }
       // --- END Realtime status check ---
@@ -567,13 +600,12 @@ export class TransaksiService {
       let print_jml_kwh = '-';
       let print_token = '-';
 
-      if (currentTrx.ket && print_status) {
+      if (currentTrx.ket && print_status && !currentTrx.ket.startsWith('[SNAPSHOT:')) {
         const text = currentTrx.ket;
         const myArray = text.split('/');
         const productNameArray = currentTrx.produk?.name?.split(' ') || [];
         
         if (currentTrx.server?.kode === 'IAK' && myArray.length >= 5) {
-          // format: token / nama / tarif / daya / kwh
           print_tanggal = currentTrx.updatedAt.toISOString().split('T')[0];
           print_waktu = currentTrx.updatedAt.toTimeString().split(' ')[0];
           print_token = myArray[0].trim();
@@ -583,7 +615,6 @@ export class TransaksiService {
           print_id_pelanggan = currentTrx.nomorTujuan || '-';
           print_nominal = productNameArray.length >= 3 ? productNameArray[2] : '-';
         } else if (currentTrx.server?.kode === 'TRI' && myArray.length >= 5) {
-          // format: SN:token / nama / tarif / daya / kwh
           const getToken = myArray[0].split(':');
           print_tanggal = currentTrx.updatedAt.toISOString().split('T')[0];
           print_waktu = currentTrx.updatedAt.toTimeString().split(' ')[0];
@@ -610,6 +641,10 @@ export class TransaksiService {
       const formatRp = (num: number) => {
         return 'Rp ' + num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
       };
+
+      const userDisplayMessage = !currentTrx.ket || currentTrx.ket === '' || currentTrx.ket.startsWith('[SNAPSHOT:')
+        ? (currentTrx.status === 'proses' ? 'Sedang diproses' : '-')
+        : currentTrx.ket;
 
       return {
         error: false,
@@ -639,7 +674,7 @@ export class TransaksiService {
           price: formatRp(currentTrx.selling_price || 0),
           selling_price_raw: currentTrx.selling_price || 0,
           serialNumber: currentTrx.serial_number || '-',
-          message: !currentTrx.ket || currentTrx.ket === '' ? '-' : currentTrx.ket,
+          message: userDisplayMessage,
         },
       };
 

@@ -118,6 +118,7 @@ export class RiwayatService {
             bank: true,
           }
         },
+        paymentGatewayTransaction: true,
       },
     });
 
@@ -149,12 +150,45 @@ export class RiwayatService {
             status_kirim: 'SUDAH_KIRIM',
             alasan_penolakan: '-',
             waktu_kirim: riwayatSaldo.created_at?.toISOString() || '',
+            payment_gateway: null,
           }
         }
       };
     }
 
     const nominalVal = (deposit.nominal || 0) + (deposit.nominalTambahan || 0);
+
+    let paymentGatewayData: any = null;
+    if (deposit.paymentGatewayTransaction) {
+      const pg = deposit.paymentGatewayTransaction;
+      let meta: any = {};
+      try {
+        meta = JSON.parse(pg.metadata || '{}');
+      } catch {}
+      paymentGatewayData = {
+        transaction_id: pg.uuid,
+        payment_method: pg.payment_method,
+        bank_code: pg.bank_code,
+        bank_name: pg.bank_name,
+        virtual_account: pg.virtual_account,
+        amount: Number(pg.amount),
+        fee_admin: Number(pg.fee_admin),
+        total_amount: Number(pg.total_amount),
+        expired_at: pg.expired_at,
+        status: pg.status,
+        partner_reff: pg.partner_reff,
+        qris_text: meta.qris_text,
+        imageqris: meta.imageqris,
+        checkout_url: meta.checkout_url,
+      };
+    }
+
+    const bankTujuan = deposit.bankTransferOutlet?.bank?.nama ||
+      (deposit.paymentGatewayTransaction ? `${deposit.paymentGatewayTransaction.payment_method}${deposit.paymentGatewayTransaction.bank_name ? ` (${deposit.paymentGatewayTransaction.bank_name})` : ''}` : '-');
+    const nomorRek = deposit.bankTransferOutlet?.accountNumber ||
+      deposit.paymentGatewayTransaction?.virtual_account || '-';
+    const namaAkun = deposit.bankTransferOutlet?.accountName ||
+      (deposit.paymentGatewayTransaction ? 'LinkQu Payment' : '-');
 
     return {
       error: false,
@@ -163,13 +197,14 @@ export class RiwayatService {
         list: {
           kode: deposit.kode,
           nominal: nominalVal.toString(),
-          bank_tujuan_transfer: deposit.bankTransferOutlet?.bank?.nama || '-',
-          nomor_rekening_akun: deposit.bankTransferOutlet?.accountNumber || '-',
-          nama_akun: deposit.bankTransferOutlet?.accountName || '-',
+          bank_tujuan_transfer: bankTujuan,
+          nomor_rekening_akun: nomorRek,
+          nama_akun: namaAkun,
           status_deposit: deposit.status,
           status_kirim: deposit.statusKirim || 'MENUNGGU',
           alasan_penolakan: deposit.alasanPenolakan || '-',
           waktu_kirim: deposit.waktuRequest?.toISOString() || '',
+          payment_gateway: paymentGatewayData,
         }
       }
     };
