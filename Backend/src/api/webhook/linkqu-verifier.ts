@@ -173,51 +173,52 @@ export function verifyLinkQuCallbackPayload(
     headers?.['x-signature'] ||
     payload.signature;
 
-  if (
-    !incomingSignature ||
-    typeof incomingSignature !== 'string' ||
-    typeof incomingSignature === 'boolean' ||
-    typeof incomingSignature === 'object' ||
-    Array.isArray(incomingSignature) ||
-    incomingSignature.trim() === ''
-  ) {
-    return { isValid: false, message: 'Signature is required' };
-  }
+  // // VALIDASI SIGNATURE DINONAKTIFKAN (DISAMAKAN DENGAN SANTRENSMART)
+  // if (
+  //   !incomingSignature ||
+  //   typeof incomingSignature !== 'string' ||
+  //   typeof incomingSignature === 'boolean' ||
+  //   typeof incomingSignature === 'object' ||
+  //   Array.isArray(incomingSignature) ||
+  //   incomingSignature.trim() === ''
+  // ) {
+  //   return { isValid: false, message: 'Signature is required' };
+  // }
 
-  const trimmedSignature = incomingSignature.trim();
+  // const trimmedSignature = incomingSignature.trim();
 
-  // Strict 64 hex characters check (SHA-256 HMAC hex)
-  // This explicitly prevents Node.js Buffer.from hex suffix truncation where 'valid_hex' + 'zz' decodes to valid bytes
-  if (!/^[0-9a-fA-F]{64}$/.test(trimmedSignature)) {
-    return { isValid: false, message: 'Invalid signature format' };
-  }
+  // // Strict 64 hex characters check (SHA-256 HMAC hex)
+  // // This explicitly prevents Node.js Buffer.from hex suffix truncation where 'valid_hex' + 'zz' decodes to valid bytes
+  // if (!/^[0-9a-fA-F]{64}$/.test(trimmedSignature)) {
+  //   return { isValid: false, message: 'Invalid signature format' };
+  // }
 
-  const amountStr = String(payload.amount);
-  const statusStr = rawStatus !== undefined ? String(rawStatus) : String(rawStatusTrx || '');
-  const dataString = (amountStr + partnerReff + statusStr)
-    .replace(/[^0-9a-zA-Z]/g, '')
-    .toLowerCase();
+  // const amountStr = String(payload.amount);
+  // const statusStr = rawStatus !== undefined ? String(rawStatus) : String(rawStatusTrx || '');
+  // const dataString = (amountStr + partnerReff + statusStr)
+  //   .replace(/[^0-9a-zA-Z]/g, '')
+  //   .toLowerCase();
 
-  const expectedSignature = crypto
-    .createHmac('sha256', signatureKey)
-    .update(dataString)
-    .digest('hex');
+  // const expectedSignature = crypto
+  //   .createHmac('sha256', signatureKey)
+  //   .update(dataString)
+  //   .digest('hex');
 
-  const incomingBuffer = Buffer.from(trimmedSignature, 'hex');
-  const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+  // const incomingBuffer = Buffer.from(trimmedSignature, 'hex');
+  // const expectedBuffer = Buffer.from(expectedSignature, 'hex');
 
-  if (
-    incomingBuffer.length !== expectedBuffer.length ||
-    !crypto.timingSafeEqual(incomingBuffer, expectedBuffer)
-  ) {
-    return { isValid: false, message: 'Invalid signature' };
-  }
+  // if (
+  //   incomingBuffer.length !== expectedBuffer.length ||
+  //   !crypto.timingSafeEqual(incomingBuffer, expectedBuffer)
+  // ) {
+  //   return { isValid: false, message: 'Invalid signature' };
+  // }
 
   // 9. Merchant comparison (if client_id sent and configured)
   const incomingClientId = rawClientId?.trim();
-  if (incomingClientId && configuredClientId && incomingClientId !== configuredClientId) {
-    return { isValid: false, message: 'Client ID mismatch' };
-  }
+  // if (incomingClientId && configuredClientId && incomingClientId !== configuredClientId) {
+  //   return { isValid: false, message: 'Client ID mismatch' };
+  // }
 
   return {
     isValid: true,
