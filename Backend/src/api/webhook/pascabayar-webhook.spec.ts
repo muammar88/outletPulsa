@@ -61,6 +61,7 @@ describe('WebhookService pascabayar Digiflazz', () => {
     const { service, prisma, finalizer } = buildService();
     prisma.transactionPascabayar.findFirst.mockResolvedValue({
       id: 1,
+      trId: 'R1',
       status: 'proses',
       provider: 'DIGIFLAZZ',
       providerSku: 'SKU-ASLI',
@@ -79,6 +80,7 @@ describe('WebhookService pascabayar Digiflazz', () => {
     const { service, prisma, finalizer } = buildService();
     prisma.transactionPascabayar.findFirst.mockResolvedValue({
       id: 1,
+      trId: 'R1',
       status: 'proses',
       provider: 'DIGIFLAZZ',
       providerSku: 'SKU-ASLI',
@@ -91,5 +93,99 @@ describe('WebhookService pascabayar Digiflazz', () => {
       expect.objectContaining({ transactionId: 1, sn: 'SN1', actualBillAmount: null }),
     );
   });
-});
 
+  it('tidak memfinalisasi callback dengan rc sukses tetapi status gagal', async () => {
+    process.env.DIGIFLAZZ_WEBHOOK_SECRET = 'rahasia';
+    const payload = {
+      data: {
+        ref_id: 'R-CONFLICT',
+        buyer_sku_code: 'SKU-ASLI',
+        customer_no: '00123',
+        rc: '00',
+        status: 'Gagal',
+        sn: '',
+      },
+    };
+    const rawBody = JSON.stringify(payload);
+    const { service, prisma, finalizer } = buildService();
+    prisma.transactionPascabayar.findFirst.mockResolvedValue({
+      id: 2,
+      trId: 'R-CONFLICT',
+      status: 'proses',
+      provider: 'DIGIFLAZZ',
+      providerSku: 'SKU-ASLI',
+      nomorTujuan: '00123',
+    });
+
+    const result = await service.handleDigiflazzCallback(
+      sign('rahasia', rawBody),
+      rawBody,
+      payload as any,
+      'ip',
+    );
+
+    expect(result.error).toBe(false);
+    expect(finalizer.finalizeSuccess).not.toHaveBeenCalled();
+    expect(finalizer.finalizeFailure).not.toHaveBeenCalled();
+  });
+
+  it('menolak callback pascabayar bila SKU atau nomor pelanggan tidak tersedia', async () => {
+    process.env.DIGIFLAZZ_WEBHOOK_SECRET = 'rahasia';
+    const payload = { data: { ref_id: 'R-MISSING', rc: '00', status: 'Sukses', sn: 'SN1' } };
+    const rawBody = JSON.stringify(payload);
+    const { service, prisma, finalizer } = buildService();
+    prisma.transactionPascabayar.findFirst.mockResolvedValue({
+      id: 3,
+      trId: 'R-MISSING',
+      status: 'proses',
+      provider: 'DIGIFLAZZ',
+      providerSku: 'SKU-ASLI',
+      nomorTujuan: '00123',
+    });
+
+    await expect(
+      service.handleDigiflazzCallback(sign('rahasia', rawBody), rawBody, payload as any, 'ip'),
+    ).rejects.toBeInstanceOf(HttpException);
+    expect(finalizer.finalizeSuccess).not.toHaveBeenCalled();
+    expect(finalizer.finalizeFailure).not.toHaveBeenCalled();
+  });
+
+  it('memakai rincian desc.detail sebagai tagihan, bukan price', async () => {
+    process.env.DIGIFLAZZ_WEBHOOK_SECRET = 'rahasia';
+    const payload = {
+      data: {
+        ref_id: 'R1', buyer_sku_code: 'SKU-ASLI', customer_no: '123', rc: '00', sn: 'SN1',
+        price: 10000, admin: 2500,
+        desc: { detail: [{ nilai_tagihan: '8000', denda: '500' }] },
+      },
+    };
+    const rawBody = JSON.stringify(payload);
+    const { service, prisma, finalizer } = buildService();
+    prisma.transactionPascabayar.findFirst.mockResolvedValue({
+      id: 1, trId: 'R1', status: 'proses', provider: 'DIGIFLAZZ', providerSku: 'SKU-ASLI', nomorTujuan: '123',
+      inquiryPayload: { providerAdminFee: 2000 },
+    });
+
+    await service.handleDigiflazzCallback(sign('rahasia', rawBody), rawBody, payload as any, 'ip');
+    expect(finalizer.finalizeSuccess).toHaveBeenCalledWith(
+      expect.objectContaining({ transactionId: 1, sn: 'SN1', actualBillAmount: 8500, actualProviderAdminFee: 2500 }),
+    );
+  });
+
+  it('fallback selling_price - admin bila rincian tidak ada, dan tidak memakai price', async () => {
+    process.env.DIGIFLAZZ_WEBHOOK_SECRET = 'rahasia';
+    const payload = {
+      data: { ref_id: 'R1', buyer_sku_code: 'SKU-ASLI', customer_no: '123', rc: '00', sn: 'SN1', price: 10000, admin: 2500, selling_price: 11000 },
+    };
+    const rawBody = JSON.stringify(payload);
+    const { service, prisma, finalizer } = buildService();
+    prisma.transactionPascabayar.findFirst.mockResolvedValue({
+      id: 1, trId: 'R1', status: 'proses', provider: 'DIGIFLAZZ', providerSku: 'SKU-ASLI', nomorTujuan: '123', inquiryPayload: {},
+    });
+
+    await service.handleDigiflazzCallback(sign('rahasia', rawBody), rawBody, payload as any, 'ip');
+    expect(finalizer.finalizeSuccess).toHaveBeenCalledWith(
+      expect.objectContaining({ actualBillAmount: 8500, actualProviderAdminFee: 2500 }),
+    );
+  });
+});

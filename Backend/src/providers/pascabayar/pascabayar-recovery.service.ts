@@ -3,6 +3,7 @@ import { PrismaService } from '../../prisma.service';
 import { PascabayarFinalizerService } from './pascabayar-finalizer.service';
 import { PascabayarRouterService } from './pascabayar-router.service';
 import { PascabayarProviderCode } from './pascabayar.types';
+import { claimStatusCheck, PASCA_MIN_JEDA_MS } from './pascabayar-lease';
 
 export interface PascabayarRecoverySummary {
   diperiksa: number;
@@ -29,7 +30,7 @@ export const PASCA_STATUS_PERLU_MANUAL = 'PERLU_PENANGANAN_MANUAL';
 export class PascabayarRecoveryService {
   private readonly logger = new Logger(PascabayarRecoveryService.name);
 
-  static readonly MIN_JEDA_MS = 60_000;
+  static readonly MIN_JEDA_MS = PASCA_MIN_JEDA_MS;
   static readonly MAKS_UMUR_MS = 3 * 24 * 60 * 60 * 1000;
   static readonly MAKS_PERCOBAAN = 10;
   static readonly BATCH = 25;
@@ -69,6 +70,15 @@ export class PascabayarRecoveryService {
       const payload = this.bacaPayload(trx.inquiryPayload);
       const percobaan = Number(payload.recoveryAttempts ?? 0);
 
+      // Klaim lease yang sama dengan tombol cek status. Bila worker lain sudah
+      // memegang pemeriksaan transaksi ini, lewati supaya provider tidak
+      // dipanggil bersamaan.
+      const claimed = await claimStatusCheck(this.prisma, trx.id);
+      if (!claimed) {
+        ringkasan.masihPending++;
+        continue;
+      }
+
       if (percobaan >= PascabayarRecoveryService.MAKS_PERCOBAAN) {
         await this.tandaiManual(trx.id, payload, percobaan, 'Batas percobaan cek status tercapai');
         ringkasan.butuhPenangananManual++;
@@ -87,6 +97,7 @@ export class PascabayarRecoveryService {
           refId: trx.trId as string,
           sku: trx.providerSku as string,
           customerNo: trx.nomorTujuan as string,
+          providerRefId: (payload.trId as string | null) ?? null,
           providerType: (payload.providerType as string | null) ?? null,
           additionalData: (payload.additionalData as Record<string, unknown> | null) ?? null,
         });
@@ -97,7 +108,9 @@ export class PascabayarRecoveryService {
             sn: hasil.sn,
             providerRefId: hasil.providerRefId,
             actualBillAmount: hasil.actualBillAmount,
-            actualProviderAdminFee: hasil.actualProviderAdminFee ?? (payload.providerAdminFee as number | null) ?? null,
+            actualProviderAdminFee: hasil.actualProviderAdminFee ?? null,
+            providerCost: hasil.providerCost ?? null,
+            providerBillRef: hasil.providerBillRef ?? null,
             source: 'RECOVERY',
           });
           ringkasan.sukses++;

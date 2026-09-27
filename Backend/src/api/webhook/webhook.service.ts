@@ -9,6 +9,15 @@ import { WapisenderService } from '../../providers/wapisender.service';
 import { verifyLinkQuCallbackPayload } from './linkqu-verifier';
 import { LinkquCallbackProcessorService } from './linkqu-callback-processor.service';
 import { PascabayarFinalizerService } from '../../providers/pascabayar/pascabayar-finalizer.service';
+import {
+  periksaIdentitas,
+  resolveConsistentStatus,
+  statusFromText,
+  strOrNull,
+  sumDetailBill,
+  toIntOrNull,
+} from '../../providers/pascabayar/pascabayar-normalize';
+import { PascabayarNormalizedStatus } from '../../providers/pascabayar/pascabayar.types';
 
 interface IakCallbackPayload {
   data: {
@@ -40,6 +49,10 @@ interface DigiflazzCallbackPayload {
     rc: string;
     sn: string;
     price: number;
+    admin?: number | string | null;
+    selling_price?: number | string | null;
+    sellingPrice?: number | string | null;
+    desc?: unknown;
     message: string;
   };
 }
@@ -122,16 +135,18 @@ export class WebhookService {
         await this.logWebhook('IAK', 'callback_pascabayar', refId, body, 'ignored', `Sudah berstatus ${transactionPasca.status}`, ipAddress);
         return { error: false, error_msg: 'Berhasil' };
       }
-      const statusCode = Number(status);
-      if (statusCode === 1 || String(status) === 'SUCCESS') {
-        await this.updateSuccessTransactionPascabayar(transactionPasca.id, sn);
-        await this.logWebhook('IAK', 'callback_pascabayar', refId, body, 'success', `Transaksi sukses. SN: ${sn}`, ipAddress);
-      } else if (statusCode === 2 || String(status) === 'FAILED') {
-        await this.updateFailedTransactionPascabayar(transactionPasca.id, 'Gagal berdasarkan callback IAK');
-        await this.logWebhook('IAK', 'callback_pascabayar', refId, body, 'success', 'Transaksi gagal, saldo dikembalikan', ipAddress);
-      } else {
-        await this.logWebhook('IAK', 'callback_pascabayar', refId, body, 'ignored', `Status tidak dikenali: ${status}`, ipAddress);
-      }
+      // Kontrak callback pascabayar IAK belum terverifikasi. Event tetap dicatat,
+      // tetapi finalisasi menunggu cek status server-to-server (worker/tombol) agar
+      // callback prabayar tidak dianggap bukti pembayaran pascabayar.
+      await this.logWebhook(
+        'IAK',
+        'callback_pascabayar',
+        refId,
+        body,
+        'ignored',
+        'Callback pascabayar IAK belum terverifikasi; menunggu cek status server-to-server',
+        ipAddress,
+      );
       return { error: false, error_msg: 'Berhasil' };
     }
 
@@ -322,8 +337,32 @@ export class WebhookService {
 
     if (transactionPasca) {
       console.log(`[DIGIFLAZZ SERVICE] Found pascabayar transaction: ${transactionPasca.id}, status: ${transactionPasca.status}`);
-      if (!this.pascaIdentityMatches(transactionPasca, 'DIGIFLAZZ', data.buyer_sku_code, data.customer_no)) {
-        await this.logWebhook('DIGIFLAZZ', 'callback_pascabayar', refId, body, 'failed', 'Provider/SKU/pelanggan tidak cocok', ipAddress);
+      const identityError =
+        transactionPasca.provider !== 'DIGIFLAZZ'
+          ? `provider=${transactionPasca.provider ?? 'kosong'} != DIGIFLAZZ`
+          : periksaIdentitas(
+              data as unknown as Record<string, unknown>,
+              {
+                refId: transactionPasca.trId,
+                sku: transactionPasca.providerSku,
+                customerNo: transactionPasca.nomorTujuan,
+              },
+              {
+                ref: ['ref_id'],
+                sku: ['buyer_sku_code', 'sku'],
+                customer: ['customer_no'],
+              },
+            );
+      if (identityError) {
+        await this.logWebhook(
+          'DIGIFLAZZ',
+          'callback_pascabayar',
+          refId,
+          body,
+          'failed',
+          `Identitas callback tidak dapat dipastikan: ${identityError}`,
+          ipAddress,
+        );
         throw new HttpException({ error: true, error_msg: 'Data transaksi tidak cocok' }, HttpStatus.CONFLICT);
       }
       if (transactionPasca.status === 'sukses' || transactionPasca.status === 'gagal') {
@@ -331,19 +370,41 @@ export class WebhookService {
         return { error: false, error_msg: 'Berhasil' } as any;
       }
 
-      if (rc === '00') {
-        await this.updateSuccessTransactionPascabayar(transactionPasca.id, sn, data.price);
+      const statusText = statusFromText(data.status);
+      const codeStatus: PascabayarNormalizedStatus | null =
+        rc === '00' ? 'sukses' : rc === '03' ? 'pending' : null;
+      const normalizedStatus = resolveConsistentStatus(codeStatus, statusText);
+
+      if (normalizedStatus === 'sukses') {
+        const pascaBill = this.resolveDigiflazzPascaBill(data);
+        const payloadAdmin = (transactionPasca.inquiryPayload as any)?.providerAdminFee ?? null;
+        // `price` = biaya yang dipotong dari deposit buyer (harga pokok), bukan tagihan.
+        const providerCost = toIntOrNull((data as any).price);
+        const billerRef = strOrNull((data as any).noref);
+        await this.updateSuccessTransactionPascabayar(
+          transactionPasca.id,
+          sn,
+          pascaBill.billAmount,
+          pascaBill.adminFee ?? payloadAdmin,
+          providerCost,
+          billerRef,
+        );
         await this.logWebhook('DIGIFLAZZ', 'callback_pascabayar', refId, body, 'success', `Transaksi sukses. SN: ${sn}`, ipAddress);
-      } else if (rc === '03') {
+      } else if (normalizedStatus === 'pending') {
         await this.logWebhook('DIGIFLAZZ', 'callback_pascabayar', refId, body, 'ignored', 'Masih pending (rc=03)', ipAddress);
+      } else if (normalizedStatus === 'gagal') {
+        await this.updateFailedTransactionPascabayar(transactionPasca.id, `Gagal berdasarkan callback Digiflazz (rc=${rc})`);
+        await this.logWebhook('DIGIFLAZZ', 'callback_pascabayar', refId, body, 'success', `Transaksi gagal (rc=${rc}), saldo dikembalikan`, ipAddress);
       } else {
-        const statusText = String(data.status ?? '').toLowerCase();
-        if (statusText === 'gagal' || statusText === 'failed') {
-          await this.updateFailedTransactionPascabayar(transactionPasca.id, `Gagal berdasarkan callback Digiflazz (rc=${rc})`);
-          await this.logWebhook('DIGIFLAZZ', 'callback_pascabayar', refId, body, 'success', `Transaksi gagal (rc=${rc}), saldo dikembalikan`, ipAddress);
-        } else {
-          await this.logWebhook('DIGIFLAZZ', 'callback_pascabayar', refId, body, 'ignored', `RC tidak dikenali (rc=${rc}); status tidak diubah`, ipAddress);
-        }
+        await this.logWebhook(
+          'DIGIFLAZZ',
+          'callback_pascabayar',
+          refId,
+          body,
+          'ignored',
+          `Status callback ambigu/bertentangan (rc=${rc}, status=${String(data.status ?? '')}); status tidak diubah`,
+          ipAddress,
+        );
       }
       return { error: false, error_msg: 'Berhasil' };
     }
@@ -384,13 +445,42 @@ export class WebhookService {
     id: number,
     sn: string,
     actualBillAmount?: number | null,
+    actualProviderAdminFee?: number | null,
+    providerCost?: number | null,
+    providerBillRef?: string | null,
   ): Promise<void> {
     await this.pascabayarFinalizer.finalizeSuccess({
       transactionId: id,
       sn,
       actualBillAmount: actualBillAmount ?? null,
+      actualProviderAdminFee: actualProviderAdminFee ?? null,
+      providerCost: providerCost ?? null,
+      providerBillRef: providerBillRef ?? null,
       source: 'WEBHOOK',
     });
+  }
+
+  /**
+   * Tagihan pelanggan dari callback Digiflazz pasca. `price` adalah potongan
+   * deposit buyer (harga pokok), BUKAN tagihan, jadi tidak boleh dipakai sebagai
+   * nominal. Utamakan rincian `desc.detail[]` (nilai_tagihan + denda), lalu
+   * `selling_price - admin`. Bila tidak ada, kembalikan null agar finalizer
+   * memakai nominal snapshot inquiry.
+   */
+  private resolveDigiflazzPascaBill(data: any): {
+    billAmount: number | null;
+    adminFee: number | null;
+  } {
+    const adminFee = toIntOrNull(data?.admin);
+    const sellingPrice = toIntOrNull(data?.selling_price ?? data?.sellingPrice);
+    const fromDetail = sumDetailBill(data?.desc) ?? sumDetailBill(data);
+    const billAmount =
+      fromDetail !== null
+        ? fromDetail
+        : sellingPrice !== null && adminFee !== null
+          ? sellingPrice - adminFee
+          : null;
+    return { billAmount, adminFee };
   }
 
   private async updateFailedTransactionPascabayar(

@@ -21,15 +21,21 @@ const WITH_PROVIDER_DETAIL = {
   digiflazzProduct: true,
 } as const;
 
+/** Alasan produk tidak dapat dipakai untuk inquiry baru. */
+export type PascabayarSelectionRejection =
+  | 'belum_dihubungkan'
+  | 'sku_kosong'
+  | 'katalog_tidak_ada'
+  | 'katalog_tidak_aktif';
+
 /**
  * Resolusi provider/SKU aktif untuk sebuah produk pascabayar.
  *
- * Urutan:
- * 1. Pemilihan eksplisit admin (isActive = true).
- * 2. Kandidat eksplisit tanpa penanda aktif (deterministik id terkecil).
- * 3. Fallback pemetaan IAK lama (IakPascabayarProduct.produkPascabayarId).
- *
- * Hasil selalu deterministik; tidak pernah memilih `findFirst` tanpa urutan.
+ * Hanya pemilihan eksplisit admin (`isActive = true`) yang dipakai. Tidak ada
+ * fallback otomatis ke kandidat termurah atau pemetaan lama: menghubungkan SKU
+ * belum berarti admin memilihnya, jadi SKU yang belum dipilih tidak boleh
+ * terpakai. Ketersediaan katalog juga diperiksa (produk buyer/seller nonaktif
+ * atau baris katalog hilang akan ditolak).
  */
 @Injectable()
 export class PascabayarSelectionService {
@@ -43,43 +49,44 @@ export class PascabayarSelectionService {
       orderBy: { updatedAt: 'desc' },
       include: WITH_PROVIDER_DETAIL,
     });
-    if (active && active.providerSku) {
-      return this.toSelection(active, true);
+    if (!active) {
+      this.logger.warn(`[PASCA] Produk ${produkPascabayarId} belum punya provider aktif pilihan admin`);
+      return null;
+    }
+    if (!active.providerSku || !String(active.providerSku).trim()) {
+      this.logger.warn(`[PASCA] Provider aktif produk ${produkPascabayarId} belum punya SKU`);
+      return null;
     }
 
-    const candidate = await this.prisma.produkPascabayarProvider.findFirst({
-      where: { produkPascabayarId },
-      orderBy: { id: 'asc' },
-      include: WITH_PROVIDER_DETAIL,
-    });
-    if (candidate && candidate.providerSku) {
-      this.logger.warn(
-        `[PASCA] Produk ${produkPascabayarId} belum punya provider aktif eksplisit; memakai kandidat deterministik ${candidate.provider}/${candidate.providerSku}`,
-      );
-      return this.toSelection(candidate, false);
+    const rejection = this.cekKetersediaanKatalog(active);
+    if (rejection) {
+      this.logger.warn(`[PASCA] Provider aktif produk ${produkPascabayarId} ditolak: ${rejection}`);
+      return null;
     }
 
-    const legacyIak = await this.prisma.iakPascabayarProduct.findFirst({
-      where: { produkPascabayarId, status: 'active' },
-      orderBy: { id: 'asc' },
-      include: { type: true },
-    });
-    if (legacyIak && legacyIak.code) {
-      this.logger.warn(
-        `[PASCA] Produk ${produkPascabayarId} memakai fallback pemetaan IAK legacy (${legacyIak.code}). Segera hubungkan pemetaan eksplisit di panel admin.`,
-      );
-      return {
-        produkPascabayarId,
-        provider: 'IAK',
-        providerSku: legacyIak.code,
-        selectionId: null,
-        digiflazzProductId: null,
-        iakProductId: legacyIak.id,
-        providerType: legacyIak.type?.type ?? null,
-        explicit: false,
-      };
-    }
+    return this.toSelection(active, true);
+  }
 
+  /**
+   * Katalog yang tidak tersedia tidak boleh dipakai walau admin pernah memilihnya.
+   * `null` pada status katalog berarti belum diketahui (bukan nonaktif).
+   */
+  private cekKetersediaanKatalog(row: {
+    provider: PascabayarProvider;
+    digiflazzProduct?: {
+      buyerProductStatus: boolean | null;
+      sellerProductStatus: boolean | null;
+    } | null;
+    iakProduct?: { status?: string | null } | null;
+  }): 'katalog_tidak_ada' | 'katalog_tidak_aktif' | null {
+    if (row.provider === 'DIGIFLAZZ') {
+      if (!row.digiflazzProduct) return 'katalog_tidak_ada';
+      if (row.digiflazzProduct.buyerProductStatus === false) return 'katalog_tidak_aktif';
+      if (row.digiflazzProduct.sellerProductStatus === false) return 'katalog_tidak_aktif';
+      return null;
+    }
+    if (!row.iakProduct) return 'katalog_tidak_ada';
+    if (row.iakProduct.status && row.iakProduct.status !== 'active') return 'katalog_tidak_aktif';
     return null;
   }
 

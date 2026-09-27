@@ -11,6 +11,10 @@ class Detail_pascabayar_provider with ChangeNotifier {
   String? _tanggal;
   String? _waktu;
   String? _noref;
+  String? _sn;
+  String? _periode;
+  String? _providerAdminFee;
+  String? _provider;
   String? _tarif;
   String? _daya;
   String? _total;
@@ -32,6 +36,10 @@ class Detail_pascabayar_provider with ChangeNotifier {
   String? get tanggal => _tanggal;
   String? get waktu => _waktu;
   String? get noref => _noref;
+  String? get sn => _sn;
+  String? get periode => _periode;
+  String? get providerAdminFee => _providerAdminFee;
+  String? get provider => _provider;
   String? get tarif => _tarif;
   String? get daya => _daya;
   String? get total => _total;
@@ -74,6 +82,10 @@ class Detail_pascabayar_provider with ChangeNotifier {
       _tanggal = e.tanggal;
       _waktu = e.waktu;
       _noref = e.noref;
+      _sn = e.sn;
+      _periode = e.periode;
+      _providerAdminFee = e.providerAdminFee;
+      _provider = e.provider;
       _tarif = e.tarif;
       _daya = e.daya;
       _total = e.total;

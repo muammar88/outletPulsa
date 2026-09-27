@@ -36,6 +36,8 @@ export interface PascabayarPayInput {
   customerNo: string;
   additionalData?: Record<string, unknown> | null;
   providerType?: string | null;
+  /** Referensi internal provider (mis. `tr_id` IAK hasil inquiry) bila kontraknya memerlukan. */
+  providerRefId?: string | null;
 }
 
 export interface PascabayarNormalizedInquiry {
@@ -46,8 +48,24 @@ export interface PascabayarNormalizedInquiry {
   message: string;
   customerName: string | null;
   customerNo: string;
-  /** Nominal tagihan pelanggan dari provider (bukan harga jual aplikasi). */
+  /**
+   * Nominal tagihan pelanggan dari provider (bukan harga jual aplikasi).
+   * Untuk Digiflazz: `detail[].nilai_tagihan + denda`, atau `selling_price - admin`.
+   * `price` BUKAN tagihan: `price` adalah potongan deposit buyer.
+   */
   billAmount: number | null;
+  /**
+   * Harga pokok yang dipotong dari deposit/saldo kami bila provider menyatakannya.
+   * Digiflazz: `price`. IAK: tidak dinyatakan pada respons (`null`, bukan nol).
+   */
+  providerCost: number | null;
+  /** Tarif/daya (PLN) bila provider menyatakannya. */
+  tarif: string | null;
+  daya: number | null;
+  /** `tr_id` provider (ID inquiry IAK) bila ada; dipakai pembayaran IAK. */
+  providerRefId: string | null;
+  /** Referensi biller/nomor bukti provider (mis. `noref` IAK), terpisah dari ID inquiry. */
+  providerBillRef: string | null;
   /** Biaya admin yang dikenakan provider. null = belum diketahui (bukan 0). */
   providerAdminFee: number | null;
   /** Komisi dari provider bila dinyatakan terpisah. null = belum diketahui. */
@@ -70,9 +88,13 @@ export interface PascabayarNormalizedPay {
   message: string;
   sn: string | null;
   providerRefId: string | null;
-  /** Nominal aktual yang dinyatakan provider saat pembayaran, bila ada. */
+  /** Nominal tagihan aktual (bukan `price` potongan deposit) bila dinyatakan provider. */
   actualBillAmount: number | null;
   actualProviderAdminFee: number | null;
+  /** Harga pokok yang dipotong dari deposit kami bila dinyatakan provider. */
+  providerCost: number | null;
+  /** Referensi biller/nomor bukti provider (mis. `noref` IAK), terpisah dari ID inquiry. */
+  providerBillRef: string | null;
   raw: unknown;
 }
 

@@ -252,9 +252,12 @@ export class PascabayarCatalogService {
   /**
    * Perbandingan kandidat provider pada produk internal.
    *
-   * Nilai provider diambil dari katalog (bukan nominal tagihan final). Estimasi
-   * laba memakai asumsi eksplisit yang ikut dikembalikan pada field `asumsi`
-   * supaya UI tidak menampilkan keuntungan yang belum terbukti.
+   * Kedua provider dibandingkan pada harga jual yang SAMA: pelanggan membayar
+   * tagihan + fee aplikasi internal, sehingga yang membedakan hanya biaya admin
+   * provider dan komisi yang diterima. Tagihan dan harga pokok final baru
+   * diketahui dari respons inquiry, jadi tidak diestimasi dari katalog.
+   * Asumsi ikut dikembalikan pada field `asumsi` supaya UI tidak menampilkan
+   * keuntungan yang belum terbukti.
    */
   async compareProviders(produkPascabayarId: number) {
     const produk = await this.prisma.produkPascabayar.findUnique({ where: { id: produkPascabayarId } });
@@ -267,17 +270,16 @@ export class PascabayarCatalogService {
       const digi = c.digiflazzProduct;
       const iak = c.iakProduct;
 
-      const biayaPerolehan = c.provider === 'DIGIFLAZZ' ? digi?.price ?? null : null;
+      // Digiflazz pasca: katalog hanya memuat `admin` + `commission` (tanpa `price`).
+      // IAK pasca: katalog memuat `fee` (biaya admin) + `komisi`.
       const adminProvider = c.provider === 'DIGIFLAZZ' ? digi?.admin ?? null : iak?.fee ?? null;
       const komisiProvider = c.provider === 'DIGIFLAZZ' ? digi?.commission ?? null : iak?.komisi ?? null;
 
-      const hargaPokokEstimasi =
-        biayaPerolehan === null ? null : biayaPerolehan + (adminProvider ?? 0);
-      const hargaJualEstimasi = biayaAplikasi === null ? null : (hargaPokokEstimasi ?? 0) + biayaAplikasi;
+      // Pada harga jual yang sama: laba = feeAplikasi - adminProvider + komisiProvider.
       const labaEstimasi =
-        hargaJualEstimasi === null || hargaPokokEstimasi === null
+        biayaAplikasi === null || adminProvider === null
           ? null
-          : hargaJualEstimasi - hargaPokokEstimasi + (komisiProvider ?? 0);
+          : biayaAplikasi - adminProvider + (komisiProvider ?? 0);
 
       return {
         mappingId: c.id,
@@ -288,12 +290,13 @@ export class PascabayarCatalogService {
         kategori: c.provider === 'DIGIFLAZZ' ? digi?.category ?? null : iak?.type?.type ?? null,
         tersedia: c.provider === 'DIGIFLAZZ' ? digi?.buyerProductStatus ?? null : iak?.status === 'active',
         sinkronTerakhir: digi?.syncedAt ?? null,
-        biayaPerolehan,
+        // Tidak diestimasi dari katalog; nilainya baru ada saat inquiry.
+        biayaPerolehan: null,
         adminProvider,
         komisiProvider,
         biayaAdminAplikasi: biayaAplikasi,
-        hargaPokokEstimasi,
-        hargaJualEstimasi,
+        hargaPokokEstimasi: null,
+        hargaJualEstimasi: null,
         labaEstimasi,
       };
     });
@@ -301,10 +304,10 @@ export class PascabayarCatalogService {
     return {
       produk: { id: produk.id, kode: produk.kode, name: produk.name, fee: produk.fee, comission: produk.comission },
       asumsi: [
-        'Nominal tagihan final diambil dari respons inquiry saat transaksi, bukan dari katalog.',
-        'hargaPokokEstimasi = biayaPerolehan + adminProvider (komisi tidak dikurangkan agar tidak dihitung dua kali).',
-        'hargaJualEstimasi = hargaPokokEstimasi + biayaAdminAplikasi (fee produk internal).',
-        'labaEstimasi = hargaJualEstimasi - hargaPokokEstimasi + komisiProvider; asumsi komisi provider dibayarkan terpisah.',
+        'Kedua provider dibandingkan pada harga jual yang sama: pelanggan membayar tagihan + fee aplikasi internal.',
+        'labaEstimasi = feeAplikasi - adminProvider + komisiProvider; adminProvider Digiflazz dari katalog `admin`, IAK dari `fee`.',
+        'Tagihan pelanggan dan harga pokok provider (mis. `price` Digiflazz) baru diketahui dari respons inquiry, sehingga tidak diestimasi di sini.',
+        'Katalog pascabayar Digiflazz tidak memuat harga pokok; `price` hanya muncul pada respons transaksi.',
         'Nilai null berarti data belum tersedia, bukan nol.',
       ],
       kandidat: rows,

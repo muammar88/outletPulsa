@@ -59,12 +59,9 @@ export class StubController {
 
   // ── TRANSAKSI PASCABAYAR ──────────────────────────
 
-  /** POST /api/transaksi-detail-pascabayar */
-  @UseGuards(JwtApiGuard)
-  @Post('transaksi-detail-pascabayar')
-  detailTransaksiPascabayar(@Body() body: any) {
-    return { error: false, error_msg: '', data: {} };
-  }
+  // Rute transaksi-detail-pascabayar dihapus dari stub: endpoint nyata ada di
+  // TransaksiPascabayarController. Rute ganda sebelumnya menutupi implementasi
+  // nyata karena StubModule diimpor lebih dulu, sehingga detail/struk kosong.
   // ── AGEN ──────────────────────────────────────────
 
 

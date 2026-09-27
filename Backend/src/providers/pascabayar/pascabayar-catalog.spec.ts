@@ -110,5 +110,75 @@ describe('PascabayarCatalogService', () => {
       service.connectProvider({ produkPascabayarId: 99, provider: 'DIGIFLAZZ', providerSku: 'X' }, 1),
     ).rejects.toBeInstanceOf(NotFoundException);
   });
+
+  it('membandingkan provider pada harga jual yang sama tanpa mengarang harga pokok', async () => {
+    const prisma = buildPrisma();
+    const service = new PascabayarCatalogService(prisma, {} as any);
+    prisma.produkPascabayar.findUnique.mockResolvedValue({
+      id: 11,
+      kode: 'PLN-PASCA',
+      name: 'PLN Pascabayar',
+      fee: 2500,
+      comission: 0,
+    });
+    prisma.produkPascabayarProvider.findMany.mockResolvedValue([
+      {
+        id: 1,
+        provider: 'DIGIFLAZZ',
+        providerSku: 'pln',
+        isActive: true,
+        digiflazzProduct: {
+          admin: 2500,
+          commission: 500,
+          name: 'Pln Postpaid',
+          category: 'Pascabayar',
+          buyerProductStatus: true,
+        },
+        iakProduct: null,
+      },
+      {
+        id: 2,
+        provider: 'IAK',
+        providerSku: 'PLNPOST',
+        isActive: false,
+        digiflazzProduct: null,
+        iakProduct: { fee: 2000, komisi: 700, name: 'PLN', status: 'active', type: { type: 'pln' } },
+      },
+    ]);
+
+    const res = await service.compareProviders(11);
+    const digi = res.kandidat.find((k: any) => k.provider === 'DIGIFLAZZ');
+    const iak = res.kandidat.find((k: any) => k.provider === 'IAK');
+
+    // laba = fee aplikasi - admin provider + komisi provider, pada harga jual yang sama.
+    expect(digi.labaEstimasi).toBe(2500 - 2500 + 500);
+    expect(iak.labaEstimasi).toBe(2500 - 2000 + 700);
+    // Harga pokok & harga jual tidak dikarang dari katalog.
+    expect(digi.biayaPerolehan).toBeNull();
+    expect(digi.hargaJualEstimasi).toBeNull();
+    expect(digi.hargaPokokEstimasi).toBeNull();
+    expect(res.asumsi.join(' ')).toContain('harga jual yang sama');
+  });
+
+  it('tidak menampilkan estimasi laba bila komponen biaya belum diketahui', async () => {
+    const prisma = buildPrisma();
+    const service = new PascabayarCatalogService(prisma, {} as any);
+    prisma.produkPascabayar.findUnique.mockResolvedValue({ id: 12, fee: 2500 });
+    prisma.produkPascabayarProvider.findMany.mockResolvedValue([
+      {
+        id: 3,
+        provider: 'DIGIFLAZZ',
+        providerSku: 'x',
+        isActive: true,
+        digiflazzProduct: { admin: null, commission: 500 },
+        iakProduct: null,
+      },
+    ]);
+
+    const res = await service.compareProviders(12);
+
+    expect(res.kandidat[0].labaEstimasi).toBeNull();
+    expect(res.kandidat[0].adminProvider).toBeNull();
+  });
 });
 

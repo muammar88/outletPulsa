@@ -4,6 +4,7 @@ import { PrismaService } from '../../prisma.service';
 import { PascabayarRouterService } from '../../providers/pascabayar/pascabayar-router.service';
 import { PascabayarSelectionService } from '../../providers/pascabayar/pascabayar-selection.service';
 import { PascabayarFinalizerService } from '../../providers/pascabayar/pascabayar-finalizer.service';
+import { claimStatusCheck, PASCA_MIN_JEDA_MS } from '../../providers/pascabayar/pascabayar-lease';
 import {
   PascabayarNormalizedInquiry,
   PascabayarProviderCode,
@@ -117,10 +118,14 @@ export class TransaksiPascabayarService {
 
       const selection = await this.selection.resolveActive(produk.id);
       if (!selection) {
-        return { error: true, error_msg: 'Produk belum terhubung ke provider pascabayar. Hubungi admin.', data: {} };
+        return {
+          error: true,
+          error_msg: 'Produk belum memiliki provider pascabayar aktif yang tersedia. Hubungi admin.',
+          data: {},
+        };
       }
 
-      const refId = this.buildRefId();
+      const refId = this.buildRefId(selection.provider);
       const adapter = this.router.getAdapter(selection.provider);
       const inquiry = await adapter.inquiry({
         refId,
@@ -156,6 +161,10 @@ export class TransaksiPascabayarService {
           adminFee: appFee,
           adminFeeSnapshot: appFee,
           comissionSnapshot: inquiry.providerCommission,
+          providerRefId: inquiry.providerRefId,
+          noref: inquiry.providerBillRef,
+          tarif: inquiry.tarif,
+          daya: inquiry.daya,
           total,
           totalNominal: total,
           expiredAt,
@@ -167,6 +176,11 @@ export class TransaksiPascabayarService {
             providerAdminFee: inquiry.providerAdminFee,
             providerSellingPrice: inquiry.providerSellingPrice,
             providerCommission: inquiry.providerCommission,
+            providerCost: inquiry.providerCost,
+            tarif: inquiry.tarif,
+            daya: inquiry.daya,
+            trId: inquiry.providerRefId,
+            providerBillRef: inquiry.providerBillRef,
             period: inquiry.period,
             rc: inquiry.rc,
             detail: inquiry.detail as any,
@@ -213,22 +227,35 @@ export class TransaksiPascabayarService {
       if (trx.status === 'gagal' || trx.status === 'expired') {
         return { error: true, error_msg: `Transaksi sudah ${trx.status}. Silakan lakukan cek tagihan ulang.` };
       }
-      if (trx.expiredAt && trx.expiredAt.getTime() < Date.now()) {
-        await this.prisma.transactionPascabayar.updateMany({
-          where: { id: trx.id, status: 'proses' },
-          data: { status: 'expired', providerStatus: 'expired' },
-        });
-        return { error: true, error_msg: 'Inquiry sudah kedaluwarsa. Silakan cek tagihan ulang.' };
-      }
       if (!trx.provider || !trx.providerSku || !trx.nomorTujuan) {
         return { error: true, error_msg: 'Snapshot provider transaksi tidak lengkap' };
       }
       if (trx.paymentAttemptedAt) {
-        // Sudah pernah dikirim; jangan debit ulang.
+        // Sudah pernah dikirim; jangan debit ulang dan jangan tandai kedaluwarsa.
+        // Saldo bisa sudah terpotong, jadi transaksi harus tetap diselesaikan
+        // finalizer/worker pemulihan meski tanggal inquiry sudah lewat.
         return { error: false, error_msg: '', message: 'Pembayaran sedang diproses', data: { status: trx.status } };
+      }
+      if (trx.expiredAt && trx.expiredAt.getTime() < Date.now()) {
+        await this.prisma.transactionPascabayar.updateMany({
+          where: { id: trx.id, status: 'proses', paymentAttemptedAt: null },
+          data: { status: 'expired', providerStatus: 'expired' },
+        });
+        return { error: true, error_msg: 'Inquiry sudah kedaluwarsa. Silakan cek tagihan ulang.' };
       }
 
       const payload = (trx.inquiryPayload as any) ?? {};
+
+      // Kontrak IAK: pembayaran wajib memakai tr_id hasil inquiry. Tolak sebelum
+      // debit supaya saldo tidak terpotong untuk permintaan yang tidak mungkin dikirim.
+      if (trx.provider === 'IAK' && !(trx.providerRefId ?? payload.trId)) {
+        this.logger.error(`[PASCA] Pembayaran IAK ${trx.trId} ditolak: tr_id inquiry tidak tersedia`);
+        return {
+          error: true,
+          error_msg: 'Data tr_id dari IAK tidak tersedia. Silakan lakukan cek tagihan ulang.',
+        };
+      }
+
       const total = trx.total ?? 0;
       const intentId = `PSCPAY-${trx.id}-${Date.now()}`;
 
@@ -292,6 +319,7 @@ export class TransaksiPascabayarService {
         refId: trx.trId as string,
         sku: trx.providerSku,
         customerNo: trx.nomorTujuan,
+        providerRefId: trx.providerRefId ?? payload.trId ?? null,
         providerType: payload.providerType ?? null,
         additionalData: payload.additionalData ?? null,
       });
@@ -302,7 +330,9 @@ export class TransaksiPascabayarService {
           sn: pay.sn,
           providerRefId: pay.providerRefId,
           actualBillAmount: pay.actualBillAmount,
-          actualProviderAdminFee: pay.actualProviderAdminFee ?? payload.providerAdminFee ?? null,
+          actualProviderAdminFee: pay.actualProviderAdminFee ?? null,
+          providerCost: pay.providerCost ?? null,
+          providerBillRef: pay.providerBillRef ?? null,
           source: 'PAY_DIRECT',
         });
         return { error: false, error_msg: '', message: 'Pembayaran Pascabayar Berhasil', data: { status: 'sukses' } };
@@ -318,9 +348,20 @@ export class TransaksiPascabayarService {
       }
 
       // Pending / ambigu: pertahankan status proses agar tidak salah refund.
+      // Simpan alasan rekonsiliasi supaya operator tahu transaksi menunggu hasil
+      // provider dan tidak dibayar ulang ke provider lain.
       await this.prisma.transactionPascabayar.updateMany({
         where: { id: trx.id, status: 'proses' },
-        data: { providerStatus: pay.status, providerRefId: pay.providerRefId ?? undefined },
+        data: {
+          providerStatus: pay.status,
+          providerRefId: pay.providerRefId ?? undefined,
+          inquiryPayload: {
+            ...payload,
+            reconciliationReason: 'HASIL_BAYAR_AMBIGU',
+            lastProviderStatus: pay.status,
+            reconciliationSince: new Date().toISOString(),
+          } as any,
+        },
       });
       return {
         error: false,
@@ -350,8 +391,14 @@ export class TransaksiPascabayarService {
     }
 
     const secondsSinceUpdate = (Date.now() - trx.updatedAt.getTime()) / 1000;
-    if (secondsSinceUpdate < 60) {
+    if (secondsSinceUpdate < PASCA_MIN_JEDA_MS / 1000) {
       return this.statusResponse(trx, 'Status lokal (belum 60 detik sejak pembaruan terakhir)');
+    }
+    // Klaim atomik: worker pemulihan dan tombol cek status memakai lease yang sama,
+    // supaya dua pemanggil tidak menembak provider bersamaan.
+    const claimed = await claimStatusCheck(this.prisma, trx.id);
+    if (!claimed) {
+      return this.statusResponse(trx, 'Sedang diperiksa proses lain (status lokal)');
     }
 
     const payload = (trx.inquiryPayload as any) ?? {};
@@ -361,6 +408,7 @@ export class TransaksiPascabayarService {
         refId: trx.trId as string,
         sku: trx.providerSku,
         customerNo: trx.nomorTujuan,
+        providerRefId: trx.providerRefId ?? payload.trId ?? null,
         providerType: payload.providerType ?? null,
         additionalData: payload.additionalData ?? null,
       });
@@ -371,7 +419,9 @@ export class TransaksiPascabayarService {
           sn: result.sn,
           providerRefId: result.providerRefId,
           actualBillAmount: result.actualBillAmount,
-          actualProviderAdminFee: result.actualProviderAdminFee ?? payload.providerAdminFee ?? null,
+          actualProviderAdminFee: result.actualProviderAdminFee ?? null,
+          providerCost: result.providerCost ?? null,
+          providerBillRef: result.providerBillRef ?? null,
           source: 'STATUS_CHECK',
         });
       } else if (result.definitiveFailure) {
@@ -383,7 +433,16 @@ export class TransaksiPascabayarService {
       } else {
         await this.prisma.transactionPascabayar.updateMany({
           where: { id: trx.id, status: 'proses' },
-          data: { providerStatus: result.status, providerRefId: result.providerRefId ?? undefined },
+          data: {
+            providerStatus: result.status,
+            providerRefId: result.providerRefId ?? undefined,
+            inquiryPayload: {
+              ...payload,
+              reconciliationReason: 'HASIL_CEK_STATUS_AMBIGU',
+              lastProviderStatus: result.status,
+              reconciliationSince: new Date().toISOString(),
+            } as any,
+          },
         });
       }
     } catch (error) {
@@ -407,6 +466,23 @@ export class TransaksiPascabayarService {
     const tanggal = created.toISOString().slice(0, 10);
     const waktu = created.toISOString().slice(11, 19);
 
+    // Rincian provider disimpan pada snapshot inquiry; kolom transaksi hanya diisi
+    // bila provider menyatakannya saat inquiry, jadi keduanya dibaca di sini.
+    const payload = (trx.inquiryPayload as Record<string, any> | null) ?? {};
+    const detailProvider = (payload.detail as Record<string, any> | null) ?? {};
+    const descProvider = (detailProvider.desc as Record<string, any> | null) ?? {};
+    const tarif = trx.tarif ?? payload.tarif ?? detailProvider.tarif ?? descProvider.tarif ?? '';
+    const daya = trx.daya ?? payload.daya ?? detailProvider.daya ?? descProvider.daya ?? null;
+    // `noref` = nomor bukti biller dari provider, terpisah dari ID inquiry kami.
+    const noref =
+      trx.noref ??
+      payload.providerBillRef ??
+      detailProvider.noref ??
+      trx.serial_number ??
+      '';
+    const providerTrId = trx.providerRefId ?? payload.trId ?? detailProvider.tr_id ?? detailProvider.trId ?? null;
+    const providerAdminFee = payload.providerAdminFee ?? detailProvider.admin ?? null;
+
     return {
       error: false,
       error_msg: '',
@@ -418,9 +494,11 @@ export class TransaksiPascabayarService {
         tanggal,
         waktu,
         dateTransaction: `${tanggal} ${waktu}`,
-        noref: trx.providerRefId ?? '',
-        tarif: trx.tarif ?? '',
-        daya: trx.daya ?? null,
+        noref: String(noref ?? ''),
+        tr_id: String(providerTrId ?? ''),
+        sn: trx.serial_number ?? '',
+        tarif: String(tarif ?? ''),
+        daya,
         total: trx.total !== null ? String(trx.total) : '',
         productName: produk?.name ?? '',
         nomorTujuan: trx.nomorTujuan ?? '',
@@ -428,7 +506,9 @@ export class TransaksiPascabayarService {
         price: trx.nominal !== null ? String(trx.nominal) : '',
         totalPrice: trx.total !== null ? String(trx.total) : '',
         biayaAdmin: trx.adminFee !== null ? String(trx.adminFee) : '',
+        providerAdminFee: providerAdminFee !== null ? String(providerAdminFee) : '',
         fee: '0',
+        periode: payload.period ?? '',
         message: trx.ket ?? '',
         provider: trx.provider ?? null,
       },
@@ -461,8 +541,11 @@ export class TransaksiPascabayarService {
     };
   }
 
-  private buildRefId(): string {
-    return `PSC-${Date.now()}-${randomBytes(4).toString('hex')}`;
+  private buildRefId(provider: PascabayarProviderCode): string {
+    const stamp = [Date.now(), randomBytes(4).toString('hex')].join('');
+    // IAK RC 03: referensi harus alfanumerik tanpa tanda hubung/spasi.
+    if (provider === 'IAK') return `PSC${stamp}`;
+    return `PSC-${stamp}`;
   }
 
   /**

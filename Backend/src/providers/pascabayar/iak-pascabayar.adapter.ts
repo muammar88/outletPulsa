@@ -5,9 +5,18 @@ import {
   PascabayarInquiryInput,
   PascabayarNormalizedInquiry,
   PascabayarNormalizedPay,
+  PascabayarNormalizedStatus,
   PascabayarPayInput,
 } from './pascabayar.types';
-import { asRecord, pick, statusFromText, toIntOrNull } from './pascabayar-normalize';
+import {
+  asRecord,
+  periksaIdentitas,
+  pick,
+  resolveConsistentStatus,
+  statusFromText,
+  strOrNull,
+  toIntOrNull,
+} from './pascabayar-normalize';
 
 /**
  * Adapter IAK pascabayar.
@@ -21,6 +30,13 @@ import { asRecord, pick, statusFromText, toIntOrNull } from './pascabayar-normal
 export class IakPascabayarAdapter implements PascabayarAdapter {
   readonly provider = 'IAK' as const;
   private readonly logger = new Logger(IakPascabayarAdapter.name);
+
+  /** Field identitas respons IAK yang wajib cocok dengan snapshot. */
+  private static readonly IDENTITAS = {
+    ref: ['ref_id'],
+    sku: ['code', 'product_code'],
+    customer: ['hp', 'customer_no'],
+  };
 
   constructor(private readonly iak: IakService) {}
 
@@ -46,12 +62,13 @@ export class IakPascabayarAdapter implements PascabayarAdapter {
       const raw = await this.iak.transactionPascabayar({
         command: 'pay-pasca',
         refId: input.refId,
+        trId: strOrNull(input.providerRefId),
         sku: input.sku,
         customerNo: input.customerNo,
         additionalData: input.additionalData,
         providerType: input.providerType,
       });
-      return this.normalizePay(raw);
+      return this.normalizePay(raw, input);
     } catch (error) {
       this.logger.error(`[IAK PASCA] Pay gagal: ${(error as Error).message}`);
       return this.ambiguousPay('Koneksi ke IAK gagal setelah permintaan dikirim');
@@ -63,12 +80,13 @@ export class IakPascabayarAdapter implements PascabayarAdapter {
       const raw = await this.iak.transactionPascabayar({
         command: 'status-pasca',
         refId: input.refId,
+        trId: strOrNull(input.providerRefId),
         sku: input.sku,
         customerNo: input.customerNo,
         additionalData: input.additionalData,
         providerType: input.providerType,
       });
-      return this.normalizePay(raw);
+      return this.normalizePay(raw, input);
     } catch (error) {
       this.logger.error(`[IAK PASCA] Status gagal: ${(error as Error).message}`);
       return this.ambiguousPay('Status tidak dapat dipastikan');
@@ -76,57 +94,100 @@ export class IakPascabayarAdapter implements PascabayarAdapter {
   }
 
   private normalizeInquiry(raw: unknown, input: PascabayarInquiryInput): PascabayarNormalizedInquiry {
-    const data = asRecord(asRecord(raw).data);
-    const rc = String(pick(data, 'rc') ?? '');
-    const statusCode = String(pick(data, 'status') ?? '');
+    const root = asRecord(raw);
+    const data = asRecord(root.data ?? root);
+    const rc = String(pick(data, 'response_code', 'rc') ?? '');
+    const statusNum = toIntOrNull(pick(data, 'status'));
     const statusText = statusFromText(pick(data, 'status_text', 'statusText'));
-    const message = String(pick(data, 'message', 'keterangan') ?? '');
-    const billAmount = toIntOrNull(pick(data, 'bill_amount', 'billAmount', 'price', 'nominal', 'total'));
-    const ok = (rc === '00' || statusCode === '1' || statusCode === '00') && billAmount !== null;
+    const desc = asRecord(pick(data, 'desc'));
+    const message = String(pick(data, 'message', 'keterangan') ?? strOrNull(pick(data, 'desc')) ?? '');
+    // Tagihan pelanggan IAK = nominal. `price` = nominal + admin, bukan tagihan mentah.
+    const billAmount = toIntOrNull(pick(data, 'nominal'));
+    const sellingPrice = toIntOrNull(pick(data, 'selling_price'));
+    const identitas = periksaIdentitas(data, input, IakPascabayarAdapter.IDENTITAS);
+    if (identitas) {
+      this.logger.warn(`[IAK PASCA] Inquiry diabaikan, identitas tidak dapat dipastikan: ${identitas}`);
+      return { ...this.ambiguousInquiry(input, `Identitas respons tidak dapat dipastikan: ${identitas}`), rc, raw };
+    }
+
+    const ok =
+      rc === '00' &&
+      billAmount !== null &&
+      (statusText === null || statusText === 'sukses') &&
+      (statusNum === null || statusNum === 1 || statusNum === 0);
 
     return {
       ok,
-      status: ok ? 'sukses' : statusText ?? (statusCode === '0' ? 'pending' : 'tidak_diketahui'),
+      status: ok ? 'sukses' : statusText ?? (statusNum === 3 ? 'pending' : 'tidak_diketahui'),
       rc,
       message,
-      customerName: (pick(data, 'customer_name', 'customerName') as string | undefined) ?? null,
-      customerNo: String(pick(data, 'customer_id', 'customer_no', 'customerNo') ?? input.customerNo),
+      customerName: strOrNull(pick(data, 'tr_name', 'customer_name', 'customerName')),
+      // Nomor pelanggan dipertahankan apa adanya (nol di depan tidak dihapus).
+      customerNo: strOrNull(pick(data, 'hp', 'customer_id', 'customer_no', 'customerNo')) ?? input.customerNo,
       billAmount,
+      // Biaya deposit IAK dinyatakan pada selling_price (potongan saldo sesudah komisi).
+      providerCost: sellingPrice,
+      tarif: strOrNull(pick(desc, 'tarif')) ?? strOrNull(pick(data, 'tarif')),
+      daya: toIntOrNull(pick(desc, 'daya') ?? pick(data, 'daya')),
+      providerRefId: strOrNull(pick(data, 'tr_id', 'trId')),
+      providerBillRef: strOrNull(pick(data, 'noref')),
       providerAdminFee: toIntOrNull(pick(data, 'admin', 'admin_fee')),
       providerCommission: toIntOrNull(pick(data, 'komisi', 'commission')),
-      providerSellingPrice: toIntOrNull(pick(data, 'selling_price', 'total')),
-      period: (pick(data, 'periode', 'period', 'desc') as string | undefined) ?? null,
+      providerSellingPrice: sellingPrice,
+      period: strOrNull(pick(data, 'period', 'periode')),
       detail: data,
       raw,
     };
   }
 
-  private normalizePay(raw: unknown): PascabayarNormalizedPay {
+  private normalizePay(raw: unknown, input?: PascabayarPayInput): PascabayarNormalizedPay {
     if (!raw) return this.ambiguousPay('Status tidak dapat dipastikan');
     const root = asRecord(raw);
     const data = asRecord(root.data ?? root);
-    const rc = String(pick(data, 'rc') ?? '');
-    const statusCode = String(pick(data, 'status') ?? '');
+    const rc = String(pick(data, 'response_code', 'rc') ?? '');
+    const statusNum = toIntOrNull(pick(data, 'status'));
     const statusText = statusFromText(pick(data, 'status_text', 'statusText', 'status'));
+    const sellingPrice = toIntOrNull(pick(data, 'selling_price'));
 
-    let status: PascabayarNormalizedPay['status'] = 'tidak_diketahui';
-    if (statusText) status = statusText;
-    else if (rc === '00') status = 'sukses';
-    else if (statusCode === '0') status = 'pending';
-    else if (statusCode === '2') status = 'gagal';
+    // Identitas harus terkonfirmasi lengkap. Field yang hilang BUKAN berarti
+    // cocok: respons tanpa identitas masuk rekonsiliasi.
+    const identitas = periksaIdentitas(data, input, IakPascabayarAdapter.IDENTITAS);
+    if (identitas) {
+      this.logger.warn(`[IAK PASCA] Hasil diabaikan, identitas tidak dapat dipastikan: ${identitas}`);
+      return { ...this.ambiguousPay(`Identitas respons tidak dapat dipastikan: ${identitas}`), rc };
+    }
+
+    // Status numerik IAK: 1 sukses, 2 gagal, 3 pending, 0/asing belum dapat dipastikan.
+    const numericStatus: PascabayarNormalizedStatus | null =
+      statusNum === 1
+        ? 'sukses'
+        : statusNum === 2
+          ? 'gagal'
+          : statusNum === 3
+            ? 'pending'
+            : statusNum === 0
+              ? 'tidak_diketahui'
+              : null;
+    // Sinyal numerik dan teks harus konsisten; sinyal kosong/bertentangan tidak
+    // ditebak menjadi sukses. RC saja (tanpa status eksplisit) juga tidak cukup.
+    const status = resolveConsistentStatus(numericStatus, statusText);
+    const definitiveFailure = status === 'gagal';
 
     return {
       status,
-      definitiveFailure: status === 'gagal',
+      definitiveFailure,
       rc,
-      message: String(pick(data, 'message', 'keterangan') ?? ''),
-      sn: (pick(data, 'sn', 'serial_number') as string | undefined) ?? null,
-      providerRefId: (pick(data, 'tr_id', 'trId') as string | undefined) ?? null,
-      actualBillAmount: toIntOrNull(pick(data, 'bill_amount', 'price', 'total')),
+      message: String(pick(data, 'message', 'keterangan') ?? strOrNull(pick(data, 'desc')) ?? ''),
+      sn: strOrNull(pick(data, 'sn', 'serial_number')),
+      providerRefId: strOrNull(pick(data, 'tr_id', 'trId')),
+      providerBillRef: strOrNull(pick(data, 'noref')),
+      actualBillAmount: toIntOrNull(pick(data, 'nominal', 'bill_amount')),
       actualProviderAdminFee: toIntOrNull(pick(data, 'admin', 'admin_fee')),
+      providerCost: sellingPrice,
       raw,
     };
   }
+
 
   private ambiguousInquiry(input: PascabayarInquiryInput, message: string): PascabayarNormalizedInquiry {
     return {
@@ -137,6 +198,11 @@ export class IakPascabayarAdapter implements PascabayarAdapter {
       customerName: null,
       customerNo: input.customerNo,
       billAmount: null,
+      providerCost: null,
+      tarif: null,
+      daya: null,
+      providerRefId: null,
+      providerBillRef: null,
       providerAdminFee: null,
       providerCommission: null,
       providerSellingPrice: null,
@@ -154,8 +220,10 @@ export class IakPascabayarAdapter implements PascabayarAdapter {
       message,
       sn: null,
       providerRefId: null,
+      providerBillRef: null,
       actualBillAmount: null,
       actualProviderAdminFee: null,
+      providerCost: null,
       raw: null,
     };
   }

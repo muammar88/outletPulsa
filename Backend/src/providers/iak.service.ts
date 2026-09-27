@@ -29,7 +29,9 @@ export class IakService {
   }
 
   private get postpaidBaseUrl(): string {
-    return this.isDev ? 'https://postpaid.iak.dev' : 'https://postpaid.iak.id';
+    // Kontrak IAK pascabayar: development testpostpaid.mobilepulsa.net,
+    // production mobilepulsa.net (bukan domain postpaid.iak.dev/id).
+    return this.isDev ? 'https://testpostpaid.mobilepulsa.net' : 'https://mobilepulsa.net';
   }
 
   private signMd5(suffix: string): string {
@@ -158,51 +160,156 @@ export class IakService {
     }
   }
 
+  /** Timeout fetch IAK; AbortController membatalkan koneksi dan pembacaan body. */
+  private static readonly REQUEST_TIMEOUT_MS = 30000;
+
+  /** Field inti yang tidak boleh ditimpa input tambahan kategori. */
+  private static readonly RESERVED_FIELDS = [
+    'commands',
+    'username',
+    'sign',
+    'ref_id',
+    'tr_id',
+    'code',
+    'hp',
+    'customer_id',
+    'product_code',
+  ];
+
   /**
-   * Transaksi pascabayar generik (inq-pasca | pay-pasca | status-pasca).
-   * Signature = MD5(username + apiKey + ref_id). Tipe kategori dipakai pada path
-   * bill/check sesuai kontrak postpaid IAK.
+   * Field input tambahan yang didukung per kategori pascabayar IAK.
    *
-   * CATATAN: nama field respons IAK berbeda dari Digiflazz dan sebagian produk
-   * memerlukan input tambahan. Verifikasi sandbox tetap diperlukan sebelum
-   * diaktifkan di produksi.
+   * Hanya kategori dengan kontrak input yang sudah terverifikasi dimasukkan di
+   * sini. Kategori/field lain ditolak sebelum request dikirim, bukan diteruskan
+   * mentah-mentah. PLN hanya memakai `code`/`hp` sehingga allowlist-nya kosong.
+   */
+  private static readonly CATEGORY_INPUT_ALLOWLIST: Record<string, string[]> = {
+    pln: [],
+  };
+
+  /**
+   * Transaksi pascabayar IAK.
+   *
+   * Kontrak resmi IAK postpaid (dokumen kontrak offline 27 September 2026):
+   * - endpoint POST /api/v1/bill/check (tanpa suffix kategori).
+   * - inquiry PLN: commands=inq-pasca, code (SKU), hp (nomor), ref_id, sign(ref_id).
+   * - pembayaran: commands=pay-pasca, tr_id hasil inquiry IAK, sign(tr_id).
+   * - status: commands=checkstatus, ref_id, sign literal "cs" (BUKAN status-pasca).
+   *
+   * Nama operasi internal dipertahankan agar router kompatibel, tetapi
+   * diterjemahkan menjadi checkstatus pada batas HTTP IAK.
    */
   async transactionPascabayar(options: {
     command: 'inq-pasca' | 'pay-pasca' | 'status-pasca';
     refId: string;
+    trId?: string | null;
     sku: string;
     customerNo: string;
     additionalData?: Record<string, unknown> | null;
     providerType?: string | null;
   }): Promise<any> {
-    const sign = this.signMd5(options.refId);
-    const url = options.providerType
-      ? `${this.postpaidBaseUrl}/api/v1/bill/check/${options.providerType}`
-      : `${this.postpaidBaseUrl}/api/v1/bill/check`;
-    const body: Record<string, unknown> = {
-      ...(options.additionalData ?? {}),
-      commands: options.command,
-      username: this.username,
-      sign,
-      ref_id: options.refId,
-      customer_id: options.customerNo,
-      product_code: options.sku,
-    };
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    const text = await response.text();
-    let data: any;
-    try {
-      data = JSON.parse(text);
-    } catch {
-      this.logger.error(`IAK ${options.command} bukan JSON: ${text?.slice(0, 200)}`);
-      throw new BadRequestException(`Respons IAK ${options.command} tidak valid`);
+    const trId = options.trId ? String(options.trId).trim() : '';
+    if (options.command === 'pay-pasca' && !trId) {
+      throw new BadRequestException('Pembayaran IAK membutuhkan tr_id hasil inquiry');
     }
-    this.logger.log(`IAK ${options.command} Response: ${JSON.stringify(data)}`);
-    return data;
+    const url = `${this.postpaidBaseUrl}/api/v1/bill/check`;
+    const body = this.buildPascaBody(options, trId);
+    return this.postJson(url, body, options.command);
+  }
+
+  private buildPascaBody(
+    options: {
+      command: 'inq-pasca' | 'pay-pasca' | 'status-pasca';
+      refId: string;
+      sku: string;
+      customerNo: string;
+      additionalData?: Record<string, unknown> | null;
+      providerType?: string | null;
+    },
+    trId: string,
+  ): Record<string, unknown> {
+    if (options.command === 'pay-pasca') {
+      // Pembayaran hanya memakai tr_id; ref_id/code/hp bukan bagian kontrak.
+      return { commands: 'pay-pasca', username: this.username, tr_id: trId, sign: this.signMd5(trId) };
+    }
+    if (options.command === 'status-pasca') {
+      // checkstatus memakai ref_id dan suffix literal "cs".
+      return {
+        commands: 'checkstatus',
+        username: this.username,
+        ref_id: options.refId,
+        sign: this.signMd5('cs'),
+      };
+    }
+    // Inquiry PLN memakai code/hp; customer_id/product_code bukan penggantinya.
+    return {
+      ...this.validatedAdditionalData(options.additionalData, options.providerType),
+      commands: 'inq-pasca',
+      username: this.username,
+      code: options.sku,
+      hp: options.customerNo,
+      ref_id: options.refId,
+      sign: this.signMd5(options.refId),
+    };
+  }
+
+  /** Kategori pascabayar IAK dari providerType; default `pln` bila kosong. */
+  private resolveCategory(providerType?: string | null): string {
+    return String(providerType ?? '').trim().toLowerCase() || 'pln';
+  }
+
+  /**
+   * Validasi input tambahan kategori memakai allowlist.
+   *
+   * Kategori yang belum didukung dan field yang tidak ada di allowlist ditolak
+   * (bukan diteruskan), sehingga tidak mungkin menimpa command/sign/credential
+   * maupun mengirim input yang belum terdefinisi kontraknya.
+   */
+  private validatedAdditionalData(
+    data: Record<string, unknown> | null | undefined,
+    providerType?: string | null,
+  ): Record<string, unknown> {
+    const category = this.resolveCategory(providerType);
+    const allowed = IakService.CATEGORY_INPUT_ALLOWLIST[category];
+    if (!allowed) {
+      throw new BadRequestException(`Kategori pascabayar IAK '${category}' belum didukung`);
+    }
+    if (!data || typeof data !== 'object') return {};
+    const out: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (IakService.RESERVED_FIELDS.includes(key) || !allowed.includes(key)) {
+        throw new BadRequestException(
+          `Input '${key}' belum didukung untuk kategori pascabayar IAK '${category}'`,
+        );
+      }
+      out[key] = value;
+    }
+    return out;
+  }
+
+  /** POST JSON dengan timeout yang benar-benar membatalkan koneksi dan body. */
+  private async postJson(url: string, body: Record<string, unknown>, label: string): Promise<any> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), IakService.REQUEST_TIMEOUT_MS);
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(body),
+        signal: controller.signal,
+      });
+      const text = await response.text();
+      let data: any;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        this.logger.error(`IAK ${label} bukan JSON: ${text?.slice(0, 200)}`);
+        throw new BadRequestException(`Respons IAK ${label} tidak valid`);
+      }
+      this.logger.log(`IAK ${label} Response: ${JSON.stringify(data)}`);
+      return data;
+    } finally {
+      clearTimeout(timer);
+    }
   }
 }

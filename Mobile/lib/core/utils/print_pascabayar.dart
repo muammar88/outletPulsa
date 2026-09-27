@@ -443,6 +443,12 @@ class _PrintPascabayarState extends State<PrintPascabayar> {
                                           if (detail.noref != null && detail.noref!.isNotEmpty) {
                                             list.add(LineText(type: LineText.TYPE_TEXT, content: 'REF     : ${detail.noref ?? '-'}', align: LineText.ALIGN_LEFT, linefeed: 1));
                                           }
+                                          if (detail.sn != null && detail.sn!.isNotEmpty) {
+                                            list.add(LineText(type: LineText.TYPE_TEXT, content: 'SN      : ${detail.sn}', align: LineText.ALIGN_LEFT, linefeed: 1));
+                                          }
+                                          if (detail.periode != null && detail.periode!.isNotEmpty) {
+                                            list.add(LineText(type: LineText.TYPE_TEXT, content: 'PERIODE : ${detail.periode}', align: LineText.ALIGN_LEFT, linefeed: 1));
+                                          }
 
                                           list.add(LineText(type: LineText.TYPE_TEXT, content: '--------------------------------', align: LineText.ALIGN_CENTER, linefeed: 1));
                                           

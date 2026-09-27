@@ -1,7 +1,9 @@
 # ISSUE-009 — Tambahkan Digiflazz untuk pascabayar, provider dipilih admin
 
 Tanggal: 27 September 2026.
-Status: OPEN — belum diimplementasikan melalui issue ini.
+Status: PARTIAL — sudah ada implementasi; masih memerlukan koreksi kode dan verifikasi wajib.
+
+> **Instruksi terbaru untuk AI dengan akses dokumentasi terbatas:** baca [panduan kontrak offline dan langkah perbaikan](fixtures/009-kontrak-offline-dan-langkah-perbaikan.md) sebelum melanjutkan. Dokumen tersebut berisi kontrak resmi yang telah dibaca pada 27 September 2026, payload contoh, urutan perubahan per file, matriks tes, dan batas verifikasi. Tautan eksternal adalah jejak sumber; tidak perlu membukanya untuk mengerjakan langkah lokal yang dijelaskan. Koreksi pada panduan tersebut menggantikan asumsi yang bertentangan dalam laporan pelaksanaan lama di bawah. Jangan menganggap semua temuan selesai hanya berdasarkan laporan ronde sebelumnya.
 Prioritas: tinggi. Keamanan saldo dan kompatibilitas fitur lama adalah syarat wajib.
 
 ## 1. Tujuan dan keputusan pengguna
@@ -301,7 +303,7 @@ Jangan meminta izin melanjutkan pekerjaan lokal rutin yang sudah diperintahkan. 
 
 ## 18. Hasil pelaksanaan
 
-Status: **PARTIAL** - implementasi backend inti (katalog, pemetaan, routing provider, inquiry, pembayaran aman, finalisasi idempotent, webhook, worker pemulihan transaksi pending, endpoint mobile, dan tombol pemulihan status di mobile) selesai, lulus build produksi, dan diuji dengan mock. Yang **belum terverifikasi**: migrasi pada database uji terisolasi, sandbox resmi IAK/Digiflazz (termasuk nama field respons IAK dan arti RC Digiflazz di luar fixture), serta build penuh frontend.
+Status: **PARTIAL** - implementasi backend inti (katalog, pemetaan, routing provider, inquiry, pembayaran aman, finalisasi idempotent, webhook, worker pemulihan transaksi pending, endpoint mobile, dan tombol pemulihan status di mobile) selesai, lulus build produksi, dan diuji dengan mock. Yang **belum terverifikasi**: migrasi pada database uji terisolasi dan sandbox resmi IAK/Digiflazz (termasuk nama field respons IAK dan arti RC Digiflazz di luar fixture). Build produksi backend (`nest build`) dan frontend (`vite build`) lulus; rincian tes pada bagian 7 dan koreksi temuan reviewer pada bagian 9.
 
 ### 1. Ringkasan dan koreksi temuan awal
 
@@ -348,23 +350,23 @@ Mobile: `Mobile/lib/models/model_status_pascabayar.dart` (baru), `Mobile/lib/ser
 1. Buka menu Produk Pascabayar, klik tombol **Pilih Server Aktif** pada produk.
 2. Pada panel provider: klik **Sinkron Katalog Digiflazz** untuk mengisi katalog pascabayar.
 3. Pada bagian Hubungkan SKU: pilih Digiflazz lalu cari SKU, atau pilih IAK lalu isi kode SKU; klik **Hubungkan**.
-4. Bandingkan kolom biaya perolehan, admin provider, komisi, fee aplikasi, estimasi harga jual, dan estimasi laba.
+4. Bandingkan kolom admin provider, komisi, fee aplikasi, dan estimasi laba kotor (katalog) (harga pokok dan tagihan final baru diketahui dari respons inquiry).
 5. Klik **Jadikan Aktif** pada kandidat terpilih. Perubahan hanya berlaku untuk inquiry baru; inquiry berjalan tetap memakai snapshot provider/SKU asal.
 
 ### 4. Rumus harga dan keuntungan
 
-Komponen yang disimpan/dinormalkan: nominal tagihan (`price`/`bill_amount` provider), admin provider, komisi provider, fee aplikasi (`ProdukPascabayar.fee`), harga perolehan, harga jual, laba.
+Komponen yang disimpan/dinormalkan: harga pokok provider (potongan deposit, mis. `price` Digiflazz), tagihan pelanggan (`bill_amount`, atau `desc.detail[].nilai_tagihan + denda` untuk Digiflazz), admin provider, komisi provider, fee aplikasi (`ProdukPascabayar.fee`), harga jual, laba.
 
-Rumus yang dipakai dan diuji:
+Perbandingan kandidat admin memakai **harga jual yang sama** (pelanggan membayar tagihan + fee aplikasi internal), sehingga yang membedakan hanya biaya admin provider dan komisi yang diterima:
 
-- harga pokok estimasi = biayaPerolehan + adminProvider
-- harga jual estimasi = harga pokok estimasi + fee aplikasi internal
-- laba estimasi = harga jual estimasi - harga pokok estimasi + komisiProvider
-- harga jual transaksi final = nominal tagihan aktual dari inquiry + fee aplikasi internal
+- laba estimasi (katalog) = feeAplikasi - adminProvider + komisiProvider
+- biayaPerolehan, hargaPokokEstimasi, dan hargaJualEstimasi = null; harga pokok/tagihan final baru diketahui dari respons inquiry, bukan diestimasi dari katalog
+- harga jual transaksi final = tagihan aktual hasil inquiry + fee aplikasi internal
+- laba kotor transaksi final (`PascabayarFinalizerService`) = total yang didebit dari member - biaya aktual provider (`providerCost`: Digiflazz `price`, IAK `selling_price`); komisi katalog TIDAK ditambahkan lagi. Bila biaya aktual belum diketahui, `laba = null` (rumus lama `total - tagihan - admin + komisi` dikoreksi pada bagian 11)
 
-Contoh (diuji pada `pascabayar-finalizer.spec.ts`): nominal 10.000, fee aplikasi 2.500, admin provider 2.000, komisi provider 500, menghasilkan laba = 12.500 - 10.000 - 2.000 + 500 = 1.000.
+Contoh (diuji pada `pascabayar-finalizer.spec.ts`): total didebit 12.500, providerCost 11.000, menghasilkan laba kotor = 12.500 - 11.000 = 1.500. Komisi katalog tidak ditambahkan lagi.
 
-Asumsi yang ditampilkan eksplisit di API perbandingan: nominal final diambil dari inquiry; komisi provider diasumsikan dibayarkan terpisah sehingga tidak dikurangkan dari harga pokok; nilai `null` berarti belum tersedia, bukan nol. **Jika aturan komisi internal berbeda, satu konstanta pada `compareProviders` dan `PascabayarFinalizerService` perlu disesuaikan.**
+Makna harga Digiflazz (docs resmi, diperiksa 27 September 2026): `price` = potongan deposit buyer (harga pokok kami), `selling_price` = harga ke client, `admin` = biaya admin, `commission` = komisi buyer; tagihan pelanggan diambil dari `desc.detail[].nilai_tagihan + denda` (fallback `selling_price - admin`). Nilai `null` berarti belum tersedia, bukan nol.
 
 ### 5. Bukti snapshot provider
 
@@ -373,7 +375,7 @@ Asumsi yang ditampilkan eksplisit di API perbandingan: nominal final diambil dar
 ### 6. Kompatibilitas mobile dan regresi
 
 - Tidak ada selector provider di aplikasi mobile (hanya pemakaian paket `provider` untuk state management).
-- Field respons inquiry dan detail dipertahankan (`ref_id`, `tr_id`, `kode_product`, `nomor_tujuan`, `nama_pelanggan`, `nominal`, `totalTagihan`, `biaya_admin`, `fee`; detail: `kode`, `status`, `print_status`, `tanggal`, `waktu`, `noref`, `total`, `productName`, `nomorTujuan`, `namaPelanggan`, `price`, `totalPrice`, `biayaAdmin`, `fee`, `message`). Perubahan bersifat aditif.
+- Field respons inquiry dan detail dipertahankan (`ref_id`, `tr_id`, `kode_product`, `nomor_tujuan`, `nama_pelanggan`, `nominal`, `totalTagihan`, `biaya_admin`, `fee`; detail: `kode`, `status`, `print_status`, `tanggal`, `waktu`, `noref`, `total`, `productName`, `nomorTujuan`, `namaPelanggan`, `price`, `totalPrice`, `biayaAdmin`, `fee`, `message`). Perubahan bersifat aditif. Detail kini juga mengembalikan `sn`, `periode`, dan `providerAdminFee`, dan model/struk mobile memuat `sn`/`periode` (aditif) sehingga struk sukses tidak kosong.
 - Pemulihan status di mobile: tombol **CEK STATUS KE PROVIDER** memanggil `pascabayar-status`. Backend tetap membatasi pemanggilan provider (jeda 60 detik untuk data yang sama) dan hanya melakukan finalisasi lewat jalur finalizer yang idempotent.
 - Alur prabayar, topup saldo, dan callback LinkQu tidak diubah selain penambahan provider mock pada dua spec webhook. Suite `linkqu-callback.spec.ts` yang sempat gagal karena dependensi baru sudah diperbaiki.
 - Perbaikan kecil ikutan pada ISSUE-008: `DepositIdempotency.clear` tanpa `knownKey` sebelumnya tidak menghapus apa pun sehingga tes `deposit_idempotency_test.dart` gagal; kini slot dihapus untuk intent yang diminta dan tetap tidak menghapus intent lain.
@@ -384,8 +386,8 @@ Mock (tanpa database), `Backend`:
 
 - `node --stack-size=8192 node_modules/typescript/lib/tsc.js --noEmit --incremental false -p tsconfig.json`: hanya 13 galat pra-eksisting di `*.spec.ts` (deposit-linkqu, deposit-admin-protection, wapisender) yang tidak terkait perubahan ini.
 - `nest build`: berhasil (exit 0).
-- `jest --runInBand`: 29 suite lulus, 5 suite gagal (semuanya pra-eksisting: pengumuman service+controller, riwayat_transfer_saldo service+controller, wapisender), 225 tes lulus, 13 tes gagal (pra-eksisting).
-- Tes baru yang ditambahkan dan lulus: `digiflazz-pascabayar.adapter.spec.ts`, `pascabayar-router.spec.ts`, `pascabayar-finalizer.spec.ts`, `pascabayar-catalog.spec.ts`, `pascabayar-recovery.spec.ts` (7 tes), `transaksi-pascabayar.service.spec.ts`, `digiflazz-transaction-pascabayar.spec.ts`, `pascabayar-webhook.spec.ts`, `pascabayar-wiring.spec.ts`.
+- `jest --runInBand`: 31 suite lulus, 5 suite gagal (semuanya pra-eksisting: pengumuman service+controller, riwayat_transfer_saldo service+controller, wapisender), 249 tes lulus, 13 tes gagal (pra-eksisting) dari 262 tes.
+- Tes baru yang ditambahkan dan lulus: `digiflazz-pascabayar.adapter.spec.ts`, `pascabayar-router.spec.ts`, `pascabayar-finalizer.spec.ts`, `pascabayar-catalog.spec.ts`, `pascabayar-recovery.spec.ts` (7 tes), `pascabayar-selection.spec.ts` (7 tes), `iak-pascabayar-transaction.spec.ts` (4 tes), `transaksi-pascabayar.service.spec.ts`, `digiflazz-transaction-pascabayar.spec.ts`, `pascabayar-webhook.spec.ts`, `pascabayar-wiring.spec.ts`.
 
 Mobile:
 
@@ -405,3 +407,86 @@ Belum dijalankan (tidak tersedia/butuh otorisasi): migrasi pada `TEST_DATABASE_U
 3. Sinkronkan katalog pascabayar Digiflazz dan hubungkan SKU lewat panel admin sebelum mengaktifkan provider Digiflazz pada produk.
 4. Worker pemulihan membutuhkan Redis dan hanya berjalan saat `NODE_ENV=production` (mengikuti perilaku `SchedulerModule` yang ada). Transaksi yang tidak kunjung pasti setelah 3 hari atau 10 percobaan ditandai `PERLU_PENANGANAN_MANUAL` pada `providerStatus` untuk ditangani operator, bukan direfund otomatis.
 5. Hambatan verifikasi: nama field respons IAK pascabayar dinormalkan defensif dan wajib diverifikasi di sandbox; ambiguitas RC Digiflazz diperlakukan sebagai pending (tidak refund otomatis) sampai verifikasi sandbox. Selama itu, kesimpulan "kedua provider bekerja penuh" belum boleh diklaim.
+
+### 9. Koreksi temuan reviewer (ronde lanjutan, 27 September 2026)
+
+Semua temuan reviewer dikerjakan ulang dan diverifikasi dengan tes:
+
+1. **Refund atomik (kritis).** `pascabayar-finalizer.service.ts` menambah saldo dengan `increment` (SET saldo = saldo + total), bukan baca-lalu-tulis nilai absolut; `after` diambil dari hasil update dan `before = after - total`. Refund yang berjalan bersamaan tidak lagi menimpa topup/pembelian lain.
+2. **Kontrak pembayaran IAK (tinggi).** `iak.service.ts::transactionPascabayar` menerima `trId`; `pay-pasca` memakai sign `MD5(username + apiKey + tr_id)` dan body `tr_id`, endpoint selalu `/api/v1/bill/check` (tanpa suffix kategori), dan melempar error bila `tr_id` kosong. Adapter mengirim `providerRefId` hasil inquiry untuk pay/status; service menolak pembayaran IAK tanpa `tr_id` sebelum debit. Dites di `iak-pascabayar-transaction.spec.ts` (4 tes).
+3. **Kedaluwarsa tidak menimpa pembayaran pending (tinggi).** Pemeriksaan `paymentAttemptedAt` didahulukan atas `expiredAt`, dan update expired diberi guard `paymentAttemptedAt: null`. Saldo yang sudah terpotong tetap diselesaikan finalizer/worker walau pengguna mencoba lagi pada hari berikutnya.
+4. **Makna `price` Digiflazz dan rumus laba (tinggi).** Lihat bagian 4: perbandingan memakai harga jual yang sama, dan modal admin hanya menampilkan Admin provider / Komisi / Fee aplikasi / Estimasi laba kotor (katalog) (label 'laba bersih' dikoreksi pada bagian 11 karena angkanya laba kotor).
+5. **Provider tanpa pilihan admin ditolak (tinggi).** `pascabayar-selection.service.ts` hanya memakai baris `isActive: true`; fallback kandidat id terkecil dan pemetaan IAK legacy dihapus. `cekKetersediaanKatalog()` menolak baris katalog hilang atau status buyer/seller `false` (`null` = belum diketahui, tetap boleh). Dites di `pascabayar-selection.spec.ts` (7 tes). Pesan inquiry: 'Produk belum memiliki provider pascabayar aktif yang tersedia. Hubungi admin.'
+6. **Detail dan struk (sedang).** Inquiry menulis kolom `providerRefId`, `tarif`, `daya` dan menyimpan `providerCost/tarif/daya/trId` pada `inquiryPayload`; `getDetailPascabayar` membaca `trx` lalu `payload` lalu `detail.desc`, dan mengembalikan `sn`, `periode`, serta `providerAdminFee`. Adapter Digiflazz mencari `tr_id` di `detail` dengan fallback `ref_id`, sehingga `noref` struk tidak kosong.
+
+### 10. Audit lanjutan (ronde kedua, 27 September 2026)
+
+Tiga hal yang belum tertangkap pada ronde pertama ditemukan dan diperbaiki:
+
+1. **Webhook Digiflazz pascabayar memakai `price` sebagai tagihan.** `webhook.service.ts` meneruskan `data.price` sebagai `actualBillAmount`, padahal `price` adalah potongan deposit buyer (harga pokok). Akibatnya `nominal` dan `laba` salah pada jalur webhook. Sekarang tagihan diambil dari `desc.detail[]` (`nilai_tagihan + denda`) atau `selling_price - admin`; `admin` diteruskan sebagai `actualProviderAdminFee`; bila tidak dapat dipastikan, `null` dikirim agar finalizer memakai nominal snapshot inquiry. Dites di `pascabayar-webhook.spec.ts` (6 tes).
+2. **Rute ganda `POST /api/transaksi-detail-pascabayar`.** `StubController` masih mendaftarkan rute yang sama, dan `StubModule` diimpor sebelum `TransaksiPascabayarModule` pada `app.module.ts`, sehingga respons stub `{ data: {} }` menutupi endpoint detail nyata dan struk tetap kosong. Rute stub dihapus; ditambah tes wiring yang memastikan tidak ada rute pascabayar terdaftar ganda antar-controller.
+3. **Model/struk mobile belum memuat `sn`/`periode`.** Detail API sudah mengembalikan keduanya, tetapi model Dart dan struk belum membacanya. Ditambahkan secara aditif pada `Mobile/lib/models/model_detail_transaksi_pascabayar.dart`, `Mobile/lib/shared/providers/DetailPascabayarProvider.dart`, dan `Mobile/lib/core/utils/print_pascabayar.dart`. `flutter analyze` pada berkas tersebut: 0 error (hanya info/warning gaya pra-eksisting).
+
+### 11. Perbaikan paket kontrak offline (ronde ketiga, 27 September 2026)
+
+Pengerjaan ronde ketiga mengikuti `doc/issue/fixtures/009-kontrak-offline-dan-langkah-perbaikan.md` (Langkah 2-6). Ringkasannya:
+
+1. **Request IAK per operasi (`Backend/src/providers/iak.service.ts`).** Pembentuk payload dipisah: `inq-pasca` memakai `code`/`hp`/`ref_id` + sign `ref_id`; `pay-pasca` memakai `tr_id` + sign `tr_id` (tanpa `ref_id`/`code`/`hp`); status internal `status-pasca` diterjemahkan ke HTTP `checkstatus` + sign literal `cs`. Base URL pascabayar: `https://testpostpaid.mobilepulsa.net` (development) / `https://mobilepulsa.net` (production), path `/api/v1/bill/check` tanpa suffix kategori. `additionalData` dibatasi allowlist sehingga tidak dapat menimpa `commands`/`sign`/credential/`ref_id`/`tr_id`/`code`/`hp`; fetch memakai `AbortController` dengan timeout 30 detik.
+2. **Ref ID IAK alfanumerik.** IAK memakai `PSC<digit>` (tanpa tanda hubung, sesuai RC 03); provider lain tetap `PSC-<digit>`. Ref ID yang sudah berjalan tidak diganti saat retry.
+3. **Normalisasi IAK tanpa menunggu `bill_amount`.** `normalizeInquiry`/`normalizePay` membaca `response_code`, `tr_name`, `nominal`, `selling_price`, `noref`, `desc.tarif`/`daya`, `period`. Status numerik: 1 sukses, 2 gagal (definitif bila sinyal konsisten), 3 pending, 0 belum diterima; status 0 + RC `00` tidak lagi menjadi sukses. `providerBillRef` (`noref`) dipisah dari `providerRefId` (`tr_id`).
+4. **Guard identitas respons.** Identitas (referensi/SKU/nomor) harus ADA dan cocok dengan snapshot; field yang hilang kini juga masuk `tidak_diketahui` (rekonsiliasi) - lihat koreksi ketat di bagian 12. Dites di `iak-pascabayar.adapter.spec.ts` dan `digiflazz-pascabayar.adapter.spec.ts`.
+5. **Biaya aktual dan laba.** Adapter, service, recovery, dan webhook terverifikasi meneruskan `providerCost` (Digiflazz `price`; IAK `selling_price`). Laba kotor = total yang didebit - `providerCost`; komisi katalog tidak ditambahkan lagi; biaya belum diketahui menghasilkan `laba = null`. Label UI admin diubah dari "Estimasi laba bersih" menjadi "Estimasi laba kotor (katalog)".
+6. **Normalisasi angka (`pascabayar-normalize.ts`).** `toIntOrNull` menolak `"abc"`/negatif/non-finite sebagai `null` (bukan 0) dan memahami pemisah ribuan (`"100.000"`/`"100,000"`); regex penghapus pemisah ribuan yang sebelumnya rusak (`/\\./g`) diperbaiki menjadi `/\./g`. `sumDetailBill` menolak seluruh rincian bila ada lembar malformed, bukan menjumlahkan sebagian. Dites di `pascabayar-normalize.spec.ts`.
+7. **Finalisasi dan recovery.** Finalizer sukses menolak diterapkan bila pembayaran belum diklaim/debit belum tercatat; refund memakai `increment` atomik dan membaca ulang baris setelah klaim; jalur ambigu menyimpan `reconciliationReason` pada `inquiryPayload`. Ditambah `pascabayar-lease.ts`: klaim pemeriksaan atomik (satu `UPDATE ... WHERE status = proses AND updatedAt <= cutoff`) dipakai bersama oleh worker pemulihan dan tombol cek status. Notifikasi pasca-commit dibungkus `catch` agar kegagalan kirim pesan tidak mengubah hasil finalisasi.
+8. **Webhook IAK pascabayar ditahan.** Callback IAK pascabayar belum terverifikasi kontraknya, sehingga tidak lagi memicu finalisasi; event disimpan dan status diselesaikan lewat cek status server-to-server. Finalisasi IAK prabayar tetap seperti semula.
+9. **Mobile.** `Mobile/lib/models/model_detail_transaksi_pascabayar.dart` mengubah `daya` numerik menjadi string nullable via `?.toString()`; model/struk tetap memuat `sn`, `periode`, dan `noref`. Dites di `Mobile/test/model_detail_transaksi_pascabayar_test.dart`.
+
+Hasil tes ronde ketiga:
+
+- `nest build` (Backend): exit 0.
+- `jest --runInBand pascabayar iak-pascabayar`: 13 suite lulus, 81 tes lulus.
+- `jest --runInBand` (penuh): 33 suite lulus, 5 suite gagal (semuanya pra-eksisting: `pengumuman` service+controller, `riwayat_transfer_saldo` service+controller, `wapisender`), 266 tes lulus, 13 tes gagal (pra-eksisting), dari 279 tes. Kegagalan `wapisender.spec.ts` berasal dari commit ISSUE-008 `5272f9d2` (`WebhookService` membutuhkan `LinkquCallbackProcessorService`), bukan regresi ISSUE-009.
+- `flutter analyze` pada berkas mobile yang diubah: 0 error; sisa info/warning gaya pra-eksisting (termasuk `unused_local_variable` pada variabel `data` yang sudah ada sebelum perubahan).
+- `flutter test test/model_detail_transaksi_pascabayar_test.dart`: 5 tes lulus.
+
+Status tetap **PARTIAL**. Pekerjaan yang belum terverifikasi penuh:
+
+- Sandbox resmi IAK dan Digiflazz belum dijalankan; nama field respons IAK pascabayar masih dipetakan defensif dan wajib dikonfirmasi di sandbox.
+- Kontrak callback pascabayar IAK belum lengkap; kategori selain PLN (PBB/SAMSAT/BPJS) belum dipetakan.
+- Atomicity lease/refund masih dibuktikan lewat unit test dengan mock, bukan database terisolasi. Klaim lease memakai `updatedAt` sebagai jendela 60 detik (bukan token kepemilikan per-worker seperti inbox LinkQu) dan perlu pengerasan bila dijalankan dengan banyak instance worker.
+- Migrasi produksi dan `npm run test:integration` pada `TEST_DATABASE_URL` belum dijalankan.
+
+### 12. Koreksi temuan reviewer ronde keempat (27 September 2026)
+
+Reviewer menemukan empat masalah pada perbaikan ronde ketiga. Semua dikerjakan dan diverifikasi dengan tes:
+
+1. **Status bertentangan tidak lagi dianggap sukses/gagal.** Ditambah `resolveConsistentStatus` (`pascabayar-normalize.ts`): dua sinyal status harus konsisten; sinyal kosong atau bertentangan menjadi `tidak_diketahui`. IAK memetakan status numerik (1/2/3) dan membandingkannya dengan teks; `response_code` 00 tanpa status eksplisit TIDAK lagi menjadi sukses. Digiflazz membandingkan kode `rc` (00 sukses, 03 pending) dengan teks status, bukan mengutamakan teks. Dites di `pascabayar-normalize.spec.ts` dan `iak-pascabayar.adapter.spec.ts`.
+2. **Identitas respons harus lengkap.** `periksaIdentitas` mewajibkan referensi/SKU/nomor ADA pada respons dan sama dengan snapshot; field yang hilang BUKAN berarti cocok, melainkan `tidak_diketahui`. Diterapkan pada normalisasi inquiry maupun pay/status IAK dan Digiflazz. Contoh ditolak: IAK tanpa `hp`, Digiflazz tanpa `customer_no`. Dites di `iak-pascabayar.adapter.spec.ts`, `digiflazz-pascabayar.adapter.spec.ts`, dan `pascabayar-normalize.spec.ts`.
+3. **Biaya inquiry dipisah dari biaya aktual pembayaran.** `PascabayarFinalizerService` hanya memakai `input.providerCost` (bukti pembayaran) sebagai `actualProviderCost` dan dasar `laba`; biaya dari respons inquiry disimpan sebagai `estimatedProviderCost`/`estimatedProviderAdminFee`. Pemanggil (`transaksi-pascabayar.service.ts`, `pascabayar-recovery.service.ts`) tidak lagi memakai `payload.providerCost` sebagai laba aktual. Dites di `pascabayar-finalizer.spec.ts`.
+4. **Allowlist input per kategori IAK.** `iak.service.ts` memakai `CATEGORY_INPUT_ALLOWLIST` (saat ini `pln: []`); kategori yang belum didukung dan field di luar allowlist (termasuk field inti) ditolak dengan `BadRequestException` sebelum request dikirim. Jalur pay/status tidak memakai `additionalData`. Dites di `iak-pascabayar-transaction.spec.ts` (tiga tes penolakan).
+
+Hasil tes setelah koreksi ronde keempat:
+
+- `nest build` (Backend): exit 0.
+- `jest --runInBand pascabayar iak-pascabayar`: 13 suite lulus, 94 tes lulus.
+- `jest --runInBand` (penuh): 33 suite lulus, 279 tes lulus; 5 suite/13 tes gagal (pra-eksisting yang sama: `pengumuman` x2, `riwayat_transfer_saldo` x2, `wapisender`).
+
+Catatan batas: aturan identitas kini ketat sehingga provider yang tidak mengembalikan salah satu field identitas akan masuk rekonsiliasi (bukan finalisasi). Ini disengaja mengikuti kontrak offline, tetapi perlu dikonfirmasi di sandbox agar field wajib per operasi (khususnya pay IAK) tidak menahan pembayaran yang sebenarnya sah. Status tetap **PARTIAL**.
+
+### 13. Koreksi temuan reviewer ronde kelima (27 September 2026)
+
+Pemeriksaan ulang terhadap kontrak offline menemukan empat celah lokal. Semuanya sudah diperbaiki dan diuji:
+
+1. **Kontradiksi status Digiflazz tidak memicu refund.** Hasil pay/status `rc=00` dengan teks `Gagal` sekarang dinormalisasi menjadi `tidak_diketahui`; `definitiveFailure` hanya benar bila hasil normalisasi akhir benar-benar `gagal`. Inquiry juga memakai aturan konsistensi yang sama, sehingga `rc=00` dengan teks `Pending` tidak dianggap inquiry sukses.
+2. **Webhook Digiflazz memakai verifikasi identitas dan status yang sama dengan adapter.** Callback pascabayar kini wajib cocok pada provider, `ref_id`, SKU, dan nomor pelanggan secara utuh, termasuk mempertahankan nol awal. Field identitas yang hilang atau berbeda menghasilkan HTTP 409. Kombinasi kode dan teks status yang bertentangan dicatat sebagai ambigu tanpa sukses/refund.
+3. **Status numerik IAK nol tidak dapat ditimpa teks sukses.** Nilai numerik `0` sekarang menjadi sinyal eksplisit `tidak_diketahui`; bila teks menyatakan sukses, hasil akhirnya tetap `tidak_diketahui` dan transaksi masuk rekonsiliasi.
+4. **Notifikasi setelah commit memiliki retry terkontrol.** Pengumuman dicoba maksimal tiga kali. Gangguan socket dicatat terpisah sehingga tidak menghalangi pengumuman. Jika seluruh percobaan gagal, transaksi yang sudah final tetap sukses/gagal sesuai hasil provider dan error dicatat. Mekanisme ini retry dalam proses, belum merupakan outbox persisten lintas restart.
+
+Hasil verifikasi setelah koreksi ronde kelima:
+
+- `nest build` (Backend): berhasil, exit 0.
+- `jest --runInBand --testPathPatterns=pascabayar`: 13 suite lulus, 101 tes lulus.
+- `jest --runInBand --testPathPatterns=linkqu`: 6 suite lulus, 122 tes lulus.
+- `flutter test --no-pub test/model_detail_transaksi_pascabayar_test.dart test/deposit_idempotency_test.dart`: 9 tes lulus.
+
+Status tetap **PARTIAL** karena migrasi pada database uji terisolasi dan pengujian sandbox resmi IAK/Digiflazz belum dijalankan. Callback pascabayar IAK dan kategori IAK selain PLN juga masih menunggu kontrak resmi yang lengkap.

@@ -174,9 +174,128 @@ describe('TransaksiPascabayarService', () => {
     const res = await service.pembayaranPascabayar(7, 'PSC-5');
     expect(res.error).toBe(true);
     expect(prisma.transactionPascabayar.updateMany).toHaveBeenCalledWith({
-      where: { id: 5, status: 'proses' },
+      where: { id: 5, status: 'proses', paymentAttemptedAt: null },
       data: { status: 'expired', providerStatus: 'expired' },
     });
+  });
+
+  it('pembayaran yang sudah dikirim tidak diubah menjadi expired setelah pergantian hari', async () => {
+    const { service, prisma, adapter } = buildDeps();
+    prisma.transactionPascabayar.findFirst.mockResolvedValue({
+      id: 6,
+      trId: 'PSC-6',
+      status: 'proses',
+      memberId: 7,
+      // Pembayaran sudah dikirim kemarin dan saldo sudah terpotong.
+      paymentAttemptedAt: new Date(Date.now() - 24 * 3600 * 1000),
+      expiredAt: new Date(Date.now() - 3600 * 1000),
+      provider: 'DIGIFLAZZ',
+      providerSku: 'SKU',
+      nomorTujuan: '123',
+      total: 12500,
+      inquiryPayload: {},
+    });
+
+    const res = await service.pembayaranPascabayar(7, 'PSC-6');
+
+    expect(res.error).toBe(false);
+    expect(res.message).toBe('Pembayaran sedang diproses');
+    expect(adapter.pay).not.toHaveBeenCalled();
+    expect(prisma.transactionPascabayar.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('pembayaran IAK meneruskan tr_id hasil inquiry ke adapter', async () => {
+    const { service, prisma, adapter, finalizer } = buildDeps();
+    prisma.transactionPascabayar.findFirst.mockResolvedValue({
+      id: 7,
+      trId: 'PSC-7',
+      status: 'proses',
+      memberId: 7,
+      paymentAttemptedAt: null,
+      expiredAt: new Date(Date.now() + 100000),
+      provider: 'IAK',
+      providerSku: 'PLNPOST',
+      providerRefId: 'TRX-7',
+      nomorTujuan: '123',
+      total: 12500,
+      inquiryPayload: { providerType: 'pln' },
+    });
+    adapter.pay.mockResolvedValue({ status: 'sukses', sn: 'SN-7', definitiveFailure: false });
+
+    await service.pembayaranPascabayar(7, 'PSC-7');
+
+    expect(adapter.pay).toHaveBeenCalledWith(
+      expect.objectContaining({ refId: 'PSC-7', providerRefId: 'TRX-7', sku: 'PLNPOST' }),
+    );
+    expect(finalizer.finalizeSuccess).toHaveBeenCalled();
+  });
+
+  it('pembayaran IAK tanpa tr_id ditolak sebelum debit dan tanpa request provider', async () => {
+    const { service, prisma, adapter } = buildDeps();
+    prisma.transactionPascabayar.findFirst.mockResolvedValue({
+      id: 9,
+      trId: 'PSC-9',
+      status: 'proses',
+      memberId: 7,
+      paymentAttemptedAt: null,
+      expiredAt: new Date(Date.now() + 100000),
+      provider: 'IAK',
+      providerSku: 'PLNPOST',
+      providerRefId: null,
+      nomorTujuan: '123',
+      total: 12500,
+      inquiryPayload: { providerType: 'pln' },
+    });
+
+    const res = await service.pembayaranPascabayar(7, 'PSC-9');
+
+    expect(res.error).toBe(true);
+    expect(adapter.pay).not.toHaveBeenCalled();
+    expect(prisma.$transaction).not.toHaveBeenCalled();
+    expect(prisma.member.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('detail menyertakan tarif, daya, dan noref dari snapshot inquiry provider', async () => {
+    const { service, prisma } = buildDeps();
+    prisma.transactionPascabayar.findFirst.mockResolvedValue({
+      id: 8,
+      trId: 'PSC-8',
+      status: 'sukses',
+      memberId: 7,
+      nomorTujuan: '530000000001',
+      trName: 'BUDI',
+      nominal: 8500,
+      total: 11000,
+      adminFee: 2500,
+      tarif: null,
+      daya: null,
+      providerRefId: 'TRX-8',
+      noref: 'BILLER-8',
+      serial_number: 'SN-8',
+      produkId: 1,
+      createdAt: new Date('2026-09-27T03:00:00Z'),
+      ket: 'Pembayaran berhasil',
+      provider: 'DIGIFLAZZ',
+      inquiryPayload: {
+        period: '201901',
+        tarif: 'R1',
+        daya: 1300,
+        providerAdminFee: 2500,
+        detail: { tr_id: 'TRX-8', desc: { tarif: 'R1', daya: 1300 } },
+      },
+    });
+    prisma.produkPascabayar.findUnique.mockResolvedValue({ id: 1, name: 'PLN Pascabayar' });
+
+    const res = await service.getDetailPascabayar(7, 'PSC-8');
+
+    expect(res.error).toBe(false);
+    expect(res.data.tarif).toBe('R1');
+    expect(res.data.daya).toBe(1300);
+    // noref = nomor bukti biller; tr_id = ID inquiry, keduanya dipisah.
+    expect(res.data.noref).toBe('BILLER-8');
+    expect(res.data.tr_id).toBe('TRX-8');
+    expect(res.data.periode).toBe('201901');
+    expect(res.data.sn).toBe('SN-8');
   });
 });
 

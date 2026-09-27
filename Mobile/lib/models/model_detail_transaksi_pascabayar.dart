@@ -8,6 +8,10 @@ class Model_detail_transaksi_pascabayar {
   String? _tanggal;
   String? _waktu;
   String? _noref;
+  String? _sn;
+  String? _periode;
+  String? _providerAdminFee;
+  String? _provider;
   String? _tarif;
   String? _daya;
   String? _total;
@@ -28,6 +32,10 @@ class Model_detail_transaksi_pascabayar {
   String? get tanggal => _tanggal;
   String? get waktu => _waktu;
   String? get noref => _noref;
+  String? get sn => _sn;
+  String? get periode => _periode;
+  String? get providerAdminFee => _providerAdminFee;
+  String? get provider => _provider;
   String? get tarif => _tarif;
   String? get daya => _daya;
   String? get total => _total;
@@ -55,8 +63,13 @@ class Model_detail_transaksi_pascabayar {
     _tanggal = obj['data']['tanggal'];
     _waktu = obj['data']['waktu'];
     _noref = obj['data']['noref'];
+    _sn = obj['data']['sn'];
+    _periode = obj['data']['periode'];
+    _providerAdminFee = obj['data']['providerAdminFee'];
+    _provider = obj['data']['provider'];
     _tarif = obj['data']['tarif'];
-    _daya = obj['data']['daya'];
+    // daya bisa dikirim sebagai angka (mis. 1300) atau string; paksa ke string nullable.
+    _daya = obj['data']['daya']?.toString();
     _total = obj['data']['total'];
     _productName = obj['data']['productName'];
     _dateTransaction = obj['data']['dateTransaction'];

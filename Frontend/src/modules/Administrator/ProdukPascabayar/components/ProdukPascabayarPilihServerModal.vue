@@ -174,12 +174,10 @@ const syncKatalog = async () => {
               <th class="px-3 py-2 text-left">Provider</th>
               <th class="px-3 py-2 text-left">SKU</th>
               <th class="px-3 py-2 text-left">Nama / Kategori</th>
-              <th class="px-3 py-2 text-right">Biaya perolehan</th>
               <th class="px-3 py-2 text-right">Admin provider</th>
               <th class="px-3 py-2 text-right">Komisi</th>
               <th class="px-3 py-2 text-right">Fee aplikasi</th>
-              <th class="px-3 py-2 text-right">Estimasi harga jual</th>
-              <th class="px-3 py-2 text-right">Estimasi laba</th>
+              <th class="px-3 py-2 text-right">Estimasi laba kotor (katalog)</th>
               <th class="px-3 py-2 text-center">Status</th>
               <th class="px-3 py-2 text-center">Aksi</th>
             </tr>
@@ -192,12 +190,10 @@ const syncKatalog = async () => {
                 {{ row.nama || '-' }}
                 <span class="block text-xs text-slate-500">{{ row.kategori || '-' }}</span>
               </td>
-              <td class="px-3 py-2 text-right">{{ formatRp(row.biayaPerolehan) }}</td>
               <td class="px-3 py-2 text-right">{{ formatRp(row.adminProvider) }}</td>
               <td class="px-3 py-2 text-right">{{ formatRp(row.komisiProvider) }}</td>
               <td class="px-3 py-2 text-right">{{ formatRp(row.biayaAdminAplikasi) }}</td>
-              <td class="px-3 py-2 text-right">{{ formatRp(row.hargaJualEstimasi) }}</td>
-              <td class="px-3 py-2 text-right">{{ formatRp(row.labaEstimasi) }}</td>
+              <td class="px-3 py-2 text-right font-semibold">{{ formatRp(row.labaEstimasi) }}</td>
               <td class="px-3 py-2 text-center">
                 <span
                   class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase"
