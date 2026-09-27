@@ -6,6 +6,15 @@ import { toIntOrNull } from './pascabayar-normalize';
 
 type Provider = 'IAK' | 'DIGIFLAZZ';
 
+/** Prisma melempar error berkode P2002 saat unique constraint dilanggar. */
+function isUniqueConstraintError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    (error as { code?: unknown }).code === 'P2002'
+  );
+}
+
 export interface ProviderConnectorInput {
   produkPascabayarId: number;
   provider: Provider;
@@ -89,22 +98,57 @@ export class PascabayarCatalogService {
     limit?: string | number;
     search?: string;
     category?: string;
+    seller?: string;
+    availability?: string;
     connected?: string;
   }) {
     const page = Math.max(parseInt(String(query.page ?? '1'), 10) || 1, 1);
     const limit = Math.min(Math.max(parseInt(String(query.limit ?? '20'), 10) || 20, 1), 100);
-    const where: any = {};
+    const and: any[] = [];
 
-    if (query.search) {
-      where.OR = [
-        { buyerSkuCode: { contains: query.search, mode: 'insensitive' } },
-        { name: { contains: query.search, mode: 'insensitive' } },
-        { brand: { contains: query.search, mode: 'insensitive' } },
-      ];
+    const search = String(query.search ?? '').trim();
+    if (search) {
+      and.push({
+        OR: [
+          { buyerSkuCode: { contains: search, mode: 'insensitive' } },
+          { name: { contains: search, mode: 'insensitive' } },
+          { brand: { contains: search, mode: 'insensitive' } },
+          { sellerName: { contains: search, mode: 'insensitive' } },
+        ],
+      });
     }
-    if (query.category) where.category = query.category;
-    if (query.connected === 'connected') where.providerSelections = { some: {} };
-    else if (query.connected === 'disconnected') where.providerSelections = { none: {} };
+
+    const category = String(query.category ?? '').trim();
+    if (category) and.push({ category });
+
+    const seller = String(query.seller ?? '').trim();
+    if (seller) and.push({ sellerName: seller });
+
+    // Filter koneksi hanya menghitung pemetaan provider DIGIFLAZZ.
+    if (query.connected === 'connected') {
+      and.push({ providerSelections: { some: { provider: 'DIGIFLAZZ' } } });
+    } else if (query.connected === 'disconnected') {
+      and.push({ providerSelections: { none: { provider: 'DIGIFLAZZ' } } });
+    }
+
+    // `null` berbeda makna dari `false`; jangan memakai pemeriksaan truthy/falsy.
+    if (query.availability === 'available') {
+      and.push({ buyerProductStatus: true, sellerProductStatus: true });
+    } else if (query.availability === 'unavailable') {
+      and.push({ OR: [{ buyerProductStatus: false }, { sellerProductStatus: false }] });
+    } else if (query.availability === 'unknown') {
+      // `not: false` tidak menyertakan NULL pada kolom nullable, jadi status
+      // diuji eksplisit: tidak ada `false`, dan sedikitnya satu `null`.
+      and.push({
+        AND: [
+          { OR: [{ buyerProductStatus: true }, { buyerProductStatus: null }] },
+          { OR: [{ sellerProductStatus: true }, { sellerProductStatus: null }] },
+          { OR: [{ buyerProductStatus: null }, { sellerProductStatus: null }] },
+        ],
+      });
+    }
+
+    const where: any = and.length ? { AND: and } : {};
 
     const [list, total] = await Promise.all([
       this.prisma.digiflazzPascabayarProduct.findMany({
@@ -112,7 +156,12 @@ export class PascabayarCatalogService {
         skip: (page - 1) * limit,
         take: limit,
         orderBy: { buyerSkuCode: 'asc' },
-        include: { providerSelections: { include: { produkPascabayar: { select: { id: true, kode: true, name: true } } } } },
+        include: {
+          providerSelections: {
+            where: { provider: 'DIGIFLAZZ' },
+            include: { produkPascabayar: { select: { id: true, kode: true, name: true } } },
+          },
+        },
       }),
       this.prisma.digiflazzPascabayarProduct.count({ where }),
     ]);
@@ -130,21 +179,74 @@ export class PascabayarCatalogService {
     return rows.map((r) => r.category).filter(Boolean);
   }
 
+  /** Daftar seller pascabayar Digiflazz: unik, tanpa nilai kosong, urut alfabet. */
+  async listDigiflazzPascabayarSellers() {
+    const rows = await this.prisma.digiflazzPascabayarProduct.findMany({
+      where: { sellerName: { not: null } },
+      distinct: ['sellerName'],
+      select: { sellerName: true },
+    });
+    // `distinct` di database bekerja pada nilai mentah, sehingga "Seller A"
+    // dan " Seller A " bisa lolos sebagai dua baris lalu menghasilkan dua
+    // seller yang sama. Nilai di-trim dahulu, lalu di-deduplikasi tanpa
+    // memandang besar-kecil huruf.
+    const unique = new Map<string, string>();
+    for (const row of rows) {
+      const name = String(row.sellerName ?? '').trim();
+      if (!name) continue;
+      const key = name.toLowerCase();
+      if (!unique.has(key)) unique.set(key, name);
+    }
+    return [...unique.values()].sort((a, b) => {
+      const left = a.toLowerCase();
+      const right = b.toLowerCase();
+      if (left < right) return -1;
+      if (left > right) return 1;
+      return 0;
+    });
+  }
+
   // ── Pemetaan & pemilihan provider ─────────────────────────────────────────
 
-  async getInternalProductOptions(search = '') {
-    const where: any = {};
-    if (search) {
-      where.OR = [
-        { kode: { contains: search, mode: 'insensitive' } },
-        { name: { contains: search, mode: 'insensitive' } },
-      ];
+  async getInternalProductOptions(
+    search = '',
+    options: { provider?: string; connection?: string; catalogId?: number | null } = {},
+  ) {
+    const and: any[] = [];
+    const keyword = String(search ?? '').trim();
+    if (keyword) {
+      and.push({
+        OR: [
+          { kode: { contains: keyword, mode: 'insensitive' } },
+          { name: { contains: keyword, mode: 'insensitive' } },
+        ],
+      });
     }
+
+    // Produk yang sudah dipetakan ke provider ini tidak boleh ditawarkan lagi,
+    // kecuali pemetaan itu menunjuk katalog yang sedang diedit (idempoten).
+    if (options.provider === 'DIGIFLAZZ' && options.connection === 'available') {
+      const alternatives: any[] = [{ providerSelections: { none: { provider: 'DIGIFLAZZ' } } }];
+      if (options.catalogId) {
+        alternatives.push({
+          providerSelections: { some: { provider: 'DIGIFLAZZ', digiflazzProductId: options.catalogId } },
+        });
+      }
+      and.push({ OR: alternatives });
+    }
+
+    const where: any = and.length ? { AND: and } : {};
     const rows = await this.prisma.produkPascabayar.findMany({
       where,
       take: 50,
       orderBy: { kode: 'asc' },
-      include: { kategori: { select: { name: true } } },
+      include: {
+        kategori: { select: { name: true } },
+        providerSelections: {
+          where: { provider: 'DIGIFLAZZ' },
+          select: { id: true, providerSku: true, digiflazzProductId: true, isActive: true },
+        },
+      },
     });
     return rows.map((p) => ({
       id: p.id,
@@ -153,6 +255,12 @@ export class PascabayarCatalogService {
       fee: p.fee,
       comission: p.comission,
       kategori: p.kategori?.name ?? null,
+      digiflazzMappings: (p.providerSelections ?? []).map((m) => ({
+        id: m.id,
+        providerSku: m.providerSku,
+        digiflazzProductId: m.digiflazzProductId,
+        isActive: m.isActive,
+      })),
     }));
   }
 
@@ -163,52 +271,161 @@ export class PascabayarCatalogService {
     const sku = String(input.providerSku ?? '').trim();
     if (!sku) throw new BadRequestException('SKU provider wajib diisi');
 
-    let digiflazzProductId: number | null = input.digiflazzProductId ?? null;
-    let iakProductId: number | null = input.iakProductId ?? null;
+    const provider = this.parseProvider(input.provider);
 
-    if (input.provider === 'DIGIFLAZZ') {
-      const catalog = digiflazzProductId
-        ? await this.prisma.digiflazzPascabayarProduct.findUnique({ where: { id: digiflazzProductId } })
-        : await this.prisma.digiflazzPascabayarProduct.findUnique({ where: { buyerSkuCode: sku } });
-      if (!catalog) throw new BadRequestException(`SKU Digiflazz pascabayar ${sku} tidak ada di katalog. Jalankan sinkronisasi katalog dulu.`);
-      digiflazzProductId = catalog.id;
-      iakProductId = null;
-    } else {
-      const iak = iakProductId
-        ? await this.prisma.iakPascabayarProduct.findUnique({ where: { id: iakProductId } })
-        : await this.prisma.iakPascabayarProduct.findFirst({ where: { code: sku }, orderBy: { id: 'asc' } });
-      if (!iak) throw new BadRequestException(`SKU IAK pascabayar ${sku} tidak ditemukan.`);
-      iakProductId = iak.id;
-      digiflazzProductId = null;
+    if (provider === 'DIGIFLAZZ') {
+      return this.connectDigiflazzProvider(
+        input.produkPascabayarId,
+        sku,
+        input.digiflazzProductId ?? null,
+        adminId,
+      );
     }
 
-    const mapping = await this.prisma.produkPascabayarProvider.upsert({
-      where: { produkPascabayarId_provider: { produkPascabayarId: input.produkPascabayarId, provider: input.provider as PascabayarProvider } },
-      create: {
-        produkPascabayarId: input.produkPascabayarId,
-        provider: input.provider as PascabayarProvider,
-        providerSku: sku,
-        iakProductId,
-        digiflazzProductId,
-        isActive: false,
-      },
-      update: { providerSku: sku, iakProductId, digiflazzProductId },
-      include: { digiflazzProduct: true, iakProduct: true },
-    });
+    const iak = input.iakProductId
+      ? await this.prisma.iakPascabayarProduct.findUnique({ where: { id: input.iakProductId } })
+      : await this.prisma.iakPascabayarProduct.findFirst({ where: { code: sku }, orderBy: { id: 'asc' } });
+    if (!iak) throw new BadRequestException(`SKU IAK pascabayar ${sku} tidak ditemukan.`);
 
-    await this.logActivity(adminId, 'CONNECT_PEMETAAN_PASCABAYAR', input.produkPascabayarId, `Hubungkan produk ${input.produkPascabayarId} ke ${input.provider}/${sku}`);
+    const mapping = await this.prisma.$transaction(async (tx) =>
+      tx.produkPascabayarProvider.upsert({
+        where: {
+          produkPascabayarId_provider: {
+            produkPascabayarId: input.produkPascabayarId,
+            provider: 'IAK',
+          },
+        },
+        create: {
+          produkPascabayarId: input.produkPascabayarId,
+          provider: 'IAK',
+          providerSku: sku,
+          iakProductId: iak.id,
+          digiflazzProductId: null,
+          isActive: false,
+        },
+        update: { providerSku: sku, iakProductId: iak.id, digiflazzProductId: null },
+        include: { digiflazzProduct: true, iakProduct: true },
+      }),
+    );
+
+    await this.logActivity(
+      adminId,
+      'CONNECT_PEMETAAN_PASCABAYAR',
+      input.produkPascabayarId,
+      `Hubungkan produk ${input.produkPascabayarId} ke IAK/${sku}`,
+    );
     return mapping;
   }
 
+  /**
+   * Validasi dan simpan koneksi katalog Digiflazz pascabayar.
+   *
+   * - `digiflazzProductId` wajib ada dan menunjuk katalog nyata.
+   * - `providerSku` wajib sama persis dengan `buyerSkuCode` katalog.
+   * - Katalog berstatus buyer/seller `false` ditolak; status `null` masih boleh.
+   * - Produk internal yang sudah terhubung ke SKU Digiflazz lain harus dilepas
+   *   dulu supaya koneksi lama tidak tertimpa diam-diam.
+   * - Pemetaan ulang ke katalog yang sama bersifat idempoten dan tidak mengubah
+   *   `isActive`.
+   *
+   * Penulisan memakai klaim atomik pada unique `(produkPascabayarId, provider)`:
+   * hanya pemetaan yang sudah menunjuk katalog yang sama yang boleh ditimpa.
+   * Dua request bersamaan dengan SKU berbeda tidak dapat saling menimpa karena
+   * request yang kalah ditolak unique constraint (P2002) dan diverifikasi ulang.
+   */
+  private async connectDigiflazzProvider(
+    produkPascabayarId: number,
+    sku: string,
+    digiflazzProductIdInput: number | null,
+    adminId: number,
+  ) {
+    if (!digiflazzProductIdInput) {
+      throw new BadRequestException('ID katalog Digiflazz pascabayar wajib diisi');
+    }
+
+    const catalog = await this.prisma.digiflazzPascabayarProduct.findUnique({
+      where: { id: digiflazzProductIdInput },
+    });
+    if (!catalog) {
+      throw new BadRequestException('Katalog Digiflazz pascabayar tidak ditemukan. Jalankan sinkronisasi katalog dulu.');
+    }
+    if (catalog.buyerSkuCode !== sku) {
+      throw new BadRequestException(
+        `SKU ${sku} tidak sesuai dengan katalog Digiflazz ${catalog.buyerSkuCode}. Pilih katalog dari daftar.`,
+      );
+    }
+    if (catalog.buyerProductStatus === false || catalog.sellerProductStatus === false) {
+      throw new BadRequestException('Produk sedang tidak tersedia di Digiflazz sehingga tidak dapat dihubungkan.');
+    }
+
+    const where = {
+      produkPascabayarId_provider: { produkPascabayarId, provider: 'DIGIFLAZZ' as const },
+    };
+    const data = { providerSku: sku, iakProductId: null, digiflazzProductId: catalog.id };
+    const include = { digiflazzProduct: true, iakProduct: true };
+
+    let mapping: any;
+    try {
+      const claimed = await this.prisma.produkPascabayarProvider.updateMany({
+        where: { produkPascabayarId, provider: 'DIGIFLAZZ', digiflazzProductId: catalog.id },
+        data,
+      });
+
+      if (claimed.count > 0) {
+        mapping = await this.prisma.produkPascabayarProvider.findUnique({ where, include });
+      } else {
+        mapping = await this.prisma.produkPascabayarProvider.create({
+          data: {
+            produkPascabayarId,
+            provider: 'DIGIFLAZZ',
+            providerSku: sku,
+            iakProductId: null,
+            digiflazzProductId: catalog.id,
+            isActive: false,
+          },
+          include,
+        });
+      }
+    } catch (error) {
+      if (!isUniqueConstraintError(error)) throw error;
+
+      const existing = await this.prisma.produkPascabayarProvider.findUnique({ where });
+      if (!existing || existing.digiflazzProductId !== catalog.id) {
+        throw new BadRequestException(
+          `Produk sudah terhubung ke SKU Digiflazz ${existing?.providerSku ?? 'lain'}. Lepas koneksi lama sebelum menghubungkan SKU baru.`,
+        );
+      }
+      mapping = await this.prisma.produkPascabayarProvider.update({ where, data, include });
+    }
+
+    await this.logActivity(
+      adminId,
+      'CONNECT_PEMETAAN_PASCABAYAR',
+      produkPascabayarId,
+      `Hubungkan produk ${produkPascabayarId} ke DIGIFLAZZ/${sku}`,
+    );
+    return mapping;
+  }
+
+  /**
+   * Validasi nilai provider dari request. Semua nilai selain IAK/DIGIFLAZZ
+   * ditolak agar tidak pernah diperlakukan sebagai IAK.
+   */
+  private parseProvider(provider: unknown): Provider {
+    if (provider === 'IAK' || provider === 'DIGIFLAZZ') return provider;
+    throw new BadRequestException(`Provider ${String(provider)} tidak dikenal. Gunakan IAK atau DIGIFLAZZ.`);
+  }
+
   async disconnectProvider(produkPascabayarId: number, provider: Provider, adminId: number) {
+    const safeProvider = this.parseProvider(provider);
     const existing = await this.prisma.produkPascabayarProvider.findUnique({
-      where: { produkPascabayarId_provider: { produkPascabayarId, provider: provider as PascabayarProvider } },
+      where: { produkPascabayarId_provider: { produkPascabayarId, provider: safeProvider as PascabayarProvider } },
     });
     if (!existing) throw new NotFoundException('Pemetaan provider tidak ditemukan');
     if (existing.isActive) throw new BadRequestException('Provider aktif tidak dapat dilepas. Pilih provider pengganti terlebih dahulu.');
 
     await this.prisma.produkPascabayarProvider.delete({ where: { id: existing.id } });
-    await this.logActivity(adminId, 'DISCONNECT_PEMETAAN_PASCABAYAR', produkPascabayarId, `Lepas pemetaan ${provider}`);
+    await this.logActivity(adminId, 'DISCONNECT_PEMETAAN_PASCABAYAR', produkPascabayarId, `Lepas pemetaan ${safeProvider}`);
     return { error: false, error_msg: '' };
   }
 
@@ -218,15 +435,16 @@ export class PascabayarCatalogService {
    * yang sudah berjalan karena inquiry menyimpan snapshot provider/SKU sendiri.
    */
   async selectActiveProvider(produkPascabayarId: number, provider: Provider, adminId: number) {
+    const safeProvider = this.parseProvider(provider);
     const mapping = await this.prisma.produkPascabayarProvider.findUnique({
-      where: { produkPascabayarId_provider: { produkPascabayarId, provider: provider as PascabayarProvider } },
+      where: { produkPascabayarId_provider: { produkPascabayarId, provider: safeProvider as PascabayarProvider } },
     });
-    if (!mapping) throw new BadRequestException(`Produk belum dihubungkan ke provider ${provider}`);
+    if (!mapping) throw new BadRequestException(`Produk belum dihubungkan ke provider ${safeProvider}`);
     if (!mapping.providerSku) throw new BadRequestException('Pemetaan provider belum memiliki SKU');
 
     const result = await this.prisma.$transaction(async (tx) => {
       await tx.produkPascabayarProvider.updateMany({
-        where: { produkPascabayarId, NOT: { provider: provider as PascabayarProvider } },
+        where: { produkPascabayarId, NOT: { provider: safeProvider as PascabayarProvider } },
         data: { isActive: false },
       });
       return tx.produkPascabayarProvider.update({
@@ -235,7 +453,7 @@ export class PascabayarCatalogService {
       });
     });
 
-    await this.logActivity(adminId, 'PILIH_PROVIDER_PASCABAYAR', produkPascabayarId, `Provider aktif produk ${produkPascabayarId} -> ${provider}/${mapping.providerSku}`);
+    await this.logActivity(adminId, 'PILIH_PROVIDER_PASCABAYAR', produkPascabayarId, `Provider aktif produk ${produkPascabayarId} -> ${safeProvider}/${mapping.providerSku}`);
     return result;
   }
 

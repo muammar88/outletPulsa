@@ -28,6 +28,7 @@ export default async function tabSeed(prisma: PrismaClient) {
     { name: 'Operator Pascabayar Tripay', icon: 'IconListCheck', path: 'daftar_operator_pascabayar_tripay', desc: 'Mengelola daftar biller/operator pascabayar (PPOB) khusus untuk transaksi lewat server penyedia Tripay.' },
     { name: 'Daftar Produk Digiflazz', icon: 'IconListCheck', path: 'daftar_produk_digiflazz', desc: 'Meninjau dan mengelola daftar produk PPOB maupun pulsa yang terhubung langsung dengan server Digiflazz.' },
     { name: 'Daftar Produk Seller Digiflazz', icon: 'IconListCheck', path: 'daftar_produk_seller_digiflazz', desc: 'Mengelola daftar produk spesifik dari para seller yang menyediakan layanan via ekosistem Digiflazz.' },
+    { name: 'Daftar Produk Pascabayar Seller Digiflazz', icon: 'IconListCheck', path: 'daftar_produk_pascabayar_seller_digiflazz', desc: 'Mengelola katalog seller dan koneksi produk pascabayar Digiflazz.' },
     { name: 'Daftar Seller Digiflazz', icon: 'IconUsers', path: 'daftar_seller_digiflazz', desc: 'Mengelola referensi daftar seller yang berperan sebagai penyedia produk dalam jaringan distribusi Digiflazz.' },
     { name: 'Riwayat Transfer Saldo', icon: 'IconUsers', path: 'riwayat_transfer_saldo', desc: 'Melacak seluruh aktivitas transfer saldo antar member, memeriksa bukti transaksi, serta mendeteksi transfer yang tidak wajar.' },
     { name: 'Laba Diambil', icon: 'IconWallet', path: 'laba_diambil', desc: 'Melihat ringkasan laba yang sudah ditarik atau diproses, memantau sisa laba bersih dari setiap transaksi pengguna.' },

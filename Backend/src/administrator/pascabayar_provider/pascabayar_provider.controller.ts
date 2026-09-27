@@ -1,6 +1,11 @@
 import { Body, Controller, Get, Param, Post, Query, Request, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PascabayarCatalogService } from '../../providers/pascabayar/pascabayar-catalog.service';
+import { ConnectPascabayarProviderDto } from './dto/connect-pascabayar-provider.dto';
+import { InternalProductsDto } from './dto/internal-products.dto';
+import { ListKatalogPascabayarDto } from './dto/list-katalog-pascabayar.dto';
+import { ProviderActionDto } from './dto/provider-action.dto';
+import { ParsePositiveIntPipe } from '../../common/pipes/parse-positive-int.pipe';
 
 /**
  * Panel admin untuk katalog pascabayar Digiflazz, pemetaan SKU, perbandingan
@@ -21,14 +26,14 @@ export class PascabayarProviderController {
   }
 
   @Get('katalog-digiflazz')
-  async listKatalog(
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-    @Query('search') search?: string,
-    @Query('category') category?: string,
-    @Query('connected') connected?: string,
-  ) {
-    const data = await this.catalog.listDigiflazzPascabayarProducts({ page, limit, search, category, connected });
+  async listKatalog(@Query() query: ListKatalogPascabayarDto) {
+    const data = await this.catalog.listDigiflazzPascabayarProducts(query);
+    return { message: 'Success', error: null, data };
+  }
+
+  @Get('katalog-digiflazz/sellers')
+  async listSellers() {
+    const data = await this.catalog.listDigiflazzPascabayarSellers();
     return { message: 'Success', error: null, data };
   }
 
@@ -41,33 +46,42 @@ export class PascabayarProviderController {
   // ── Pemetaan produk internal <-> provider ────────────────────────────────
 
   @Get('internal-products')
-  async internalProducts(@Query('search') search?: string) {
-    const data = await this.catalog.getInternalProductOptions(search);
+  async internalProducts(@Query() query: InternalProductsDto) {
+    const parsedCatalogId = query.catalogId ? Number(query.catalogId) : null;
+    const data = await this.catalog.getInternalProductOptions(query.search, {
+      provider: query.provider,
+      connection: query.connection,
+      catalogId: Number.isFinite(parsedCatalogId) && parsedCatalogId ? parsedCatalogId : null,
+    });
     return { message: 'Success', error: null, data };
   }
 
   @Get('produk/:id/kandidat')
-  async kandidat(@Param('id') id: string) {
-    const data = await this.catalog.listCandidates(Number(id));
+  async kandidat(@Param('id', ParsePositiveIntPipe) id: number) {
+    const data = await this.catalog.listCandidates(id);
     return { message: 'Success', error: null, data };
   }
 
   @Get('produk/:id/perbandingan')
-  async perbandingan(@Param('id') id: string) {
-    const data = await this.catalog.compareProviders(Number(id));
+  async perbandingan(@Param('id', ParsePositiveIntPipe) id: number) {
+    const data = await this.catalog.compareProviders(id);
     return { message: 'Success', error: null, data };
   }
 
   @Post('produk/:id/connect')
-  async connect(@Param('id') id: string, @Body() body: any, @Request() req: any) {
+  async connect(
+    @Param('id', ParsePositiveIntPipe) id: number,
+    @Body() body: ConnectPascabayarProviderDto,
+    @Request() req: any,
+  ) {
     const adminId = req.user?.id ?? 0;
     const data = await this.catalog.connectProvider(
       {
-        produkPascabayarId: Number(id),
+        produkPascabayarId: id,
         provider: body.provider,
-        providerSku: body.providerSku ?? body.provider_sku,
-        iakProductId: body.iakProductId ?? body.iak_product_id ?? null,
-        digiflazzProductId: body.digiflazzProductId ?? body.digiflazz_product_id ?? null,
+        providerSku: body.providerSku,
+        iakProductId: body.iakProductId ?? null,
+        digiflazzProductId: body.digiflazzProductId ?? null,
       },
       adminId,
     );
@@ -75,9 +89,13 @@ export class PascabayarProviderController {
   }
 
   @Post('produk/:id/select')
-  async select(@Param('id') id: string, @Body() body: any, @Request() req: any) {
+  async select(
+    @Param('id', ParsePositiveIntPipe) id: number,
+    @Body() body: ProviderActionDto,
+    @Request() req: any,
+  ) {
     const adminId = req.user?.id ?? 0;
-    const data = await this.catalog.selectActiveProvider(Number(id), body.provider, adminId);
+    const data = await this.catalog.selectActiveProvider(id, body.provider, adminId);
     return {
       message: 'Provider aktif diperbarui. Berlaku untuk inquiry baru; inquiry yang sudah berjalan tetap memakai provider asal.',
       error: null,
@@ -86,9 +104,13 @@ export class PascabayarProviderController {
   }
 
   @Post('produk/:id/disconnect')
-  async disconnect(@Param('id') id: string, @Body() body: any, @Request() req: any) {
+  async disconnect(
+    @Param('id', ParsePositiveIntPipe) id: number,
+    @Body() body: ProviderActionDto,
+    @Request() req: any,
+  ) {
     const adminId = req.user?.id ?? 0;
-    const data = await this.catalog.disconnectProvider(Number(id), body.provider, adminId);
+    const data = await this.catalog.disconnectProvider(id, body.provider, adminId);
     return { message: 'Pemetaan provider dihapus', error: null, data };
   }
 }
