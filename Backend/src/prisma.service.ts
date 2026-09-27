@@ -57,6 +57,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       '"DigiflazzSeller"',
       '"DigiflazzSellerProduct"',
       '"DigiflazzTransaction"',
+      '"DigiflazzPascabayarProduct"',
+      '"ProdukPascabayarProvider"',
       '"ActivityLog"',
       '"WebhookLog"',
     ];

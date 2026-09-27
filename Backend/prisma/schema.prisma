@@ -83,6 +83,7 @@ model Member {
   activityLogs            ActivityLog[]
   devicesConnected        DeviceConnected[]
   pengumumanRecipients    PengumumanRecipient[]
+  transactionsPascabayar  TransactionPascabayar[]
 
   @@index([whatsappnumber])
   @@index([kode])
@@ -231,6 +232,7 @@ model ProdukPascabayar {
   transactionsPascabayar TransactionPascabayar[]
   iakPascabayarProducts  IakPascabayarProduct[]
   TripayPascabayarProduk TripayPascabayarProduk[]
+  providerSelections     ProdukPascabayarProvider[]
 }
 
 model Transaction {
@@ -270,7 +272,7 @@ model Transaction {
 model TransactionPascabayar {
   id                 Int                @id @default(autoincrement())
   kode               String?
-  trId               String?
+  trId               String?            @unique
   produkId           Int?
   riwayatTransaksiId Int?
   nomorTujuan        String?
@@ -296,12 +298,25 @@ model TransactionPascabayar {
   serverId           Int?
   status             TransactionStatus? @default(proses)
   serial_number      String?
+  memberId           Int?
+  provider           PascabayarProvider?
+  providerSku        String?
+  expiredAt          DateTime?
+  providerRefId      String?
+  providerStatus     String?
+  inquiryPayload     Json?
+  paymentIntentId    String?
+  paymentAttemptedAt DateTime?
+  refundId           String?            @unique
+  adminFeeSnapshot   Int?
+  comissionSnapshot  Int?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
   produkPascabayar ProdukPascabayar? @relation(fields: [produkId], references: [id])
   server           Server?           @relation(fields: [serverId], references: [id])
   riwayatTransaksi RiwayatTransaksi? @relation(fields: [riwayatTransaksiId], references: [id])
+  member           Member?           @relation(fields: [memberId], references: [id])
 }
 
 enum StatusLaba {
@@ -640,6 +655,54 @@ model IakPascabayarProduct {
 
   type             IakPascabayarType? @relation(fields: [typeId], references: [id])
   produkPascabayar ProdukPascabayar?  @relation(fields: [produkPascabayarId], references: [id])
+  providerSelections ProdukPascabayarProvider[]
+}
+
+enum PascabayarProvider {
+  IAK
+  DIGIFLAZZ
+}
+
+model DigiflazzPascabayarProduct {
+  id                  Int       @id @default(autoincrement())
+  buyerSkuCode        String    @unique
+  name                String?
+  category            String?
+  brand               String?
+  sellerName          String?
+  price               Int?
+  admin               Int?
+  commission          Int?
+  buyerProductStatus  Boolean?
+  sellerProductStatus Boolean?
+  desc                String?   @db.Text
+  syncedAt            DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  providerSelections ProdukPascabayarProvider[]
+
+  @@index([category])
+  @@index([brand])
+}
+
+model ProdukPascabayarProvider {
+  id                 Int                @id @default(autoincrement())
+  produkPascabayarId Int
+  provider           PascabayarProvider
+  providerSku        String
+  iakProductId       Int?
+  digiflazzProductId Int?
+  isActive           Boolean            @default(false)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  produkPascabayar ProdukPascabayar             @relation(fields: [produkPascabayarId], references: [id], onDelete: Cascade)
+  iakProduct       IakPascabayarProduct?        @relation(fields: [iakProductId], references: [id])
+  digiflazzProduct DigiflazzPascabayarProduct?  @relation(fields: [digiflazzProductId], references: [id])
+
+  @@unique([produkPascabayarId, provider])
+  @@index([produkPascabayarId])
 }
 
 model IakPrabayarType {
@@ -877,6 +940,7 @@ enum RiwayatSaldoStatus {
   deposit
   transfer_pulsa
   pencairan_fee_agen
+  pengembalian_dana
 }
 
 model ActivityLog {
@@ -1114,4 +1178,3 @@ model PaymentGatewayCallbackInbox {
   @@index([status, next_retry_at])
   @@map("payment_gateway_callback_inbox")
 }
-

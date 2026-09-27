@@ -6,11 +6,13 @@ import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:outletpulsa/services/deposit.dart';
+import 'package:outletpulsa/services/deposit_idempotency.dart';
 
 class PaymentInstructionScreen extends StatefulWidget {
   final Map<String, dynamic> transactionData;
+  final String? idempotencyKey;
 
-  const PaymentInstructionScreen({super.key, required this.transactionData});
+  const PaymentInstructionScreen({super.key, required this.transactionData, this.idempotencyKey});
 
   @override
   State<PaymentInstructionScreen> createState() => _PaymentInstructionScreenState();
@@ -68,6 +70,7 @@ class _PaymentInstructionScreenState extends State<PaymentInstructionScreen> {
         final newStatus = (_data['status'] ?? '').toString().toUpperCase();
         if (newStatus == 'SUCCESS' || newStatus == 'FAILED' || newStatus == 'EXPIRED') {
           _pollingTimer?.cancel();
+          _clearIdempotencyForCurrentIntent();
         }
         if (!isAuto) {
           _showSnackBar(
@@ -94,6 +97,25 @@ class _PaymentInstructionScreenState extends State<PaymentInstructionScreen> {
   void _copyToClipboard(String text, String label) {
     Clipboard.setData(ClipboardData(text: text));
     _showSnackBar('$label berhasil disalin', isSuccess: true);
+  }
+
+  int _toIntAmount(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.round();
+    return double.tryParse(value?.toString() ?? '')?.round() ?? 0;
+  }
+
+  /// Hapus key hanya untuk intent transaksi ini (bukan intent lain yang mungkin masih berjalan).
+  void _clearIdempotencyForCurrentIntent() {
+    final nominal = _toIntAmount(_data['amount'] ?? _data['nominal']);
+    final paymentMethod = (_data['payment_method'] ?? '').toString();
+    if (nominal <= 0 || paymentMethod.isEmpty) return;
+    DepositIdempotency.clear(
+      nominal: nominal,
+      paymentMethod: paymentMethod,
+      bankCode: _data['bank_code']?.toString(),
+      knownKey: widget.idempotencyKey,
+    ).catchError((_) {});
   }
 
   void _showSnackBar(String message, {required bool isSuccess}) {
@@ -145,6 +167,12 @@ class _PaymentInstructionScreenState extends State<PaymentInstructionScreen> {
     final isSuccess = status == 'SUCCESS';
     final isFailed = status == 'FAILED';
     final isExpired = status == 'EXPIRED';
+
+    final hasVa = (_data['virtual_account']?.toString().trim().isNotEmpty ?? false);
+    final hasQris = (_data['imageqris']?.toString().trim().isNotEmpty ?? false) ||
+        (_data['qris_text']?.toString().trim().isNotEmpty ?? false);
+    final hasEwallet = (_data['checkout_url']?.toString().trim().isNotEmpty ?? false);
+    final hasInstruction = (isVa && hasVa) || (isQris && hasQris) || (isEwallet && hasEwallet);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF0F2F8),
@@ -214,10 +242,13 @@ class _PaymentInstructionScreenState extends State<PaymentInstructionScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Method specific body
-                  if (isVa) _buildVaSection(),
-                  if (isQris) _buildQrisSection(),
-                  if (isEwallet) _buildEwalletSection(),
+                  // Method specific body: jangan tampilkan instruksi kosong seolah siap dibayar.
+                  if (hasInstruction) ...[
+                    if (isVa) _buildVaSection(),
+                    if (isQris) _buildQrisSection(),
+                    if (isEwallet) _buildEwalletSection(),
+                  ] else
+                    _buildAwaitingInstruction(),
 
                   const SizedBox(height: 20),
                   // Expiration row
@@ -316,6 +347,13 @@ class _PaymentInstructionScreenState extends State<PaymentInstructionScreen> {
       icon = TablerIcons.alert_triangle;
       title = 'Tagihan Kedaluwarsa';
       desc = 'Waktu pembayaran telah habis. Silakan buat deposit baru.';
+    } else {
+      final state = (_data['state'] ?? '').toString().toUpperCase();
+      if (state == 'AWAITING_PROVIDER_CONFIRMATION') {
+        icon = TablerIcons.hourglass;
+        title = 'Sedang Diverifikasi Penyedia';
+        desc = 'Penyedia pembayaran sedang memproses permintaan Anda. Tekan tombol Cek Status Pembayaran untuk memperbarui.';
+      }
     }
 
     return Container(
@@ -340,6 +378,34 @@ class _PaymentInstructionScreenState extends State<PaymentInstructionScreen> {
                 Text(desc, style: GoogleFonts.poppins(fontSize: 12, color: textColor.withOpacity(0.9))),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAwaitingInstruction() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F9FA),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        children: [
+          const Icon(TablerIcons.hourglass, size: 40, color: _kPrimary),
+          const SizedBox(height: 10),
+          Text(
+            'Instruksi pembayaran sedang disiapkan',
+            style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Nomor VA / kode QR / tautan e-wallet akan muncul di sini setelah dikonfirmasi penyedia. Gunakan tombol cek status untuk memperbarui.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey.shade700),
           ),
         ],
       ),

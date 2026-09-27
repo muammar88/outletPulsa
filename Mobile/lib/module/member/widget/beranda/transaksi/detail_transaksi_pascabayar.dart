@@ -134,6 +134,24 @@ class _Detail_transaksi_pascabayarState extends State<Detail_transaksi_pascabaya
     }
   }
 
+  Future<void> _cekStatusPascabayar() async {
+    final load = Provider.of<Load_provider>(context, listen: false);
+    if (load.isLoad == true) return;
+    final details = Provider.of<Detail_pascabayar_provider>(context, listen: false);
+    final riwayat = Provider.of<Riwayat_pascabayar_provider>(context, listen: false);
+    final beranda = Provider.of<Beranda_provider>(context, listen: false);
+    load.isLoad = true;
+    final res = await details.cekStatusPascabayar(widget.kodeTrans);
+    await riwayat.getRiwayatPascabayar();
+    await beranda.get_data_beranda();
+    if (!mounted) return;
+    load.isLoad = false;
+    _showSnackBar(
+      res?.message ?? details.message ?? 'Status diperbarui',
+      isSuccess: res?.error != true,
+    );
+  }
+
   Widget _buildBrandPanel(Detail_pascabayar_provider detail, String s, {bool compact = false}) {
     return Container(
       width: double.infinity,
@@ -463,6 +481,31 @@ class _Detail_transaksi_pascabayarState extends State<Detail_transaksi_pascabaya
           const SizedBox(height: 36),
           Column(
             children: [
+              if (statusName == 'Transaksi Diproses')
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _cekStatusPascabayar,
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        side: const BorderSide(color: Color(0xFFF59E0B), width: 1.5),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      icon: const Icon(TablerIcons.refresh, color: Color(0xFFF59E0B), size: 20),
+                      label: Text(
+                        "CEK STATUS KE PROVIDER",
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFFF59E0B),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               if (statusName == 'Transaksi Berhasil' || statusName == 'Transaksi Sukses')
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),

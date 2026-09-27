@@ -1,28 +1,43 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch } from 'vue';
 import BaseFormModal from '@/components/Modal/Form.vue';
-import { semuaServerService } from '@/modules/Administrator/SemuaServer/services/semuaServerService';
-import { ProdukPascabayarService } from '../services/ProdukPascabayarService';
+import { PascabayarProviderService } from '../services/PascabayarProviderService';
+import type { ProviderPascabayar } from '../services/PascabayarProviderService';
 
 const props = defineProps({
   show: Boolean,
-  produk: Object,
+  produk: { type: Object as () => any, default: null },
 });
 
 const emit = defineEmits(['close', 'refresh', 'notify']);
 
-const isSubmitting = ref(false);
 const isLoading = ref(false);
-const listServer = ref<any[]>([]);
-const selectedServerId = ref<number | null>(null);
+const isSubmitting = ref(false);
+const isSyncing = ref(false);
+const isSearching = ref(false);
 
-const fetchServers = async () => {
+const kandidat = ref<any[]>([]);
+const asumsi = ref<string[]>([]);
+
+const providerBaru = ref<ProviderPascabayar>('DIGIFLAZZ');
+const searchKatalog = ref('');
+const hasilKatalog = ref<any[]>([]);
+const kodeIak = ref('');
+
+const formatRp = (val: number | null | undefined) => {
+  if (val === null || val === undefined) return 'Belum tersedia';
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+};
+
+const load = async () => {
+  if (!props.produk) return;
   isLoading.value = true;
   try {
-    const res = await semuaServerService.getAll('', 100, 1, '');
-    listServer.value = res.data.data.list;
+    const res = await PascabayarProviderService.getPerbandingan((props.produk as any).id);
+    kandidat.value = res.data.data.kandidat || [];
+    asumsi.value = res.data.data.asumsi || [];
   } catch (err: any) {
-    emit('notify', 'Gagal memuat daftar server', 'error');
+    emit('notify', err.response?.data?.message || 'Gagal memuat perbandingan provider', 'error');
   } finally {
     isLoading.value = false;
   }
@@ -32,126 +47,268 @@ watch(
   () => props.show,
   (val) => {
     if (val && props.produk) {
-      selectedServerId.value = props.produk.serverId || null;
-      if (listServer.value.length === 0) {
-        fetchServers();
-      }
-    } else {
-      selectedServerId.value = null;
+      hasilKatalog.value = [];
+      kodeIak.value = '';
+      searchKatalog.value = '';
+      load();
     }
-  }
+  },
 );
 
-const getConnectedProducts = (server: any) => {
-  if (!props.produk) return [];
-  if (server.id === 1) return props.produk.iakPrabayarProduks || [];
-  if (server.id === 2) return props.produk.tripayPrabayarProduks || [];
-  if (server.id === 3) return props.produk.digiflazzProducts || [];
-  return [];
-};
-
-const handleSelect = async (server: any) => {
+const runAction = async (fn: () => Promise<any>, successMsg: string) => {
   if (isSubmitting.value) return;
-  const connected = getConnectedProducts(server);
-  if (connected.length === 0) return;
-
   isSubmitting.value = true;
   try {
-    await ProdukPascabayarService.update(props.produk!.id, { serverId: server.id });
-    emit('notify', `Server berhasil diubah ke ${server.name}`, 'success');
+    await fn();
+    emit('notify', successMsg, 'success');
+    await load();
     emit('refresh');
-    emit('close');
-  } catch (error: any) {
-    const msg = error.response?.data?.message || 'Gagal mengubah server';
-    emit('notify', msg, 'error');
+  } catch (err: any) {
+    emit('notify', err.response?.data?.message || 'Aksi gagal', 'error');
   } finally {
     isSubmitting.value = false;
   }
 };
 
-const formatCurrency = (val: number) => {
-  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(val || 0);
+const jadikanAktif = (row: any) =>
+  runAction(
+    () => PascabayarProviderService.select((props.produk as any).id, row.provider),
+    `Provider ${row.provider} dijadikan aktif. Berlaku untuk inquiry baru.`,
+  );
+
+const lepas = (row: any) =>
+  runAction(
+    () => PascabayarProviderService.disconnect((props.produk as any).id, row.provider),
+    `Pemetaan ${row.provider} dilepas`,
+  );
+
+const cariKatalog = async () => {
+  isSearching.value = true;
+  try {
+    const res = await PascabayarProviderService.listKatalogDigiflazz(searchKatalog.value, 1, 8);
+    hasilKatalog.value = res.data.data.list || [];
+  } catch (err: any) {
+    emit('notify', err.response?.data?.message || 'Gagal mencari katalog', 'error');
+  } finally {
+    isSearching.value = false;
+  }
+};
+
+const hubungkanDigiflazz = (item: any) =>
+  runAction(
+    () =>
+      PascabayarProviderService.connect((props.produk as any).id, {
+        provider: 'DIGIFLAZZ',
+        providerSku: item.buyerSkuCode,
+        digiflazzProductId: item.id,
+      }),
+    `SKU ${item.buyerSkuCode} dihubungkan`,
+  );
+
+const hubungkanIak = () => {
+  if (!kodeIak.value) {
+    emit('notify', 'Kode SKU IAK wajib diisi', 'error');
+    return;
+  }
+  runAction(
+    () => PascabayarProviderService.connect((props.produk as any).id, { provider: 'IAK', providerSku: kodeIak.value }),
+    `SKU IAK ${kodeIak.value} dihubungkan`,
+  );
+};
+
+const syncKatalog = async () => {
+  isSyncing.value = true;
+  try {
+    const res = await PascabayarProviderService.syncKatalogDigiflazz();
+    const d = res.data.data;
+    emit('notify', `Sinkronisasi selesai. Baru: ${d.inserted}, Diperbarui: ${d.updated}`, 'success');
+  } catch (err: any) {
+    emit('notify', err.response?.data?.message || 'Gagal sinkronisasi katalog', 'error');
+  } finally {
+    isSyncing.value = false;
+  }
 };
 </script>
 
 <template>
   <BaseFormModal
     :formStatus="show"
-    label="Pilih Server Aktif"
-    width="sm:w-full sm:max-w-3xl"
+    label="Pilih Provider Pascabayar"
+    width="sm:w-full sm:max-w-5xl"
     submitLabel=""
     @close="emit('close')"
     @cancel="emit('close')"
   >
-    <div class="space-y-4">
-      <div v-if="isLoading" class="flex justify-center p-6">
-        <svg class="animate-spin w-8 h-8 text-[#0f2155]" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
+    <div class="space-y-5">
+      <div v-if="produk" class="rounded-xl bg-slate-50 border border-slate-200 p-3 text-sm text-slate-700">
+        Produk internal:
+        <span class="font-semibold">{{ (produk as any).kode }} - {{ (produk as any).name }}</span>
+        <span class="block text-xs text-slate-500 mt-1">
+          Provider dipilih di sini. Pengguna mobile tidak memilih provider. Perubahan berlaku untuk inquiry baru;
+          inquiry yang sudah berjalan tetap memakai provider asal.
+        </span>
       </div>
 
-      <div v-else-if="listServer.length === 0" class="text-center p-4 text-gray-500">
-        Daftar server kosong.
-      </div>
-
-      <div v-else class="grid grid-cols-1 gap-4">
-        <div 
-          v-for="server in listServer" 
-          :key="server.id"
-          class="border rounded-xl p-4 transition-all"
-          :class="[
-            selectedServerId === server.id 
-              ? 'border-emerald-400 bg-emerald-50/30 ring-1 ring-emerald-400/50 shadow-sm' 
-              : 'border-gray-200 hover:border-gray-300 bg-white'
-          ]"
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h3 class="font-semibold text-slate-800">Perbandingan kandidat provider</h3>
+        <button
+          type="button"
+          class="px-3 py-1.5 text-xs font-semibold rounded-lg border border-slate-300 hover:bg-slate-50 disabled:opacity-50"
+          :disabled="isSyncing"
+          @click="syncKatalog"
         >
-          <div class="flex items-start justify-between">
-            <div>
-              <div class="flex items-center gap-2 mb-1">
-                <h3 class="font-bold text-gray-800">{{ server.name }}</h3>
-                <span 
-                  class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider"
-                  :class="server.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'"
-                >
-                  {{ server.status === 'active' ? 'Aktif' : 'Tidak Aktif' }}
-                </span>
-                <span v-if="selectedServerId === server.id" class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase tracking-wider bg-emerald-500 text-white shadow-sm">
-                  Saat Ini
-                </span>
-              </div>
-              <div class="mt-3">
-                <p class="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">Produk Terkoneksi:</p>
-                <ul class="space-y-1.5" v-if="getConnectedProducts(server).length > 0">
-                  <li v-for="conn in getConnectedProducts(server)" :key="conn.id" class="flex items-center text-sm font-medium text-gray-700 bg-gray-50 px-2.5 py-1.5 rounded border border-gray-100">
-                    <span class="truncate">{{ conn.name }}</span>
-                    <span v-if="server.id === 1 && conn.nominal" class="ml-2 px-1.5 py-0.5 text-[10px] bg-emerald-100 text-emerald-700 font-bold rounded">
-                      Nominal: {{ conn.nominal }}
-                    </span>
-                  </li>
-                </ul>
-                <div v-else class="text-xs text-rose-600 font-medium italic">
-                  Tidak ada produk yang terhubung
-                </div>
-              </div>
-            </div>
+          {{ isSyncing ? 'Menyinkronkan...' : 'Sinkron Katalog Digiflazz' }}
+        </button>
+      </div>
 
+      <div v-if="isLoading" class="text-center py-6 text-slate-500">Memuat data provider...</div>
+
+      <div v-else-if="kandidat.length === 0" class="text-center py-6 text-slate-500 border border-dashed rounded-xl">
+        Belum ada SKU provider yang terhubung ke produk ini.
+      </div>
+
+      <div v-else class="overflow-x-auto border rounded-xl">
+        <table class="min-w-full text-sm">
+          <thead class="bg-slate-50 text-slate-600">
+            <tr>
+              <th class="px-3 py-2 text-left">Provider</th>
+              <th class="px-3 py-2 text-left">SKU</th>
+              <th class="px-3 py-2 text-left">Nama / Kategori</th>
+              <th class="px-3 py-2 text-right">Biaya perolehan</th>
+              <th class="px-3 py-2 text-right">Admin provider</th>
+              <th class="px-3 py-2 text-right">Komisi</th>
+              <th class="px-3 py-2 text-right">Fee aplikasi</th>
+              <th class="px-3 py-2 text-right">Estimasi harga jual</th>
+              <th class="px-3 py-2 text-right">Estimasi laba</th>
+              <th class="px-3 py-2 text-center">Status</th>
+              <th class="px-3 py-2 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in kandidat" :key="row.mappingId" class="border-t">
+              <td class="px-3 py-2 font-semibold">{{ row.provider }}</td>
+              <td class="px-3 py-2">{{ row.providerSku }}</td>
+              <td class="px-3 py-2">
+                {{ row.nama || '-' }}
+                <span class="block text-xs text-slate-500">{{ row.kategori || '-' }}</span>
+              </td>
+              <td class="px-3 py-2 text-right">{{ formatRp(row.biayaPerolehan) }}</td>
+              <td class="px-3 py-2 text-right">{{ formatRp(row.adminProvider) }}</td>
+              <td class="px-3 py-2 text-right">{{ formatRp(row.komisiProvider) }}</td>
+              <td class="px-3 py-2 text-right">{{ formatRp(row.biayaAdminAplikasi) }}</td>
+              <td class="px-3 py-2 text-right">{{ formatRp(row.hargaJualEstimasi) }}</td>
+              <td class="px-3 py-2 text-right">{{ formatRp(row.labaEstimasi) }}</td>
+              <td class="px-3 py-2 text-center">
+                <span
+                  class="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase"
+                  :class="row.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-600'"
+                >
+                  {{ row.isActive ? 'Aktif' : 'Kandidat' }}
+                </span>
+              </td>
+              <td class="px-3 py-2 text-center space-x-1">
+                <button
+                  v-if="!row.isActive"
+                  type="button"
+                  class="px-2 py-1 text-xs font-semibold rounded-md bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+                  :disabled="isSubmitting"
+                  @click="jadikanAktif(row)"
+                >
+                  Jadikan Aktif
+                </button>
+                <button
+                  v-if="!row.isActive"
+                  type="button"
+                  class="px-2 py-1 text-xs font-semibold rounded-md border border-rose-200 text-rose-600 hover:bg-rose-50 disabled:opacity-50"
+                  :disabled="isSubmitting"
+                  @click="lepas(row)"
+                >
+                  Lepas
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div v-if="asumsi.length" class="rounded-xl bg-amber-50 border border-amber-200 p-3">
+        <p class="text-xs font-semibold text-amber-800 mb-1">Asumsi perhitungan (estimasi, bukan keuntungan final)</p>
+        <ul class="list-disc list-inside text-xs text-amber-800 space-y-0.5">
+          <li v-for="(a, i) in asumsi" :key="i">{{ a }}</li>
+        </ul>
+      </div>
+
+      <div class="border-t pt-4 space-y-3">
+        <h3 class="font-semibold text-slate-800">Hubungkan SKU provider</h3>
+        <div class="flex gap-2">
+          <button
+            type="button"
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg border"
+            :class="providerBaru === 'DIGIFLAZZ' ? 'bg-slate-800 text-white border-slate-800' : 'border-slate-300'"
+            @click="providerBaru = 'DIGIFLAZZ'"
+          >
+            Digiflazz
+          </button>
+          <button
+            type="button"
+            class="px-3 py-1.5 text-xs font-semibold rounded-lg border"
+            :class="providerBaru === 'IAK' ? 'bg-slate-800 text-white border-slate-800' : 'border-slate-300'"
+            @click="providerBaru = 'IAK'"
+          >
+            IAK
+          </button>
+        </div>
+
+        <div v-if="providerBaru === 'DIGIFLAZZ'" class="space-y-2">
+          <div class="flex gap-2">
+            <input
+              v-model="searchKatalog"
+              type="text"
+              placeholder="Cari SKU / nama produk pascabayar Digiflazz"
+              class="flex-1 border rounded-lg px-3 py-2 text-sm"
+            />
             <button
-              @click="handleSelect(server)"
-              :disabled="getConnectedProducts(server).length === 0 || isSubmitting"
-              class="px-4 py-2 text-sm font-bold rounded-lg transition-all focus:outline-none"
-              :class="[
-                getConnectedProducts(server).length === 0 
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : selectedServerId === server.id
-                    ? 'bg-emerald-100 text-emerald-700 cursor-default'
-                    : 'bg-[#0f2155] text-white hover:bg-opacity-90 shadow-sm'
-              ]"
+              type="button"
+              class="px-3 py-2 text-xs font-semibold rounded-lg bg-slate-800 text-white disabled:opacity-50"
+              :disabled="isSearching"
+              @click="cariKatalog"
             >
-              <span v-if="isSubmitting && selectedServerId !== server.id">Menyimpan...</span>
-              <span v-else>{{ selectedServerId === server.id ? 'Terpilih' : 'Pilih' }}</span>
+              {{ isSearching ? 'Mencari...' : 'Cari' }}
             </button>
           </div>
+          <div v-if="hasilKatalog.length" class="max-h-56 overflow-y-auto border rounded-xl divide-y">
+            <div v-for="item in hasilKatalog" :key="item.id" class="flex items-center justify-between px-3 py-2 text-sm">
+              <div>
+                <span class="font-semibold">{{ item.buyerSkuCode }}</span>
+                <span class="block text-xs text-slate-500">{{ item.name }} - {{ item.category || '-' }}</span>
+              </div>
+              <button
+                type="button"
+                class="px-2 py-1 text-xs font-semibold rounded-md bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+                :disabled="isSubmitting"
+                @click="hubungkanDigiflazz(item)"
+              >
+                Hubungkan
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div v-else class="flex gap-2">
+          <input
+            v-model="kodeIak"
+            type="text"
+            placeholder="Kode SKU IAK pascabayar"
+            class="flex-1 border rounded-lg px-3 py-2 text-sm"
+          />
+          <button
+            type="button"
+            class="px-3 py-2 text-xs font-semibold rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50"
+            :disabled="isSubmitting"
+            @click="hubungkanIak"
+          >
+            Hubungkan
+          </button>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -135,7 +135,7 @@ export class IakService {
         body: JSON.stringify({
           username: this.username,
           sign,
-          status: "all"
+          status: 'all'
         })
       });
       return await response.json();
@@ -151,10 +151,58 @@ export class IakService {
           commands: 'pricelist-pasca',
           username: this.username,
           sign,
-          status: "all"
+          status: 'all'
         })
       });
       return await response.json();
     }
+  }
+
+  /**
+   * Transaksi pascabayar generik (inq-pasca | pay-pasca | status-pasca).
+   * Signature = MD5(username + apiKey + ref_id). Tipe kategori dipakai pada path
+   * bill/check sesuai kontrak postpaid IAK.
+   *
+   * CATATAN: nama field respons IAK berbeda dari Digiflazz dan sebagian produk
+   * memerlukan input tambahan. Verifikasi sandbox tetap diperlukan sebelum
+   * diaktifkan di produksi.
+   */
+  async transactionPascabayar(options: {
+    command: 'inq-pasca' | 'pay-pasca' | 'status-pasca';
+    refId: string;
+    sku: string;
+    customerNo: string;
+    additionalData?: Record<string, unknown> | null;
+    providerType?: string | null;
+  }): Promise<any> {
+    const sign = this.signMd5(options.refId);
+    const url = options.providerType
+      ? `${this.postpaidBaseUrl}/api/v1/bill/check/${options.providerType}`
+      : `${this.postpaidBaseUrl}/api/v1/bill/check`;
+    const body: Record<string, unknown> = {
+      ...(options.additionalData ?? {}),
+      commands: options.command,
+      username: this.username,
+      sign,
+      ref_id: options.refId,
+      customer_id: options.customerNo,
+      product_code: options.sku,
+    };
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const text = await response.text();
+    let data: any;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      this.logger.error(`IAK ${options.command} bukan JSON: ${text?.slice(0, 200)}`);
+      throw new BadRequestException(`Respons IAK ${options.command} tidak valid`);
+    }
+    this.logger.log(`IAK ${options.command} Response: ${JSON.stringify(data)}`);
+    return data;
   }
 }

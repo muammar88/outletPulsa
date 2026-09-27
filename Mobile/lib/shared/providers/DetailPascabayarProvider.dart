@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:outletpulsa/services/transaction.dart';
 import 'package:outletpulsa/models/model_detail_transaksi_pascabayar.dart';
+import 'package:outletpulsa/models/model_status_pascabayar.dart';
 
 class Detail_pascabayar_provider with ChangeNotifier {
   bool? _error;
@@ -44,6 +45,22 @@ class Detail_pascabayar_provider with ChangeNotifier {
   String? get biayaAdmin => _biayaAdmin;
   String? get fee => _fee;
   String? get message => _message;
+
+  Future<Model_status_pascabayar?> cekStatusPascabayar(String kode_transaksi) async {
+    try {
+      final res = await Rest_transaction().statusPascabayar(kode_transaksi);
+      await detailTransaksiPascabayar(kode_transaksi);
+      if (res.message != null && res.message!.isNotEmpty) {
+        _message = res.message;
+      }
+      notifyListeners();
+      return res;
+    } catch (e) {
+      _message = 'Gagal memeriksa status: $e';
+      notifyListeners();
+      return null;
+    }
+  }
 
   Future<void> detailTransaksiPascabayar(String kode_transaksi) async {
     await Rest_transaction()

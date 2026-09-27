@@ -1,9 +1,10 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, OnModuleDestroy, Optional } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
 import { SocketService } from '../../socket/socket.service';
 import { PengumumanService } from '../../pengumuman/pengumuman.service';
 import { verifyLinkQuCallbackPayload } from './linkqu-verifier';
 import { LinkquCallbackProcessorService } from './linkqu-callback-processor.service';
+import { LinkquReconciliationService } from './linkqu-reconciliation.service';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -18,6 +19,7 @@ export class LinkquCallbackWorkerService implements OnModuleInit, OnModuleDestro
     private readonly socketService: SocketService,
     private readonly pengumumanService: PengumumanService,
     private readonly linkquProcessor: LinkquCallbackProcessorService,
+    @Optional() private readonly reconciliation?: LinkquReconciliationService,
   ) {
     this.workerId = `worker-${process.pid}-${crypto.randomBytes(4).toString('hex')}`;
   }
@@ -27,11 +29,20 @@ export class LinkquCallbackWorkerService implements OnModuleInit, OnModuleDestro
     // Start background polling loop every 10 seconds (in test/prod)
     if (process.env.NODE_ENV !== 'test') {
       this.workerTimer = setInterval(() => {
-        this.processBatch().catch((err) => {
+        this.runCycle().catch((err) => {
           this.logger.error(`[LinkquCallbackWorker] Unhandled batch error: ${err.message}`, err.stack);
         });
       }, 10000);
     }
+  }
+
+  private async runCycle() {
+    try {
+      await this.reconciliation?.reconcilePending();
+    } catch (err: any) {
+      this.logger.error(`[LinkquCallbackWorker] Reconciliation error: ${err.message}`);
+    }
+    await this.processBatch();
   }
 
   onModuleDestroy() {
@@ -162,11 +173,15 @@ export class LinkquCallbackWorkerService implements OnModuleInit, OnModuleDestro
     const signatureKey = pengaturan?.linkqu_signature_key || process.env.LINKQU_SIGNATURE_KEY;
     const configuredClientId = pengaturan?.linkqu_client_id;
 
+    // Event INQUIRY berasal dari verifikasi server-to-server memakai kredensial provider,
+    // sehingga tidak membawa signature callback dan tidak diwajibkan HMAC callback.
+    const isInquiryEvent = item.event_type === 'INQUIRY';
     const verification = verifyLinkQuCallbackPayload(
       parsedPayload,
       signatureKey,
       configuredClientId,
       parsedHeaders,
+      { requireSignature: !isInquiryEvent },
     );
 
     if (!verification.isValid || !verification.data) {

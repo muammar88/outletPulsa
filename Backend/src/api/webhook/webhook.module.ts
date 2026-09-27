@@ -9,7 +9,12 @@ import { DaftarProdukDigiflazzModule } from '../../administrator/daftar_produk_d
 import { TransaksiModule } from '../transaksi/transaksi.module';
 import { WapisenderService } from '../../providers/wapisender.service';
 import { LinkquCallbackWorkerService } from './linkqu-callback-worker.service';
-import { LinkquCallbackProcessorService } from './linkqu-callback-processor.service';
+import {
+  LinkquCallbackProcessorService,
+  LINKQU_SETTLEMENT_ADAPTER,
+} from './linkqu-callback-processor.service';
+import { LinkquSettlementAdapter } from './linkqu-settlement.adapter';
+import { LinkquReconciliationService } from './linkqu-reconciliation.service';
 
 @Module({
   imports: [
@@ -20,7 +25,16 @@ import { LinkquCallbackProcessorService } from './linkqu-callback-processor.serv
     TransaksiModule,
   ],
   controllers: [WebhookController],
-  providers: [WebhookService, PrismaService, WapisenderService, LinkquCallbackWorkerService, LinkquCallbackProcessorService],
-  exports: [WapisenderService, LinkquCallbackWorkerService, LinkquCallbackProcessorService],
+  providers: [
+    WebhookService,
+    PrismaService,
+    WapisenderService,
+    LinkquCallbackWorkerService,
+    LinkquCallbackProcessorService,
+    // Adapter settlement produksi: tanpa ini event hanya ditahan dan saldo tidak pernah masuk.
+    { provide: LINKQU_SETTLEMENT_ADAPTER, useClass: LinkquSettlementAdapter },
+    LinkquReconciliationService,
+  ],
+  exports: [WapisenderService, LinkquCallbackWorkerService, LinkquCallbackProcessorService, LinkquReconciliationService],
 })
 export class WebhookModule {}

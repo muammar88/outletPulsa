@@ -48,11 +48,17 @@ class Deposit_provider with ChangeNotifier {
   }
 
   Future<Model_void> processLinkquDeposit({
-    required int nominal, 
-    required String paymentMethod, 
-    String? bankCode
+    required int nominal,
+    required String paymentMethod,
+    String? bankCode,
+    String? idempotencyKey,
   }) async {
-    return await Rest_deposit().processLinkquDeposit(nominal, paymentMethod, bankCode);
+    return await Rest_deposit().processLinkquDeposit(
+      nominal,
+      paymentMethod,
+      bankCode,
+      idempotencyKey: idempotencyKey,
+    );
   }
 
   Future<Model_void> getPaymentGatewayDetail(String transactionId) async {

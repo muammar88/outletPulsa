@@ -22,6 +22,16 @@ export class DepositController {
     };
   }
 
+  @Get('linkqu-pending-verification')
+  async getPendingContractVerifications() {
+    const data = await this.depositService.getPendingContractVerifications();
+    return {
+      message: 'Data kandidat pembayaran yang belum terverifikasi',
+      error: null,
+      data,
+    };
+  }
+
   @Get()
   async findAll(@Query() query: GetDepositDto) {
     const data = await this.depositService.findAll(query);

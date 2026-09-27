@@ -3,6 +3,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SchedulerService } from './scheduler.service';
 import { SchedulerProcessor } from './scheduler.processor';
+import { PascabayarRecoveryProcessor } from './pascabayar-recovery.processor';
 
 // Import services that will be called in the job
 import { DaftarProdukSellerDigiflazzModule } from '../administrator/daftar_produk_seller_digiflazz/daftar_produk_seller_digiflazz.module';
@@ -55,6 +56,9 @@ export class SchedulerModule {
         BullModule.registerQueue({
           name: 'product-sync',
         }),
+        BullModule.registerQueue({
+          name: 'pascabayar-recovery',
+        }),
         // Import modules to inject their services into the Processor
         DaftarProdukSellerDigiflazzModule,
         DaftarProdukDigiflazzModule,
@@ -64,7 +68,7 @@ export class SchedulerModule {
         DaftarProdukPascabayarTripayModule,
         ProdukPrabayarModule,
       ],
-      providers: [SchedulerService, SchedulerProcessor, PrismaService],
+      providers: [SchedulerService, SchedulerProcessor, PascabayarRecoveryProcessor, PrismaService],
     };
   }
 }

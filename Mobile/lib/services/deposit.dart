@@ -109,14 +109,22 @@ class Rest_deposit {
     });
   }
 
-  Future<Model_void> processLinkquDeposit(int nominal, String paymentMethod, String? bankCode) async {
+  Future<Model_void> processLinkquDeposit(
+    int nominal,
+    String paymentMethod,
+    String? bankCode, {
+    String? idempotencyKey,
+  }) async {
     final headers = await ApiHeaders.getHeaders();
     Uri url = Uri.parse(_deposit_linkqu_process_url!);
-    final payload = {
+    final payload = <String, dynamic>{
       'nominal': nominal,
       'payment_method': paymentMethod,
     };
     if (bankCode != null) payload['bank_code'] = bankCode;
+    if (idempotencyKey != null && idempotencyKey.isNotEmpty) {
+      payload['idempotency_key'] = idempotencyKey;
+    }
 
     return _netUtil.post(url, headers, jsonEncode(payload)).then((dynamic res) {
       if (res != null && res['error'] == false) {

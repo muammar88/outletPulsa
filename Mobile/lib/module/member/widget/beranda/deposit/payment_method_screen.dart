@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:outletpulsa/shared/providers/DepositProvider.dart';
+import 'package:outletpulsa/services/deposit_idempotency.dart';
 import 'package:outletpulsa/shared/widgets/CircularProgressWidget.dart';
 import 'payment_instruction_screen.dart';
 
@@ -111,13 +112,21 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
   }
 
   Future<void> _processDeposit(String paymentMethod, String? bankCode) async {
+    // Proteksi submit ganda di UI; backend tetap punya proteksi idempotency sendiri.
+    if (_isLoading) return;
     setState(() => _isLoading = true);
-    
+
     final deposit = Provider.of<Deposit_provider>(context, listen: false);
+    final idempotencyKey = await DepositIdempotency.getOrCreate(
+      nominal: widget.nominal,
+      paymentMethod: paymentMethod,
+      bankCode: bankCode,
+    );
     final response = await deposit.processLinkquDeposit(
       nominal: widget.nominal,
       paymentMethod: paymentMethod,
       bankCode: bankCode,
+      idempotencyKey: idempotencyKey,
     );
 
     if (mounted) {
@@ -125,7 +134,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
       if (response.error == false && response.data != null) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => PaymentInstructionScreen(transactionData: response.data!)),
+          MaterialPageRoute(builder: (context) => PaymentInstructionScreen(transactionData: response.data!, idempotencyKey: idempotencyKey)),
         );
       } else {
         _showSnackBar(response.errorMsg ?? 'Gagal membuat transaksi');

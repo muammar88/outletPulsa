@@ -1,8 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PrismaService } from '../../prisma.service';
 import { DepositSaldoDto } from './dto/deposit-saldo.dto';
 import { DepositLinkquDto } from './dto/deposit-linkqu.dto';
 import { PengumumanService } from '../../pengumuman/pengumuman.service';
+import { LinkquReconciliationService } from '../webhook/linkqu-reconciliation.service';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -11,7 +12,8 @@ export class DepositService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly pengumumanService: PengumumanService
+    private readonly pengumumanService: PengumumanService,
+    @Optional() private readonly reconciliation?: LinkquReconciliationService,
   ) {}
 
   async getDepositInfo(memberId: number) {
@@ -313,6 +315,44 @@ export class DepositService {
     }
   }
 
+  private mapPaymentGatewayTransaction(tx: any) {
+    let metadataObj: any = {};
+    try {
+      metadataObj = JSON.parse(tx.metadata || '{}');
+    } catch {}
+
+    return {
+      transaction_id: tx.uuid,
+      payment_method: tx.payment_method,
+      bank_code: tx.bank_code,
+      bank_name: tx.bank_name,
+      virtual_account: tx.virtual_account,
+      amount: Number(tx.amount),
+      fee_admin: Number(tx.fee_admin),
+      total_amount: Number(tx.total_amount),
+      expired_at: tx.expired_at,
+      status: tx.status,
+      partner_reff: tx.partner_reff,
+      qris_text: metadataObj.qris_text,
+      imageqris: metadataObj.imageqris,
+      checkout_url: metadataObj.checkout_url,
+      state: metadataObj.state,
+    };
+  }
+
+  private isSameIdempotencyIntent(
+    existingTx: any,
+    nominal: number,
+    paymentMethod: string,
+    bankCode?: string,
+  ): boolean {
+    return (
+      Number(existingTx.amount) === nominal &&
+      (existingTx.payment_method || '').toUpperCase() === paymentMethod &&
+      (existingTx.bank_code || null) === (bankCode || null)
+    );
+  }
+
   async processLinkquDeposit(memberId: number, body: DepositLinkquDto) {
     if (!memberId) {
       return { error: true, error_msg: 'Id Member Tidak Ditemukan.' };
@@ -388,39 +428,34 @@ export class DepositService {
         return { error: true, error_msg: 'Konfigurasi kredensial LinkQu belum lengkap di sistem' };
       }
 
-      // 5. Idempotency Key check
-      const partnerReff = body.idempotency_key
-        ? `DP-${memberId}-${body.idempotency_key.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 25)}`
-        : `DP-${memberId}-${Date.now()}`;
+      // 5. Idempotency Key: satu key = satu intent topup (member + nominal + metode + bank).
+      // Key dinormalisasi untuk slug, tetapi hash penuh ikut ditanam agar dua key berbeda tidak bertabrakan.
+      const rawIdempotencyKey = (body.idempotency_key || '').trim();
+      let partnerReff: string;
+      if (rawIdempotencyKey) {
+        if (rawIdempotencyKey.length > 128) {
+          return { error: true, error_msg: 'Idempotency key terlalu panjang' };
+        }
+        const keySlug = rawIdempotencyKey.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 24);
+        const keyHash = crypto.createHash('sha256').update(rawIdempotencyKey).digest('hex').slice(0, 12);
+        partnerReff = `DP-${memberId}-${keySlug}-${keyHash}`;
+      } else {
+        partnerReff = `DP-${memberId}-${Date.now()}`;
+      }
 
       const existingTx = await this.prisma.paymentGatewayTransaction.findUnique({
         where: { partner_reff: partnerReff },
         include: { requestDeposit: true },
       });
       if (existingTx) {
-        let metadataObj: any = {};
-        try {
-          metadataObj = JSON.parse(existingTx.metadata || '{}');
-        } catch {}
-        return {
-          error: false,
-          data: {
-            transaction_id: existingTx.uuid,
-            payment_method: existingTx.payment_method,
-            bank_code: existingTx.bank_code,
-            bank_name: existingTx.bank_name,
-            virtual_account: existingTx.virtual_account,
-            amount: Number(existingTx.amount),
-            fee_admin: Number(existingTx.fee_admin),
-            total_amount: Number(existingTx.total_amount),
-            expired_at: existingTx.expired_at,
-            status: existingTx.status,
-            partner_reff: existingTx.partner_reff,
-            qris_text: metadataObj.qris_text,
-            imageqris: metadataObj.imageqris,
-            checkout_url: metadataObj.checkout_url,
-          },
-        };
+        // Key yang sama dengan parameter berbeda HARUS ditolak; transaksi lama tidak boleh diubah.
+        if (!this.isSameIdempotencyIntent(existingTx, nominal, paymentMethod, bankCode)) {
+          return {
+            error: true,
+            error_msg: 'Idempotency key sudah dipakai untuk permintaan topup dengan nominal/metode berbeda',
+          };
+        }
+        return { error: false, data: this.mapPaymentGatewayTransaction(existingTx) };
       }
 
       // 6. Pre-commit local records in DB in PENDING status BEFORE calling provider API
@@ -432,50 +467,71 @@ export class DepositService {
       let createdTx: any = null;
       let reqDeposit: any = null;
 
-      await this.prisma.$transaction(async (tx) => {
-        const iRiwayat = await tx.riwayatTransaksi.create({
-          data: {
-            memberId: memberId,
-            tipeTransaksi: 'deposit',
-            createdAt: myDate,
-            updatedAt: myDate,
-          },
-        });
+      try {
+        await this.prisma.$transaction(async (tx) => {
+          const iRiwayat = await tx.riwayatTransaksi.create({
+            data: {
+              memberId: memberId,
+              tipeTransaksi: 'deposit',
+              createdAt: myDate,
+              updatedAt: myDate,
+            },
+          });
 
-        reqDeposit = await tx.requestDeposit.create({
-          data: {
-            kode: kodeTrans,
-            riwayatTransaksiId: iRiwayat.id,
-            nominal: nominal,
-            nominalTambahan: 0,
-            status: 'proses',
-            waktuRequest: myDate,
-            statusKirim: 'belum_kirim',
-            createdAt: myDate,
-            updatedAt: myDate,
-          },
-        });
+          reqDeposit = await tx.requestDeposit.create({
+            data: {
+              kode: kodeTrans,
+              riwayatTransaksiId: iRiwayat.id,
+              nominal: nominal,
+              nominalTambahan: 0,
+              status: 'proses',
+              waktuRequest: myDate,
+              statusKirim: 'belum_kirim',
+              createdAt: myDate,
+              updatedAt: myDate,
+            },
+          });
 
-        createdTx = await tx.paymentGatewayTransaction.create({
-          data: {
-            reference_id: memberId.toString(),
-            reference_type: 'DEPOSIT',
-            partner_reff: partnerReff,
-            payment_method: paymentMethod,
-            bank_code: bankCode,
-            bank_name: bankCode === '013' ? 'Permata' : (bankCode || paymentMethod),
-            virtual_account: null,
-            amount: nominal,
-            fee_admin: 0,
-            total_amount: nominal,
-            expired_at: expiredAtDB,
-            status: 'PENDING',
-            provider: 'LINKQU',
-            requestDepositId: reqDeposit.id,
-            metadata: JSON.stringify({ state: 'CREATED' }),
-          },
+          createdTx = await tx.paymentGatewayTransaction.create({
+            data: {
+              reference_id: memberId.toString(),
+              reference_type: 'DEPOSIT',
+              partner_reff: partnerReff,
+              payment_method: paymentMethod,
+              bank_code: bankCode,
+              bank_name: bankCode === '013' ? 'Permata' : (bankCode || paymentMethod),
+              virtual_account: null,
+              amount: nominal,
+              fee_admin: 0,
+              total_amount: nominal,
+              expired_at: expiredAtDB,
+              status: 'PENDING',
+              provider: 'LINKQU',
+              requestDepositId: reqDeposit.id,
+              metadata: JSON.stringify({ state: 'CREATED' }),
+            },
+          });
         });
-      });
+      } catch (err: any) {
+        if (err?.code === 'P2002') {
+          // Dua request paralel dengan key sama: satu menang, yang lain mengambil transaksi yang sudah ada.
+          const raced = await this.prisma.paymentGatewayTransaction.findUnique({
+            where: { partner_reff: partnerReff },
+            include: { requestDeposit: true },
+          });
+          if (raced) {
+            // Validasi konflik tetap berlaku di jalur balapan: key sama + parameter beda HARUS ditolak.
+            if (!this.isSameIdempotencyIntent(raced, nominal, paymentMethod, bankCode)) {
+              return {
+                error: true,
+                error_msg: 'Idempotency key sudah dipakai untuk permintaan topup dengan nominal/metode berbeda',
+              };
+            }
+            return { error: false, data: this.mapPaymentGatewayTransaction(raced) };
+          }
+        }
+        throw err;
+      }
 
       // 7. Call Provider API
       const isSandbox = pengaturan.linkqu_is_sandbox;
@@ -562,7 +618,44 @@ export class DepositService {
       payload.signature = signature;
 
       let responseData: any = null;
+      const awaitingConfirmation = async (reason: string) => {
+        if (createdTx?.id) {
+          await this.prisma.paymentGatewayTransaction
+            .updateMany({
+              where: { id: createdTx.id, status: 'PENDING' },
+              data: {
+                metadata: JSON.stringify({ state: 'AWAITING_PROVIDER_CONFIRMATION', reason }),
+                updated_at: new Date(),
+              },
+            })
+            .catch(() => undefined);
+        }
+        return {
+          error: false,
+          error_msg:
+            'Permintaan pembayaran sedang diproses oleh penyedia LinkQu. Instruksi/status akan muncul setelah dikonfirmasi; gunakan tombol cek status atau riwayat transaksi.',
+          data: {
+            transaction_id: createdTx?.uuid,
+            payment_method: paymentMethod,
+            bank_code: bankCode,
+            bank_name: bankCode === '013' ? 'Permata' : (bankCode || paymentMethod),
+            virtual_account: null,
+            amount: nominal,
+            fee_admin: 0,
+            total_amount: nominal,
+            expired_at: createdTx?.expired_at ?? expiredAtDB,
+            status: 'PENDING',
+            partner_reff: partnerReff,
+            qris_text: null,
+            imageqris: null,
+            checkout_url: null,
+          },
+        };
+      };
+
+      let responseText: string;
       try {
+        // Batas waktu mencakup pembuatan request DAN pembacaan body.
         const response = await this.withTimeout(
           fetch(`${baseUrl}${apiPath}`, {
             method: 'POST',
@@ -575,48 +668,77 @@ export class DepositService {
           }),
           15000,
         );
-
-        const responseText = await response.text();
-        responseData = JSON.parse(responseText);
+        responseText = await this.withTimeout(response.text(), 15000);
       } catch (err: any) {
         this.logger.error(`LinkQu create call error/timeout for ${partnerReff}:`, err);
-        // Timeout or network error: keep PENDING for recovery/webhook
-        return {
-          error: false,
-          error_msg: 'Permintaan pembayaran sedang diproses oleh penyedia LinkQu',
-          data: {
-            transaction_id: createdTx?.uuid,
-            payment_method: paymentMethod,
-            bank_code: bankCode,
-            amount: nominal,
-            total_amount: nominal,
-            status: 'PENDING',
-            partner_reff: partnerReff,
-          },
-        };
+        // Timeout/error jaringan = hasil ambigu. Jangan buat tagihan baru dengan referensi lain.
+        return awaitingConfirmation('CREATE_TIMEOUT_OR_NETWORK_ERROR');
       }
 
-      if (!responseData || responseData.response_code !== '00' || responseData.status !== 'SUCCESS') {
+      try {
+        responseData = JSON.parse(responseText);
+      } catch (err: any) {
+        this.logger.error(`LinkQu create returned invalid JSON for ${partnerReff}`);
+        // Body tidak valid juga ambigu; tagihan mungkin sudah dibuat provider.
+        return awaitingConfirmation('INVALID_PROVIDER_BODY');
+      }
+
+      const providerStatus = String(responseData?.status ?? '').toUpperCase();
+      const isProviderSuccess =
+        responseData?.response_code === '00' && providerStatus === 'SUCCESS';
+
+      if (!isProviderSuccess) {
+        const isDefinitiveFailure = providerStatus === 'FAILED' || providerStatus === 'EXPIRED';
+
+        // Hanya penolakan bisnis yang eksplisit yang boleh menjadi gagal permanen.
+        // Status asing/kosong atau kontradiktif diperlakukan ambigu (menunggu konfirmasi).
+        if (!isDefinitiveFailure) {
+          this.logger.warn(
+            `LinkQu create returned ambiguous status for ${partnerReff}: ${providerStatus || '(kosong)'}`,
+          );
+          return awaitingConfirmation('UNEXPECTED_PROVIDER_RESPONSE');
+        }
+
         const errMsg = responseData?.response_desc || responseData?.rd || responseData?.message || 'Gagal membuat pembayaran LinkQu';
-        await this.prisma.paymentGatewayTransaction.update({
-          where: { id: createdTx.id },
-          data: { status: 'FAILED', metadata: JSON.stringify(responseData || {}) },
+        // Klaim bersyarat: jangan menimpa status terminal yang sudah ditetapkan callback lebih dulu.
+        const markFailed = await this.prisma.paymentGatewayTransaction.updateMany({
+          where: { id: createdTx.id, status: 'PENDING' },
+          data: {
+            status: providerStatus === 'EXPIRED' ? 'EXPIRED' : 'FAILED',
+            metadata: JSON.stringify(responseData || {}),
+          },
         });
-        await this.prisma.requestDeposit.update({
-          where: { id: reqDeposit.id },
-          data: { status: 'gagal', alasanPenolakan: errMsg },
-        });
+        if (markFailed.count === 0) {
+          const current = await this.prisma.paymentGatewayTransaction.findUnique({ where: { id: createdTx.id } });
+          if (current && current.status === 'SUCCESS') {
+            return { error: false, data: this.mapPaymentGatewayTransaction(current) };
+          }
+        } else {
+          await this.prisma.requestDeposit.updateMany({
+            where: { id: reqDeposit.id, status: 'proses' },
+            data: { status: 'gagal', alasanPenolakan: errMsg },
+          });
+        }
         return { error: true, error_msg: errMsg };
       }
 
-      // Success response: normalize fee and amounts
+      // Success response: normalize fee and amounts (tolak nilai negatif / tidak valid)
       const rawFee = responseData.feeadmin ?? responseData.fee ?? 0;
-      const feeAdmin = Number(rawFee) || 0;
+      const feeAdmin = Number(rawFee);
+      if (!Number.isFinite(feeAdmin) || feeAdmin < 0) {
+        this.logger.error(`LinkQu create returned invalid fee for ${partnerReff}: ${rawFee}`);
+        return awaitingConfirmation('INVALID_PROVIDER_FEE');
+      }
       const totalAmount = nominal + feeAdmin;
+      if (!Number.isFinite(totalAmount) || totalAmount <= 0) {
+        this.logger.error(`LinkQu create returned invalid total for ${partnerReff}`);
+        return awaitingConfirmation('INVALID_PROVIDER_TOTAL');
+      }
 
       const vaNumber = paymentMethod === 'VA' ? (responseData.virtual_account || responseData.va_number || null) : null;
       const qrisText = paymentMethod === 'QRIS' ? (responseData.qris_text || responseData.qr_content || null) : null;
       const checkoutUrl = paymentMethod === 'EWALLET' ? (responseData.checkout_url || responseData.url_checkout || null) : null;
+      const bankName = bankCode === '013' ? 'Permata' : (responseData.bank_name || bankCode || paymentMethod);
 
       const updatedMetadata = JSON.stringify({
         ...responseData,
@@ -625,38 +747,47 @@ export class DepositService {
         checkout_url: checkoutUrl,
       });
 
-      const updatedTx = await this.prisma.paymentGatewayTransaction.update({
-        where: { id: createdTx.id },
+      // Klaim bersyarat: hanya isi instruksi jika transaksi masih PENDING.
+      const fill = await this.prisma.paymentGatewayTransaction.updateMany({
+        where: { id: createdTx.id, status: 'PENDING' },
         data: {
           virtual_account: vaNumber,
           fee_admin: feeAdmin,
           total_amount: totalAmount,
-          bank_name: bankCode === '013' ? 'Permata' : (responseData.bank_name || bankCode || paymentMethod),
+          bank_name: bankName,
           metadata: updatedMetadata,
         },
       });
 
-      await this.prisma.requestDeposit.update({
-        where: { id: reqDeposit.id },
+      await this.prisma.requestDeposit.updateMany({
+        where: { id: reqDeposit.id, status: 'proses' },
         data: {
           nominalTambahan: feeAdmin,
         },
       });
 
+      if (fill.count === 0) {
+        // Callback/inquiry sudah menyelesaikan transaksi lebih dulu; laporkan status aktual.
+        const current = await this.prisma.paymentGatewayTransaction.findUnique({ where: { id: createdTx.id } });
+        if (current) {
+          return { error: false, data: this.mapPaymentGatewayTransaction(current) };
+        }
+      }
+
       return {
         error: false,
         data: {
-          transaction_id: updatedTx.uuid,
+          transaction_id: createdTx.uuid,
           payment_method: paymentMethod,
           bank_code: bankCode,
-          bank_name: updatedTx.bank_name,
-          virtual_account: updatedTx.virtual_account,
-          amount: Number(updatedTx.amount),
-          fee_admin: Number(updatedTx.fee_admin),
-          total_amount: Number(updatedTx.total_amount),
-          expired_at: updatedTx.expired_at,
-          status: updatedTx.status,
-          partner_reff: updatedTx.partner_reff,
+          bank_name: bankName,
+          virtual_account: vaNumber,
+          amount: nominal,
+          fee_admin: feeAdmin,
+          total_amount: totalAmount,
+          expired_at: createdTx.expired_at ?? expiredAtDB,
+          status: 'PENDING',
+          partner_reff: partnerReff,
           qris_text: qrisText,
           imageqris: responseData.imageqris,
           checkout_url: checkoutUrl,
@@ -675,20 +806,37 @@ export class DepositService {
   async getPaymentGatewayDetail(memberId: number, idOrUuid: string) {
     try {
       const isNumeric = /^\d+$/.test(idOrUuid);
-      const tx = await this.prisma.paymentGatewayTransaction.findFirst({
-        where: {
-          reference_id: memberId.toString(),
-          OR: [
-            { uuid: idOrUuid },
-            { partner_reff: idOrUuid },
-            ...(isNumeric ? [{ id: Number(idOrUuid) }, { requestDepositId: Number(idOrUuid) }] : []),
-          ],
-        },
+      const where = {
+        reference_id: memberId.toString(),
+        OR: [
+          { uuid: idOrUuid },
+          { partner_reff: idOrUuid },
+          ...(isNumeric ? [{ id: Number(idOrUuid) }, { requestDepositId: Number(idOrUuid) }] : []),
+        ],
+      };
+
+      let tx = await this.prisma.paymentGatewayTransaction.findFirst({
+        where,
         include: { requestDeposit: true },
       });
 
       if (!tx) {
         return { error: true, error_msg: 'Data transaksi pembayaran tidak ditemukan' };
+      }
+
+      // Pemulihan status: bila masih PENDING dan inquiry provider dikonfigurasi, coba rekonsiliasi
+      // (dengan jeda/cache) lalu baca ulang. Tidak pernah mengkredit dari jalur ini.
+      if (tx.status === 'PENDING' && this.reconciliation?.isEnabled()) {
+        try {
+          await this.reconciliation.reconcileOne(tx.partner_reff);
+          const refreshed = await this.prisma.paymentGatewayTransaction.findFirst({
+            where,
+            include: { requestDeposit: true },
+          });
+          if (refreshed) tx = refreshed;
+        } catch (e: any) {
+          this.logger.warn(`Rekonsiliasi detail gagal untuk ${tx.partner_reff}: ${e.message}`);
+        }
       }
 
       let metadataObj: any = {};
@@ -713,6 +861,7 @@ export class DepositService {
           qris_text: metadataObj.qris_text,
           imageqris: metadataObj.imageqris,
           checkout_url: metadataObj.checkout_url,
+          state: metadataObj.state,
         },
       };
     } catch (error) {

@@ -6,6 +6,7 @@ import { SocketService } from '../../socket/socket.service';
 import { DaftarProdukDigiflazzService } from '../../administrator/daftar_produk_digiflazz/daftar_produk_digiflazz.service';
 import { TransaksiFinalizerService } from '../transaksi/transaksi-finalizer.service';
 import { WapisenderService } from '../../providers/wapisender.service';
+import { PascabayarFinalizerService } from '../../providers/pascabayar/pascabayar-finalizer.service';
 
 describe('ISSUE-006: WapisenderService and WebhookService (WhatsApp)', () => {
   let webhookService: WebhookService;
@@ -43,6 +44,7 @@ describe('ISSUE-006: WapisenderService and WebhookService (WhatsApp)', () => {
         { provide: SocketService, useValue: { emitTransactionUpdated: jest.fn() } },
         { provide: DaftarProdukDigiflazzService, useValue: {} },
         { provide: TransaksiFinalizerService, useValue: {} },
+        { provide: PascabayarFinalizerService, useValue: {} },
       ],
     }).compile();
 

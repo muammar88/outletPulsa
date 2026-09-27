@@ -10,6 +10,7 @@ export class SchedulerService implements OnModuleInit {
 
   constructor(
     @InjectQueue('product-sync') private productSyncQueue: Queue,
+    @InjectQueue('pascabayar-recovery') private pascabayarRecoveryQueue: Queue,
     private prisma: PrismaService
   ) {}
 
@@ -57,6 +58,18 @@ export class SchedulerService implements OnModuleInit {
         this.logger.log(`Added cron job [${schedule.name}] at ${schedule.time} (${cronExpression})`);
       }
     }
+    // Pemulihan transaksi pascabayar pending/ambigu dijalankan periodik,
+    // terpisah dari jadwal sinkron katalog agar tidak memicu sync produk.
+    await this.pascabayarRecoveryQueue.add(
+      'recover-pending',
+      {},
+      {
+        repeat: { pattern: '*/5 * * * *' },
+        jobId: 'pascabayar-recovery',
+      },
+    );
+    this.logger.log('Recovery pascabayar dijadwalkan setiap 5 menit.');
+
     this.logger.log('All cron jobs added successfully.');
   }
 

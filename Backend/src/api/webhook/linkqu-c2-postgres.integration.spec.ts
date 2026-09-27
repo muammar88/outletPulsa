@@ -39,9 +39,10 @@ describe('Sub-package C2: Real PostgreSQL Integration Tests (2 Independent Clien
     // Inisialisasi 2 worker services independen dengan instance DB berbeda
     const dummySocket: any = { emitTransactionUpdated: jest.fn(), emitBalanceUpdated: jest.fn() };
     const dummyPengumuman: any = { sendTransactionStatus: jest.fn().mockResolvedValue(true) };
+    const dummyProcessor: any = {};
 
-    workerService1 = new LinkquCallbackWorkerService(prisma1 as any, dummySocket, dummyPengumuman);
-    workerService2 = new LinkquCallbackWorkerService(prisma2 as any, dummySocket, dummyPengumuman);
+    workerService1 = new LinkquCallbackWorkerService(prisma1 as any, dummySocket, dummyPengumuman, dummyProcessor);
+    workerService2 = new LinkquCallbackWorkerService(prisma2 as any, dummySocket, dummyPengumuman, dummyProcessor);
 
     // Buat member uji untuk pengetesan ledger
     const testMember = await prisma1.member.create({

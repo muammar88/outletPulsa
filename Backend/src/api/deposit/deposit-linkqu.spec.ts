@@ -30,12 +30,14 @@ describe('ISSUE-004: LinkQu Deposit Creation & Validation', () => {
         findFirst: jest.fn().mockResolvedValue(null),
         create: jest.fn(),
         update: jest.fn(),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       },
       paymentGatewayTransaction: {
         findUnique: jest.fn(),
         findFirst: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
+        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
       },
       riwayatTransaksi: {
         create: jest.fn().mockResolvedValue({ id: 101 }),
@@ -265,5 +267,226 @@ describe('ISSUE-004: LinkQu Deposit Creation & Validation', () => {
     expect(res.data.transaction_id).toBe('uuid-abc-123');
     expect(res.data.qris_text).toBe('00020101021226...');
     expect(res.data.imageqris).toBe('https://linkqu.id/qr/123.png');
+  });
+
+  it('7. Menolak idempotency key sama dengan nominal berbeda (konflik, tidak ubah transaksi lama)', async () => {
+    mockPrisma.pengaturanUmum.findFirst.mockResolvedValue({
+      linkqu_is_active: true,
+      linkqu_payment_va: true,
+      linkqu_client_id: 'client123',
+      linkqu_client_secret: 'secret123',
+      linkqu_signature_key: 'sigkey',
+      linkqu_merchant_code: 'M1',
+      linkqu_pin: '1234',
+    });
+    mockPrisma.bankLinkqu.findFirst.mockResolvedValue({ kode: '002', status: true });
+    mockPrisma.member.findUnique.mockResolvedValue({
+      id: 1,
+      fullname: 'Budi Test',
+      whatsappnumber: '081234567899',
+    });
+    mockPrisma.paymentGatewayTransaction.findUnique.mockResolvedValue({
+      uuid: 'tx-old',
+      partner_reff: 'DP-1-K1-abc',
+      payment_method: 'VA',
+      bank_code: '002',
+      amount: 50000,
+      fee_admin: 0,
+      total_amount: 50000,
+      status: 'PENDING',
+      metadata: JSON.stringify({}),
+    });
+
+    const res = await service.processLinkquDeposit(1, {
+      nominal: '20000',
+      payment_method: 'VA',
+      bank_code: '002',
+      idempotency_key: 'K1',
+    });
+
+    expect(res.error).toBe(true);
+    expect(res.error_msg).toContain('Idempotency');
+    expect(mockPrisma.paymentGatewayTransaction.create).not.toHaveBeenCalled();
+  });
+
+  it('8. Timeout provider menahan PENDING dengan state AWAITING tanpa membuat tagihan baru', async () => {
+    mockPrisma.pengaturanUmum.findFirst.mockResolvedValue({
+      linkqu_is_active: true,
+      linkqu_payment_va: true,
+      linkqu_client_id: 'client123',
+      linkqu_client_secret: 'secret123',
+      linkqu_signature_key: 'sigkey',
+      linkqu_merchant_code: 'M1',
+      linkqu_pin: '1234',
+    });
+    mockPrisma.bankLinkqu.findFirst.mockResolvedValue({ kode: '002', status: true });
+    mockPrisma.member.findUnique.mockResolvedValue({
+      id: 1,
+      fullname: 'Budi Test',
+      whatsappnumber: '081234567899',
+    });
+    mockPrisma.paymentGatewayTransaction.findUnique.mockResolvedValue(null);
+    mockPrisma.requestDeposit.create.mockResolvedValue({ id: 601, kode: 'DEP601' });
+    mockPrisma.paymentGatewayTransaction.create.mockResolvedValue({
+      id: 301,
+      uuid: 'uuid-301',
+      status: 'PENDING',
+    });
+    global.fetch = jest.fn().mockRejectedValue(new Error('ETIMEDOUT'));
+
+    const res = await service.processLinkquDeposit(1, {
+      nominal: '50000',
+      payment_method: 'VA',
+      bank_code: '002',
+      idempotency_key: 'K2',
+    });
+
+    expect(res.error).toBe(false);
+    expect(res.data.status).toBe('PENDING');
+    expect(global.fetch).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.paymentGatewayTransaction.create).toHaveBeenCalledTimes(1);
+    expect(mockPrisma.paymentGatewayTransaction.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 301, status: 'PENDING' },
+        data: expect.objectContaining({
+          metadata: expect.stringContaining('AWAITING_PROVIDER_CONFIRMATION'),
+        }),
+      }),
+    );
+  });
+
+  it('9. Jalur balapan P2002 tetap menolak key sama dengan nominal berbeda', async () => {
+    mockPrisma.pengaturanUmum.findFirst.mockResolvedValue({
+      linkqu_is_active: true,
+      linkqu_payment_va: true,
+      linkqu_client_id: 'client123',
+      linkqu_client_secret: 'secret123',
+      linkqu_signature_key: 'sigkey',
+      linkqu_merchant_code: 'M1',
+      linkqu_pin: '1234',
+    });
+    mockPrisma.bankLinkqu.findFirst.mockResolvedValue({ kode: '002', status: true });
+    mockPrisma.member.findUnique.mockResolvedValue({
+      id: 1,
+      fullname: 'Budi Test',
+      whatsappnumber: '081234567899',
+    });
+
+    // findUnique pertama (cek awal) tidak ada; findUnique kedua (setelah P2002) mengembalikan tx beda nominal.
+    mockPrisma.paymentGatewayTransaction.findUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        uuid: 'tx-raced',
+        partner_reff: 'DP-1-RACE',
+        payment_method: 'VA',
+        bank_code: '002',
+        amount: 20000,
+        fee_admin: 0,
+        total_amount: 20000,
+        status: 'PENDING',
+        metadata: JSON.stringify({}),
+      });
+    mockPrisma.requestDeposit.create.mockResolvedValue({ id: 701, kode: 'DEP701' });
+    mockPrisma.paymentGatewayTransaction.create.mockRejectedValue({ code: 'P2002' });
+
+    const res = await service.processLinkquDeposit(1, {
+      nominal: '50000',
+      payment_method: 'VA',
+      bank_code: '002',
+      idempotency_key: 'RACE',
+    });
+
+    expect(res.error).toBe(true);
+    expect(res.error_msg).toContain('Idempotency');
+  });
+
+  it('10. Respons provider ambigu tidak langsung dianggap gagal permanen', async () => {
+    mockPrisma.pengaturanUmum.findFirst.mockResolvedValue({
+      linkqu_is_active: true,
+      linkqu_payment_va: true,
+      linkqu_client_id: 'client123',
+      linkqu_client_secret: 'secret123',
+      linkqu_signature_key: 'sigkey',
+      linkqu_merchant_code: 'M1',
+      linkqu_pin: '1234',
+    });
+    mockPrisma.bankLinkqu.findFirst.mockResolvedValue({ kode: '002', status: true });
+    mockPrisma.member.findUnique.mockResolvedValue({
+      id: 1,
+      fullname: 'Budi Test',
+      whatsappnumber: '081234567899',
+    });
+    mockPrisma.paymentGatewayTransaction.findUnique.mockResolvedValue(null);
+    mockPrisma.requestDeposit.create.mockResolvedValue({ id: 801, kode: 'DEP801' });
+    mockPrisma.paymentGatewayTransaction.create.mockResolvedValue({
+      id: 401,
+      uuid: 'uuid-401',
+      status: 'PENDING',
+    });
+    global.fetch = jest.fn().mockResolvedValue({
+      text: jest.fn().mockResolvedValue(JSON.stringify({ response_code: '05', status: 'PENDING' })),
+    } as any);
+
+    const res = await service.processLinkquDeposit(1, {
+      nominal: '50000',
+      payment_method: 'VA',
+      bank_code: '002',
+      idempotency_key: 'AMB',
+    });
+
+    expect(res.error).toBe(false);
+    expect(res.data.status).toBe('PENDING');
+    expect(mockPrisma.paymentGatewayTransaction.updateMany).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ status: 'FAILED' }),
+      }),
+    );
+  });
+
+  it('11. Biaya negatif dari provider ditolak dan ditahan menunggu konfirmasi', async () => {
+    mockPrisma.pengaturanUmum.findFirst.mockResolvedValue({
+      linkqu_is_active: true,
+      linkqu_payment_va: true,
+      linkqu_client_id: 'client123',
+      linkqu_client_secret: 'secret123',
+      linkqu_signature_key: 'sigkey',
+      linkqu_merchant_code: 'M1',
+      linkqu_pin: '1234',
+    });
+    mockPrisma.bankLinkqu.findFirst.mockResolvedValue({ kode: '002', status: true });
+    mockPrisma.member.findUnique.mockResolvedValue({
+      id: 1,
+      fullname: 'Budi Test',
+      whatsappnumber: '081234567899',
+    });
+    mockPrisma.paymentGatewayTransaction.findUnique.mockResolvedValue(null);
+    mockPrisma.requestDeposit.create.mockResolvedValue({ id: 901, kode: 'DEP901' });
+    mockPrisma.paymentGatewayTransaction.create.mockResolvedValue({
+      id: 501,
+      uuid: 'uuid-501',
+      status: 'PENDING',
+    });
+    global.fetch = jest.fn().mockResolvedValue({
+      text: jest.fn().mockResolvedValue(
+        JSON.stringify({ response_code: '00', status: 'SUCCESS', feeadmin: -5000 }),
+      ),
+    } as any);
+
+    const res = await service.processLinkquDeposit(1, {
+      nominal: '50000',
+      payment_method: 'VA',
+      bank_code: '002',
+      idempotency_key: 'FEE',
+    });
+
+    expect(res.error).toBe(false);
+    expect(res.data.status).toBe('PENDING');
+    expect(mockPrisma.paymentGatewayTransaction.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          metadata: expect.stringContaining('INVALID_PROVIDER_FEE'),
+        }),
+      }),
+    );
   });
 });

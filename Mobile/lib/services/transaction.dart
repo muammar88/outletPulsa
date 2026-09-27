@@ -5,6 +5,7 @@ import 'package:outletpulsa/models/model_detail_transaksi_pascabayar.dart';
 import 'package:outletpulsa/models/model_inquiry_pascabayar.dart';
 import 'package:outletpulsa/models/model_list_kategori.dart';
 import 'package:outletpulsa/models/model_list_operator.dart';
+import 'package:outletpulsa/models/model_status_pascabayar.dart';
 import 'package:outletpulsa/models/model_list_produk.dart';
 import 'package:outletpulsa/models/model_transaction.dart';
 import 'package:outletpulsa/models/model_void.dart';
@@ -25,6 +26,7 @@ class Rest_transaction {
   String? _detailTransaksiPascabayar_url;
   String? _inquiryPascabayar_url;
   String? _pembayaranPascabayar_url;
+  String? _pascabayarStatus_url;
 
   // constructor
   Rest_transaction() {
@@ -40,6 +42,7 @@ class Rest_transaction {
     _detailTransaksiPascabayar_url = config.detailTransaksiPascabayar_url;
     _inquiryPascabayar_url = config.inquiryPascabayar_url;
     _pembayaranPascabayar_url = config.pembayaranPascabayar_url;
+    _pascabayarStatus_url = config.pascabayarStatus_url;
   }
 
   final NetworkUtil _netUtil = NetworkUtil();
@@ -201,6 +204,17 @@ class Rest_transaction {
         .then((dynamic res) async {
       print('response: $res');
       return new Model_void.map(res);
+    });
+  }
+
+  Future<Model_status_pascabayar> statusPascabayar(String trId) async {
+    final headers = await ApiHeaders.getHeaders();
+    Uri url = Uri.parse(_pascabayarStatus_url!);
+    return _netUtil
+        .post(url, headers, jsonEncode({"tr_id": trId}))
+        .then((dynamic res) async {
+      print('response: $res');
+      return new Model_status_pascabayar.map(res);
     });
   }
 

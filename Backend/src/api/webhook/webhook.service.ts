@@ -8,6 +8,7 @@ import * as crypto from 'crypto';
 import { WapisenderService } from '../../providers/wapisender.service';
 import { verifyLinkQuCallbackPayload } from './linkqu-verifier';
 import { LinkquCallbackProcessorService } from './linkqu-callback-processor.service';
+import { PascabayarFinalizerService } from '../../providers/pascabayar/pascabayar-finalizer.service';
 
 interface IakCallbackPayload {
   data: {
@@ -56,6 +57,7 @@ export class WebhookService {
     private readonly transaksiFinalizer: TransaksiFinalizerService,
     private readonly wapisenderService: WapisenderService,
     private readonly linkquProcessor: LinkquCallbackProcessorService,
+    private readonly pascabayarFinalizer: PascabayarFinalizerService,
   ) {}
 
   async handleIakCallback(
@@ -67,7 +69,7 @@ export class WebhookService {
     console.log(`[Webhook Sequence: ${WebhookService.webhookSequence}] Menerima Webhook IAK. Data:`, JSON.stringify(body));
 
     const expectedKey = process.env.IAK_CALLBACK_KEY || '';
-    if (kodeVerifikasi !== expectedKey) {
+    if (!expectedKey || !this.safeEqual(kodeVerifikasi, expectedKey)) {
       await this.logWebhook('IAK', 'callback', null, body, 'failed', 'Kode verifikasi tidak valid', ipAddress);
       throw new HttpException({ error: true, error_msg: 'Kode verifikasi tidak valid' }, HttpStatus.UNAUTHORIZED);
     }
@@ -106,24 +108,29 @@ export class WebhookService {
       return { error: false, error_msg: 'Berhasil' };
     }
 
-    // Try Pascabayar
+    // Try Pascabayar (cocokkan provider agar referensi tidak bentrok antarjenis)
     const transactionPasca = await this.prisma.transactionPascabayar.findFirst({
-      where: { trId: refId },
-      include: { riwayatTransaksi: { include: { member: true } } },
+      where: { trId: refId, OR: [{ provider: 'IAK' }, { provider: null }] },
     });
 
     if (transactionPasca) {
+      if (!this.pascaIdentityMatches(transactionPasca, 'IAK', null, null)) {
+        await this.logWebhook('IAK', 'callback_pascabayar', refId, body, 'failed', 'Provider/SKU/pelanggan tidak cocok', ipAddress);
+        throw new HttpException({ error: true, error_msg: 'Data transaksi tidak cocok' }, HttpStatus.CONFLICT);
+      }
       if (transactionPasca.status === 'sukses' || transactionPasca.status === 'gagal') {
         await this.logWebhook('IAK', 'callback_pascabayar', refId, body, 'ignored', `Sudah berstatus ${transactionPasca.status}`, ipAddress);
         return { error: false, error_msg: 'Berhasil' };
       }
       const statusCode = Number(status);
       if (statusCode === 1 || String(status) === 'SUCCESS') {
-        await this.updateSuccessTransactionPascabayar(transactionPasca.id, sn, transactionPasca);
+        await this.updateSuccessTransactionPascabayar(transactionPasca.id, sn);
         await this.logWebhook('IAK', 'callback_pascabayar', refId, body, 'success', `Transaksi sukses. SN: ${sn}`, ipAddress);
       } else if (statusCode === 2 || String(status) === 'FAILED') {
-        await this.updateFailedTransactionPascabayar(transactionPasca.id, transactionPasca);
+        await this.updateFailedTransactionPascabayar(transactionPasca.id, 'Gagal berdasarkan callback IAK');
         await this.logWebhook('IAK', 'callback_pascabayar', refId, body, 'success', 'Transaksi gagal, saldo dikembalikan', ipAddress);
+      } else {
+        await this.logWebhook('IAK', 'callback_pascabayar', refId, body, 'ignored', `Status tidak dikenali: ${status}`, ipAddress);
       }
       return { error: false, error_msg: 'Berhasil' };
     }
@@ -204,10 +211,10 @@ export class WebhookService {
         return { error: false, error_msg: 'Berhasil' };
       }
       if (status === 1) {
-        await this.updateSuccessTransactionPascabayar(transactionPasca.id, token, transactionPasca);
+        await this.updateSuccessTransactionPascabayar(transactionPasca.id, token);
         await this.logWebhook('TRIPAY', 'callback_pascabayar', String(trxId), body, 'success', `Transaksi sukses. Token: ${token}`, ipAddress);
       } else if (status === 2) {
-        await this.updateFailedTransactionPascabayar(transactionPasca.id, transactionPasca);
+        await this.updateFailedTransactionPascabayar(transactionPasca.id, 'Gagal berdasarkan callback Tripay');
         await this.logWebhook('TRIPAY', 'callback_pascabayar', String(trxId), body, 'success', 'Transaksi gagal, saldo dikembalikan', ipAddress);
       }
       return { error: false, error_msg: 'Berhasil' };
@@ -228,12 +235,13 @@ export class WebhookService {
     console.log(`[Webhook Sequence: ${WebhookService.webhookSequence}] Menerima Webhook DIGIFLAZZ. Data:`, JSON.stringify(body));
 
     const webhookSecret = process.env.DIGIFLAZZ_WEBHOOK_SECRET || '';
+    if (!webhookSecret) {
+      await this.logWebhook('DIGIFLAZZ', 'callback', null, body, 'failed', 'Secret webhook Digiflazz belum dikonfigurasi', ipAddress);
+      throw new HttpException({ error: true, error_msg: 'Webhook belum dikonfigurasi' }, HttpStatus.SERVICE_UNAVAILABLE);
+    }
     const expectedSignature = 'sha1=' + crypto.createHmac('sha1', webhookSecret).update(rawBody).digest('hex');
     
-    console.log(`[DIGIFLAZZ SERVICE] Expected Signature: ${expectedSignature}`);
-    console.log(`[DIGIFLAZZ SERVICE] Received Signature: ${signature}`);
-
-    if (signature !== expectedSignature) {
+    if (!this.safeEqual(signature, expectedSignature)) {
       await this.logWebhook('DIGIFLAZZ', 'callback', null, body, 'failed', 'Signature tidak valid', ipAddress);
       throw new HttpException({ error: true, error_msg: 'Signature tidak valid' }, HttpStatus.UNAUTHORIZED);
     }
@@ -309,25 +317,33 @@ export class WebhookService {
 
     console.log(`[DIGIFLAZZ SERVICE] Prabayar transaction not found, looking for pascabayar transaction with trId: ${refId}`);
     const transactionPasca = await this.prisma.transactionPascabayar.findFirst({
-      where: { trId: refId },
-      include: { riwayatTransaksi: { include: { member: true } } },
+      where: { trId: refId, OR: [{ provider: 'DIGIFLAZZ' }, { provider: null }] },
     });
 
     if (transactionPasca) {
       console.log(`[DIGIFLAZZ SERVICE] Found pascabayar transaction: ${transactionPasca.id}, status: ${transactionPasca.status}`);
+      if (!this.pascaIdentityMatches(transactionPasca, 'DIGIFLAZZ', data.buyer_sku_code, data.customer_no)) {
+        await this.logWebhook('DIGIFLAZZ', 'callback_pascabayar', refId, body, 'failed', 'Provider/SKU/pelanggan tidak cocok', ipAddress);
+        throw new HttpException({ error: true, error_msg: 'Data transaksi tidak cocok' }, HttpStatus.CONFLICT);
+      }
       if (transactionPasca.status === 'sukses' || transactionPasca.status === 'gagal') {
         await this.logWebhook('DIGIFLAZZ', 'callback_pascabayar', refId, body, 'ignored', `Sudah berstatus ${transactionPasca.status}`, ipAddress);
         return { error: false, error_msg: 'Berhasil' } as any;
       }
 
       if (rc === '00') {
-        await this.updateSuccessTransactionPascabayar(transactionPasca.id, sn, transactionPasca);
+        await this.updateSuccessTransactionPascabayar(transactionPasca.id, sn, data.price);
         await this.logWebhook('DIGIFLAZZ', 'callback_pascabayar', refId, body, 'success', `Transaksi sukses. SN: ${sn}`, ipAddress);
       } else if (rc === '03') {
         await this.logWebhook('DIGIFLAZZ', 'callback_pascabayar', refId, body, 'ignored', 'Masih pending (rc=03)', ipAddress);
       } else {
-        await this.updateFailedTransactionPascabayar(transactionPasca.id, transactionPasca);
-        await this.logWebhook('DIGIFLAZZ', 'callback_pascabayar', refId, body, 'success', `Transaksi gagal (rc=${rc}), saldo dikembalikan`, ipAddress);
+        const statusText = String(data.status ?? '').toLowerCase();
+        if (statusText === 'gagal' || statusText === 'failed') {
+          await this.updateFailedTransactionPascabayar(transactionPasca.id, `Gagal berdasarkan callback Digiflazz (rc=${rc})`);
+          await this.logWebhook('DIGIFLAZZ', 'callback_pascabayar', refId, body, 'success', `Transaksi gagal (rc=${rc}), saldo dikembalikan`, ipAddress);
+        } else {
+          await this.logWebhook('DIGIFLAZZ', 'callback_pascabayar', refId, body, 'ignored', `RC tidak dikenali (rc=${rc}); status tidak diubah`, ipAddress);
+        }
       }
       return { error: false, error_msg: 'Berhasil' };
     }
@@ -367,76 +383,52 @@ export class WebhookService {
   private async updateSuccessTransactionPascabayar(
     id: number,
     sn: string,
-    transactionData?: { trId?: string | null; riwayatTransaksi: { member: { id: number } | null } | null },
+    actualBillAmount?: number | null,
   ): Promise<void> {
-    const claim = await this.prisma.transactionPascabayar.updateMany({
-      where: { id, status: 'proses' },
-      data: {
-        status: 'sukses',
-        ket: sn,
-        serial_number: sn ? String(sn) : undefined,
-      },
+    await this.pascabayarFinalizer.finalizeSuccess({
+      transactionId: id,
+      sn,
+      actualBillAmount: actualBillAmount ?? null,
+      source: 'WEBHOOK',
     });
-
-    if (claim.count === 0) {
-      return;
-    }
-
-    const member = transactionData?.riwayatTransaksi?.member;
-    if (member) {
-      this.socketService.emitTransactionUpdated(member.id, {
-        transactionId: transactionData?.trId || id,
-        status: 'sukses',
-        sn: sn,
-        updatedAt: new Date(),
-      });
-      this.pengumumanService.sendTransactionStatus(
-        member.id,
-        'Transaksi Pascabayar Berhasil',
-        `Pembayaran tagihan dengan ID ${transactionData?.trId || id} sukses. SN: ${sn}`,
-        { reference_id: transactionData?.trId || String(id), status: 'sukses' },
-        'pascabayar'
-      ).catch(e => this.logger.error('Failed to send pasca success notif', e));
-    }
   }
 
   private async updateFailedTransactionPascabayar(
     id: number,
-    transactionData: { trId?: string | null; total: number | null; riwayatTransaksi: { member: { id: number; saldo: number | null } | null } | null },
+    reason?: string | null,
   ): Promise<void> {
-    const member = transactionData.riwayatTransaksi?.member;
-    if (!member) return;
-
-    const totalRefund = transactionData.total || 0;
-    await this.prisma.$transaction(async (tx) => {
-      const claim = await tx.transactionPascabayar.updateMany({
-        where: { id, status: 'proses' },
-        data: { status: 'gagal' },
-      });
-      if (claim.count === 0) return;
-
-      await tx.member.update({ where: { id: member.id }, data: { saldo: { increment: totalRefund } } });
-      await tx.riwayatTransaksi.create({
-        data: {
-          memberId: member.id,
-          tipeTransaksi: 'terima_saldo',
-        },
-      });
+    await this.pascabayarFinalizer.finalizeFailure({
+      transactionId: id,
+      reason: reason ?? null,
+      source: 'WEBHOOK',
     });
+  }
 
-    this.socketService.emitTransactionUpdated(member.id, {
-      transactionId: transactionData.trId || id,
-      status: 'gagal',
-      updatedAt: new Date(),
-    });
+  /** Perbandingan string tahan waktu untuk kode verifikasi/signature. */
+  private safeEqual(a: string, b: string): boolean {
+    if (typeof a !== 'string' || typeof b !== 'string') return false;
+    const bufA = Buffer.from(a);
+    const bufB = Buffer.from(b);
+    if (bufA.length !== bufB.length) return false;
+    return crypto.timingSafeEqual(bufA, bufB);
+  }
 
-    this.pengumumanService.sendTransactionStatus(
-      member.id,
-      'Transaksi Pascabayar Gagal',
-      `Pembayaran tagihan dengan ID ${transactionData.trId || id} gagal. Saldo dikembalikan.`,
-      { reference_id: transactionData.trId || String(id), status: 'gagal' },
-      'pascabayar'
-    ).catch(e => this.logger.error('Failed to send pasca failed notif', e));
+  /**
+   * Cocokkan identitas transaksi pascabayar dengan payload provider.
+   * Provider null (data lama) tetap diterima agar kompatibel; SKU/nomor
+   * dibandingkan hanya bila keduanya tersedia.
+   */
+  private pascaIdentityMatches(
+    trx: { provider: string | null; providerSku: string | null; nomorTujuan: string | null },
+    provider: 'IAK' | 'DIGIFLAZZ',
+    sku?: string | null,
+    customerNo?: string | null,
+  ): boolean {
+    if (trx.provider && trx.provider !== provider) return false;
+    const norm = (v?: string | null) => String(v ?? '').replace(/\s+/g, '').replace(/^0+/, '');
+    if (trx.providerSku && sku && norm(trx.providerSku) !== norm(sku)) return false;
+    if (trx.nomorTujuan && customerNo && norm(trx.nomorTujuan) !== norm(customerNo)) return false;
+    return true;
   }
 
   private async logWebhook(

@@ -9,6 +9,7 @@ import { SocketService } from '../../socket/socket.service';
 import { DaftarProdukDigiflazzService } from '../../administrator/daftar_produk_digiflazz/daftar_produk_digiflazz.service';
 import { TransaksiFinalizerService } from '../transaksi/transaksi-finalizer.service';
 import { WapisenderService } from '../../providers/wapisender.service';
+import { PascabayarFinalizerService } from '../../providers/pascabayar/pascabayar-finalizer.service';
 import { TransformInterceptor } from '../../common/interceptors/transform.interceptor';
 import { LinkquCallbackProcessorService, LINKQU_SETTLEMENT_ADAPTER } from './linkqu-callback-processor.service';
 import { TestLinkquSettlementAdapter } from './test-only/test-linkqu-settlement.adapter';
@@ -108,6 +109,7 @@ describe('Paket A (ISSUE-003 / A1): LinkQu Callback Contract Verification & Fail
         { provide: DaftarProdukDigiflazzService, useValue: {} },
         { provide: TransaksiFinalizerService, useValue: {} },
         { provide: WapisenderService, useValue: {} },
+        { provide: PascabayarFinalizerService, useValue: {} },
         LinkquCallbackProcessorService,
         ...(injectAdapter ? [{ provide: LINKQU_SETTLEMENT_ADAPTER, useClass: TestLinkquSettlementAdapter }] : []),
       ],

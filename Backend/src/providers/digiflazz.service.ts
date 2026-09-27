@@ -144,4 +144,91 @@ export class DigiflazzService {
       throw new BadRequestException(`Format response Digiflazz tidak valid. Pesan dari server: ${digiflazzMessage}`);
     }
   }
+
+  /**
+   * Katalog pascabayar (cmd: pasca).
+   * Sengaja dipisah dari getPricelist() prabayar agar katalog tidak tercampur.
+   */
+  async getPascabayarPricelist(): Promise<any[]> {
+    const sign = this.signMd5('pricelist');
+    const response = await fetch(`${this.baseUrl}/price-list`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        cmd: 'pasca',
+        username: this.username,
+        sign,
+      }),
+    });
+
+    const bodyText = await response.text();
+    let opJson: any;
+    try {
+      opJson = JSON.parse(bodyText);
+    } catch {
+      throw new BadRequestException('Respons katalog pascabayar Digiflazz bukan JSON yang valid');
+    }
+
+    if (opJson.data && Array.isArray(opJson.data)) {
+      return opJson.data;
+    }
+    const message = opJson.data?.message || opJson.message || JSON.stringify(opJson);
+    throw new BadRequestException(`Format response katalog pascabayar Digiflazz tidak valid. Pesan dari server: ${message}`);
+  }
+
+  /**
+   * Transaksi pascabayar generik (inq-pasca | pay-pasca | status-pasca).
+   * Signature = MD5(username + apiKey + ref_id).
+   */
+  async transactionPascabayar(options: {
+    command: 'inq-pasca' | 'pay-pasca' | 'status-pasca';
+    refId: string;
+    sku: string;
+    customerNo: string;
+    additionalData?: Record<string, unknown> | null;
+  }): Promise<any> {
+    const sign = this.signMd5(options.refId);
+    // additionalData lebih dulu agar tidak dapat menimpa field wajib (commands/sign/dll).
+    const body: Record<string, unknown> = {
+      ...(options.additionalData ?? {}),
+      commands: options.command,
+      username: this.username,
+      buyer_sku_code: options.sku,
+      customer_no: options.customerNo,
+      ref_id: options.refId,
+      sign,
+    };
+
+    const response = await fetch(`${this.baseUrl}/transaction`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    const text = await response.text();
+    let data: any;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      this.logger.error(`DIGIFLAZZ ${options.command} bukan JSON: ${text?.slice(0, 200)}`);
+      throw new BadRequestException(`Respons Digiflazz ${options.command} tidak valid`);
+    }
+    this.logger.log(`DIGIFLAZZ ${options.command} Response: ${JSON.stringify(data)}`);
+    return data;
+  }
+
+  async inquiryPascabayar(ref_id: string, customer_no: string, kode_produk: string): Promise<any> {
+    return this.transactionPascabayar({ command: 'inq-pasca', refId: ref_id, sku: kode_produk, customerNo: customer_no });
+  }
+
+  async payPascabayar(ref_id: string, customer_no: string, kode_produk: string): Promise<any> {
+    return this.transactionPascabayar({ command: 'pay-pasca', refId: ref_id, sku: kode_produk, customerNo: customer_no });
+  }
+
+  async statusPascabayar(ref_id: string, customer_no: string, kode_produk: string): Promise<any> {
+    return this.transactionPascabayar({ command: 'status-pasca', refId: ref_id, sku: kode_produk, customerNo: customer_no });
+  }
 }

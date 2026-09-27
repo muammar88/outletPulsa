@@ -22,19 +22,36 @@ export class TransaksiPascabayarController {
   @Post('pascabayar-inquiry')
   async inquiryPascabayar(@Request() req: any, @Body() body: any) {
     const memberId = req.user.id;
-    const { product_code } = body;
+    const { product_code, additional_data } = body;
     let { nomor_tujuan } = body;
     if (nomor_tujuan) {
-      nomor_tujuan = nomor_tujuan.replace(/\s+/g, '');
+      nomor_tujuan = String(nomor_tujuan).replace(/\s+/g, '');
     }
-    return await this.transaksiPascabayarService.inquiryPascabayar(memberId, product_code, nomor_tujuan);
+    const additionalData =
+      additional_data && typeof additional_data === 'object' && !Array.isArray(additional_data)
+        ? additional_data
+        : null;
+    return await this.transaksiPascabayarService.inquiryPascabayar(memberId, product_code, nomor_tujuan, additionalData);
   }
 
   @Post('pascabayar-pembayaran')
   async pembayaranPascabayar(@Request() req: any, @Body() body: any) {
     const memberId = req.user.id;
-    // Mobile sends tr_id inside body
     const tr_id = body.tr_id || body.trId;
     return await this.transaksiPascabayarService.pembayaranPascabayar(memberId, tr_id);
+  }
+
+  @Post('pascabayar-status')
+  async statusPascabayar(@Request() req: any, @Body() body: any) {
+    const memberId = req.user.id;
+    const tr_id = body.tr_id || body.trId || body.kode_transaksi;
+    return await this.transaksiPascabayarService.checkStatusPascabayar(memberId, tr_id);
+  }
+
+  @Post('transaksi-detail-pascabayar')
+  async detailTransaksiPascabayar(@Request() req: any, @Body() body: any) {
+    const memberId = req.user.id;
+    const kodeTransaksi = body.kode_transaksi || body.tr_id || body.trId || body.kode;
+    return await this.transaksiPascabayarService.getDetailPascabayar(memberId, kodeTransaksi);
   }
 }

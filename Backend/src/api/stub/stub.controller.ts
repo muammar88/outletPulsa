@@ -65,7 +65,6 @@ export class StubController {
   detailTransaksiPascabayar(@Body() body: any) {
     return { error: false, error_msg: '', data: {} };
   }
-
   // ── AGEN ──────────────────────────────────────────
 
 

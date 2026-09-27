@@ -12,6 +12,7 @@ export interface LinkquSettlementAdapter {
     isPaymentSuccess: boolean,
     partnerReff: string,
     workerId?: string,
+    verificationStatus?: 'SUCCESS' | 'FAILED' | 'EXPIRED' | 'PENDING',
   ): Promise<{ status: 'PROCESSED' | 'CONFLICT' | 'FAILED'; message?: string }>;
 }
 
@@ -51,10 +52,13 @@ export class LinkquCallbackProcessorService {
           signature: payload?.signature || null,
           headers: headers ? JSON.stringify(headers) : null,
           payload: JSON.stringify(payload),
-          status: 'PENDING_CONTRACT_VERIFICATION', // Ditahan sesuai instruksi T1
+          // Disimpan sebagai PENDING agar bila pemrosesan langsung gagal/crash,
+          // worker tetap mengambil dan memulihkan event ini (tidak ada event yang hilang).
+          status: 'PENDING',
           locked_by: null,
           locked_until: null,
-          last_error: 'Contract not verified. Waiting for production adapter approval.',
+          next_retry_at: new Date(),
+          last_error: 'Awaiting settlement processing.',
         },
       });
       this.logger.log(`[LinkQu] Callback ingested and held for ${partnerReff} (event_hash: ${eventHash})`);
@@ -66,9 +70,9 @@ export class LinkquCallbackProcessorService {
       throw err;
     }
 
-    // Jika kita memiliki adapter test-only yang disuntikkan (hanya saat testing), kita bisa memprosesnya langsung
+    // Bila adapter settlement tersedia (produksi terdaftar di WebhookModule, atau adapter tes saat pengujian),
+    // event diproses langsung setelah tersimpan. Bila gagal, baris inbox tetap PENDING dan worker memulihkannya.
     if (this.settlementAdapter) {
-      // Untuk tujuan testing settlement historis
       await this.prisma.paymentGatewayCallbackInbox.update({
         where: { id: inboxRecord.id },
         data: {
@@ -204,17 +208,12 @@ export class LinkquCallbackProcessorService {
       return { status: 'FAILED', message: 'Provider mismatch' };
     }
 
-    const isPaymentSuccess = callbackStatus === 'SUCCESS' && (!responseCode || responseCode === '00' || responseCode === '03'); // rc 03 usually pending but for some reason we count it or handled it? Wait, 03 was handled in HTTP handler before. Ah wait. Let's strictly use (callbackStatus === 'SUCCESS' && (!responseCode || responseCode === '00')).
-    // Oh wait, responseCode '03' is pending. isPaymentSuccess should just be '00'. 
-    
+    // Ketat: hanya SUCCESS dengan response_code '00' (atau tanpa response_code) yang dianggap pembayaran sukses.
+    // response_code '03' adalah pending dan tidak boleh mengkredit.
     const isSuccess = callbackStatus === 'SUCCESS' && (!responseCode || responseCode === '00');
-    
-    // In webhook.service.ts previously: 
-    // if (isPaymentSuccess) { ... } else if (status === 'FAILED' || status === 'EXPIRED' || (responseCode && responseCode !== '00' && responseCode !== '03')) { finalStatus = status === 'EXPIRED' ? 'EXPIRED' : 'FAILED' }
-    // If we just pass isSuccess to the adapter, the adapter can handle it.
 
     if (this.settlementAdapter) {
-        return this.settlementAdapter.executeSettlement(item, tx, isSuccess, partnerReff, workerId);
+        return this.settlementAdapter.executeSettlement(item, tx, isSuccess, partnerReff, workerId, callbackStatus);
     }
     
     return { status: 'FAILED', message: 'No settlement adapter available' };

@@ -26,20 +26,29 @@ export interface LinkQuVerificationResult {
  * 6. response_code: contradictory alias fields (response_code vs rc) are rejected. Contradictory status vs response_code (SUCCESS with rc != '00') is rejected.
  * 7. signature: must be string, strictly 64 hex characters (prevents Node.js Buffer.from hex suffix truncation bug), timingSafeEqual checked.
  * 8. client_id: if present in payload and configured on server, must match.
+ *
+ * CATATAN KONTRAK (BELUM TERVERIFIKASI RESMI):
+ * Rumus HMAC-SHA256(amount + partner_reff + status) dan pemetaan status adalah ASUMSI
+ * yang diturunkan dari implementasi lama; belum ada dokumen resmi LinkQu di repositori.
+ * Verifikasi ini fail-closed: callback tanpa signature valid DITOLAK, sehingga kredit
+ * saldo tidak pernah diaktifkan oleh payload yang tidak terautentikasi.
  */
 export function verifyLinkQuCallbackPayload(
   payload: any,
   signatureKey: string | null | undefined,
   configuredClientId?: string | null,
   headers?: Record<string, any>,
+  options?: { requireSignature?: boolean },
 ): LinkQuVerificationResult {
   // 1. Payload must be a non-null JSON object
   if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
     return { isValid: false, message: 'Invalid payload: body must be a JSON object' };
   }
 
-  // 2. Server signature key check (Fail-closed)
-  if (!signatureKey || typeof signatureKey !== 'string' || signatureKey.trim() === '') {
+  const requireSignature = options?.requireSignature !== false;
+
+  // 2. Server signature key check (Fail-closed) — hanya untuk event callback.
+  if (requireSignature && (!signatureKey || typeof signatureKey !== 'string' || signatureKey.trim() === '')) {
     return { isValid: false, message: 'Signature key is not configured' };
   }
 
@@ -173,52 +182,54 @@ export function verifyLinkQuCallbackPayload(
     headers?.['x-signature'] ||
     payload.signature;
 
-  // // VALIDASI SIGNATURE DINONAKTIFKAN (DISAMAKAN DENGAN SANTRENSMART)
-  // if (
-  //   !incomingSignature ||
-  //   typeof incomingSignature !== 'string' ||
-  //   typeof incomingSignature === 'boolean' ||
-  //   typeof incomingSignature === 'object' ||
-  //   Array.isArray(incomingSignature) ||
-  //   incomingSignature.trim() === ''
-  // ) {
-  //   return { isValid: false, message: 'Signature is required' };
-  // }
+  // 9. Signature validation (fail-closed: no bypass, asumsi rumus kontrak lokal).
+  // Event INQUIRY tidak memakai signature callback: autentikasinya server-to-server
+  // (client-id/client-secret) saat request inquiry, sehingga requireSignature=false.
+  if (requireSignature) {
+    if (
+      !incomingSignature ||
+      typeof incomingSignature !== 'string' ||
+      Array.isArray(incomingSignature) ||
+      incomingSignature.trim() === ''
+    ) {
+      return { isValid: false, message: 'Signature is required' };
+    }
 
-  // const trimmedSignature = incomingSignature.trim();
+    const trimmedSignature = incomingSignature.trim();
 
-  // // Strict 64 hex characters check (SHA-256 HMAC hex)
-  // // This explicitly prevents Node.js Buffer.from hex suffix truncation where 'valid_hex' + 'zz' decodes to valid bytes
-  // if (!/^[0-9a-fA-F]{64}$/.test(trimmedSignature)) {
-  //   return { isValid: false, message: 'Invalid signature format' };
-  // }
+    // Strict 64 hex characters check (SHA-256 HMAC hex).
+    // This explicitly prevents Node.js Buffer.from hex suffix truncation where 'valid_hex' + 'zz' decodes to valid bytes.
+    if (!/^[0-9a-fA-F]{64}$/.test(trimmedSignature)) {
+      return { isValid: false, message: 'Invalid signature format' };
+    }
 
-  // const amountStr = String(payload.amount);
-  // const statusStr = rawStatus !== undefined ? String(rawStatus) : String(rawStatusTrx || '');
-  // const dataString = (amountStr + partnerReff + statusStr)
-  //   .replace(/[^0-9a-zA-Z]/g, '')
-  //   .toLowerCase();
+    const amountStr = String(payload.amount);
+    const statusStr = rawStatus !== undefined ? String(rawStatus) : String(rawStatusTrx || '');
+    const dataString = (amountStr + partnerReff + statusStr)
+      .replace(/[^0-9a-zA-Z]/g, '')
+      .toLowerCase();
 
-  // const expectedSignature = crypto
-  //   .createHmac('sha256', signatureKey)
-  //   .update(dataString)
-  //   .digest('hex');
+    const expectedSignature = crypto
+      .createHmac('sha256', signatureKey as string)
+      .update(dataString)
+      .digest('hex');
 
-  // const incomingBuffer = Buffer.from(trimmedSignature, 'hex');
-  // const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+    const incomingBuffer = Buffer.from(trimmedSignature, 'hex');
+    const expectedBuffer = Buffer.from(expectedSignature, 'hex');
 
-  // if (
-  //   incomingBuffer.length !== expectedBuffer.length ||
-  //   !crypto.timingSafeEqual(incomingBuffer, expectedBuffer)
-  // ) {
-  //   return { isValid: false, message: 'Invalid signature' };
-  // }
+    if (
+      incomingBuffer.length !== expectedBuffer.length ||
+      !crypto.timingSafeEqual(incomingBuffer, expectedBuffer)
+    ) {
+      return { isValid: false, message: 'Invalid signature' };
+    }
+  }
 
-  // 9. Merchant comparison (if client_id sent and configured)
+  // 10. Merchant comparison (if client_id sent and configured)
   const incomingClientId = rawClientId?.trim();
-  // if (incomingClientId && configuredClientId && incomingClientId !== configuredClientId) {
-  //   return { isValid: false, message: 'Client ID mismatch' };
-  // }
+  if (incomingClientId && configuredClientId && incomingClientId !== configuredClientId) {
+    return { isValid: false, message: 'Client ID mismatch' };
+  }
 
   return {
     isValid: true,

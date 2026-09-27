@@ -43,6 +43,7 @@ class ConfigApp {
   String? _detailTransaksiPascabayar_url;
   String? _inquiryPascabayar_url;
   String? _pembayaranPascabayar_url;
+  String? _pascabayarStatus_url;
   String? _daftarAgen_url;
   String? _daftarRiwayatPembayaran_url;
   String? _statistikAgen_url;
@@ -116,6 +117,7 @@ class ConfigApp {
     _detailTransaksiPascabayar_url = '$_mainurl/transaksi-detail-pascabayar';
     _inquiryPascabayar_url = '$_mainurl/pascabayar-inquiry';
     _pembayaranPascabayar_url = '$_mainurl/pascabayar-pembayaran';
+    _pascabayarStatus_url = '$_mainurl/pascabayar-status';
     _daftarAgen_url = '$_mainurl/agen/reseller';
     _daftarRiwayatPembayaran_url = '$_mainurl/agen/riwayat-pembayaran';
     _statistikAgen_url = '$_mainurl/agen/statistik';
@@ -193,6 +195,7 @@ class ConfigApp {
   String? get detailTransaksiPascabayar_url => _detailTransaksiPascabayar_url!;
   String? get inquiryPascabayar_url => _inquiryPascabayar_url!;
   String? get pembayaranPascabayar_url => _pembayaranPascabayar_url!;
+  String? get pascabayarStatus_url => _pascabayarStatus_url!;
   String? get daftarAgen_url => _daftarAgen_url!;
   String? get daftarRiwayatPembayaran_url => _daftarRiwayatPembayaran_url!;
   String? get statistikAgen_url => _statistikAgen_url!;

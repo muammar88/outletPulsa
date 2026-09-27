@@ -12,6 +12,7 @@ import 'package:outletpulsa/shared/providers/loadProvider.dart';
 import 'package:outletpulsa/core/utils/print.dart';
 import 'package:outletpulsa/shared/widgets/CircularProgressWidget.dart';
 import 'package:outletpulsa/notifier/realtime_notifier.dart';
+import 'share_token_screen.dart';
 
 
 class Detail_transaksi extends StatefulWidget {
@@ -340,6 +341,20 @@ class _Detail_transaksiState extends State<Detail_transaksi> with SingleTickerPr
       displayPriceStr = _formatCurrency(detail.price ?? '0');
     }
 
+    bool isPlnToken = (detail.productName?.toLowerCase().contains('token') ?? false) || 
+                      (detail.productName?.toLowerCase().contains('pln') ?? false);
+    
+    Map<String, String> plnData = {};
+    if (isPlnToken && detail.serialNumber != null) {
+      final parts = detail.serialNumber!.split('/');
+      plnData = {
+        'token': parts.isNotEmpty ? parts[0].trim() : '-',
+        'name': parts.length > 1 ? parts[1].trim() : '-',
+        'tarif_daya': parts.length > 3 ? '${parts[2].trim()} / ${parts[3].trim()}' : (parts.length > 2 ? parts[2].trim() : '-'),
+        'kwh': parts.length > 4 ? parts[4].trim() : '-',
+      };
+    }
+
     return Container(
       padding: EdgeInsets.all(isWide ? 40 : 24),
       decoration: BoxDecoration(
@@ -417,7 +432,71 @@ class _Detail_transaksiState extends State<Detail_transaksi> with SingleTickerPr
                 _buildDetailRow('Produk', detail.productName ?? '-'),
                 Divider(color: Colors.grey.shade200, height: 1),
                 _buildDetailRow('Harga Modal', displayPriceStr),
-                if (detail.serialNumber != null && detail.serialNumber != '-') ...[
+                if (isPlnToken && detail.serialNumber != null && detail.serialNumber != '-') ...[
+                  Divider(color: Colors.grey.shade200, height: 1),
+                  _buildDetailRow('Nama Pelanggan', plnData['name'] ?? '-'),
+                  Divider(color: Colors.grey.shade200, height: 1),
+                  _buildDetailRow('Tarif / Daya', plnData['tarif_daya'] ?? '-'),
+                  Divider(color: Colors.grey.shade200, height: 1),
+                  _buildDetailRow('Jml KWH', plnData['kwh'] ?? '-'),
+                  Divider(color: Colors.grey.shade200, height: 1),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16, bottom: 8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F1F6E).withOpacity(0.05),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF0F1F6E).withOpacity(0.1)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            'TOKEN LISTRIK',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF0F1F6E),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  plnData['token'] ?? '-',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 2,
+                                    color: const Color(0xFF1A1A2E),
+                                  ),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () async {
+                                  await Clipboard.setData(ClipboardData(text: plnData['token'] ?? '-'));
+                                  _showSnackBar('Token berhasil disalin', isSuccess: true);
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF0F1F6E),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: const Icon(TablerIcons.copy, size: 18, color: Colors.white),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ] else if (detail.serialNumber != null && detail.serialNumber != '-') ...[
                   Divider(color: Colors.grey.shade200, height: 1),
                   _buildDetailRow('Serial Number', detail.serialNumber!, isCopy: true),
                 ],
@@ -426,45 +505,85 @@ class _Detail_transaksiState extends State<Detail_transaksi> with SingleTickerPr
           ),
           
           const SizedBox(height: 24),
-          Text(
-            'Pesan Sistem',
-            style: GoogleFonts.poppins(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF1A1A2E),
+          if (!(isPlnToken && (statusName == 'Transaksi Berhasil' || statusName == 'Transaksi Sukses'))) ...[
+            Text(
+              'Pesan Sistem',
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: const Color(0xFF1A1A2E),
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFFFBEB),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFFDE68A)),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Icon(TablerIcons.info_square_rounded, color: Color(0xFFD97706), size: 24),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    detail.message ?? '-',
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      color: const Color(0xFF92400E),
-                      height: 1.5,
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFBEB),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFFDE68A)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(TablerIcons.info_square_rounded, color: Color(0xFFD97706), size: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      detail.message ?? '-',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: const Color(0xFF92400E),
+                        height: 1.5,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
           
           const SizedBox(height: 36),
           Column(
             children: [
+              if (isPlnToken && (statusName == 'Transaksi Berhasil' || statusName == 'Transaksi Sukses'))
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ShareTokenScreen(
+                              tokenData: plnData,
+                              dateTransaction: detail.dateTransaction ?? '-',
+                              customerNumber: detail.nomorTujuan ?? '-',
+                              productName: detail.productName ?? '-',
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        elevation: 2,
+                      ),
+                      icon: const Icon(TablerIcons.share, color: Colors.white, size: 20),
+                      label: Text(
+                        "BAGIKAN INFO TOKEN",
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               if ((statusName == 'Transaksi Berhasil' || statusName == 'Transaksi Sukses') && detail.printStatus == true)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),

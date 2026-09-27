@@ -164,6 +164,46 @@ export class DepositService {
     return deposit;
   }
 
+  async getPendingContractVerifications() {
+    // Cari event PENDING_CONTRACT_VERIFICATION di inbox
+    const pendingEvents = await this.prisma.paymentGatewayCallbackInbox.findMany({
+      where: {
+        status: 'PENDING_CONTRACT_VERIFICATION',
+      },
+      orderBy: { created_at: 'asc' },
+    });
+
+    // Untuk setiap event, cari transaksi gateway terkait dan periksa apakah sudah ada ledger (RiwayatSaldo)
+    const result: any[] = [];
+    for (const event of pendingEvents) {
+      const tx = await this.prisma.paymentGatewayTransaction.findUnique({
+        where: { partner_reff: event.partner_reff },
+      });
+
+      const hasLedger = tx && tx.settlement_ledger_id != null;
+      
+      if (!hasLedger) {
+        result.push({
+          inbox_id: event.id,
+          provider: event.provider,
+          event_type: event.event_type,
+          partner_reff: event.partner_reff,
+          payload: event.payload,
+          created_at: event.created_at,
+          transaction: tx ? {
+            id: tx.id,
+            uuid: tx.uuid,
+            amount: Number(tx.amount),
+            status: tx.status,
+            payment_method: tx.payment_method,
+          } : null,
+        });
+      }
+    }
+
+    return result;
+  }
+
   async create(createDepositDto: CreateDepositDto) {
     return await this.prisma.$transaction(async (prisma) => {
       const member = await prisma.member.findUnique({

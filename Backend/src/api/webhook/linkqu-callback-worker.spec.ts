@@ -320,5 +320,52 @@ describe('LinkquCallbackWorkerService (C2 Durable Recovery Worker)', () => {
         }),
       );
     });
+
+    it('event INQUIRY diproses tanpa signature callback (autentikasi server-to-server) dan tetap satu kredit', async () => {
+      const partnerReff = 'REFF_INQUIRY_SETTLE';
+      const amount = 50000;
+
+      const item = {
+        id: 16,
+        event_type: 'INQUIRY',
+        locked_by: 'worker-test-1',
+        locked_until: new Date(Date.now() + 30000),
+        payload: JSON.stringify({
+          partner_reff: partnerReff,
+          amount,
+          status: 'SUCCESS',
+          response_code: '00',
+          source: 'INQUIRY',
+        }),
+        headers: null,
+        retry_count: 0,
+        max_retries: 5,
+      };
+
+      prismaMock.paymentGatewayTransaction.findUnique.mockResolvedValue({
+        id: 101,
+        partner_reff: partnerReff,
+        amount: 50000,
+        status: 'PENDING',
+        provider: 'LINKQU',
+        reference_type: 'DEPOSIT',
+        payment_method: 'VA',
+        requestDeposit: {
+          id: 201,
+          kode: 'DEP-201',
+          status: 'proses',
+          nominal: 50000,
+          riwayatTransaksiId: 301,
+          riwayatTransaksi: { member: { id: 5, saldo: 0 } },
+        },
+      });
+      prismaMock.member.update.mockResolvedValue({ id: 5, saldo: 50000 });
+
+      const result = await workerService.processInboxItem(item, 'worker-test-1');
+
+      expect(result.status).toBe('PROCESSED');
+      expect(prismaMock.member.update).toHaveBeenCalledTimes(1);
+      expect(prismaMock.riwayatSaldo.create).toHaveBeenCalledTimes(1);
+    });
   });
 });
